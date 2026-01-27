@@ -1,6 +1,6 @@
 import React from 'react';
 import { PageHeader } from '../components/PageHeader';
-import { TimelineBuilder } from '../components/TimelineBuilder';
+import TimelineBuilder from '../components/TimelineBuilder';
 import { Calendar } from 'lucide-react';
 
 interface TimelinePageProps {
