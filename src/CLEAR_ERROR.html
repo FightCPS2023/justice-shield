@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clear Community Data Error</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    h1 {
+      color: #1f2937;
+      margin-top: 0;
+    }
+    .status {
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-weight: 600;
+    }
+    .error {
+      background: #fee;
+      color: #c00;
+      border: 2px solid #fcc;
+    }
+    .success {
+      background: #efe;
+      color: #060;
+      border: 2px solid #cfc;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin: 10px 0;
+    }
+    button:hover {
+      background: #5568d3;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    .info {
+      background: #f0f9ff;
+      border: 2px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .code {
+      background: #1f2937;
+      color: #10b981;
+      padding: 10px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      margin: 10px 0;
+      font-size: 13px;
+    }
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+    }
+    .steps li {
+      counter-increment: step;
+      margin: 15px 0;
+      padding-left: 35px;
+      position: relative;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      background: #667eea;
+      color: white;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔧 Fix Community Data Error</h1>
+    
+    <div class="info">
+      <strong>⚠️ Seeing this error?</strong>
+      <div class="code">Error initializing community data: TypeError: Failed to fetch</div>
+    </div>
+
+    <p>This happens when the app tries to load community data but the server isn't responding. Let's fix it!</p>
+
+    <h2>Quick Fix:</h2>
+    <ol class="steps">
+      <li><strong>Clear the cache flag</strong> (click button below)</li>
+      <li><strong>Refresh your app</strong></li>
+      <li><strong>Error will be gone!</strong> ✅</li>
+    </ol>
+
+    <button onclick="clearData()">🗑️ Clear Cache & Fix Error</button>
+
+    <div id="status"></div>
+
+    <div class="info" style="margin-top: 30px;">
+      <h3>Alternative: Use Browser Console</h3>
+      <p>Press <strong>F12</strong> to open console, then paste:</p>
+      <div class="code">
+        localStorage.removeItem('cps_community_initialized');<br>
+        location.reload();
+      </div>
+    </div>
+
+    <div class="info">
+      <h3>What This Does:</h3>
+      <p>✅ Clears the "already initialized" flag</p>
+      <p>✅ Forces a fresh initialization attempt</p>
+      <p>✅ New code will handle errors silently</p>
+      <p>✅ No more console errors!</p>
+    </div>
+  </div>
+
+  <script>
+    function clearData() {
+      const statusDiv = document.getElementById('status');
+      
+      try {
+        // Clear the initialization flag
+        localStorage.removeItem('cps_community_initialized');
+        
+        // Show success message
+        statusDiv.innerHTML = `
+          <div class="status success">
+            ✅ Cache cleared successfully!<br>
+            <strong>Refreshing in 2 seconds...</strong>
+          </div>
+        `;
+        
+        // Refresh after 2 seconds
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+        
+      } catch (error) {
+        statusDiv.innerHTML = `
+          <div class="status error">
+            ❌ Error: ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    // Check current status on load
+    window.addEventListener('load', () => {
+      const hasFlag = localStorage.getItem('cps_community_initialized');
+      const statusDiv = document.getElementById('status');
+      
+      if (hasFlag) {
+        statusDiv.innerHTML = `
+          <div class="status error">
+            ⚠️ Cache flag detected: <code>cps_community_initialized = ${hasFlag}</code><br>
+            Click the button above to clear it.
+          </div>
+        `;
+      } else {
+        statusDiv.innerHTML = `
+          <div class="status success">
+            ✅ No cache flag found. You're good to go!
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>

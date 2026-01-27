@@ -1,0 +1,296 @@
+================================================================================
+                    ✅ USER SIGNUP VERIFICATION CHECKLIST
+                        Is Everything Ready?
+================================================================================
+
+Let's verify your user signups are working! Follow this checklist:
+
+
+STEP 1: CHECK SUPABASE URL CONFIGURATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This fixes the "Error 400" issue!
+
+[ ] Go to: https://supabase.com/dashboard
+
+[ ] Click your project: cps-punisher
+
+[ ] Click "Authentication" (left sidebar, 🔑 icon)
+
+[ ] Click "URL Configuration"
+
+[ ] Check "Site URL" field:
+    Should be: https://your-app.vercel.app
+    (Replace with YOUR actual Vercel URL - NO slash at end!)
+
+[ ] Check "Redirect URLs" field:
+    Should have at least these 2 lines:
+    https://your-app.vercel.app
+    https://your-app.vercel.app/**
+
+[ ] If anything is missing or wrong, fix it and click "Save"
+
+STATUS: [ ] ✅ Done  [ ] ❌ Need to fix this
+
+
+STEP 2: CHECK EMAIL SETTINGS (IMPORTANT!)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Make sure users can receive verification emails!
+
+[ ] Still in Supabase → Authentication section
+
+[ ] Click "Email Templates" (left sidebar)
+
+[ ] Check if "Confirm signup" template exists
+    (It should be there by default)
+
+[ ] Go back and click "Providers"
+
+[ ] Make sure "Email" is ENABLED (toggle should be ON/green)
+
+[ ] Check these settings:
+    [ ] "Enable email confirmations" - Should be ON
+    [ ] "Secure email change" - Can be ON or OFF (your choice)
+
+STATUS: [ ] ✅ Done  [ ] ❌ Need to fix this
+
+
+STEP 3: CHECK VERCEL ENVIRONMENT VARIABLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Make sure your app can talk to Supabase!
+
+[ ] Open Terminal or Command Prompt
+
+[ ] Navigate to your project folder:
+    cd /path/to/cps-punisher
+
+[ ] Run this command:
+    vercel env ls
+
+[ ] You should see these 4 variables:
+    [ ] VITE_SUPABASE_URL
+    [ ] VITE_SUPABASE_ANON_KEY
+    [ ] VITE_GEMINI_API_KEY
+    [ ] VITE_STRIPE_PUBLISHABLE_KEY
+
+[ ] If ANY are missing, add them:
+    vercel env add VARIABLE_NAME
+    (Then paste the value when asked)
+
+[ ] If you added any, redeploy:
+    vercel --prod
+
+STATUS: [ ] ✅ All 4 present  [ ] ❌ Need to add some
+
+
+STEP 4: TEST USER SIGNUP (THE REAL TEST!)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Let's actually try signing up!
+
+[ ] Open your app URL: https://________________
+
+[ ] Click "Get Started" or "Sign Up"
+
+[ ] Enter access code: CPSPUNISHER2024
+
+[ ] Click "Verify Code"
+
+TEST 1: Form Loads?
+[ ] ✅ Yes, I see the signup form
+[ ] ❌ No, I see an error
+
+If you see an error, what does it say?
+_________________________________________________________________
+
+TEST 2: Can Submit Form?
+[ ] Fill in:
+    Name: Test User
+    Email: your-email@gmail.com
+    Password: TestPassword123!
+    Confirm: TestPassword123!
+
+[ ] Click "Create Account"
+
+[ ] What happens?
+    [ ] ✅ Success message appears
+    [ ] ✅ Redirects to "check your email" page
+    [ ] ❌ Error appears: _______________________________
+
+TEST 3: Email Received?
+[ ] Check your email inbox
+
+[ ] Look for email from "noreply@mail.app.supabase.io"
+
+[ ] Did you receive it?
+    [ ] ✅ Yes! I got the verification email
+    [ ] ❌ No email yet (check spam folder!)
+    [ ] ❌ No email after 5 minutes
+
+TEST 4: Can Verify Email?
+[ ] Open the verification email
+
+[ ] Click the "Confirm your mail" link
+
+[ ] What happens?
+    [ ] ✅ Redirects to app and says "Email confirmed"
+    [ ] ✅ Can now log in
+    [ ] ❌ Error page
+    [ ] ❌ Nothing happens
+
+TEST 5: Can Log In?
+[ ] Go to your app: https://________________
+
+[ ] Click "Sign In"
+
+[ ] Enter:
+    Email: (the one you signed up with)
+    Password: (the one you created)
+
+[ ] Click "Sign In"
+
+[ ] What happens?
+    [ ] ✅ Successfully logged in! See the onboarding flow
+    [ ] ❌ "Invalid credentials" error
+    [ ] ❌ Other error: _______________________________
+
+STATUS: [ ] ✅ All tests passed!  [ ] ❌ Stuck on test #___
+
+
+STEP 5: CHECK SUPABASE DATABASE (OPTIONAL)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Verify the user was actually created:
+
+[ ] Go to: https://supabase.com/dashboard
+
+[ ] Click your project: cps-punisher
+
+[ ] Click "Authentication" → "Users"
+
+[ ] Do you see your test user?
+    [ ] ✅ Yes! Email is listed
+    [ ] ❌ No users shown
+
+STATUS: [ ] ✅ User appears  [ ] ❌ No users
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                            FINAL VERDICT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+COUNT YOUR CHECKMARKS:
+
+Step 1 (URL Config): [ ] ✅ or [ ] ❌
+Step 2 (Email Settings): [ ] ✅ or [ ] ❌
+Step 3 (Environment Variables): [ ] ✅ or [ ] ❌
+Step 4 (Signup Test): [ ] ✅ or [ ] ❌
+Step 5 (Database Check): [ ] ✅ or [ ] ❌
+
+ALL 5 STEPS = ✅ ✅ ✅ ✅ ✅ ?
+
+🎉 YES! USER SIGNUPS ARE ALL SET! 
+   Your app is ready for real users!
+
+❌ NO? See troubleshooting below based on which step failed.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                            TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PROBLEM: Still getting "Error 400"
+FIX: Go back to Step 1 - Supabase URL Configuration
+     Make sure your Vercel URL is correct (no typos!)
+     Wait 60 seconds after saving, then try again
+
+
+PROBLEM: "Invalid credentials" when logging in
+FIX: 
+1. Did you verify your email first? (Check inbox/spam)
+2. Did you click the verification link in the email?
+3. Make sure you're using the correct password
+4. Try "Forgot Password" to reset it
+
+
+PROBLEM: No verification email received
+FIX:
+1. Check spam/junk folder
+2. Wait 5 minutes (sometimes slow)
+3. Go to Supabase → Authentication → Users
+4. Find your user and click "..." → "Send verification email"
+
+
+PROBLEM: Verification link doesn't work
+FIX:
+1. Check Supabase URL Configuration (Step 1)
+2. Make sure Redirect URLs includes: https://your-app.vercel.app/**
+3. Click Save, wait 60 seconds
+4. Request new verification email
+
+
+PROBLEM: Environment variables missing
+FIX:
+In Terminal:
+1. vercel env add VITE_SUPABASE_URL
+   (Paste your Supabase URL)
+2. vercel env add VITE_SUPABASE_ANON_KEY
+   (Paste your Supabase anon key)
+3. vercel --prod
+   (Redeploy with new variables)
+
+
+PROBLEM: Form doesn't submit, no error shown
+FIX:
+1. Open browser console (F12 or Right-click → Inspect)
+2. Click "Console" tab
+3. Try submitting form again
+4. Copy any red error messages
+5. Share them with me for help
+
+
+PROBLEM: "Access code invalid"
+FIX:
+Make sure you're using: CPSPUNISHER2024
+(All caps, no spaces)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                        NEED HELP?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━
+
+Tell me:
+
+1. Which step failed? (1-5)
+2. What error message do you see?
+3. Screenshot if possible
+
+I'll help you fix it! 😊
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    ✅ WHEN EVERYTHING WORKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You should be able to:
+
+✅ Go to your app URL
+✅ Click "Sign Up"
+✅ Enter access code
+✅ Fill out signup form
+✅ Click "Create Account"
+✅ Receive verification email within 1-2 minutes
+✅ Click verification link
+✅ Get redirected back to app
+✅ Log in successfully
+✅ See the onboarding flow (create case, upload docs, etc.)
+
+If you can do ALL of that ↑ then YES! User signups are ALL SET! 🎉
+
+
+================================================================================
+Copyright © 2024 DARREN GUAY. All Rights Reserved.
+The CPS Punisher - User Signups Checklist ✅
+================================================================================

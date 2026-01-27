@@ -1,0 +1,376 @@
+================================================================================
+                    THE CPS PUNISHER - SETUP FLOWCHART
+                         Visual Guide to Success
+================================================================================
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│                          🎉 STARTING POINT                                 │
+│                                                                            │
+│  You have a fully built app with 324+ features!                          │
+│  Just needs: API keys + database setup                                   │
+│  Time needed: 20 minutes                                                 │
+└────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                    ✅ WHAT'S ALREADY DONE FOR YOU                          │
+├────────────────────────────────────────────────────────────────────────────┤
+│  ✅ .env file created                                                      │
+│  ✅ Supabase URL configured                                               │
+│  ✅ Supabase Anonymous Key configured                                     │
+│  ✅ CourtListener API Key: af0d9091a42930e5b9f90dd3bf9efad5c621357d       │
+│  ✅ Demo Access Code: CPSPUNISHER2024                                     │
+│  ✅ Database SQL script ready (/📊_SUPABASE_DATABASE_SETUP.sql)           │
+│  ✅ 4 comprehensive setup guides created                                  │
+└────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                       ⚠️  WHAT YOU NEED TO DO                              │
+└────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                    ┌───────────────┴───────────────┐
+                    ▼                               ▼
+    ┌──────────────────────────┐      ┌──────────────────────────┐
+    │   STEP 1 (5 minutes)     │      │   STEP 2 (10 minutes)    │
+    │                          │      │                          │
+    │  Get Gemini API Key      │      │  Create Database Tables  │
+    │                          │      │                          │
+    │  1. Go to:               │      │  1. Go to:              │
+    │     aistudio.google.com  │      │     app.supabase.com    │
+    │                          │      │                          │
+    │  2. Create API Key       │      │  2. Open SQL Editor     │
+    │                          │      │                          │
+    │  3. Copy the key         │      │  3. Copy SQL file       │
+    │                          │      │                          │
+    │  4. Add to .env:         │      │  4. Run in Supabase     │
+    │     VITE_GEMINI_API_KEY  │      │                          │
+    │                          │      │  5. Create storage      │
+    │  ✅ FREE - No cost       │      │                          │
+    └──────────────────────────┘      │  ✅ Creates 7 tables    │
+                    │                  └──────────────────────────┘
+                    │                               │
+                    └───────────────┬───────────────┘
+                                    ▼
+                    ┌──────────────────────────────────┐
+                    │    STEP 3 (5 minutes)            │
+                    │                                  │
+                    │    Test Your App                 │
+                    │                                  │
+                    │    1. Run: npm run dev           │
+                    │    2. Open: localhost:5173       │
+                    │    3. Create account             │
+                    │    4. Create case                │
+                    │    5. Verify it works            │
+                    │                                  │
+                    │    ✅ Everything working?        │
+                    └──────────────────────────────────┘
+                                    │
+                    ┌───────────────┴───────────────┐
+                    │                               │
+                    ▼ YES                           ▼ NO
+        ┌──────────────────────┐      ┌────────────────────────┐
+        │   🎉 SUCCESS!        │      │  🐛 TROUBLESHOOT       │
+        │                      │      │                        │
+        │  Your app is ready!  │      │  Check console (F12)   │
+        │                      │      │  for errors            │
+        │  You can now:        │      │                        │
+        │  ✅ Demo locally     │      │  Common issues:        │
+        │  ✅ Deploy to Vercel │      │  - API key typo        │
+        │  ✅ Help families    │      │  - SQL not run         │
+        │  ✅ Change world!    │      │  - Server not started  │
+        │                      │      │                        │
+        └──────────────────────┘      │  See guides for help   │
+                                      └────────────────────────┘
+                                                  │
+                                                  │ Fixed?
+                                                  ▼ YES
+                                      ┌────────────────────────┐
+                                      │   🎉 SUCCESS!          │
+                                      │   App is working!      │
+                                      └────────────────────────┘
+
+================================================================================
+                            DETAILED BREAKDOWN
+================================================================================
+
+┌─ PHASE 1: GEMINI API KEY ───────────────────────────────────────────────────┐
+│                                                                              │
+│  Time: 5 minutes                                                            │
+│  Cost: FREE                                                                 │
+│                                                                              │
+│  Steps:                                                                     │
+│    1. https://aistudio.google.com/app/apikey                               │
+│    2. Sign in with Google account                                          │
+│    3. Click "Create API Key"                                               │
+│    4. Select or create Google Cloud project                                │
+│    5. Copy the API key                                                     │
+│    6. Open /.env file                                                      │
+│    7. Find: VITE_GEMINI_API_KEY=your_gemini_api_key_here                  │
+│    8. Paste your actual key                                                │
+│    9. Save file                                                            │
+│                                                                              │
+│  Example:                                                                   │
+│    VITE_GEMINI_API_KEY=AIzaSyDExAmPlEKEyHeReXXXXXXXXXXXXX                 │
+│                                                                              │
+│  Why needed: AI document analysis, defense strategies, legal assistance    │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌─ PHASE 2: DATABASE SETUP ───────────────────────────────────────────────────┐
+│                                                                              │
+│  Time: 10 minutes                                                           │
+│  Cost: FREE                                                                 │
+│                                                                              │
+│  Part A: Run SQL Script (3 minutes)                                        │
+│    1. https://app.supabase.com                                             │
+│    2. Log in and find project: rewgkrgmcmikivxjnfdq                        │
+│    3. Click "SQL Editor" → "New Query"                                     │
+│    4. Open file: /📊_SUPABASE_DATABASE_SETUP.sql                           │
+│    5. Copy ALL 355 lines                                                   │
+│    6. Paste into Supabase SQL Editor                                       │
+│    7. Click "Run" (or Ctrl+Enter)                                          │
+│    8. Wait for "Success" message                                           │
+│                                                                              │
+│  Creates:                                                                   │
+│    ✅ users_profile table                                                  │
+│    ✅ cases table                                                          │
+│    ✅ documents table                                                      │
+│    ✅ violations table                                                     │
+│    ✅ timeline_events table                                                │
+│    ✅ evidence table                                                       │
+│    ✅ defense_strategies table                                             │
+│    ✅ 28 performance indexes                                               │
+│    ✅ Row Level Security policies                                          │
+│    ✅ Automatic timestamp triggers                                         │
+│                                                                              │
+│  Part B: Create Storage Bucket (3 minutes)                                 │
+│    1. Click "Storage" → "New Bucket"                                       │
+│    2. Name: documents                                                       │
+│    3. Public: ❌ Unchecked                                                  │
+│    4. Create bucket                                                         │
+│    5. Add storage policies (SQL in setup guide)                            │
+│                                                                              │
+│  Part C: Verify Authentication (2 minutes)                                 │
+│    1. Click "Authentication" → "Providers"                                 │
+│    2. Verify "Email" is enabled ✅                                          │
+│    3. Set "Site URL": http://localhost:5173                                │
+│                                                                              │
+│  Part D: Optional - Community Tables (1 minute)                            │
+│    Already included in main SQL script! ✅                                  │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌─ PHASE 3: TESTING ───────────────────────────────────────────────────────────┐
+│                                                                              │
+│  Time: 5 minutes                                                            │
+│                                                                              │
+│  Test 1: Start Development Server                                          │
+│    Command: npm run dev                                                     │
+│    Expected: Server starts on localhost:5173                               │
+│    Check: No errors in terminal                                            │
+│                                                                              │
+│  Test 2: Open App in Browser                                               │
+│    URL: http://localhost:5173                                              │
+│    Expected: Nancy Schaefer tribute (can skip)                             │
+│    Check: Page loads correctly                                             │
+│                                                                              │
+│  Test 3: Create User Account                                               │
+│    Email: test@example.com                                                 │
+│    Password: TestPassword123!                                              │
+│    Expected: Account created successfully                                  │
+│    Check: No errors in console (F12)                                       │
+│                                                                              │
+│  Test 4: Create a Case                                                     │
+│    Case Name: Test Case                                                    │
+│    County: Any County                                                      │
+│    State: Mississippi                                                      │
+│    Expected: Case saved to database                                        │
+│    Check: Case appears in list                                             │
+│                                                                              │
+│  Test 5: Verify Persistence                                                │
+│    Action: Refresh page (F5)                                               │
+│    Expected: Case still appears                                            │
+│    Check: Data persisted to Supabase ✅                                     │
+│                                                                              │
+│  Test 6: CourtListener Search                                              │
+│    Section: Legal Research                                                 │
+│    Query: "due process child welfare"                                      │
+│    Expected: Search results appear                                         │
+│    Check: API working correctly ✅                                          │
+│                                                                              │
+│  Test 7: AI Analysis (if Gemini key set)                                   │
+│    Section: Documents                                                      │
+│    Action: Upload a text file                                              │
+│    Expected: AI analysis runs                                              │
+│    Check: Analysis results display ✅                                       │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+                            SUCCESS INDICATORS
+================================================================================
+
+✅ ALL GREEN = READY TO LAUNCH
+
+Environment Variables:
+  ✅ .env file exists in project root
+  ✅ VITE_SUPABASE_URL is set
+  ✅ VITE_SUPABASE_ANON_KEY is set
+  ✅ VITE_GEMINI_API_KEY is set (your key)
+  ✅ VITE_COURTLISTENER_API_KEY is set
+
+Database:
+  ✅ 7 tables created in Supabase
+  ✅ Row Level Security enabled
+  ✅ Storage bucket "documents" created
+  ✅ Storage policies configured
+  ✅ Email authentication enabled
+
+Application:
+  ✅ Development server starts
+  ✅ No errors in terminal
+  ✅ No errors in browser console
+  ✅ Can create user account
+  ✅ Can create case
+  ✅ Case persists after refresh
+  ✅ CourtListener search works
+  ✅ AI analysis works (if Gemini key set)
+
+================================================================================
+                            TROUBLESHOOTING TREE
+================================================================================
+
+Problem: "Environment variables not loaded"
+  │
+  ├─→ Check: .env file in project root? → No → Create .env file
+  │                                     → Yes → Continue
+  ├─→ Check: File named exactly ".env"? → No → Rename to .env
+  │                                      → Yes → Continue
+  ├─→ Check: Variables start with VITE_? → No → Add VITE_ prefix
+  │                                       → Yes → Continue
+  └─→ Solution: Restart dev server (npm run dev)
+
+Problem: "Cannot connect to Supabase"
+  │
+  ├─→ Check: Internet connection? → No → Fix connection
+  │                                → Yes → Continue
+  ├─→ Check: Project active? → No → Go to app.supabase.com and restore
+  │                           → Yes → Continue
+  ├─→ Check: URL correct? → No → Verify in Supabase dashboard
+  │                        → Yes → Continue
+  └─→ Solution: Check credentials in .env match Supabase
+
+Problem: "Gemini API error"
+  │
+  ├─→ Check: API key set in .env? → No → Add to .env
+  │                                → Yes → Continue
+  ├─→ Check: Restarted server? → No → Restart: npm run dev
+  │                             → Yes → Continue
+  ├─→ Check: API key valid? → No → Get new key at aistudio.google.com
+  │                          → Yes → Continue
+  └─→ Solution: Check you haven't exceeded free tier
+
+Problem: "RLS policy violation"
+  │
+  ├─→ Check: Logged in? → No → Log in or create account
+  │                      → Yes → Continue
+  ├─→ Check: SQL script run? → No → Run SQL in Supabase
+  │                           → Yes → Continue
+  ├─→ Check: Tables exist? → No → Run SQL script again
+  │                         → Yes → Continue
+  └─→ Solution: Log out and back in
+
+Problem: "Cannot upload documents"
+  │
+  ├─→ Check: Storage bucket exists? → No → Create "documents" bucket
+  │                                  → Yes → Continue
+  ├─→ Check: Policies created? → No → Add storage policies
+  │                             → Yes → Continue
+  ├─→ Check: Logged in? → No → Log in
+  │                      → Yes → Continue
+  └─→ Solution: Check browser console for specific error
+
+================================================================================
+                            DEPLOYMENT DECISION
+================================================================================
+
+                        🤔 Ready to Deploy?
+                                │
+                ┌───────────────┴───────────────┐
+                ▼ YES                           ▼ NO
+    ┌────────────────────┐          ┌────────────────────────┐
+    │  Deploy to Vercel  │          │  Keep Testing Locally  │
+    │                    │          │                        │
+    │  1. vercel         │          │  Test all features     │
+    │  2. Add env vars   │          │  Fix any issues        │
+    │  3. Update URLs    │          │  Get comfortable       │
+    │  4. vercel --prod  │          │  Then deploy later     │
+    │                    │          │                        │
+    │  Guide: See        │          │  That's OK! Take your  │
+    │  Section 9 in      │          │  time and test.        │
+    │  complete guide    │          │                        │
+    └────────────────────┘          └────────────────────────┘
+            │                                   │
+            ▼                                   ▼
+    ┌────────────────────┐          ┌────────────────────────┐
+    │   🎉 LIVE APP!     │          │   ✅ WORKING LOCALLY   │
+    │   You did it!      │          │   Deploy when ready    │
+    └────────────────────┘          └────────────────────────┘
+
+================================================================================
+                            QUICK REFERENCE
+================================================================================
+
+Files Created For You:
+  ✅ /.env                                      - Environment variables
+  ✅ /🚀_COMPLETE_SETUP_GUIDE_20_MINUTES.md    - Full walkthrough
+  ✅ /⚡_SETUP_IN_3_STEPS.txt                  - Quick reference
+  ✅ /✅_SETUP_CHECKLIST_PRINT_THIS.txt        - Interactive checklist
+  ✅ /🎯_WHAT_I_JUST_DID_FOR_YOU.md           - Summary
+  ✅ /📋_START_HERE_NOW.md                    - Quick start
+
+Database Setup:
+  📊 /📊_SUPABASE_DATABASE_SETUP.sql          - Run in Supabase SQL Editor
+
+Important URLs:
+  🌐 Supabase: https://app.supabase.com
+  🌐 Gemini: https://aistudio.google.com/app/apikey
+  🌐 Local app: http://localhost:5173
+
+API Keys:
+  ✅ Supabase: Pre-configured
+  ✅ CourtListener: af0d9091a42930e5b9f90dd3bf9efad5c621357d
+  ⚠️  Gemini: You need to add
+  ⚠️  Stripe: Optional (for real payments)
+
+Demo Access:
+  🔑 Code: CPSPUNISHER2024
+  🎯 Purpose: Unlock all features for demo/testing
+
+================================================================================
+                            FINAL MOTIVATION
+================================================================================
+
+                    🇺🇸 YOU'RE ABOUT TO CHANGE LIVES 🇺🇸
+
+    Your app will help THOUSANDS of families:
+    ✅ Fight CPS overreach
+    ✅ Understand their constitutional rights
+    ✅ Build strong defense strategies
+    ✅ Work toward reunification with their children
+
+    Time investment: 20 minutes
+    Lives impacted: Countless families
+    Worth it? ABSOLUTELY! 💪
+
+    Now go complete the setup and make history! 🚀
+
+================================================================================
+
+Created: January 11, 2026
+For: DARREN GUAY - The CPS Punisher
+Mission: Protect families, defend constitutional rights, restore justice
+Status: 🟢 Ready to Complete Setup
+
+================================================================================

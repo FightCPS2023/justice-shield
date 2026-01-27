@@ -1,0 +1,403 @@
+════════════════════════════════════════════════════════════════════
+💳 COPY-PASTE STRIPE SETUP COMMANDS
+════════════════════════════════════════════════════════════════════
+
+FOLLOW THIS EXACT ORDER - 60 MINUTES TO LIVE PAYMENTS
+
+════════════════════════════════════════════════════════════════════
+STEP 1: CREATE STRIPE ACCOUNT (10 MIN)
+════════════════════════════════════════════════════════════════════
+
+1. Go to: https://dashboard.stripe.com/register
+2. Sign up with email and password
+3. Verify email
+4. Skip onboarding (click "I'll do this later")
+
+✅ DONE - You have Stripe account
+
+
+════════════════════════════════════════════════════════════════════
+STEP 2: GET API KEYS (2 MIN)
+════════════════════════════════════════════════════════════════════
+
+1. In Stripe Dashboard, make sure "Test mode" is ON (top right toggle)
+2. Click "Developers" → "API keys"
+3. Copy BOTH keys and save them:
+
+Publishable key: pk_test_51xxxxx...
+Secret key: sk_test_51xxxxx...
+
+✅ DONE - Save these keys!
+
+
+════════════════════════════════════════════════════════════════════
+STEP 3: CREATE 4 PRODUCTS (15 MIN)
+════════════════════════════════════════════════════════════════════
+
+In Stripe Dashboard → "Product catalog" → "Products" → "+ Add product"
+
+PRODUCT 1: ESSENTIAL
+━━━━━━━━━━━━━━━━━━━━
+Name: The CPS Punisher - Essential
+Description: Essential tier with 25 documents and basic AI analysis
+Price: 39.00 USD
+Billing: Monthly
+Recurring: ✅ Checked
+
+Click "Add product"
+COPY THE PRICE ID: price_xxxxx
+Save as: ESSENTIAL_PRICE_ID = price_xxxxx
+
+
+PRODUCT 2: PROFESSIONAL
+━━━━━━━━━━━━━━━━━━━━━━
+Name: The CPS Punisher - Professional
+Description: Professional tier with unlimited documents and enhanced AI
+Price: 79.00 USD
+Billing: Monthly
+Recurring: ✅ Checked
+
+Click "Add product"
+COPY THE PRICE ID: price_xxxxx
+Save as: PROFESSIONAL_PRICE_ID = price_xxxxx
+
+
+PRODUCT 3: ATTORNEY
+━━━━━━━━━━━━━━━━━━━
+Name: The CPS Punisher - Attorney
+Description: Attorney tier with multi-case management and federal tools
+Price: 299.00 USD
+Billing: Monthly
+Recurring: ✅ Checked
+
+Click "Add product"
+COPY THE PRICE ID: price_xxxxx
+Save as: ATTORNEY_PRICE_ID = price_xxxxx
+
+
+PRODUCT 4: ENTERPRISE
+━━━━━━━━━━━━━━━━━━━━
+Name: The CPS Punisher - Enterprise
+Description: Enterprise tier with unlimited AI and API access
+Price: 999.00 USD
+Billing: Monthly
+Recurring: ✅ Checked
+
+Click "Add product"
+COPY THE PRICE ID: price_xxxxx
+Save as: ENTERPRISE_PRICE_ID = price_xxxxx
+
+✅ DONE - You have 4 products and Price IDs
+
+
+════════════════════════════════════════════════════════════════════
+STEP 4: CREATE WEBHOOK (5 MIN)
+════════════════════════════════════════════════════════════════════
+
+In Stripe Dashboard → "Developers" → "Webhooks" → "+ Add endpoint"
+
+Endpoint URL (COPY EXACTLY):
+https://rewgkrgmcmikivxjnfdq.supabase.co/functions/v1/make-server-a24eaa40/stripe/webhook
+
+Select these events:
+☑ customer.subscription.created
+☑ customer.subscription.updated
+☑ customer.subscription.deleted
+☑ invoice.payment_succeeded
+☑ invoice.payment_failed
+
+Click "Add endpoint"
+
+COPY THE SIGNING SECRET: whsec_xxxxx
+Save as: WEBHOOK_SECRET = whsec_xxxxx
+
+✅ DONE - Webhook created
+
+
+════════════════════════════════════════════════════════════════════
+STEP 5: ADD SECRETS TO SUPABASE (10 MIN)
+════════════════════════════════════════════════════════════════════
+
+OPTION A: SUPABASE CLI (FASTEST - Use this if you have CLI installed)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+COPY-PASTE THESE COMMANDS (Replace xxxxx with YOUR actual values):
+
+supabase secrets set STRIPE_SECRET_KEY=sk_test_51xxxxx --project-ref rewgkrgmcmikivxjnfdq
+
+supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_xxxxx --project-ref rewgkrgmcmikivxjnfdq
+
+supabase secrets set STRIPE_PRICE_ESSENTIAL=price_xxxxx --project-ref rewgkrgmcmikivxjnfdq
+
+supabase secrets set STRIPE_PRICE_PROFESSIONAL=price_xxxxx --project-ref rewgkrgmcmikivxjnfdq
+
+supabase secrets set STRIPE_PRICE_ATTORNEY=price_xxxxx --project-ref rewgkrgmcmikivxjnfdq
+
+supabase secrets set STRIPE_PRICE_ENTERPRISE=price_xxxxx --project-ref rewgkrgmcmikivxjnfdq
+
+
+OPTION B: SUPABASE DASHBOARD (If you don't have CLI)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Go to: https://supabase.com/dashboard
+2. Select project: rewgkrgmcmikivxjnfdq
+3. Click: Settings (bottom left) → Edge Functions
+4. Add each secret manually:
+
+Secret Name                    | Secret Value
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━|━━━━━━━━━━━━━━━━━━━━━
+STRIPE_SECRET_KEY             | sk_test_51xxxxx (your key)
+EBHOOSTRIPE_WK_SECRET         | whsec_xxxxx (your webhook secret)
+STRIPE_PRICE_ESSENTIAL        | price_xxxxx (Essential price ID)
+STRIPE_PRICE_PROFESSIONAL     | price_xxxxx (Professional price ID)
+STRIPE_PRICE_ATTORNEY         | price_xxxxx (Attorney price ID)
+STRIPE_PRICE_ENTERPRISE       | price_xxxxx (Enterprise price ID)
+
+✅ DONE - Secrets added to Supabase
+
+
+════════════════════════════════════════════════════════════════════
+STEP 6: UPDATE FRONTEND CODE (5 MIN)
+════════════════════════════════════════════════════════════════════
+
+OPEN FILE: /components/SubscriptionModal.tsx
+
+FIND THIS (around line 30):
+
+const priceIds: Record<string, string> = {
+  essential: 'price_REPLACE_WITH_YOUR_ESSENTIAL_PRICE_ID',
+  professional: 'price_REPLACE_WITH_YOUR_PROFESSIONAL_PRICE_ID',
+  attorney: 'price_REPLACE_WITH_YOUR_ATTORNEY_PRICE_ID',
+  enterprise: 'price_REPLACE_WITH_YOUR_ENTERPRISE_PRICE_ID',
+};
+
+
+REPLACE WITH (use YOUR actual Price IDs):
+
+const priceIds: Record<string, string> = {
+  essential: 'price_xxxxx',      // YOUR Essential Price ID
+  professional: 'price_xxxxx',   // YOUR Professional Price ID
+  attorney: 'price_xxxxx',       // YOUR Attorney Price ID
+  enterprise: 'price_xxxxx',     // YOUR Enterprise Price ID
+};
+
+SAVE THE FILE
+
+✅ DONE - Frontend updated with real Price IDs
+
+
+════════════════════════════════════════════════════════════════════
+STEP 7: DEPLOY EVERYTHING (10 MIN)
+════════════════════════════════════════════════════════════════════
+
+COPY-PASTE THESE COMMANDS:
+
+# Deploy Supabase Edge Function
+supabase functions deploy make-server-a24eaa40 --project-ref rewgkrgmcmikivxjnfdq
+
+# Wait for it to complete (30-60 seconds)
+
+# Then deploy frontend (choose ONE):
+
+# If using Vercel:
+vercel --prod
+
+# OR if using GitHub auto-deploy:
+git add .
+git commit -m "Connected Stripe - ready for payments"
+git push origin main
+
+# Wait for deployment to complete (1-2 minutes)
+
+✅ DONE - Everything deployed!
+
+
+════════════════════════════════════════════════════════════════════
+STEP 8: TEST WITH TEST CARD (5 MIN)
+════════════════════════════════════════════════════════════════════
+
+1. Open your app in browser
+2. Sign up or log in
+3. Click "Upgrade to Professional"
+4. You should see Stripe Checkout page ✅
+
+USE THIS TEST CARD:
+━━━━━━━━━━━━━━━━━━━
+Card number: 4242 4242 4242 4242
+Expiry: 12/34
+CVC: 123
+ZIP: 12345
+Name: Test User
+
+5. Click "Subscribe"
+6. You should be redirected back to your app
+7. Your tier should show "professional" ✅
+
+VERIFY IN STRIPE:
+━━━━━━━━━━━━━━━━━
+1. Go to Stripe Dashboard
+2. Click "Payments"
+3. You should see your test payment ✅
+
+✅ DONE - PAYMENTS WORKING! 🎉
+
+
+════════════════════════════════════════════════════════════════════
+🎉 YOU'RE LIVE WITH PAYMENTS! (Test Mode)
+════════════════════════════════════════════════════════════════════
+
+You can now:
+✅ Accept test payments
+✅ Test subscription flow
+✅ Verify webhooks work
+✅ Test all 4 tiers
+
+TEST THOROUGHLY BEFORE GOING TO LIVE MODE!
+
+
+════════════════════════════════════════════════════════════════════
+🚀 GO LIVE WITH REAL PAYMENTS (When Ready)
+════════════════════════════════════════════════════════════════════
+
+⚠️ ONLY DO THIS WHEN READY FOR REAL MONEY! ⚠️
+
+1. IN STRIPE DASHBOARD:
+   - Toggle "Test mode" → "Live mode" (top right)
+   - Complete business verification (tax ID, bank account)
+
+2. GET LIVE API KEYS:
+   - Click "Developers" → "API keys"
+   - Copy Live Publishable key: pk_live_xxxxx
+   - Copy Live Secret key: sk_live_xxxxx
+
+3. CREATE PRODUCTS IN LIVE MODE:
+   - Repeat Step 3 above (create 4 products)
+   - Copy NEW Live Price IDs
+
+4. CREATE WEBHOOK IN LIVE MODE:
+   - Repeat Step 4 above
+   - Same URL, same events
+   - Copy NEW Live webhook secret
+
+5. UPDATE SUPABASE WITH LIVE KEYS:
+
+supabase secrets set STRIPE_SECRET_KEY=sk_live_xxxxx --project-ref rewgkrgmcmikivxjnfdq
+supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_xxxxx --project-ref rewgkrgmcmikivxjnfdq
+supabase secrets set STRIPE_PRICE_ESSENTIAL=price_xxxxx --project-ref rewgkrgmcmikivxjnfdq
+supabase secrets set STRIPE_PRICE_PROFESSIONAL=price_xxxxx --project-ref rewgkrgmcmikivxjnfdq
+supabase secrets set STRIPE_PRICE_ATTORNEY=price_xxxxx --project-ref rewgkrgmcmikivxjnfdq
+supabase secrets set STRIPE_PRICE_ENTERPRISE=price_xxxxx --project-ref rewgkrgmcmikivxjnfdq
+
+6. UPDATE FRONTEND WITH LIVE PRICE IDs (in SubscriptionModal.tsx)
+
+7. DEPLOY:
+
+supabase functions deploy make-server-a24eaa40 --project-ref rewgkrgmcmikivxjnfdq
+vercel --prod
+
+8. TEST WITH YOUR REAL CREDIT CARD (cancel immediately after to verify)
+
+✅ NOW ACCEPTING REAL PAYMENTS! 💰💰💰
+
+
+════════════════════════════════════════════════════════════════════
+📊 QUICK REFERENCE
+════════════════════════════════════════════════════════════════════
+
+TEST CARDS:
+━━━━━━━━━━━
+Success: 4242 4242 4242 4242
+Decline: 4000 0000 0000 0002
+Requires auth: 4000 0025 0000 3155
+
+STRIPE DASHBOARD:
+━━━━━━━━━━━━━━━━
+Payments: See all transactions
+Customers: See all subscribers
+Subscriptions: Manage subscriptions
+Webhooks: See webhook events (for debugging)
+
+MONEY FLOW:
+━━━━━━━━━━
+- Stripe holds funds for ~7 days (first transactions)
+- Then auto-deposits to your bank account
+- You receive: 97.1% (Stripe keeps 2.9% + $0.30 per transaction)
+
+
+════════════════════════════════════════════════════════════════════
+🐛 TROUBLESHOOTING
+════════════════════════════════════════════════════════════════════
+
+ERROR: "Checkout session creation failed"
+→ Check: STRIPE_SECRET_KEY added to Supabase?
+→ Check: Edge function deployed?
+→ Check: Price IDs correct in SubscriptionModal.tsx?
+
+ERROR: "Tier didn't upgrade after payment"
+→ Check: Webhook firing? (Stripe Dashboard → Webhooks)
+→ Check: STRIPE_WEBHOOK_SECRET in Supabase?
+→ Check: Edge function deployed?
+
+ERROR: "No checkout URL returned"
+→ Check: Price IDs in frontend match Stripe?
+→ Check: Edge function logs (Supabase → Functions → Logs)
+
+
+════════════════════════════════════════════════════════════════════
+✅ FINAL CHECKLIST BEFORE GOING LIVE
+════════════════════════════════════════════════════════════════════
+
+BEFORE LIVE MODE:
+☐ Tested successful payment
+☐ Tested failed payment (decline card)
+☐ Verified tier upgrade happens
+☐ Checked webhook fires
+☐ Tested all 4 subscription tiers
+☐ User can access premium features
+☐ Terms of Service page created
+☐ Privacy Policy page created
+☐ Customer support email set up
+☐ Bank account connected in Stripe
+☐ Business info complete in Stripe
+
+WHEN ALL CHECKED:
+☐ Switch to Live mode
+☐ Update to Live API keys
+☐ Test with YOUR real card
+☐ Cancel test subscription
+☐ GO LIVE! 🚀
+
+
+════════════════════════════════════════════════════════════════════
+⏱️ TIME ESTIMATE
+════════════════════════════════════════════════════════════════════
+
+Step 1: Stripe account ......... 10 min
+Step 2: API keys ............... 2 min
+Step 3: Create products ........ 15 min
+Step 4: Webhook ................ 5 min
+Step 5: Supabase secrets ....... 10 min
+Step 6: Update code ............ 5 min
+Step 7: Deploy ................. 10 min
+Step 8: Test ................... 5 min
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOTAL: 62 minutes
+
+YOU CAN BE ACCEPTING PAYMENTS IN 1 HOUR! ⚡
+
+
+════════════════════════════════════════════════════════════════════
+💪 YOU GOT THIS!
+════════════════════════════════════════════════════════════════════
+
+Follow these steps exactly and you'll be live!
+
+Start here: https://dashboard.stripe.com/register
+
+Questions? Check:
+- /🚀_GO_LIVE_WITH_PAYMENTS_NOW.md (detailed guide)
+- /🔌_CONNECT_STRIPE_STEP_BY_STEP.md (full walkthrough)
+
+NOW GO MAKE MONEY AND HELP FAMILIES! 🚀💰🇺🇸
+
+════════════════════════════════════════════════════════════════════

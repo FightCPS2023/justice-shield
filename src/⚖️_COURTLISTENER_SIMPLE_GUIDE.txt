@@ -1,0 +1,151 @@
+╔══════════════════════════════════════════════════════════════════╗
+║          ⚖️ COURTLISTENER API KEY - SIMPLE GUIDE ⚖️              ║
+╚══════════════════════════════════════════════════════════════════╝
+
+❓ WHAT IS THIS?
+
+You asked: "Add to .env: VITE_COURTLISTENER_API_KEY=your-key
+            where or what do i do with this"
+
+ANSWER: Add this line to your .env file (in project root folder)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ WHAT TO DO (3 STEPS)
+
+┌──────────────────────────────────────────────────────────────────┐
+│ STEP 1: GET THE KEY (2 minutes)                                  │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│ 1. Go to: https://www.courtlistener.com/api/                    │
+│ 2. Click "Sign Up" (top right corner)                           │
+│ 3. Create FREE account                                           │
+│ 4. Go to: https://www.courtlistener.com/profile/api/            │
+│ 5. Click "Generate API Key"                                      │
+│ 6. Copy the key (looks like: abc123def456ghi789)                │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│ STEP 2: OPEN YOUR .env FILE (30 seconds)                        │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│ Location: Root folder of your project                           │
+│                                                                  │
+│     your-project/                                                │
+│     ├── .env  👈 OPEN THIS FILE!                                 │
+│     ├── App.tsx                                                  │
+│     ├── package.json                                             │
+│     └── ...                                                      │
+│                                                                  │
+│ If .env doesn't exist:                                           │
+│ - Create new file named ".env"                                   │
+│ - Save in root folder                                            │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│ STEP 3: ADD THIS LINE (30 seconds)                              │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│ Add to your .env file:                                           │
+│                                                                  │
+│ VITE_COURTLISTENER_API_KEY=abc123def456ghi789                   │
+│                                                                  │
+│ (Replace abc123def456ghi789 with YOUR actual key)               │
+│                                                                  │
+│ Save the file!                                                   │
+│                                                                  │
+│ Then restart your server:                                       │
+│ - Press Ctrl+C to stop                                           │
+│ - Run: npm run dev                                               │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+DONE! ✅ That's it!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 YOUR COMPLETE .env FILE SHOULD LOOK LIKE THIS:
+
+┌──────────────────────────────────────────────────────────────────┐
+│                                                                  │
+│ # Database & Auth                                                │
+│ VITE_SUPABASE_URL=https://yourproject.supabase.co               │
+│ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVC...    │
+│                                                                  │
+│ # AI Analysis                                                    │
+│ VITE_GEMINI_API_KEY=AIzaSyCq4oz9bOt7CadY4dgDpQqcwnXFoIRtB54     │
+│                                                                  │
+│ # Legal Research (NEW! 👈)                                       │
+│ VITE_COURTLISTENER_API_KEY=abc123def456ghi789                   │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❓ WHY ADD THIS KEY?
+
+WITHOUT KEY:
+- ✅ App works
+- ✅ Basic search works
+- ❌ Only 100 searches per day
+- ❌ Limited features
+
+WITH KEY (FREE!):
+- ✅ App works
+- ✅ Advanced search
+- ✅ 5,000 searches per day (50x more!)
+- ✅ Access to 50 million court opinions
+- ✅ Full PACER documents
+- ✅ Attorney information
+- ✅ Citation networks
+
+Cost: $0 (FREE!)
+Time: 3 minutes
+Worth it: YES! 🚀
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚨 TROUBLESHOOTING
+
+Problem: "I can't find .env file"
+Solution: Create it! (see Step 2 above)
+
+Problem: "Key not working"
+Check:
+  ✓ Spelled correctly: VITE_COURTLISTENER_API_KEY
+  ✓ No spaces around = sign
+  ✓ Restarted server (npm run dev)
+  ✓ File named .env (not .env.txt)
+
+Problem: "Where is root folder?"
+Answer: Same folder where package.json is
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 MORE HELP?
+
+Full guide: /⚖️_COURTLISTENER_API_KEY_SETUP.md
+All API keys: /🔑_WHERE_API_KEYS_GO.md
+Quick reference: /🔑_API_KEYS_QUICK_REFERENCE.txt
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ RECAP:
+
+1. Get key from: https://www.courtlistener.com/profile/api/
+2. Open file: .env (in project root)
+3. Add line: VITE_COURTLISTENER_API_KEY=your-key
+4. Restart: npm run dev
+
+DONE! 🎉
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Last Updated: January 9, 2026
+Status: OPTIONAL (but highly recommended!)
+Benefit: 50x more search results (5,000 vs 100/day)
+Cost: FREE
+
+GET IT NOW! It takes 3 minutes and gives you 50x more power! 🚀

@@ -1,0 +1,171 @@
+================================================================================
+⚡ QUICK FIX: SUPABASE URL NOT WORKING
+================================================================================
+
+PROBLEM: The Supabase URL doesn't work
+SOLUTION: Create YOUR OWN Supabase project (5 minutes, FREE)
+
+================================================================================
+STEP 1: CREATE SUPABASE PROJECT (5 MINUTES)
+================================================================================
+
+1. Go to: https://app.supabase.com/sign-up
+
+2. Sign up (FREE - no credit card):
+   - Use GitHub (easiest), OR
+   - Use email address
+
+3. Click "New Project"
+
+4. Fill in:
+   Organization: [Your name or "CPS Punisher"]
+   Name: cps-punisher
+   Database Password: [CREATE AND SAVE THIS!]
+   Region: [Pick closest to you]
+
+5. Click "Create new project"
+
+6. Wait ~2 minutes (project is being created)
+
+7. When ready, click "Settings" → "API"
+
+8. COPY THESE TWO VALUES:
+   
+   A. Project URL:
+      Example: https://abcdefgh.supabase.co
+      Your URL: _________________________________
+
+   B. anon/public key:
+      Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      Your Key: _________________________________
+
+✅ You now have YOUR working credentials!
+
+================================================================================
+STEP 2: CREATE .env FILE
+================================================================================
+
+1. Create a new file named: .env
+   (in your project root, same folder as package.json)
+
+2. Copy this content into the file:
+
+---START COPYING HERE---
+
+VITE_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.YOUR_KEY_HERE
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+VITE_COURTLISTENER_API_KEY=af0d9091a42930e5b9f90dd3bf9efad5c621357d
+
+---STOP COPYING HERE---
+
+3. Replace YOUR_PROJECT_ID and YOUR_KEY_HERE with the values you copied above
+
+4. Save the file
+
+================================================================================
+STEP 3: TEST IT
+================================================================================
+
+1. Start dev server:
+   npm run dev
+
+2. Open browser:
+   http://localhost:5173
+
+3. Check console (F12):
+   ✅ No Supabase errors = SUCCESS!
+   ❌ Still errors = See troubleshooting below
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Error: "Invalid Supabase URL"
+Fix: Make sure URL starts with https:// and ends with .supabase.co
+     No spaces, no quotes
+
+Error: "Invalid API key"
+Fix: Make sure you copied the "anon" key (NOT service_role key)
+     Should start with: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+     No spaces, no quotes
+
+Error: "Cannot connect"
+Fix: 1. Check internet connection
+     2. Verify project is active at app.supabase.com
+     3. Restart dev server: npm run dev
+
+================================================================================
+EXAMPLE .env FILE (WITH FAKE VALUES)
+================================================================================
+
+# This is what your .env file should look like (with YOUR actual values):
+
+VITE_SUPABASE_URL=https://xyzabc123.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5emFiYzEyMyIsInJvbGUiOiJhbm9uIn0.fake_key_example
+VITE_GEMINI_API_KEY=AIzaSyDExAmPlEKEyHeRe_fake_example
+VITE_COURTLISTENER_API_KEY=af0d9091a42930e5b9f90dd3bf9efad5c621357d
+
+================================================================================
+WHAT'S NEXT AFTER SUPABASE WORKS?
+================================================================================
+
+1. ✅ Get Gemini API Key (for AI features)
+   Go to: https://aistudio.google.com/app/apikey
+
+2. ✅ Create Database Tables
+   Run SQL from: /📊_SUPABASE_DATABASE_SETUP.sql
+
+3. ✅ Test the app
+   Create account, create case, verify it saves
+
+Full guide: /🚀_COMPLETE_SETUP_GUIDE_20_MINUTES.md
+
+================================================================================
+WHY DID THE OLD URL NOT WORK?
+================================================================================
+
+The URL https://rewgkrgmcmikivxjnfdq.supabase.co was either:
+- A demo/placeholder project
+- Deleted or paused
+- Not your actual project
+
+Solution: Create YOUR OWN project (steps above)
+          Use YOUR credentials
+          Everything will work!
+
+================================================================================
+IMPORTANT NOTES
+================================================================================
+
+✅ Supabase is FREE (generous free tier)
+✅ Takes 5 minutes to set up
+✅ You get your own secure database
+✅ Your data is private and protected
+✅ No credit card required
+
+⚠️  Save your database password!
+⚠️  Keep your anon key secure (but it's OK to use in frontend)
+⚠️  Don't commit .env to Git (it's in .gitignore)
+
+================================================================================
+NEED MORE HELP?
+================================================================================
+
+Detailed guide: /🔧_FIX_SUPABASE_URL_NOW.md
+Visual guide: /🎯_VISUAL_SETUP_FLOWCHART.txt
+Full setup: /🚀_COMPLETE_SETUP_GUIDE_20_MINUTES.md
+
+Supabase docs: https://supabase.com/docs
+Supabase support: https://supabase.com/support
+
+================================================================================
+
+Created: January 11, 2026
+For: DARREN GUAY - The CPS Punisher
+Time to fix: 5 minutes
+Difficulty: Easy
+
+You got this! 🚀
+
+================================================================================

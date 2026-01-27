@@ -1,0 +1,282 @@
+================================================================================
+                        🔴 FIX: 404 ERROR
+                    "Failed to load resource"
+================================================================================
+
+404 = "Not Found" = Either app didn't deploy or wrong URL
+
+
+QUICK DIAGNOSIS (1 minute)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Answer these questions:
+
+1. Did you run "vercel --prod" successfully?
+   [ ] Yes - it finished with a URL
+   [ ] No - I haven't deployed yet
+   [ ] I got an error when I tried
+
+2. What URL are you trying to access?
+   https://________________________________
+
+3. Where do you see the 404 error?
+   [ ] The whole page says 404
+   [ ] In browser console (F12)
+   [ ] When trying to sign up
+   [ ] When uploading a file
+
+
+SCENARIO 1: YOU HAVEN'T DEPLOYED YET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If you answered "No" to question 1, you need to deploy first!
+
+OPEN TERMINAL/COMMAND PROMPT:
+
+Step 1: Navigate to your project
+cd /path/to/cps-punisher
+
+Step 2: Make sure dependencies are installed
+npm install
+
+Step 3: Deploy to Vercel
+vercel --prod
+
+Step 4: Wait for it to finish
+You'll see: ✅ Production deployment complete!
+            🔗 https://your-app.vercel.app
+
+Step 5: Open THAT URL in your browser
+Not localhost, not any other URL - the one Vercel gives you.
+
+DONE! Try again.
+
+
+SCENARIO 2: DEPLOYMENT FAILED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If "vercel --prod" showed errors:
+
+CHECK YOUR TERMINAL OUTPUT:
+
+Look for red text or lines starting with "Error:"
+
+Common errors:
+
+ERROR: "Build failed"
+FIX: 
+cd /path/to/cps-punisher
+npm run build
+(If this shows errors, copy/paste them and I'll help)
+
+ERROR: "Not authorized" or "Not logged in"
+FIX:
+vercel login
+(Browser opens, click Confirm)
+vercel --prod
+
+ERROR: "No such file or directory"
+FIX:
+You're in the wrong folder!
+cd /path/to/your/actual/project/folder
+vercel --prod
+
+
+SCENARIO 3: WRONG URL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Common mistakes:
+
+❌ WRONG: http://localhost:3000
+✅ RIGHT: https://cps-punisher-xxxxx.vercel.app
+
+❌ WRONG: https://vercel.com/...
+✅ RIGHT: https://cps-punisher-xxxxx.vercel.app
+
+❌ WRONG: https://cps-punisher.com
+✅ RIGHT: https://cps-punisher-xxxxx.vercel.app
+
+TO FIND YOUR CORRECT URL:
+
+Option A - Check Terminal:
+Look at your Terminal where you ran "vercel --prod"
+Find the line: 🔗 https://...
+That's your URL!
+
+Option B - Check Vercel Dashboard:
+1. Go to: https://vercel.com/dashboard
+2. Click your project: cps-punisher
+3. Look at "Domains" section
+4. Copy the .vercel.app URL
+
+
+SCENARIO 4: 404 IN BROWSER CONSOLE (F12)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If the app LOADS but you see 404 errors in Console:
+
+Press F12 → Click "Console" tab → Look for 404 errors
+
+Common causes:
+
+ERROR: "404 on /assets/..."
+MEANING: Missing asset file
+FIX: Redeploy
+     vercel --prod
+
+ERROR: "404 on figma:asset/..."
+MEANING: Image import issue (this is OKAY - we handle this)
+FIX: Nothing - this is expected behavior
+
+ERROR: "404 on /api/..."
+MEANING: API route doesn't exist
+FIX: We don't use API routes, this shouldn't happen
+     Tell me the exact error
+
+
+SCENARIO 5: DEPLOYMENT SUCCEEDED BUT PAGE SHOWS 404
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If vercel --prod finished successfully but you see 404:
+
+POSSIBLE CAUSE: Build output directory issue
+
+FIX:
+
+1. Check if you have vercel.json file:
+   (In your project root folder)
+
+2. It should contain:
+   {
+     "buildCommand": "npm run build",
+     "outputDirectory": "dist",
+     "devCommand": "npm run dev",
+     "installCommand": "npm install"
+   }
+
+3. If missing or different, I'll create the correct one
+
+4. Then redeploy:
+   vercel --prod
+
+
+SCENARIO 6: RANDOM 404s ON SPECIFIC PAGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If homepage works but other pages show 404:
+
+CAUSE: SPA routing issue
+
+FIX: Add to vercel.json:
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}
+
+Then redeploy:
+vercel --prod
+
+
+STEP-BY-STEP TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do these in order:
+
+[ ] 1. Open Terminal/Command Prompt
+
+[ ] 2. Run this:
+       vercel --version
+       
+       Should show: Vercel CLI 33.x.x
+       If not: npm install -g vercel
+
+[ ] 3. Run this:
+       vercel login
+       
+       Browser opens → Click Confirm
+
+[ ] 4. Run this:
+       cd /path/to/cps-punisher
+       
+       (Use YOUR actual project path!)
+
+[ ] 5. Run this:
+       npm install
+       
+       Wait 2-3 minutes. Ignore warnings (yellow text).
+       Errors (red text) = bad, tell me what they say.
+
+[ ] 6. Run this:
+       npm run build
+       
+       Should finish with: "Build completed"
+       If errors, copy/paste them and tell me.
+
+[ ] 7. Run this:
+       vercel --prod
+       
+       Wait 2-3 minutes.
+       Should show: ✅ Production deployment complete!
+                   🔗 https://cps-punisher-xxxxx.vercel.app
+
+[ ] 8. Copy that URL and open it in browser
+
+[ ] 9. Does it work?
+       [ ] Yes! No more 404!
+       [ ] No, still 404
+       [ ] Different error: ________________
+
+
+IF STILL 404 AFTER ALL THAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tell me:
+
+1. Copy/paste your ENTIRE terminal output from "vercel --prod"
+
+2. What URL you're trying to access
+
+3. Screenshot of the 404 page (if possible)
+
+4. Copy/paste any red errors from browser console (F12)
+
+
+QUICK REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Check deployment status:
+vercel ls
+
+View deployment logs:
+vercel logs
+
+Redeploy:
+vercel --prod
+
+Check what's deployed:
+1. Go to: https://vercel.com/dashboard
+2. Click your project
+3. Click "Deployments"
+4. Look at the most recent one
+5. Status should be "Ready"
+6. Click it to see details
+
+
+MOST LIKELY CAUSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+95% of the time, 404 means one of these:
+
+1. ❌ You didn't deploy yet (run: vercel --prod)
+2. ❌ You're using localhost URL instead of Vercel URL
+3. ❌ Deployment failed but you didn't notice the error
+4. ❌ You're in the wrong project folder
+5. ❌ Missing vercel.json configuration
+
+Fix in that order and 99% chance it works!
+
+
+================================================================================
+Copyright © 2024 DARREN GUAY. All Rights Reserved.
+================================================================================

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Test</title>
+</head>
+<body>
+  <h1>Testing API Connection</h1>
+  <button onclick="testHealth()">Test Health Endpoint</button>
+  <button onclick="testSignup()">Test Signup</button>
+  <pre id="output"></pre>
+
+  <script type="module">
+    import { projectId } from './utils/supabase/info.tsx';
+    
+    const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-a24eaa40`;
+    
+    window.testHealth = async function() {
+      const output = document.getElementById('output');
+      output.textContent = 'Testing health endpoint...\n';
+      
+      try {
+        const response = await fetch(`${API_BASE}/health`);
+        const data = await response.json();
+        output.textContent += `Status: ${response.status}\n`;
+        output.textContent += `Response: ${JSON.stringify(data, null, 2)}\n`;
+      } catch (error) {
+        output.textContent += `Error: ${error.message}\n`;
+      }
+    }
+    
+    window.testSignup = async function() {
+      const output = document.getElementById('output');
+      output.textContent = 'Testing signup endpoint...\n';
+      
+      try {
+        const testEmail = `test${Date.now()}@example.com`;
+        const response = await fetch(`${API_BASE}/auth/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: testEmail,
+            password: 'test123456',
+            name: 'Test User'
+          }),
+        });
+        
+        const data = await response.json();
+        output.textContent += `Status: ${response.status}\n`;
+        output.textContent += `Response: ${JSON.stringify(data, null, 2)}\n`;
+      } catch (error) {
+        output.textContent += `Error: ${error.message}\n`;
+      }
+    }
+  </script>
+</body>
+</html>

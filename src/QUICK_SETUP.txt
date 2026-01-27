@@ -1,0 +1,123 @@
+================================================================================
+  🚀 THE CPS PUNISHER - GITHUB SETUP FOR FIGHTCPS2023
+================================================================================
+
+YOUR USERNAME: FIGHTCPS2023
+REPOSITORY: cps-punisher
+REPO URL: https://github.com/FIGHTCPS2023/cps-punisher
+
+================================================================================
+  📋 COPY THESE COMMANDS (One at a time)
+================================================================================
+
+1. Configure your name:
+   git config --global user.name "FIGHT CPS 2023"
+
+2. Configure your email (REPLACE WITH YOUR EMAIL!):
+   git config --global user.email "your-email@example.com"
+
+3. Initialize Git:
+   git init
+
+4. Add all files:
+   git add .
+
+5. Commit:
+   git commit -m "CPS Punisher - Production Ready v1.0"
+
+6. Connect to GitHub:
+   git remote add origin https://github.com/FIGHTCPS2023/cps-punisher.git
+
+7. Push to GitHub:
+   git push -u origin main
+
+================================================================================
+  🔐 AUTHENTICATION
+================================================================================
+
+When you push, you'll need:
+
+Username: FIGHTCPS2023
+Password: [Personal Access Token - NOT your GitHub password]
+
+Get token here: https://github.com/settings/tokens
+
+================================================================================
+  ✅ BEFORE YOU START
+================================================================================
+
+1. Create GitHub account at: https://github.com/signup
+2. Create repository at: https://github.com/new
+   - Name: cps-punisher
+   - Keep it public or private (your choice)
+   - Don't add README, .gitignore, or license
+3. Install Git: https://git-scm.com/download
+4. Open terminal in your project folder
+
+================================================================================
+  📍 HOW TO OPEN TERMINAL IN PROJECT FOLDER
+================================================================================
+
+WINDOWS:
+  1. Open File Explorer
+  2. Go to your cps-punisher folder (where App.tsx is)
+  3. Click in the address bar at top
+  4. Type: cmd
+  5. Press Enter
+
+MAC:
+  1. Open Finder
+  2. Go to your cps-punisher folder
+  3. Right-click the folder
+  4. Hold Option key
+  5. Click "Open in Terminal"
+
+LINUX:
+  1. Open Terminal
+  2. Type: cd /path/to/cps-punisher
+  3. Press Enter
+
+================================================================================
+  🆘 TROUBLESHOOTING
+================================================================================
+
+"repository not found"
+  → Create the repository first at https://github.com/new
+
+"authentication failed"
+  → Use Personal Access Token, not password
+  → Get it at https://github.com/settings/tokens
+
+"remote origin already exists"
+  → Run: git remote remove origin
+  → Then run step 6 again
+
+"main does not exist"
+  → Run: git branch -M main
+  → Then run step 7 again
+
+================================================================================
+  🎊 AFTER SUCCESS
+================================================================================
+
+Your code will be at: https://github.com/FIGHTCPS2023/cps-punisher
+
+Next: Deploy to Vercel
+  1. Go to https://vercel.com/signup
+  2. Sign in with GitHub
+  3. Import cps-punisher repository
+  4. Add environment variables
+  5. Deploy
+  6. YOU'RE LIVE! 🚀
+
+================================================================================
+  💡 NEED HELP?
+================================================================================
+
+Read the detailed guide in: GITHUB_SETUP_COMMANDS.md
+
+Or use the automated scripts:
+  - Windows: Double-click setup-github.bat
+  - Mac/Linux: Run ./setup-github.sh
+
+================================================================================

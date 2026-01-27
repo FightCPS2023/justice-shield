@@ -1,0 +1,62 @@
+═══════════════════════════════════════════════════════════════
+🔧 FIX AUTHENTICATION ERROR (2 MINUTES)
+═══════════════════════════════════════════════════════════════
+
+ERROR:
+───────────────────────────────────────────────────────────────
+"Unsupported provider: provider is not enabled"
+
+
+THE FIX:
+───────────────────────────────────────────────────────────────
+Enable Email authentication in Supabase dashboard
+
+
+STEPS:
+═══════════════════════════════════════════════════════════════
+
+1. Go to: https://supabase.com/dashboard
+
+2. Click your project: rdrpwrwjqayhbsyxqaej
+
+3. Left sidebar → Click "Authentication"
+
+4. Top tabs → Click "Providers"
+
+5. Find "Email" in the list
+
+6. Toggle "Enable Email provider" to ON ✅
+
+7. Click "Save"
+
+8. Refresh your app and try signing up again!
+
+
+✅ DONE! Authentication should work now!
+
+
+═══════════════════════════════════════════════════════════════
+VERIFY IT'S WORKING:
+═══════════════════════════════════════════════════════════════
+
+1. Open your app
+2. Click "Sign Up"
+3. Enter test email and password
+4. Should work! ✅
+
+
+═══════════════════════════════════════════════════════════════
+STILL NOT WORKING?
+═══════════════════════════════════════════════════════════════
+
+Try these:
+- Clear browser cache (Ctrl+Shift+Delete)
+- Hard refresh (Ctrl+F5)
+- Check environment variables in Vercel:
+  SUPABASE_URL=https://rdrpwrwjqayhbsyxqaej.supabase.co
+  SUPABASE_ANON_KEY=your_key_here
+
+
+═══════════════════════════════════════════════════════════════
+📖 Full Guide: /🔧_FIX_SUPABASE_EMAIL_PROVIDER.md
+═══════════════════════════════════════════════════════════════

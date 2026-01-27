@@ -1,0 +1,71 @@
+╔══════════════════════════════════════════════════════════════════╗
+║               ✅ ADD THIS TO YOUR .env FILE                      ║
+╚══════════════════════════════════════════════════════════════════╝
+
+📍 OPEN YOUR .env FILE
+
+Location: Root folder of your project (same folder as package.json)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ ADD THIS EXACT LINE:
+
+VITE_COURTLISTENER_API_KEY=af0d9091a42930e5b9f90dd3bf9efad5c621357d
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 YOUR COMPLETE .env FILE SHOULD NOW LOOK LIKE:
+
+# Database & Auth
+VITE_SUPABASE_URL=https://yourproject.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# AI Analysis
+VITE_GEMINI_API_KEY=AIzaSyCq4oz9bOt7CadY4dgDpQqcwnXFoIRtB54
+
+# Legal Research (JUST ADDED! ✅)
+VITE_COURTLISTENER_API_KEY=af0d9091a42930e5b9f90dd3bf9efad5c621357d
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔄 THEN RESTART YOUR SERVER:
+
+1. Press Ctrl+C to stop the server
+2. Run: npm run dev
+3. Done! ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ CHECKLIST:
+
+[ ] Opened .env file (in project root folder)
+[ ] Added line: VITE_COURTLISTENER_API_KEY=af0d9091a42930e5b9f90dd3bf9efad5c621357d
+[ ] Saved the file
+[ ] Restarted server (Ctrl+C then npm run dev)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 WHAT YOU GET:
+
+✅ 5,000 legal searches per day (50x more!)
+✅ Access to 50 million court opinions
+✅ Full PACER documents
+✅ Attorney information
+✅ Citation networks
+✅ Oral arguments
+✅ Judge research
+
+ALL FOR FREE! 🚀
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+YOUR API KEY: af0d9091a42930e5b9f90dd3bf9efad5c621357d
+
+COPY THIS LINE:
+VITE_COURTLISTENER_API_KEY=af0d9091a42930e5b9f90dd3bf9efad5c621357d
+
+PASTE IT IN: .env file (root folder)
+
+RESTART: npm run dev
+
+DONE! ✅

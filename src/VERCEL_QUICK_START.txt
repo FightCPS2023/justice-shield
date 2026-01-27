@@ -1,0 +1,224 @@
+================================================================================
+CPS PUNISHER - VERCEL DEPLOYMENT QUICK START
+Deploy to cpspunisher.com in 10 Minutes
+================================================================================
+
+STEP 1: INSTALL VERCEL CLI
+--------------------------------------------------------------------------------
+npm install -g vercel
+
+
+STEP 2: LOGIN TO VERCEL
+--------------------------------------------------------------------------------
+vercel login
+
+
+STEP 3: DEPLOY (choose one)
+--------------------------------------------------------------------------------
+# Test deployment first (recommended):
+vercel
+
+# Production deployment:
+vercel --prod
+
+
+STEP 4: ADD ENVIRONMENT VARIABLES
+--------------------------------------------------------------------------------
+Method A - Via CLI:
+  vercel env add VITE_SUPABASE_URL
+  vercel env add VITE_SUPABASE_ANON_KEY
+  vercel env add VITE_GEMINI_API_KEY
+  vercel env add VITE_STRIPE_PUBLISHABLE_KEY
+
+Method B - Via Dashboard:
+  1. Go to https://vercel.com/dashboard
+  2. Click your project → Settings → Environment Variables
+  3. Add each variable above
+  4. Select Production, Preview, and Development
+  5. Save and redeploy: vercel --prod
+
+
+STEP 5: CONNECT CUSTOM DOMAIN
+--------------------------------------------------------------------------------
+# Add domain via CLI:
+vercel domains add cpspunisher.com
+vercel domains add www.cpspunisher.com
+
+# Or via Vercel Dashboard:
+Settings → Domains → Add Domain
+
+
+STEP 6: CONFIGURE DNS AT YOUR DOMAIN REGISTRAR
+--------------------------------------------------------------------------------
+Login to your domain registrar (GoDaddy, Namecheap, etc.) and add:
+
+For cpspunisher.com:
+  Type: A
+  Name: @
+  Value: 76.76.21.21
+  TTL: 3600
+
+For www.cpspunisher.com:
+  Type: CNAME
+  Name: www
+  Value: cname.vercel-dns.com
+  TTL: 3600
+
+DNS propagation: 5 minutes to 48 hours (usually under 1 hour)
+
+
+STEP 7: UPDATE SUPABASE SETTINGS
+--------------------------------------------------------------------------------
+1. Go to https://supabase.com/dashboard
+2. Select your CPS Punisher project
+3. Settings → API
+4. Update "Site URL" to: https://cpspunisher.com
+5. Add to "Redirect URLs":
+   - https://cpspunisher.com/**
+   - https://cpspunisher.com
+   - https://www.cpspunisher.com/**
+   - https://www.cpspunisher.com
+6. Save
+
+
+STEP 8: VERIFY DEPLOYMENT
+--------------------------------------------------------------------------------
+Visit https://cpspunisher.com and test:
+  ✓ App loads
+  ✓ Login/Signup works
+  ✓ Document upload works
+  ✓ AI analysis works
+  ✓ Payment flow works
+  ✓ No console errors
+
+
+================================================================================
+AUTOMATED DEPLOYMENT (EASY MODE)
+================================================================================
+
+Windows Users:
+  Double-click: DEPLOY_TO_VERCEL.bat
+  Follow the prompts
+
+Mac/Linux Users:
+  chmod +x DEPLOY_TO_VERCEL.sh
+  ./DEPLOY_TO_VERCEL.sh
+  Follow the prompts
+
+
+================================================================================
+USEFUL COMMANDS
+================================================================================
+
+vercel                    # Deploy preview
+vercel --prod             # Deploy to production
+vercel login              # Login to Vercel
+vercel logout             # Logout
+vercel ls                 # List all deployments
+vercel logs               # View deployment logs
+vercel logs --follow      # Live logs
+vercel domains ls         # List domains
+vercel env ls             # List environment variables
+vercel inspect            # View project details
+vercel --help             # Show all commands
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Problem: Build failed
+Solution: Run "npm run build" locally to see errors
+
+Problem: Environment variables not working
+Solution: 
+  1. Make sure they start with VITE_ prefix
+  2. Redeploy after adding: vercel --prod
+
+Problem: 404 on page refresh
+Solution: Already fixed in vercel.json (SPA routing enabled)
+
+Problem: Supabase auth not working
+Solution: Check Site URL and Redirect URLs in Supabase settings
+
+Problem: Domain not connecting
+Solution: 
+  1. Wait for DNS propagation (up to 48 hours)
+  2. Verify DNS records are correct
+  3. Try: nslookup cpspunisher.com
+
+
+================================================================================
+CONTINUOUS DEPLOYMENT (OPTIONAL)
+================================================================================
+
+Connect to GitHub for automatic deployments:
+
+1. Push code to GitHub:
+   git add .
+   git commit -m "Production ready"
+   git push origin main
+
+2. In Vercel Dashboard:
+   Settings → Git → Connect Repository
+
+3. Every push to main = automatic production deployment
+
+
+================================================================================
+COST
+================================================================================
+
+Vercel Free Tier:
+  ✓ Unlimited deployments
+  ✓ Custom domain
+  ✓ Automatic HTTPS
+  ✓ 100 GB bandwidth/month
+  ✓ Perfect for CPS Punisher
+
+Your app will run on the free tier unless you get 100k+ visitors/month.
+
+
+================================================================================
+WHAT HAPPENS AFTER DEPLOYMENT
+================================================================================
+
+Your app will be live at:
+  ✓ https://cpspunisher.com (custom domain)
+  ✓ https://www.cpspunisher.com (www redirect)
+  ✓ https://cps-punisher.vercel.app (Vercel subdomain)
+
+Features:
+  ✓ Automatic HTTPS (SSL certificate)
+  ✓ Global CDN (fast worldwide)
+  ✓ Automatic cache optimization
+  ✓ Zero downtime deployments
+  ✓ Instant rollback capability
+
+
+================================================================================
+NEXT STEPS AFTER DEPLOYMENT
+================================================================================
+
+1. Update marketing materials with cpspunisher.com
+2. Test all 315+ features in production
+3. Set up monitoring (optional but recommended)
+4. Update social media links
+5. Announce launch!
+
+
+================================================================================
+NEED HELP?
+================================================================================
+
+Read full guide: VERCEL_DEPLOYMENT_GUIDE.md
+
+Vercel Docs: https://vercel.com/docs
+Vercel Support: https://vercel.com/support
+Vercel Status: https://www.vercel-status.com/
+
+
+================================================================================
+COPYRIGHT © 2024 DARREN GUAY. ALL RIGHTS RESERVED.
+The CPS Punisher™ - Professional CPS Defense Analyzer
+================================================================================

@@ -1,0 +1,212 @@
+╔══════════════════════════════════════════════════════════════════╗
+║              📁 WHERE IS THE ROOT FOLDER?                        ║
+╚══════════════════════════════════════════════════════════════════╝
+
+❓ SIMPLE ANSWER:
+
+The ROOT FOLDER is the MAIN project folder where your CPS Punisher app lives!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ HOW TO FIND IT:
+
+┌──────────────────────────────────────────────────────────────────┐
+│ METHOD 1: LOOK FOR package.json                                  │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│ The ROOT FOLDER is where package.json is located!               │
+│                                                                  │
+│ Example:                                                         │
+│                                                                  │
+│     cps-punisher/  👈 THIS IS THE ROOT FOLDER!                   │
+│     ├── package.json  ✅ (If you see this file here)            │
+│     ├── node_modules/                                            │
+│     ├── App.tsx                                                  │
+│     ├── components/                                              │
+│     ├── utils/                                                   │
+│     └── ... other files                                          │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│ METHOD 2: WHERE YOU RUN "npm run dev"                           │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│ Open your terminal/command prompt.                               │
+│                                                                  │
+│ The folder you're in when you run "npm run dev" is the          │
+│ ROOT FOLDER!                                                     │
+│                                                                  │
+│ Example:                                                         │
+│                                                                  │
+│ C:\Users\YourName\Projects\cps-punisher>  👈 ROOT FOLDER!       │
+│                                                                  │
+│ In terminal, type: pwd (Mac/Linux) or cd (Windows)              │
+│ This shows your current folder = ROOT FOLDER                    │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│ METHOD 3: IN YOUR CODE EDITOR (VS Code, etc.)                   │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│ In VS Code (or your editor):                                     │
+│                                                                  │
+│ Look at the LEFT SIDEBAR (file explorer)                        │
+│                                                                  │
+│ The TOP-LEVEL folder shown is the ROOT FOLDER!                  │
+│                                                                  │
+│ Example VS Code sidebar:                                         │
+│                                                                  │
+│     📁 CPS-PUNISHER  👈 ROOT FOLDER!                             │
+│       📄 package.json                                            │
+│       📄 App.tsx                                                 │
+│       📄 index.html                                              │
+│       📁 components                                              │
+│       📁 utils                                                   │
+│       📁 node_modules                                            │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 VISUAL GUIDE:
+
+CORRECT ✅ (.env in ROOT folder):
+
+    cps-punisher/
+    ├── .env  👈 PUT IT HERE!
+    ├── package.json
+    ├── App.tsx
+    ├── index.html
+    ├── node_modules/
+    ├── components/
+    │   ├── MainMenu.tsx
+    │   └── ...
+    └── utils/
+        └── ...
+
+WRONG ❌ (.env in subfolder):
+
+    cps-punisher/
+    ├── package.json
+    ├── App.tsx
+    ├── components/
+    │   ├── .env  ❌ WRONG! NOT HERE!
+    │   └── ...
+    └── utils/
+        ├── .env  ❌ WRONG! NOT HERE!
+        └── ...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📂 COMMON ROOT FOLDER NAMES:
+
+Your root folder might be named:
+- cps-punisher/
+- the-cps-punisher/
+- my-app/
+- project/
+- vite-project/
+
+The NAME doesn't matter - just look for package.json inside!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ QUICK TEST - ARE YOU IN THE ROOT FOLDER?
+
+Open terminal in your project folder and run:
+
+    ls package.json
+
+OR (Windows):
+
+    dir package.json
+
+IF YOU SEE: "package.json" → ✅ YOU'RE IN ROOT FOLDER!
+IF YOU SEE: "not found" → ❌ Wrong folder, go up one level
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📍 IN VS CODE:
+
+1. Click "File" → "Open Folder"
+2. Select your CPS Punisher project folder
+3. In the left sidebar, you should see:
+   - package.json ✅
+   - App.tsx ✅
+   - node_modules/ ✅
+4. Right-click in the sidebar
+5. Click "New File"
+6. Name it: .env
+7. Done! ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 STEP-BY-STEP TO CREATE .env:
+
+METHOD 1: In VS Code
+1. Open your project in VS Code
+2. Look at left sidebar (Explorer)
+3. Right-click in the empty space (same level as package.json)
+4. Click "New File"
+5. Type: .env
+6. Press Enter
+7. Paste your API keys
+8. Save (Ctrl+S)
+
+METHOD 2: In Terminal
+1. Open terminal
+2. Navigate to project folder (where package.json is)
+3. Run: touch .env (Mac/Linux) or type nul > .env (Windows)
+4. Open .env in your editor
+5. Paste your API keys
+6. Save
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 FILES YOU SHOULD SEE IN ROOT FOLDER:
+
+✅ package.json  (configuration file)
+✅ App.tsx  (main app file)
+✅ index.html  (HTML file)
+✅ node_modules/  (folder with dependencies)
+✅ components/  (folder with components)
+✅ utils/  (folder with utilities)
+✅ .env  (👈 CREATE THIS!)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚨 STILL CAN'T FIND IT?
+
+Try this:
+
+1. Where did you download/create the project?
+2. Open that folder
+3. Look for package.json
+4. That's your ROOT FOLDER!
+
+OR:
+
+1. Open terminal
+2. Type: npm run dev
+3. Look at the path shown
+4. That's your ROOT FOLDER!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SUMMARY:
+
+ROOT FOLDER = Where package.json lives!
+
+┌─────────────────────────────────────────┐
+│  1. Find package.json                   │
+│  2. Same folder = ROOT FOLDER           │
+│  3. Create .env there                   │
+│  4. Add your API key                    │
+│  5. Done! ✅                             │
+└─────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STILL STUCK? Share a screenshot of your VS Code sidebar and I'll help! 📸

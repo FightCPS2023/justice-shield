@@ -1,0 +1,915 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #dc2626;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #0a0a0a;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #dc2626;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e5e5e5;
+  --input: transparent;
+  --input-background: #f5f5f5;
+  --switch-background: #d4d4d4;
+  --font-weight-medium: 600;
+  --font-weight-normal: 400;
+  --ring: #dc2626;
+  --chart-1: #dc2626;
+  --chart-2: #ea580c;
+  --chart-3: #ca8a04;
+  --chart-4: #16a34a;
+  --chart-5: #2563eb;
+  --radius: 0.5rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #dc2626;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #0a0a0a;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #dc2626;
+  
+  /* Semantic Color System - Uniform Theme */
+  --success: #16a34a;
+  --success-foreground: #ffffff;
+  --success-light: #dcfce7;
+  --success-dark: #14532d;
+  --success-border: #86efac;
+  
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  --warning-light: #fef3c7;
+  --warning-dark: #78350f;
+  --warning-border: #fcd34d;
+  
+  --info: #dc2626;
+  --info-foreground: #ffffff;
+  --info-light: #fee2e2;
+  --info-dark: #7f1d1d;
+  --info-border: #fca5a5;
+  
+  --error: #dc2626;
+  --error-foreground: #ffffff;
+  --error-light: #fee2e2;
+  --error-dark: #7f1d1d;
+  --error-border: #fca5a5;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #171717;
+  --card-foreground: #fafafa;
+  --popover: #171717;
+  --popover-foreground: #fafafa;
+  --primary: #ef4444;
+  --primary-foreground: #ffffff;
+  --secondary: #262626;
+  --secondary-foreground: #fafafa;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #ef4444;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #262626;
+  --input: #262626;
+  --ring: #ef4444;
+  --font-weight-medium: 600;
+  --font-weight-normal: 400;
+  --chart-1: #ef4444;
+  --chart-2: #f97316;
+  --chart-3: #eab308;
+  --chart-4: #22c55e;
+  --chart-5: #3b82f6;
+  --sidebar: #171717;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #ef4444;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #262626;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #262626;
+  --sidebar-ring: #ef4444;
+  
+  /* Semantic Color System - Dark Mode */
+  --success: #22c55e;
+  --success-foreground: #ffffff;
+  --success-light: #14532d;
+  --success-dark: #dcfce7;
+  --success-border: #166534;
+  
+  --warning: #fbbf24;
+  --warning-foreground: #ffffff;
+  --warning-light: #78350f;
+  --warning-dark: #fef3c7;
+  --warning-border: #92400e;
+  
+  --info: #ef4444;
+  --info-foreground: #ffffff;
+  --info-light: #7f1d1d;
+  --info-dark: #fee2e2;
+  --info-border: #991b1b;
+  
+  --error: #dc2626;
+  --error-foreground: #ffffff;
+  --error-light: #7f1d1d;
+  --error-dark: #fee2e2;
+  --error-border: #991b1b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* Semantic Color Tokens */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-light: var(--success-light);
+  --color-success-dark: var(--success-dark);
+  --color-success-border: var(--success-border);
+  
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-light: var(--warning-light);
+  --color-warning-dark: var(--warning-dark);
+  --color-warning-border: var(--warning-border);
+  
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-light: var(--info-light);
+  --color-info-dark: var(--info-dark);
+  --color-info-border: var(--info-border);
+  
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-error-light: var(--error-light);
+  --color-error-dark: var(--error-dark);
+  --color-error-border: var(--error-border);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/**
+ * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
+ */
+@layer base {
+  :where(:not(:has([class*=' text-']), :not(:has([class^='text-'])))) {
+    h1 {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h3 {
+      font-size: var(--text-lg);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h4 {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    p {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+
+    label {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    button {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    input {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+/* ============================================
+   ACCESSIBILITY ENHANCEMENTS - WCAG 2.1 AA
+   ============================================ */
+
+/* Screen Reader Only - Visible to assistive tech only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Make screen reader content visible when focused */
+.sr-only.focus\:not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Focus Visible - Enhanced keyboard navigation indicators */
+*:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Remove focus outline for mouse users but keep for keyboard */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Enhanced Focus for Interactive Elements */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[role="link"]:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+/* High Contrast Mode Support */
+.high-contrast {
+  --background: #000000;
+  --foreground: #ffffff;
+  --primary: #ffffff;
+  --border: #ffffff;
+  --card: #000000;
+}
+
+.high-contrast * {
+  border-color: var(--foreground) !important;
+}
+
+.high-contrast button,
+.high-contrast a {
+  border: 2px solid var(--foreground) !important;
+}
+
+/* Font Size Options for Readability */
+.font-large {
+  font-size: 18px;
+}
+
+.font-x-large {
+  font-size: 20px;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Skip to Content Link */
+.skip-to-content {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 0.75rem 1.5rem;
+  z-index: 9999;
+  text-decoration: none;
+  border-radius: 0 0 0.5rem 0;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Minimum Touch Target Size - WCAG 2.5.5 (44x44px) */
+button,
+a,
+input[type="button"],
+input[type="submit"],
+input[type="checkbox"],
+input[type="radio"],
+[role="button"],
+[role="link"] {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Exception for buttons with text content */
+button:has(span),
+a:has(span) {
+  min-width: auto;
+  min-height: 44px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Ensure Links Are Distinguishable */
+a:not([class*="button"]) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+a:hover:not([class*="button"]) {
+  text-decoration-thickness: 2px;
+}
+
+/* Form Label Association */
+label {
+  cursor: pointer;
+}
+
+/* Required Field Indicator */
+input:required + label::after,
+textarea:required + label::after,
+select:required + label::after {
+  content: " *";
+  color: var(--destructive);
+  font-weight: bold;
+}
+
+/* Error States with Better Contrast */
+[aria-invalid="true"],
+.error {
+  border: 2px solid var(--destructive) !important;
+  background-color: rgba(212, 24, 61, 0.05);
+}
+
+/* Success States */
+[aria-invalid="false"],
+.success {
+  border: 2px solid #16a34a !important;
+  background-color: rgba(22, 163, 74, 0.05);
+}
+
+/* Loading/Busy State */
+[aria-busy="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+  cursor: wait;
+}
+
+/* Disabled State - Enhanced Visibility */
+:disabled,
+[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Better Table Accessibility */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th {
+  text-align: left;
+  font-weight: var(--font-weight-medium);
+  padding: 0.75rem;
+  background-color: var(--muted);
+}
+
+td {
+  padding: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Improved List Styling */
+ul[role="list"],
+ol[role="list"] {
+  list-style: none;
+  padding: 0;
+}
+
+/* Dialog/Modal Backdrop */
+[role="dialog"],
+[role="alertdialog"] {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+/* Color Contrast - Ensure WCAG AA compliance */
+.text-muted-foreground {
+  color: var(--muted-foreground);
+  /* Ensure 4.5:1 contrast ratio */
+}
+
+/* Alert/Status Messages */
+[role="alert"],
+[role="status"] {
+  padding: 1rem;
+  border-radius: var(--radius);
+  margin: 1rem 0;
+}
+
+[role="alert"] {
+  background-color: rgba(212, 24, 61, 0.1);
+  border-left: 4px solid var(--destructive);
+}
+
+/* Live Region Visibility */
+[aria-live="polite"],
+[aria-live="assertive"] {
+  position: relative;
+}
+
+/* Ensure adequate spacing for readability */
+p + p {
+  margin-top: 1rem;
+}
+
+/* Improve clickable area for checkboxes and radios */
+input[type="checkbox"],
+input[type="radio"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+}
+
+/* Better visual hierarchy with consistent heading spacing */
+h1, h2, h3, h4, h5, h6 {
+  margin-bottom: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+h1:first-child,
+h2:first-child,
+h3:first-child {
+  margin-top: 0;
+}
+
+/* Improve code readability for screen readers */
+code,
+pre {
+  font-family: 'Courier New', monospace;
+  background-color: var(--muted);
+  padding: 0.125rem 0.25rem;
+  border-radius: 3px;
+}
+
+/* Print Styles for Accessibility */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  a[href]::after {
+    content: " (" attr(href) ")";
+  }
+  
+  abbr[title]::after {
+    content: " (" attr(title) ")";
+  }
+}
+
+/* Ensure sufficient line height for readability */
+body {
+  line-height: 1.6;
+}
+
+/* Better spacing for form elements */
+form > * + * {
+  margin-top: 1rem;
+}
+
+/* Tooltip visibility */
+[role="tooltip"] {
+  position: absolute;
+  z-index: 1000;
+  padding: 0.5rem;
+  background-color: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  max-width: 300px;
+}
+
+/* Landmark Navigation Support */
+main {
+  min-height: 50vh;
+}
+
+nav[aria-label] {
+  border: 1px solid transparent;
+}
+
+nav[aria-label]:focus-within {
+  border-color: var(--border);
+}
+
+/* ============================================
+   LANDING PAGE ANIMATIONS
+   ============================================ */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(220, 38, 38, 0.6);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 1s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.8s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.8s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.6s ease-out forwards;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Stagger animation delays */
+.animation-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-300 {
+  animation-delay: 0.3s;
+}
+
+.animation-delay-400 {
+  animation-delay: 0.4s;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Modern Tab Styling */
+.modern-tab {
+  @apply flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl transition-all whitespace-nowrap;
+  @apply hover:bg-gray-100 dark:hover:bg-gray-700;
+  @apply data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-red-700;
+  @apply data-[state=active]:text-white data-[state=active]:shadow-lg;
+}
+
+.modern-tab svg {
+  @apply w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0;
+}
+
+.modern-tab span {
+  @apply hidden sm:inline;
+}
+
+/* Responsive Card Padding */
+.card-responsive {
+  @apply p-4 sm:p-6;
+}
+
+/* Responsive Spacing */
+.space-y-responsive {
+  @apply space-y-4 sm:space-y-6;
+}
+
+/* Responsive Text Sizing */
+.text-responsive-sm {
+  @apply text-xs sm:text-sm;
+}
+
+.text-responsive-base {
+  @apply text-sm sm:text-base;
+}
+
+.text-responsive-lg {
+  @apply text-base sm:text-lg;
+}
+
+/* Prevent horizontal scroll */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Ensure all containers are responsive */
+.container {
+  @apply w-full;
+}
+
+/* Prevent text from breaking layout */
+* {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Better mobile scrolling */
+@media (max-width: 640px) {
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Ensure buttons and inputs are touch-friendly (WCAG 2.1 Level AA - 2.5.5) */
+  button, input, select, textarea {
+    min-height: 44px;
+  }
+}
+
+/* ===================================
+   ACCESSIBILITY ENHANCEMENTS
+   WCAG 2.1 Level AA Compliance
+   =================================== */
+
+/* Enhanced focus indicators (WCAG 2.1 Level AA - 2.4.7) */
+*:focus-visible {
+  outline: 3px solid hsl(var(--primary));
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Remove default outline and use our custom one */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* High contrast mode support */
+.high-contrast {
+  --primary: 0 0% 0%;
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --muted: 0 0% 90%;
+  --border: 0 0% 50%;
+}
+
+/* Screen reader only utility (already exists but ensuring it's robust) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus visible for keyboard users only */
+.focus-visible-only:focus-visible {
+  outline: 3px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Skip to main content link styles */
+a[href="#main-content"] {
+  position: absolute;
+  left: -9999px;
+  z-index: 999;
+  padding: 1em;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  text-decoration: none;
+  border-radius: 0.25rem;
+}
+
+a[href="#main-content"]:focus {
+  left: 1rem;
+  top: 1rem;
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Reduced motion support (WCAG 2.1 Level AAA - 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode for Windows High Contrast Mode */
+@media (prefers-contrast: high) {
+  * {
+    border-color: currentColor !important;
+  }
+  
+  button, a {
+    outline: 2px solid currentColor;
+  }
+}
+
+/* Color blind friendly mode - ensure sufficient contrast */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Ensure minimum 4.5:1 contrast ratio for normal text */
+    --contrast-minimum: 4.5;
+  }
+}
+
+/* Font size utilities for accessibility */
+.font-normal {
+  font-size: 100%;
+}
+
+.font-large {
+  font-size: 125%;
+}
+
+.font-x-large {
+  font-size: 150%;
+}
+
+/* Ensure interactive elements are easily identifiable */
+button:hover,
+a:hover,
+[role="button"]:hover {
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+/* Disabled state should be clear */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

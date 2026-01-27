@@ -1,0 +1,51 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║   🔑 QUICK ACCESS CODE GUIDE                                    ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+
+TO ACCESS LEGAL RESEARCH HUB (AND EVERYTHING ELSE):
+
+══════════════════════════════════════════════════════════════════
+
+1. Click "Enter Access Code" button (in navigation bar)
+
+2. Enter: CPSPUNISHER2024
+
+3. Click "Submit"
+
+4. ✅ YOU NOW HAVE ENTERPRISE-LEVEL ACCESS!
+
+══════════════════════════════════════════════════════════════════
+
+WHAT THIS UNLOCKS:
+
+✅ Legal Research Hub (40+ million cases)
+✅ All Professional features
+✅ All Attorney features  
+✅ All Enterprise features
+✅ EVERYTHING in the app (320+ features)
+
+══════════════════════════════════════════════════════════════════
+
+TROUBLESHOOTING:
+
+If Research tab still shows "Unlock Feature":
+
+1. Refresh page (F5)
+2. Or logout and login again
+3. Or re-enter access code
+
+══════════════════════════════════════════════════════════════════
+
+TECHNICAL DETAILS:
+
+Access Code: CPSPUNISHER2024
+Storage: localStorage (key: 'cps_special_access')
+Level: ENTERPRISE (highest tier)
+Expires: Never (permanent until cleared)
+
+══════════════════════════════════════════════════════════════════
+
+The CPS Punisher™
+Copyright © 2024 DARREN GUAY - All Rights Reserved

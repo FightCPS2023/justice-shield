@@ -1,0 +1,204 @@
+================================================================================
+                    ⚡ QUICK DEPLOY - COMMAND LIST
+                  Copy/Paste These Commands in Order
+================================================================================
+
+TOTAL TIME: 15 minutes
+(Assuming you already have accounts created)
+
+
+STEP 1: INSTALL VERCEL CLI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Open Terminal (Mac) or Command Prompt (Windows), then run:
+
+npm install -g vercel
+
+Wait for it to finish (1-2 minutes).
+
+
+STEP 2: LOGIN TO VERCEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+vercel login
+
+Your browser will open. Click "Confirm". Come back to Terminal.
+
+
+STEP 3: NAVIGATE TO YOUR PROJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WINDOWS:
+cd C:\Users\YourName\Documents\cps-punisher
+
+MAC:
+cd ~/Documents/cps-punisher
+
+(Replace with YOUR actual project path!)
+
+
+STEP 4: INSTALL DEPENDENCIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+npm install
+
+Wait 2-3 minutes. Ignore warnings. Errors = bad, Warnings = okay.
+
+
+STEP 5: ADD ENVIRONMENT VARIABLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run each command ONE AT A TIME. When it asks for the value, paste from your
+API_KEYS.txt file.
+
+Command 1:
+vercel env add VITE_SUPABASE_URL
+
+Paste: https://xxxxx.supabase.co
+Press Enter.
+When asked "Which environments?", press Enter (selects all).
+
+Command 2:
+vercel env add VITE_SUPABASE_ANON_KEY
+
+Paste: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Press Enter.
+Press Enter again (all environments).
+
+Command 3:
+vercel env add VITE_GEMINI_API_KEY
+
+Paste: AIzaSy...
+Press Enter.
+Press Enter again (all environments).
+
+Command 4:
+vercel env add VITE_STRIPE_PUBLISHABLE_KEY
+
+Paste: pk_test_...
+Press Enter.
+Press Enter again (all environments).
+
+
+STEP 6: VERIFY ENVIRONMENT VARIABLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+vercel env ls
+
+You should see all 4 variables listed. If any are missing, add them again.
+
+
+STEP 7: DEPLOY TO PRODUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+vercel --prod
+
+Wait 2-3 minutes.
+
+When it finishes, you'll see:
+✅ Production deployment complete!
+🔗 https://cps-punisher-xxxxx.vercel.app
+
+COPY THAT URL! You'll need it next.
+
+
+STEP 8: CONFIGURE SUPABASE URL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+(Do this in your browser)
+
+1. Go to: https://supabase.com/dashboard
+2. Click your project: cps-punisher
+3. Click "Authentication" (left sidebar, key icon)
+4. Click "URL Configuration"
+5. In "Site URL" field:
+   - Delete localhost:3000
+   - Paste your Vercel URL (from Step 7)
+   - NO slash at the end!
+6. In "Redirect URLs" field:
+   - Add these 2 lines (replace with YOUR Vercel URL):
+     https://cps-punisher-xxxxx.vercel.app
+     https://cps-punisher-xxxxx.vercel.app/**
+7. Click "Save" at bottom
+8. Wait 30 seconds
+
+
+STEP 9: TEST YOUR APP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Open your Vercel URL in browser
+2. Click "Get Started"
+3. Enter code: CPSPUNISHER2024
+4. Create a test account
+5. Check your email for verification
+6. Click verification link
+7. Log in
+8. Create a test case
+9. Upload a test document
+10. Wait for AI analysis
+
+If all of that works: ✅ YOU'RE LIVE!
+
+
+DONE!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Your app is now live at:
+
+https://cps-punisher-xxxxx.vercel.app
+
+Share that URL with users!
+
+
+TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ERROR: "vercel: command not found"
+FIX: npm install -g vercel
+
+ERROR: "Error 400" when signing up
+FIX: Check Step 8 - make sure you updated Supabase URL Configuration
+
+ERROR: "Cannot connect to database"
+FIX: Run: vercel env ls
+     Make sure all 4 environment variables are there
+     If missing, add them (Step 5)
+     Redeploy: vercel --prod
+
+ERROR: Document upload fails
+FIX: Create storage buckets:
+     1. Supabase → Storage → New bucket
+     2. Name: documents
+     3. Make PUBLIC
+     4. Repeat for "evidence" bucket
+
+ERROR: AI analysis doesn't work
+FIX: Check Gemini API key is correct
+     Get new key: https://aistudio.google.com/app/apikey
+     Update it: vercel env rm VITE_GEMINI_API_KEY
+                vercel env add VITE_GEMINI_API_KEY
+     Redeploy: vercel --prod
+
+
+USEFUL COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Check environment variables:
+vercel env ls
+
+Remove an environment variable:
+vercel env rm VARIABLE_NAME
+
+Redeploy to production:
+vercel --prod
+
+View deployment logs:
+vercel logs
+
+Check if build works locally:
+npm run build
+
+
+================================================================================
+Copyright © 2024 DARREN GUAY. All Rights Reserved.
+================================================================================

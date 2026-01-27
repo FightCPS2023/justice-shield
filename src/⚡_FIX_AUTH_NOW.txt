@@ -1,0 +1,70 @@
+═══════════════════════════════════════════════════════════════════════════════
+🚨 QUICK FIX: 400 AUTHENTICATION ERROR
+═══════════════════════════════════════════════════════════════════════════════
+
+ERROR:
+{"code":400,"error_code":"validation_failed","msg":"Unsupported provider: 
+provider is not enabled"}
+
+CAUSE:
+✗ Email authentication not enabled in Supabase
+✗ Missing real anon key in code
+
+═══════════════════════════════════════════════════════════════════════════════
+⚡ FIX IN 3 STEPS
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 1: Enable Email Auth (1 minute)
+─────────────────────────────────────────────────────────────────────────────
+1. Go to: https://supabase.com/dashboard/project/rdrpwrwjqayhbsyxqaej
+2. Click: Authentication → Providers (left sidebar)
+3. Find: "Email" provider
+4. Enable it
+5. TURN OFF "Confirm email" (important!)
+6. Save
+
+STEP 2: Get Your Anon Key (1 minute)
+─────────────────────────────────────────────────────────────────────────────
+1. Same dashboard → Settings → API
+2. Under "Project API keys"
+3. Copy the "anon public" key
+   (looks like: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...)
+
+STEP 3: Update Your Code (1 minute)
+─────────────────────────────────────────────────────────────────────────────
+Open: /utils/supabase/info.tsx
+
+Change FROM:
+export const publicAnonKey = "YOUR_SUPABASE_ANON_KEY_WILL_GO_HERE"
+
+Change TO:
+export const publicAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.YOUR_KEY"
+
+(Paste your REAL anon key from Step 2)
+
+DONE! ✅
+
+═══════════════════════════════════════════════════════════════════════════════
+🧪 TEST IT
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Refresh your app
+2. Try to sign up with test email
+3. Should work without errors!
+4. No email verification needed
+
+═══════════════════════════════════════════════════════════════════════════════
+📋 QUICK CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+□ Email provider enabled in Supabase
+□ Email confirmation DISABLED
+□ Real anon key copied from Supabase
+□ /utils/supabase/info.tsx updated with real key
+□ App refreshed
+□ Test sign up works
+
+═══════════════════════════════════════════════════════════════════════════════
+
+⏱️  Total Time: 3 minutes
+📖 Full Guide: /🚨_FIX_400_AUTH_ERROR.md

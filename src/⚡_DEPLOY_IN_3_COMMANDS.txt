@@ -1,0 +1,162 @@
+═══════════════════════════════════════════════════════════════
+⚡ AUTO-DEPLOY TO VERCEL IN 3 COMMANDS
+═══════════════════════════════════════════════════════════════
+
+GOAL: Every time you push to GitHub, Vercel auto-deploys!
+
+═══════════════════════════════════════════════════════════════
+METHOD 1: GITHUB AUTO-DEPLOY (RECOMMENDED)
+═══════════════════════════════════════════════════════════════
+
+FIRST-TIME SETUP (5 minutes):
+───────────────────────────────────────────────────────────────
+
+STEP 1: Push to GitHub
+───────────────────────────────────────────────────────────────
+
+git add .
+git commit -m "Fixed video skip buttons"
+git push
+
+
+STEP 2: Connect Vercel to GitHub
+───────────────────────────────────────────────────────────────
+
+1. Go to: https://vercel.com/dashboard
+2. Click your project → Settings → Git
+3. Click "Connect Git Repository"
+4. Select GitHub → Select your repo
+5. Click "Connect"
+
+✅ DONE! Now every push auto-deploys!
+
+
+STEP 3: Test It (Deploy Changes)
+───────────────────────────────────────────────────────────────
+
+# Make any change to your code
+# Then run:
+
+git add . 
+git commit -m "Test auto-deploy"
+git push
+
+# Wait 1-2 minutes → Check Vercel dashboard → Live! ✅
+
+
+═══════════════════════════════════════════════════════════════
+METHOD 2: VERCEL CLI (INSTANT DEPLOY)
+═══════════════════════════════════════════════════════════════
+
+SETUP (one-time):
+───────────────────────────────────────────────────────────────
+
+npm install -g vercel
+vercel login
+
+
+DEPLOY (every time):
+───────────────────────────────────────────────────────────────
+
+vercel --prod
+
+✅ Done! Live in 30 seconds!
+
+
+═══════════════════════════════════════════════════════════════
+DAILY WORKFLOW (After Setup)
+═══════════════════════════════════════════════════════════════
+
+1. Edit code in VS Code
+2. Save files (Ctrl+S)
+3. Run these 3 commands:
+
+git add .
+git commit -m "Describe your changes"
+git push
+
+4. Wait 1-2 minutes
+5. Changes are LIVE! ✅
+
+
+═══════════════════════════════════════════════════════════════
+WHICH METHOD SHOULD I USE?
+═══════════════════════════════════════════════════════════════
+
+✅ GitHub Auto-Deploy (Method 1)
+   - Best for: Production apps
+   - Setup: 5 min (one-time)
+   - Deploy: Automatic on every push
+   - Recommendation: USE THIS! ⭐
+
+✅ Vercel CLI (Method 2)
+   - Best for: Quick hot-fixes
+   - Setup: 2 min (one-time)
+   - Deploy: Run one command
+   - Recommendation: Use for urgent updates
+
+
+═══════════════════════════════════════════════════════════════
+TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+Problem: "I don't have a GitHub repo"
+Solution:
+  1. Go to https://github.com/new
+  2. Create repo named "cps-punisher"
+  3. Don't initialize with README
+  4. Copy the commands GitHub shows you
+  5. Run them in your project folder
+
+Problem: "Changes not deploying"
+Solution:
+  - Check you pushed to GitHub: git status
+  - Check Vercel dashboard for errors
+  - Check environment variables are set
+
+Problem: "Build failed on Vercel"
+Solution:
+  - Check Vercel dashboard → Deployments → View logs
+  - Common fix: Add environment variables in Vercel
+  - Go to: Settings → Environment Variables
+  - Add: SUPABASE_URL, SUPABASE_ANON_KEY
+
+
+═══════════════════════════════════════════════════════════════
+QUICK REFERENCE
+═══════════════════════════════════════════════════════════════
+
+Deploy with GitHub:
+  git add . && git commit -m "message" && git push
+
+Deploy with CLI:
+  vercel --prod
+
+Check deployment:
+  https://vercel.com/dashboard
+
+View live site:
+  (Your Vercel URL from dashboard)
+
+
+═══════════════════════════════════════════════════════════════
+CHECKLIST
+═══════════════════════════════════════════════════════════════
+
+First-Time Setup:
+□ Pushed code to GitHub
+□ Connected Vercel to GitHub repo
+□ Added environment variables in Vercel
+□ Tested first deployment (worked!)
+
+Daily Use:
+□ Make changes
+□ Save files
+□ git add . && git commit -m "..." && git push
+□ Wait 1-2 min
+□ Check live site ✅
+
+
+═══════════════════════════════════════════════════════════════
+📖 Full Guide: /🚀_AUTO_DEPLOY_TO_VERCEL.md
+═══════════════════════════════════════════════════════════════

@@ -1,0 +1,82 @@
+================================================================================
+🎯 GET YOUR 2 API KEYS NOW - THEN YOU'RE DONE!
+================================================================================
+
+✅ Your Supabase URL is already configured!
+   https://rdrpwrwjqayhbsyxqaej.supabase.co
+
+NOW GET THESE 2 KEYS:
+
+================================================================================
+KEY #1: SUPABASE ANON KEY (1 minute)
+================================================================================
+
+1. Go to: https://app.supabase.com
+
+2. Click your project: rdrpwrwjqayhbsyxqaej
+
+3. Click: Settings → API
+
+4. Copy the "anon" key (the PUBLIC one, NOT service_role)
+   It starts with: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+5. Paste it here: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkcnB3cndqcWF5aGJzeXhxYWVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc1NDIxNjcsImV4cCI6MjA4MzExODE2N30.9LGxNpAoKKxO-DET9lCBwY6uKgeC4SmRW5f_4U6i5ko
+
+================================================================================
+KEY #2: GEMINI API KEY (2 minutes)
+================================================================================
+
+1. Go to: https://aistudio.google.com/app/apikey
+
+2. Sign in with Google
+
+3. Click "Create API Key"
+
+4. Copy the key (starts with AIzaSy...)
+
+5. Paste it here: AIzaSyCq4oz9bOt7CadY4dgDpQqcwnXFoIRtB54
+
+================================================================================
+ONCE YOU HAVE BOTH KEYS, TELL ME:
+================================================================================
+
+Just paste them and I'll update your .env file automatically!
+
+Example:
+"My Supabase anon key is: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.abc123..."
+"My Gemini key is: AIzaSyABC123..."
+
+OR just paste both keys, one per line!
+
+================================================================================
+THEN WHAT?
+================================================================================
+
+After I update your .env:
+1. Run SQL from /📊_SUPABASE_DATABASE_SETUP.sql (5 min)
+2. Test app: npm run dev (2 min)
+3. You're ready to launch! 🚀
+
+================================================================================
+STUCK?
+================================================================================
+
+Can't find Supabase anon key?
+→ It's in Settings → API → "anon/public" (NOT service_role)
+
+Gemini not working?
+→ Make sure you're signed in at: https://aistudio.google.com
+
+Still stuck?
+→ Just tell me which step and I'll help!
+
+================================================================================
+
+Created: January 11, 2026
+For: DARREN GUAY
+Time needed: 3 minutes total
+Difficulty: Super easy!
+
+YOU GOT THIS! 💪
+
+================================================================================

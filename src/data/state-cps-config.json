@@ -1,0 +1,716 @@
+{
+  "disclaimer": "THIS IS NOT LEGAL ADVICE. This configuration is a starting point for research only and must be reviewed by licensed attorneys in each jurisdiction. Statutes change frequently. Always verify current law.",
+  "lastUpdated": "2024-11-24",
+  "version": "1.0-DRAFT",
+  "states": {
+    "AL": {
+      "stateName": "Alabama",
+      "agency": "Alabama Department of Human Resources (DHR)",
+      "commonTerms": ["DHR", "Child Protective Services", "CPS"],
+      "legalCode": "Alabama Code Title 26 (Infants and Incompetents) and Title 12-15 (Juvenile Proceedings)",
+      "keyStatutes": {
+        "discovery": ["Alabama Rules of Juvenile Procedure Rule 16", "Ala. Code § 12-15-131"],
+        "recordsAccess": ["Ala. Code § 12-15-133 (confidentiality)", "Ala. Code § 26-14-8"],
+        "emergencyHearings": ["Ala. Code § 12-15-65 (shelter care hearing)"],
+        "parentalRights": ["Ala. Code § 26-18-1 et seq. (Termination of Parental Rights)"]
+      },
+      "noticeRules": "Generally 5 days notice for adjudication hearings; 72-hour shelter care hearing after removal",
+      "captionFormat": "IN THE JUVENILE COURT OF [COUNTY] COUNTY, ALABAMA\nIN THE MATTER OF: [CHILD NAME], A Child"
+    },
+    "AK": {
+      "stateName": "Alaska",
+      "agency": "Alaska Office of Children's Services (OCS)",
+      "commonTerms": ["OCS", "Children's Services"],
+      "legalCode": "Alaska Statutes Title 47 Chapter 10 (Child in Need of Aid)",
+      "keyStatutes": {
+        "discovery": ["Alaska Children's Rule 15", "AS 47.10.080"],
+        "recordsAccess": ["AS 47.10.093 (access to records)"],
+        "emergencyHearings": ["AS 47.10.141 (emergency ex parte orders)", "AS 47.10.142 (temporary custody hearing)"],
+        "parentalRights": ["AS 47.10.080 et seq."]
+      },
+      "noticeRules": "72-hour temporary custody hearing; reasonable notice for subsequent proceedings",
+      "captionFormat": "IN THE SUPERIOR COURT FOR THE STATE OF ALASKA\n[JUDICIAL DISTRICT]\nIN THE MATTER OF: [CHILD NAME], A Child in Need of Aid"
+    },
+    "AZ": {
+      "stateName": "Arizona",
+      "agency": "Arizona Department of Child Safety (DCS)",
+      "commonTerms": ["DCS", "Child Safety", "CPS"],
+      "legalCode": "Arizona Revised Statutes Title 8 (Child Safety)",
+      "keyStatutes": {
+        "discovery": ["Arizona Rules of Procedure for the Juvenile Court Rule 17"],
+        "recordsAccess": ["A.R.S. § 8-807 (confidentiality and disclosure)"],
+        "emergencyHearings": ["A.R.S. § 8-821 (preliminary protective hearing)", "A.R.S. § 8-824 (initial dependency hearing)"],
+        "parentalRights": ["A.R.S. § 8-533 et seq. (Termination of Parent-Child Relationship)"]
+      },
+      "noticeRules": "Preliminary protective hearing within 5 days of removal; reasonable notice for dependency hearings",
+      "captionFormat": "IN THE SUPERIOR COURT OF ARIZONA\nIN AND FOR THE COUNTY OF [COUNTY]\nIN THE MATTER OF: [CHILD NAME], A Dependent Child"
+    },
+    "AR": {
+      "stateName": "Arkansas",
+      "agency": "Arkansas Division of Children and Family Services (DCFS)",
+      "commonTerms": ["DCFS", "DHS", "Child Protective Services"],
+      "legalCode": "Arkansas Code Title 9 Subtitle 2 (Juvenile Code)",
+      "keyStatutes": {
+        "discovery": ["Arkansas Juvenile Code Rule 15"],
+        "recordsAccess": ["Ark. Code Ann. § 9-27-309 (confidentiality)", "Ark. Code Ann. § 9-28-106"],
+        "emergencyHearings": ["Ark. Code Ann. § 9-27-327 (probable cause hearing)", "Ark. Code Ann. § 9-27-328"],
+        "parentalRights": ["Ark. Code Ann. § 9-27-341 et seq."]
+      },
+      "noticeRules": "72-hour probable cause hearing after emergency custody; reasonable notice for adjudication",
+      "captionFormat": "IN THE [COUNTY] COUNTY JUVENILE COURT\nSTATE OF ARKANSAS\nIN THE MATTER OF: [CHILD NAME], A Juvenile"
+    },
+    "CA": {
+      "stateName": "California",
+      "agency": "County Child Welfare Services Departments (varies by county)",
+      "commonTerms": ["CWS", "DCFS" (Los Angeles), "CPS", "Social Services"],
+      "legalCode": "California Welfare and Institutions Code Division 2 (Children)",
+      "keyStatutes": {
+        "discovery": ["Cal. Welf. & Inst. Code § 317", "Cal. Rules of Court Rule 5.546"],
+        "recordsAccess": ["Cal. Welf. & Inst. Code § 827 (access to records)"],
+        "emergencyHearings": ["Cal. Welf. & Inst. Code § 319 (detention hearing)", "Cal. Welf. & Inst. Code § 309"],
+        "parentalRights": ["Cal. Welf. & Inst. Code § 366.26 (termination)"]
+      },
+      "noticeRules": "Detention hearing within 2 court days of removal; 10-day notice for jurisdiction hearing",
+      "captionFormat": "SUPERIOR COURT OF CALIFORNIA\nCOUNTY OF [COUNTY]\nIN RE: [CHILD NAME], A Minor"
+    },
+    "CO": {
+      "stateName": "Colorado",
+      "agency": "County Departments of Human/Social Services (state oversight by CDHS)",
+      "commonTerms": ["County DHS", "Child Protective Services", "CPS"],
+      "legalCode": "Colorado Children's Code (C.R.S. Title 19)",
+      "keyStatutes": {
+        "discovery": ["Colorado Rules of Juvenile Procedure Rule 15"],
+        "recordsAccess": ["C.R.S. § 19-1-307 (confidentiality)"],
+        "emergencyHearings": ["C.R.S. § 19-3-405 (shelter hearing)", "C.R.S. § 19-3-403"],
+        "parentalRights": ["C.R.S. § 19-3-604 et seq."]
+      },
+      "noticeRules": "Shelter hearing within 48 hours (excluding weekends/holidays); reasonable notice for adjudication",
+      "captionFormat": "IN THE DISTRICT COURT IN AND FOR [COUNTY] COUNTY, COLORADO\nCONCERNING: [CHILD NAME], A Child"
+    },
+    "CT": {
+      "stateName": "Connecticut",
+      "agency": "Connecticut Department of Children and Families (DCF)",
+      "commonTerms": ["DCF", "Child Protective Services"],
+      "legalCode": "Connecticut General Statutes Title 46b (Family Law)",
+      "keyStatutes": {
+        "discovery": ["Connecticut Practice Book Section 35a-8"],
+        "recordsAccess": ["Conn. Gen. Stat. § 46b-124 (confidentiality)", "Conn. Gen. Stat. § 17a-28"],
+        "emergencyHearings": ["Conn. Gen. Stat. § 46b-129 (order of temporary custody)", "Conn. Gen. Stat. § 46b-133"],
+        "parentalRights": ["Conn. Gen. Stat. § 45a-717 (termination)"]
+      },
+      "noticeRules": "Hearing within 10 days of removal; reasonable notice for subsequent proceedings",
+      "captionFormat": "SUPERIOR COURT FOR JUVENILE MATTERS\nJUDICIAL DISTRICT OF [DISTRICT]\nIN RE: [CHILD NAME], A Child"
+    },
+    "DE": {
+      "stateName": "Delaware",
+      "agency": "Delaware Division of Family Services (DFS)",
+      "commonTerms": ["DFS", "DSCYF", "Child Protective Services"],
+      "legalCode": "Delaware Code Title 13 Chapter 5 (Dependency and Neglect)",
+      "keyStatutes": {
+        "discovery": ["Delaware Family Court Rules of Civil Procedure Rule 16"],
+        "recordsAccess": ["Del. Code Ann. tit. 13, § 508 (confidentiality)"],
+        "emergencyHearings": ["Del. Code Ann. tit. 13, § 2510 (shelter care hearing)"],
+        "parentalRights": ["Del. Code Ann. tit. 13, § 1103 (termination)"]
+      },
+      "noticeRules": "Shelter care hearing within 48 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE FAMILY COURT OF THE STATE OF DELAWARE\nIN AND FOR [COUNTY] COUNTY\nIN THE MATTER OF: [CHILD NAME], A Child"
+    },
+    "FL": {
+      "stateName": "Florida",
+      "agency": "Florida Department of Children and Families (DCF)",
+      "commonTerms": ["DCF", "Child Protective Services", "CPS"],
+      "legalCode": "Florida Statutes Chapter 39 (Proceedings Relating to Children)",
+      "keyStatutes": {
+        "discovery": ["Fla. R. Juv. P. 8.245"],
+        "recordsAccess": ["Fla. Stat. § 39.0132 (confidentiality)", "Fla. Stat. § 39.202"],
+        "emergencyHearings": ["Fla. Stat. § 39.401 (shelter hearing)"],
+        "parentalRights": ["Fla. Stat. § 39.806 et seq. (termination)"]
+      },
+      "noticeRules": "Shelter hearing within 24 hours (excluding weekends/holidays); reasonable notice for adjudicatory hearing",
+      "captionFormat": "IN THE CIRCUIT COURT OF THE [NUMBER] JUDICIAL CIRCUIT,\nIN AND FOR [COUNTY] COUNTY, FLORIDA\nIN THE INTEREST OF: [CHILD NAME], A Child"
+    },
+    "GA": {
+      "stateName": "Georgia",
+      "agency": "Georgia Division of Family and Children Services (DFCS)",
+      "commonTerms": ["DFCS", "Child Protective Services", "CPS"],
+      "legalCode": "Georgia Code Title 15 Chapter 11 (Juvenile Code)",
+      "keyStatutes": {
+        "discovery": ["O.C.G.A. § 15-11-41"],
+        "recordsAccess": ["O.C.G.A. § 15-11-39 (confidentiality)", "O.C.G.A. § 49-5-40 et seq."],
+        "emergencyHearings": ["O.C.G.A. § 15-11-134 (shelter care)", "O.C.G.A. § 15-11-133"],
+        "parentalRights": ["O.C.G.A. § 15-11-94 et seq. (termination)"]
+      },
+      "noticeRules": "72-hour shelter hearing after removal; reasonable notice for adjudication",
+      "captionFormat": "IN THE JUVENILE COURT OF [COUNTY] COUNTY\nSTATE OF GEORGIA\nIN THE INTEREST OF: [CHILD NAME], A Child"
+    },
+    "HI": {
+      "stateName": "Hawaii",
+      "agency": "Hawaii Department of Human Services - Child Welfare Services",
+      "commonTerms": ["DHS", "CWS", "Child Protective Services"],
+      "legalCode": "Hawaii Revised Statutes Chapter 587A (Child Protective Act)",
+      "keyStatutes": {
+        "discovery": ["Haw. R. Fam. Ct. Rule 16"],
+        "recordsAccess": ["HRS § 587A-29 (confidentiality)"],
+        "emergencyHearings": ["HRS § 587A-12 (return hearing)"],
+        "parentalRights": ["HRS § 587A-33 (termination)"]
+      },
+      "noticeRules": "Return hearing within 2 days (excluding weekends/holidays) after taking into protective custody",
+      "captionFormat": "IN THE FAMILY COURT OF THE [CIRCUIT] CIRCUIT\nSTATE OF HAWAII\nIN THE INTEREST OF: [CHILD NAME], A Child"
+    },
+    "ID": {
+      "stateName": "Idaho",
+      "agency": "Idaho Department of Health and Welfare - Child and Family Services",
+      "commonTerms": ["IDHW", "Child and Family Services", "CPS"],
+      "legalCode": "Idaho Code Title 16 Chapter 16 (Child Protective Act)",
+      "keyStatutes": {
+        "discovery": ["Idaho Juvenile Rules Rule 15"],
+        "recordsAccess": ["Idaho Code § 16-1631 (confidentiality)"],
+        "emergencyHearings": ["Idaho Code § 16-1615 (shelter care hearing)"],
+        "parentalRights": ["Idaho Code § 16-2005 et seq. (termination)"]
+      },
+      "noticeRules": "Shelter care hearing within 24 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE DISTRICT COURT OF THE [JUDICIAL DISTRICT] JUDICIAL DISTRICT OF\nTHE STATE OF IDAHO, IN AND FOR THE COUNTY OF [COUNTY]\nIN THE MATTER OF: [CHILD NAME], A Child"
+    },
+    "IL": {
+      "stateName": "Illinois",
+      "agency": "Illinois Department of Children and Family Services (DCFS)",
+      "commonTerms": ["DCFS", "Child Protective Services"],
+      "legalCode": "Illinois Juvenile Court Act (705 ILCS 405)",
+      "keyStatutes": {
+        "discovery": ["705 ILCS 405/1-5(4)", "705 ILCS 405/1-7"],
+        "recordsAccess": ["705 ILCS 405/1-8 (confidentiality)", "705 ILCS 405/1-5(4)"],
+        "emergencyHearings": ["705 ILCS 405/2-10 (temporary custody hearing)"],
+        "parentalRights": ["750 ILCS 50 (Adoption Act - termination provisions)"]
+      },
+      "noticeRules": "Temporary custody hearing within 40 hours of removal (excluding weekends/holidays); reasonable notice for adjudicatory hearing",
+      "captionFormat": "IN THE CIRCUIT COURT OF [COUNTY] COUNTY, ILLINOIS\nJUVENILE DIVISION\nIN THE INTEREST OF: [CHILD NAME], A Minor"
+    },
+    "IN": {
+      "stateName": "Indiana",
+      "agency": "Indiana Department of Child Services (DCS)",
+      "commonTerms": ["DCS", "Child Services"],
+      "legalCode": "Indiana Code Title 31 Article 34 (Child in Need of Services)",
+      "keyStatutes": {
+        "discovery": ["Ind. Code § 31-32-13-1"],
+        "recordsAccess": ["Ind. Code § 31-39-1-1 et seq. (confidentiality)"],
+        "emergencyHearings": ["Ind. Code § 31-34-5-3 (detention hearing)"],
+        "parentalRights": ["Ind. Code § 31-35-1-1 et seq. (termination)"]
+      },
+      "noticeRules": "Detention hearing within 48 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE [COUNTY] SUPERIOR/CIRCUIT COURT\nSTATE OF INDIANA\nIN THE MATTER OF: [CHILD NAME], A Child Alleged to be a Child in Need of Services"
+    },
+    "IA": {
+      "stateName": "Iowa",
+      "agency": "Iowa Department of Human Services (DHS)",
+      "commonTerms": ["DHS", "Child Protective Services"],
+      "legalCode": "Iowa Code Chapter 232 (Juvenile Justice)",
+      "keyStatutes": {
+        "discovery": ["Iowa R. Juv. P. 8.8"],
+        "recordsAccess": ["Iowa Code § 232.147 (confidentiality)"],
+        "emergencyHearings": ["Iowa Code § 232.95 (removal hearing)", "Iowa Code § 232.44"],
+        "parentalRights": ["Iowa Code § 232.116 (termination)"]
+      },
+      "noticeRules": "Removal hearing within 48 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE IOWA DISTRICT COURT FOR [COUNTY] COUNTY\nJUVENILE DIVISION\nIN THE INTEREST OF: [CHILD NAME], A Child"
+    },
+    "KS": {
+      "stateName": "Kansas",
+      "agency": "Kansas Department for Children and Families (DCF)",
+      "commonTerms": ["DCF", "Child Protective Services", "SRS" (former name)],
+      "legalCode": "Kansas Code for Care of Children (K.S.A. Chapter 38)",
+      "keyStatutes": {
+        "discovery": ["K.S.A. § 38-2243"],
+        "recordsAccess": ["K.S.A. § 38-2310 (confidentiality)"],
+        "emergencyHearings": ["K.S.A. § 38-2243 (temporary custody hearing)"],
+        "parentalRights": ["K.S.A. § 38-2266 et seq. (termination)"]
+      },
+      "noticeRules": "Temporary custody hearing within 48 hours (excluding weekends/holidays); reasonable notice for adjudication",
+      "captionFormat": "IN THE DISTRICT COURT OF [COUNTY] COUNTY, KANSAS\nJUVENILE DIVISION\nIN THE MATTER OF: [CHILD NAME], A Child Alleged to be in Need of Care"
+    },
+    "KY": {
+      "stateName": "Kentucky",
+      "agency": "Kentucky Cabinet for Health and Family Services - Department for Community Based Services",
+      "commonTerms": ["CHFS", "DCBS", "CPS", "Child Protective Services"],
+      "legalCode": "Kentucky Revised Statutes Chapter 620 (Dependency, Neglect, and Abuse)",
+      "keyStatutes": {
+        "discovery": ["Kentucky Rules of Civil Procedure CR 26 (applicable to juvenile proceedings)"],
+        "recordsAccess": ["KRS § 620.050 (confidentiality)"],
+        "emergencyHearings": ["KRS § 620.060 (temporary removal hearing)"],
+        "parentalRights": ["KRS § 625.060 et seq. (termination)"]
+      },
+      "noticeRules": "Temporary removal hearing within 72 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "COMMONWEALTH OF KENTUCKY\n[COUNTY] FAMILY COURT\nDIVISION [NUMBER]\nIN THE INTEREST OF: [CHILD NAME], A Child"
+    },
+    "LA": {
+      "stateName": "Louisiana",
+      "agency": "Louisiana Department of Children and Family Services (DCFS)",
+      "commonTerms": ["DCFS", "Child Protective Services", "OCS" (Office of Community Services)],
+      "legalCode": "Louisiana Children's Code",
+      "keyStatutes": {
+        "discovery": ["La. Ch.C. art. 618"],
+        "recordsAccess": ["La. Ch.C. art. 412 et seq. (confidentiality)"],
+        "emergencyHearings": ["La. Ch.C. art. 619 (continued custody hearing)"],
+        "parentalRights": ["La. Ch.C. art. 1015 et seq. (termination)"]
+      },
+      "noticeRules": "Continued custody hearing within 72 hours (excluding weekends/holidays); reasonable notice for adjudication",
+      "captionFormat": "STATE OF LOUISIANA\nCOURT OF [PARISH] PARISH\nJUVENILE DIVISION\nIN THE INTEREST OF: [CHILD NAME], A Child"
+    },
+    "ME": {
+      "stateName": "Maine",
+      "agency": "Maine Department of Health and Human Services - Office of Child and Family Services",
+      "commonTerms": ["DHHS", "OCFS", "Child Protective Services"],
+      "legalCode": "Maine Revised Statutes Title 22 (Child and Family Services)",
+      "keyStatutes": {
+        "discovery": ["22 M.R.S. § 4007"],
+        "recordsAccess": ["22 M.R.S. § 4008 (confidentiality)"],
+        "emergencyHearings": ["22 M.R.S. § 4033 (preliminary hearing)"],
+        "parentalRights": ["22 M.R.S. § 4055 (termination)"]
+      },
+      "noticeRules": "Preliminary hearing within 2 business days after petition filed",
+      "captionFormat": "STATE OF MAINE\nDISTRICT COURT\n[LOCATION] DIVISION\nIN THE MATTER OF: [CHILD NAME], A Child"
+    },
+    "MD": {
+      "stateName": "Maryland",
+      "agency": "Local Departments of Social Services (state oversight by Maryland Department of Human Services)",
+      "commonTerms": ["DSS", "Local Department of Social Services", "CPS"],
+      "legalCode": "Maryland Courts and Judicial Proceedings Code Title 3 (Juvenile Causes)",
+      "keyStatutes": {
+        "discovery": ["Md. Rule 11-114"],
+        "recordsAccess": ["Md. Code Ann., Cts. & Jud. Proc. § 3-8A-28 (confidentiality)"],
+        "emergencyHearings": ["Md. Code Ann., Cts. & Jud. Proc. § 3-814 (shelter care hearing)"],
+        "parentalRights": ["Md. Code Ann., Fam. Law § 5-323 (termination)"]
+      },
+      "noticeRules": "Shelter care hearing within 2 days (excluding Sundays) after removal",
+      "captionFormat": "IN THE CIRCUIT COURT FOR [COUNTY]\nSITTING AS A JUVENILE COURT\nIN RE: [CHILD NAME], A Child"
+    },
+    "MA": {
+      "stateName": "Massachusetts",
+      "agency": "Massachusetts Department of Children and Families (DCF)",
+      "commonTerms": ["DCF", "DSS" (former name)],
+      "legalCode": "Massachusetts General Laws Chapter 119 (Protection and Care of Children)",
+      "keyStatutes": {
+        "discovery": ["Mass. R. Juv. Ct. Rule 8"],
+        "recordsAccess": ["M.G.L. c. 119, § 51F (confidentiality)"],
+        "emergencyHearings": ["M.G.L. c. 119, § 24 (72-hour hearing)"],
+        "parentalRights": ["M.G.L. c. 210, § 3 (termination)"]
+      },
+      "noticeRules": "72-hour hearing after removal; reasonable notice for adjudicatory hearing",
+      "captionFormat": "COMMONWEALTH OF MASSACHUSETTS\nJUVENILE COURT DEPARTMENT\n[DIVISION]\nCARE AND PROTECTION OF: [CHILD NAME], A Minor"
+    },
+    "MI": {
+      "stateName": "Michigan",
+      "agency": "Michigan Department of Health and Human Services (MDHHS)",
+      "commonTerms": ["MDHHS", "DHHS", "CPS", "Child Protective Services"],
+      "legalCode": "Michigan Compiled Laws Chapter 712A (Juvenile Code)",
+      "keyStatutes": {
+        "discovery": ["MCR 3.922"],
+        "recordsAccess": ["MCL § 722.628 (confidentiality)"],
+        "emergencyHearings": ["MCL § 712A.14 (preliminary hearing)"],
+        "parentalRights": ["MCL § 712A.19b (termination)"]
+      },
+      "noticeRules": "Preliminary hearing within 24 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "STATE OF MICHIGAN\nIN THE [COUNTY] COUNTY FAMILY COURT\nIN THE MATTER OF: [CHILD NAME], A Minor"
+    },
+    "MN": {
+      "stateName": "Minnesota",
+      "agency": "County Social Services Departments (state oversight by Minnesota Department of Human Services)",
+      "commonTerms": ["County Social Services", "Child Protection", "CPS"],
+      "legalCode": "Minnesota Statutes Chapter 260C (Juvenile Protection Proceedings)",
+      "keyStatutes": {
+        "discovery": ["Minn. R. Juv. Prot. P. 15"],
+        "recordsAccess": ["Minn. Stat. § 260C.171 (confidentiality)"],
+        "emergencyHearings": ["Minn. Stat. § 260C.178 (admission or trial hearing)"],
+        "parentalRights": ["Minn. Stat. § 260C.301 et seq. (termination)"]
+      },
+      "noticeRules": "Reasonable notice; admission/trial hearing generally within 30 days",
+      "captionFormat": "STATE OF MINNESOTA\nDISTRICT COURT\n[JUDICIAL DISTRICT]\nCOUNTY OF [COUNTY]\nIN THE MATTER OF THE WELFARE OF: [CHILD NAME], A Child"
+    },
+    "MS": {
+      "stateName": "Mississippi",
+      "agency": "Mississippi Department of Child Protection Services (MDCPS)",
+      "commonTerms": ["MDCPS", "CPS", "Child Protection Services"],
+      "legalCode": "Mississippi Code Title 43 Chapter 21 (Youth Court Law)",
+      "keyStatutes": {
+        "discovery": ["Miss. Code Ann. § 43-21-203"],
+        "recordsAccess": ["Miss. Code Ann. § 43-21-261 (confidentiality)"],
+        "emergencyHearings": ["Miss. Code Ann. § 43-21-303 (detention hearing)"],
+        "parentalRights": ["Miss. Code Ann. § 93-15-103 et seq. (termination)"]
+      },
+      "noticeRules": "Detention hearing within 48 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE [COUNTY] COUNTY YOUTH COURT\nSTATE OF MISSISSIPPI\nIN THE MATTER OF: [CHILD NAME], A Child"
+    },
+    "MO": {
+      "stateName": "Missouri",
+      "agency": "Missouri Children's Division (CD)",
+      "commonTerms": ["Children's Division", "CD", "Child Protective Services"],
+      "legalCode": "Missouri Revised Statutes Chapter 211 (Juvenile Code)",
+      "keyStatutes": {
+        "discovery": ["Mo. Sup. Ct. R. 117.06"],
+        "recordsAccess": ["Mo. Rev. Stat. § 211.321 (confidentiality)"],
+        "emergencyHearings": ["Mo. Rev. Stat. § 211.181 (detention hearing)"],
+        "parentalRights": ["Mo. Rev. Stat. § 211.447 (termination)"]
+      },
+      "noticeRules": "Detention hearing within 2 judicial days of removal",
+      "captionFormat": "IN THE FAMILY COURT OF [COUNTY] COUNTY, MISSOURI\nJUVENILE DIVISION\nIN THE INTEREST OF: [CHILD NAME], A Child"
+    },
+    "MT": {
+      "stateName": "Montana",
+      "agency": "Montana Department of Public Health and Human Services - Child and Family Services Division",
+      "commonTerms": ["DPHHS", "CFSD", "Child Protective Services"],
+      "legalCode": "Montana Code Annotated Title 41 Chapter 3 (Youth in Need of Care)",
+      "keyStatutes": {
+        "discovery": ["Mont. Code Ann. § 41-3-425"],
+        "recordsAccess": ["Mont. Code Ann. § 41-3-205 (confidentiality)"],
+        "emergencyHearings": ["Mont. Code Ann. § 41-3-423 (emergency protective services hearing)"],
+        "parentalRights": ["Mont. Code Ann. § 41-3-609 (termination)"]
+      },
+      "noticeRules": "Emergency protective services hearing within 72 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE DISTRICT COURT OF THE [JUDICIAL DISTRICT] JUDICIAL DISTRICT OF\nTHE STATE OF MONTANA, IN AND FOR THE COUNTY OF [COUNTY]\nIN THE MATTER OF: [CHILD NAME], A Youth in Need of Care"
+    },
+    "NE": {
+      "stateName": "Nebraska",
+      "agency": "Nebraska Department of Health and Human Services - Division of Children and Family Services",
+      "commonTerms": ["DHHS", "CFS", "Child Protective Services"],
+      "legalCode": "Nebraska Revised Statutes Chapter 43 (Infants and Juveniles)",
+      "keyStatutes": {
+        "discovery": ["Neb. Rev. Stat. § 43-278"],
+        "recordsAccess": ["Neb. Rev. Stat. § 43-2,108.04 (confidentiality)"],
+        "emergencyHearings": ["Neb. Rev. Stat. § 43-279 (detention hearing)"],
+        "parentalRights": ["Neb. Rev. Stat. § 43-292 et seq. (termination)"]
+      },
+      "noticeRules": "Detention hearing within 48 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE COUNTY COURT OF [COUNTY] COUNTY, NEBRASKA\nSEPARATE JUVENILE DIVISION\nIN THE MATTER OF: [CHILD NAME], A Child"
+    },
+    "NV": {
+      "stateName": "Nevada",
+      "agency": "County Divisions of Child and Family Services (Clark County DCFS, Washoe County CWS, Rural NV DCFS)",
+      "commonTerms": ["DCFS", "CWS", "Child Protective Services"],
+      "legalCode": "Nevada Revised Statutes Title 5 Chapter 432B (Protection of Children from Abuse and Neglect)",
+      "keyStatutes": {
+        "discovery": ["Nev. Rev. Stat. § 432B.530"],
+        "recordsAccess": ["Nev. Rev. Stat. § 432B.290 (confidentiality)"],
+        "emergencyHearings": ["Nev. Rev. Stat. § 432B.470 (hearing on temporary custody)"],
+        "parentalRights": ["Nev. Rev. Stat. § 128.105 et seq. (termination)"]
+      },
+      "noticeRules": "Hearing on temporary custody within 72 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE FAMILY COURT OF THE [JUDICIAL DISTRICT] JUDICIAL DISTRICT\nOF THE STATE OF NEVADA, IN AND FOR THE COUNTY OF [COUNTY]\nIN THE MATTER OF: [CHILD NAME], A Minor"
+    },
+    "NH": {
+      "stateName": "New Hampshire",
+      "agency": "New Hampshire Division for Children, Youth and Families (DCYF)",
+      "commonTerms": ["DCYF", "Child Protective Services"],
+      "legalCode": "New Hampshire Revised Statutes Title XII Chapter 169-C (Child Protection Act)",
+      "keyStatutes": {
+        "discovery": ["NH RSA 169-C:13"],
+        "recordsAccess": ["NH RSA 169-C:25 (confidentiality)"],
+        "emergencyHearings": ["NH RSA 169-C:12 (preliminary hearing)"],
+        "parentalRights": ["NH RSA 170-C:5 (termination)"]
+      },
+      "noticeRules": "Preliminary hearing within 7 days of filing petition",
+      "captionFormat": "THE STATE OF NEW HAMPSHIRE\n[COUNTY] FAMILY DIVISION\nIN THE MATTER OF: [CHILD NAME], A Child"
+    },
+    "NJ": {
+      "stateName": "New Jersey",
+      "agency": "New Jersey Division of Child Protection and Permanency (CP&P)",
+      "commonTerms": ["CP&P", "DYFS" (former name), "Division"],
+      "legalCode": "New Jersey Statutes Title 9 (Children - Juvenile and Domestic Relations Courts)",
+      "keyStatutes": {
+        "discovery": ["N.J. Court Rules R. 5:12-1"],
+        "recordsAccess": ["N.J.S.A. 9:6-8.10a (confidentiality)"],
+        "emergencyHearings": ["N.J.S.A. 9:6-8.29 (fact-finding hearing)", "N.J. Court Rules R. 5:12-1"],
+        "parentalRights": ["N.J.S.A. 30:4C-15 (termination)"]
+      },
+      "noticeRules": "Fact-finding hearing generally within 60 days; reasonable notice required",
+      "captionFormat": "SUPERIOR COURT OF NEW JERSEY\nCHANCERY DIVISION - FAMILY PART\n[COUNTY] COUNTY\nF.N. [DOCKET NUMBER]\nIN THE MATTER OF: [CHILD NAME], A Minor"
+    },
+    "NM": {
+      "stateName": "New Mexico",
+      "agency": "New Mexico Children, Youth and Families Department (CYFD)",
+      "commonTerms": ["CYFD", "Child Protective Services"],
+      "legalCode": "New Mexico Statutes Chapter 32A (Children's Code)",
+      "keyStatutes": {
+        "discovery": ["NMSA 1978, § 32A-4-17"],
+        "recordsAccess": ["NMSA 1978, § 32A-2-32 (confidentiality)"],
+        "emergencyHearings": ["NMSA 1978, § 32A-4-20 (detention hearing)"],
+        "parentalRights": ["NMSA 1978, § 32A-4-28 (termination)"]
+      },
+      "noticeRules": "Detention hearing within 24 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE CHILDREN'S COURT OF [COUNTY] COUNTY\nSTATE OF NEW MEXICO\nIN THE MATTER OF: [CHILD NAME], A Child Alleged to be Abused or Neglected"
+    },
+    "NY": {
+      "stateName": "New York",
+      "agency": "Local Departments of Social Services / Administration for Children's Services (NYC)",
+      "commonTerms": ["ACS" (NYC), "CPS", "DSS", "Child Protective Services"],
+      "legalCode": "New York Family Court Act Article 10 (Child Protective Proceedings)",
+      "keyStatutes": {
+        "discovery": ["N.Y. Fam. Ct. Act § 1038"],
+        "recordsAccess": ["N.Y. Soc. Serv. Law § 422 (confidentiality)"],
+        "emergencyHearings": ["N.Y. Fam. Ct. Act § 1027 (preliminary hearing)"],
+        "parentalRights": ["N.Y. Soc. Serv. Law § 384-b (termination)"]
+      },
+      "noticeRules": "Preliminary hearing within 3 court days of filing petition; reasonable notice for fact-finding",
+      "captionFormat": "FAMILY COURT OF THE STATE OF NEW YORK\nCOUNTY OF [COUNTY]\nIN THE MATTER OF: [CHILD NAME], A Child Alleged to be Abused/Neglected"
+    },
+    "NC": {
+      "stateName": "North Carolina",
+      "agency": "County Departments of Social Services (state oversight by NC DHHS)",
+      "commonTerms": ["DSS", "County Social Services", "CPS"],
+      "legalCode": "North Carolina General Statutes Chapter 7B (Juvenile Code)",
+      "keyStatutes": {
+        "discovery": ["N.C. Gen. Stat. § 7B-700"],
+        "recordsAccess": ["N.C. Gen. Stat. § 7B-302 (confidentiality)"],
+        "emergencyHearings": ["N.C. Gen. Stat. § 7B-506 (nonsecure custody hearing)"],
+        "parentalRights": ["N.C. Gen. Stat. § 7B-1111 (termination)"]
+      },
+      "noticeRules": "Nonsecure custody hearing within 7 calendar days of removal",
+      "captionFormat": "IN THE GENERAL COURT OF JUSTICE\nDISTRICT COURT DIVISION\n[COUNTY] COUNTY, NORTH CAROLINA\nIN THE MATTER OF: [CHILD NAME], A Juvenile"
+    },
+    "ND": {
+      "stateName": "North Dakota",
+      "agency": "County Social Service Boards (state oversight by ND Department of Human Services)",
+      "commonTerms": ["County Social Services", "Child Protective Services"],
+      "legalCode": "North Dakota Century Code Title 27 Chapter 20 (Uniform Juvenile Court Act)",
+      "keyStatutes": {
+        "discovery": ["N.D. Cent. Code § 27-20-24"],
+        "recordsAccess": ["N.D. Cent. Code § 27-20-51 (confidentiality)"],
+        "emergencyHearings": ["N.D. Cent. Code § 27-20-15 (detention hearing)"],
+        "parentalRights": ["N.D. Cent. Code § 27-20-44 (termination)"]
+      },
+      "noticeRules": "Detention hearing within 96 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN JUVENILE COURT\nCOUNTY OF [COUNTY]\nSTATE OF NORTH DAKOTA\nIN THE INTEREST OF: [CHILD NAME], A Child"
+    },
+    "OH": {
+      "stateName": "Ohio",
+      "agency": "County Public Children Services Agencies (state oversight by Ohio DJFS)",
+      "commonTerms": ["PCSA", "Children Services", "JFS", "CPS"],
+      "legalCode": "Ohio Revised Code Title 21 (Courts - Juvenile)",
+      "keyStatutes": {
+        "discovery": ["Ohio Juv. R. 24"],
+        "recordsAccess": ["Ohio Rev. Code § 2151.421 (confidentiality)"],
+        "emergencyHearings": ["Ohio Rev. Code § 2151.314 (detention/shelter care hearing)"],
+        "parentalRights": ["Ohio Rev. Code § 2151.414 (termination)"]
+      },
+      "noticeRules": "Detention/shelter care hearing within 72 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE COURT OF COMMON PLEAS\nJUVENILE DIVISION\n[COUNTY] COUNTY, OHIO\nIN THE MATTER OF: [CHILD NAME], A Child"
+    },
+    "OK": {
+      "stateName": "Oklahoma",
+      "agency": "Oklahoma Department of Human Services (DHS)",
+      "commonTerms": ["DHS", "Child Welfare Services", "CPS"],
+      "legalCode": "Oklahoma Statutes Title 10A (Children)",
+      "keyStatutes": {
+        "discovery": ["10A Okla. Stat. § 1-4-306"],
+        "recordsAccess": ["10A Okla. Stat. § 1-6-101 (confidentiality)"],
+        "emergencyHearings": ["10A Okla. Stat. § 1-4-306 (emergency custody hearing)"],
+        "parentalRights": ["10A Okla. Stat. § 1-4-904 (termination)"]
+      },
+      "noticeRules": "Emergency custody hearing within 5 judicial days of removal",
+      "captionFormat": "IN THE DISTRICT COURT OF [COUNTY] COUNTY\nSTATE OF OKLAHOMA\nIN THE MATTER OF: [CHILD NAME], A Child Alleged to be Deprived"
+    },
+    "OR": {
+      "stateName": "Oregon",
+      "agency": "Oregon Department of Human Services - Child Welfare",
+      "commonTerms": ["DHS", "Child Welfare", "CPS"],
+      "legalCode": "Oregon Revised Statutes Chapter 419B (Juvenile Code - Dependency)",
+      "keyStatutes": {
+        "discovery": ["ORS 419B.875"],
+        "recordsAccess": ["ORS 419B.035 (confidentiality)"],
+        "emergencyHearings": ["ORS 419B.183 (shelter hearing)"],
+        "parentalRights": ["ORS 419B.500 et seq. (termination)"]
+      },
+      "noticeRules": "Shelter hearing within 24 hours (excluding weekends/holidays) after protective custody",
+      "captionFormat": "IN THE CIRCUIT COURT OF THE STATE OF OREGON\nFOR [COUNTY] COUNTY\nJUVENILE DEPARTMENT\nIN THE MATTER OF: [CHILD NAME], A Child"
+    },
+    "PA": {
+      "stateName": "Pennsylvania",
+      "agency": "County Children and Youth Agencies (state oversight by PA DHS)",
+      "commonTerms": ["CYS", "CYF", "County Children and Youth"],
+      "legalCode": "Pennsylvania Juvenile Act (42 Pa.C.S. Chapter 63)",
+      "keyStatutes": {
+        "discovery": ["Pa.R.J.C.P. 1340"],
+        "recordsAccess": ["42 Pa.C.S. § 6307 (confidentiality)"],
+        "emergencyHearings": ["42 Pa.C.S. § 6332 (shelter care hearing)"],
+        "parentalRights": ["23 Pa.C.S. § 2511 (termination)"]
+      },
+      "noticeRules": "Shelter care hearing within 72 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE COURT OF COMMON PLEAS OF [COUNTY] COUNTY, PENNSYLVANIA\nJUVENILE DIVISION\nIN THE INTEREST OF: [CHILD NAME], A Minor"
+    },
+    "RI": {
+      "stateName": "Rhode Island",
+      "agency": "Rhode Island Department of Children, Youth and Families (DCYF)",
+      "commonTerms": ["DCYF", "Child Protective Services"],
+      "legalCode": "Rhode Island General Laws Title 40 Chapter 11 (Abused and Neglected Children)",
+      "keyStatutes": {
+        "discovery": ["R.I. Gen. Laws § 40-11-11"],
+        "recordsAccess": ["R.I. Gen. Laws § 40-11-15 (confidentiality)"],
+        "emergencyHearings": ["R.I. Gen. Laws § 40-11-7 (preliminary hearing)"],
+        "parentalRights": ["R.I. Gen. Laws § 15-7-7 (termination)"]
+      },
+      "noticeRules": "Preliminary hearing within 24 hours (excluding weekends/holidays) after protective custody",
+      "captionFormat": "STATE OF RHODE ISLAND AND PROVIDENCE PLANTATIONS\nFAMILY COURT FOR THE [COUNTY]\nIN RE: [CHILD NAME], A Minor"
+    },
+    "SC": {
+      "stateName": "South Carolina",
+      "agency": "South Carolina Department of Social Services (DSS)",
+      "commonTerms": ["DSS", "Child Protective Services"],
+      "legalCode": "South Carolina Children's Code (S.C. Code Title 63)",
+      "keyStatutes": {
+        "discovery": ["S.C. Code Ann. § 63-7-1680"],
+        "recordsAccess": ["S.C. Code Ann. § 63-7-1990 (confidentiality)"],
+        "emergencyHearings": ["S.C. Code Ann. § 63-7-1660 (emergency protective custody hearing)"],
+        "parentalRights": ["S.C. Code Ann. § 63-7-2570 (termination)"]
+      },
+      "noticeRules": "Emergency protective custody hearing within 72 hours (excluding weekends/holidays)",
+      "captionFormat": "IN THE FAMILY COURT OF THE [JUDICIAL CIRCUIT] JUDICIAL CIRCUIT\n[COUNTY] COUNTY, SOUTH CAROLINA\nIN THE INTEREST OF: [CHILD NAME], A Minor Under the Age of 18"
+    },
+    "SD": {
+      "stateName": "South Dakota",
+      "agency": "South Dakota Department of Social Services - Child Protection Services",
+      "commonTerms": ["DSS", "CPS", "Child Protection Services"],
+      "legalCode": "South Dakota Codified Laws Title 26 Chapter 8A (Abused or Neglected Children)",
+      "keyStatutes": {
+        "discovery": ["SDCL § 26-7A-28"],
+        "recordsAccess": ["SDCL § 26-8A-13 (confidentiality)"],
+        "emergencyHearings": ["SDCL § 26-7A-17 (detention hearing)"],
+        "parentalRights": ["SDCL § 26-8A-26.1 (termination)"]
+      },
+      "noticeRules": "Detention hearing within 48 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN CIRCUIT COURT\n[JUDICIAL CIRCUIT]\n[COUNTY] COUNTY, SOUTH DAKOTA\nIN THE MATTER OF: [CHILD NAME], A Child Alleged to be Abused or Neglected"
+    },
+    "TN": {
+      "stateName": "Tennessee",
+      "agency": "Tennessee Department of Children's Services (DCS)",
+      "commonTerms": ["DCS", "Children's Services"],
+      "legalCode": "Tennessee Code Title 37 (Juvenile Courts and Proceedings)",
+      "keyStatutes": {
+        "discovery": ["Tenn. Code Ann. § 37-1-128"],
+        "recordsAccess": ["Tenn. Code Ann. § 37-1-612 (confidentiality)"],
+        "emergencyHearings": ["Tenn. Code Ann. § 37-1-113 (preliminary hearing)"],
+        "parentalRights": ["Tenn. Code Ann. § 36-1-113 (termination)"]
+      },
+      "noticeRules": "Preliminary hearing within 72 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE JUVENILE COURT FOR [COUNTY] COUNTY, TENNESSEE\nIN RE: [CHILD NAME], A Dependent and Neglected Child"
+    },
+    "TX": {
+      "stateName": "Texas",
+      "agency": "Texas Department of Family and Protective Services (DFPS)",
+      "commonTerms": ["DFPS", "CPS", "Child Protective Services"],
+      "legalCode": "Texas Family Code Title 5 (Parent and Child Relationship)",
+      "keyStatutes": {
+        "discovery": ["Tex. Fam. Code § 261.201"],
+        "recordsAccess": ["Tex. Fam. Code § 261.201 (confidentiality)"],
+        "emergencyHearings": ["Tex. Fam. Code § 262.201 (adversary hearing)"],
+        "parentalRights": ["Tex. Fam. Code § 161.001 et seq. (termination)"]
+      },
+      "noticeRules": "Adversary hearing within 14 days of removal (emergency hearing within 1 business day if requested)",
+      "captionFormat": "IN THE INTEREST OF\n[CHILD NAME], A CHILD\nIN THE DISTRICT COURT\n[JUDICIAL DISTRICT] DISTRICT\n[COUNTY] COUNTY, TEXAS"
+    },
+    "UT": {
+      "stateName": "Utah",
+      "agency": "Utah Division of Child and Family Services (DCFS)",
+      "commonTerms": ["DCFS", "Child and Family Services"],
+      "legalCode": "Utah Code Title 80 Chapter 3 (Abuse, Neglect, and Dependency Proceedings)",
+      "keyStatutes": {
+        "discovery": ["Utah Code § 80-3-110"],
+        "recordsAccess": ["Utah Code § 80-2-607 (confidentiality)"],
+        "emergencyHearings": ["Utah Code § 80-3-301 (shelter hearing)"],
+        "parentalRights": ["Utah Code § 80-4-301 et seq. (termination)"]
+      },
+      "noticeRules": "Shelter hearing within 72 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE JUVENILE COURT OF [COUNTY] COUNTY\nSTATE OF UTAH\nIN THE MATTER OF: [CHILD NAME], A Child"
+    },
+    "VT": {
+      "stateName": "Vermont",
+      "agency": "Vermont Department for Children and Families (DCF)",
+      "commonTerms": ["DCF", "Family Services Division", "Child Protection"],
+      "legalCode": "Vermont Statutes Title 33 (Human Services)",
+      "keyStatutes": {
+        "discovery": ["33 V.S.A. § 5113"],
+        "recordsAccess": ["33 V.S.A. § 5117 (confidentiality)"],
+        "emergencyHearings": ["33 V.S.A. § 5310 (emergency care hearing)"],
+        "parentalRights": ["33 V.S.A. § 5540 (termination)"]
+      },
+      "noticeRules": "Emergency care hearing within 72 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "STATE OF VERMONT\nFAMILY DIVISION\n[UNIT]\nDOCKET NO. [NUMBER]\nIN RE: [CHILD NAME], A Child"
+    },
+    "VA": {
+      "stateName": "Virginia",
+      "agency": "Local Departments of Social Services (state oversight by VA DSS)",
+      "commonTerms": ["DSS", "Local Department of Social Services", "CPS"],
+      "legalCode": "Virginia Code Title 16.1 Chapter 11 (Juvenile and Domestic Relations District Courts)",
+      "keyStatutes": {
+        "discovery": ["Va. Code Ann. § 16.1-264"],
+        "recordsAccess": ["Va. Code Ann. § 63.2-102 (confidentiality)"],
+        "emergencyHearings": ["Va. Code Ann. § 16.1-252 (detention or shelter care hearing)"],
+        "parentalRights": ["Va. Code Ann. § 16.1-283 (termination)"]
+      },
+      "noticeRules": "Detention/shelter care hearing within 72 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "VIRGINIA: IN THE JUVENILE AND DOMESTIC RELATIONS DISTRICT COURT\nFOR THE [CITY/COUNTY] OF [NAME]\nCOMMONWEALTH OF VIRGINIA\nIN RE: [CHILD NAME], A Child"
+    },
+    "WA": {
+      "stateName": "Washington",
+      "agency": "Washington Department of Children, Youth, and Families (DCYF)",
+      "commonTerms": ["DCYF", "DSHS" (former name), "Child Protective Services"],
+      "legalCode": "Revised Code of Washington Title 13 (Juvenile Courts and Juvenile Offenders)",
+      "keyStatutes": {
+        "discovery": ["RCW 13.34.095"],
+        "recordsAccess": ["RCW 13.50.100 (confidentiality)"],
+        "emergencyHearings": ["RCW 13.34.065 (shelter care hearing)"],
+        "parentalRights": ["RCW 13.34.180 (termination)"]
+      },
+      "noticeRules": "Shelter care hearing within 72 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE SUPERIOR COURT OF THE STATE OF WASHINGTON\nIN AND FOR THE COUNTY OF [COUNTY]\nJUVENILE COURT\nIN THE MATTER OF: [CHILD NAME], A Dependent Child"
+    },
+    "WV": {
+      "stateName": "West Virginia",
+      "agency": "West Virginia Department of Health and Human Resources - Bureau for Children and Families",
+      "commonTerms": ["DHHR", "BCF", "Child Protective Services"],
+      "legalCode": "West Virginia Code Chapter 49 (Child Welfare)",
+      "keyStatutes": {
+        "discovery": ["W. Va. Code § 49-4-601"],
+        "recordsAccess": ["W. Va. Code § 49-2-115 (confidentiality)"],
+        "emergencyHearings": ["W. Va. Code § 49-4-601 (preliminary hearing)"],
+        "parentalRights": ["W. Va. Code § 49-4-604 (termination)"]
+      },
+      "noticeRules": "Preliminary hearing within 10 days of filing petition",
+      "captionFormat": "IN THE CIRCUIT COURT OF [COUNTY] COUNTY, WEST VIRGINIA\nIN RE: [CHILD NAME], A Child"
+    },
+    "WI": {
+      "stateName": "Wisconsin",
+      "agency": "County Human/Social Services Departments (state oversight by WI DCF)",
+      "commonTerms": ["County Human Services", "CPS", "Child Protective Services"],
+      "legalCode": "Wisconsin Statutes Chapter 48 (Children's Code)",
+      "keyStatutes": {
+        "discovery": ["Wis. Stat. § 48.293"],
+        "recordsAccess": ["Wis. Stat. § 48.78 (confidentiality)"],
+        "emergencyHearings": ["Wis. Stat. § 48.21 (detention hearing)"],
+        "parentalRights": ["Wis. Stat. § 48.43 (termination)"]
+      },
+      "noticeRules": "Detention hearing within 48 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "STATE OF WISCONSIN\nCIRCUIT COURT\n[COUNTY] COUNTY\nIN THE INTEREST OF: [CHILD NAME], A Child Alleged to be in Need of Protection or Services"
+    },
+    "WY": {
+      "stateName": "Wyoming",
+      "agency": "Wyoming Department of Family Services (DFS)",
+      "commonTerms": ["DFS", "Family Services", "Child Protective Services"],
+      "legalCode": "Wyoming Statutes Title 14 Chapter 3 (Abuse and Neglect)",
+      "keyStatutes": {
+        "discovery": ["Wyo. Stat. Ann. § 14-3-210"],
+        "recordsAccess": ["Wyo. Stat. Ann. § 14-3-205 (confidentiality)"],
+        "emergencyHearings": ["Wyo. Stat. Ann. § 14-3-408 (detention hearing)"],
+        "parentalRights": ["Wyo. Stat. Ann. § 14-2-309 (termination)"]
+      },
+      "noticeRules": "Detention hearing within 48 hours of removal (excluding weekends/holidays)",
+      "captionFormat": "IN THE DISTRICT COURT\n[JUDICIAL DISTRICT]\nCOUNTY OF [COUNTY], STATE OF WYOMING\nIN THE MATTER OF: [CHILD NAME], A Child Alleged to be in Need of Protection"
+    }
+  },
+  "usageCaveats": [
+    "THIS DATA IS A RESEARCH STARTING POINT ONLY",
+    "Statutes are subject to amendment; always verify current law",
+    "Court procedures vary significantly by county and judge",
+    "Local rules may add requirements not reflected here",
+    "This is NOT a substitute for licensed legal counsel",
+    "Users must consult with an attorney licensed in their jurisdiction",
+    "Developers: This data requires legal review before production use"
+  ]
+}

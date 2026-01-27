@@ -1,0 +1,263 @@
+================================================================================
+                   🎯 TIER SELECTION - QUICK START
+                      (2-Minute Setup)
+================================================================================
+
+WHAT IT DOES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After signup, users see a beautiful pricing page with 5 tiers:
+1. Free - $0
+2. Essential - $39/mo
+3. Professional - $79/mo ⭐ MOST POPULAR
+4. Attorney Suite - $299/mo
+5. Enterprise - $999/mo
+
+
+HOW TO TEST IT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Start the app:
+   npm run dev
+
+2. Click "Sign Up"
+
+3. Create account (email or social login)
+
+4. → TIER SELECTION PAGE APPEARS! ✨
+
+5. Click any tier:
+   - Free → Instant access
+   - Paid → Confirmation modal → Subscribe
+
+6. → APP LOADS with selected tier!
+
+
+WHAT CHANGES FOR USERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE:
+Signup → App (everyone gets same features)
+
+AFTER:
+Signup → Choose Tier → App (tier-based features)
+
+
+NEW USER FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+First-Time Users (Signup):
+1. Create account
+2. See tier selection page
+3. Pick a tier
+4. Free = instant / Paid = checkout
+5. Enter app
+
+Returning Users (Login):
+1. Login
+2. Go straight to app
+3. Tier auto-loads from last session
+
+
+FILES CHANGED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ NEW:  /components/TierSelection.tsx
+✅ EDIT: /components/AuthForm.tsx
+✅ EDIT: /contexts/SubscriptionContext.tsx  
+✅ EDIT: /App.tsx
+
+
+TIER BENEFITS SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FREE ($0):
+- 1 case, 3 docs, 5 violations
+- Basic features only
+- No AI analysis
+
+ESSENTIAL ($39):
+- 3 cases, 25 docs
+- AI analysis (25 credits)
+- PDF export
+- Communication log
+
+PROFESSIONAL ($79): ⭐ RECOMMENDED
+- Unlimited everything
+- AI generation (100 credits)
+- Legal research
+- Case binder
+- Cloud storage
+
+ATTORNEY SUITE ($299):
+- All Professional features
+- AI paralegal (500 credits)
+- Federal litigation tools
+- Section 1983 generator
+- Multi-client support
+
+ENTERPRISE ($999):
+- All Attorney features
+- 2000 AI credits
+- Team collaboration
+- Custom branding
+- Dedicated support
+
+
+USER TESTING CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ ] Sign up with email → See tier selection
+[ ] Click "Free" → Instant app access
+[ ] Sign up again → Click "Professional" → See confirmation
+[ ] Click "Subscribe Now" → App loads
+[ ] Logout → Login → Tier persists
+[ ] Try accessing premium feature on free tier → Locked
+[ ] Try accessing premium feature on paid tier → Works
+[ ] Mobile: Pricing cards stack vertically
+[ ] Dark mode: Everything readable
+
+
+CUSTOMIZATION OPTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Want to change prices?
+→ Edit /components/TierSelection.tsx
+→ Find: price: '$39'
+→ Change to whatever you want
+
+Want to hide a tier?
+→ Edit /components/TierSelection.tsx
+→ Remove tier from tiers array
+
+Want different features per tier?
+→ Edit /components/TierSelection.tsx
+→ Update features array for each tier
+
+Want to skip tier selection?
+→ User can click: "Skip for now - Start with Free"
+→ OR remove tier selection entirely in AuthForm.tsx
+
+
+FOR PRODUCTION DEPLOYMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You need:
+1. Stripe account
+2. Create products/prices in Stripe
+3. Add Stripe checkout to TierSelection.tsx
+4. Handle webhooks for subscription updates
+
+See full guide in: ✅_TIER_SELECTION_COMPLETE.md
+
+
+FREQUENTLY ASKED QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q: Can users change tiers later?
+A: Yes! Use setTier() from useSubscription() hook
+   (You'll need to add a "Manage Subscription" page)
+
+Q: How is tier stored?
+A: localStorage key: 'cps_user_tier'
+   Auto-loads on app start
+
+Q: What if user skips tier selection?
+A: Defaults to 'free' tier
+   Can upgrade later
+
+Q: Do returning users see tier selection?
+A: No - only new signups
+   Login goes straight to app
+
+Q: Can I test all tiers without payment?
+A: Yes! Demo mode simulates purchase
+   Real payment = Add Stripe integration
+
+Q: How do I check user's current tier?
+A: const { tier } = useSubscription();
+   Returns: 'free' | 'essential' | 'professional' | 'attorney' | 'enterprise'
+
+Q: How do I lock features by tier?
+A: Already built in!
+   See PremiumUpgrade component
+   Pass requiredTier prop
+
+Q: What about trials?
+A: Not implemented yet
+   Add to Stripe checkout config
+
+
+DEMO MODE vs PRODUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEMO (Current):
+✅ Show all tiers
+✅ Click "Subscribe Now"
+✅ Simulates successful purchase
+✅ Tier activates immediately
+✅ Perfect for testing!
+
+PRODUCTION (Add Stripe):
+✅ Show all tiers
+✅ Click "Subscribe Now"
+✅ Redirect to Stripe checkout
+✅ User enters payment info
+✅ Webhook confirms payment
+✅ Tier activates
+✅ Real money! 💰
+
+
+TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Problem: Tier selection doesn't show after signup
+Fix: Check AuthForm.tsx - Make sure showTierSelection triggers
+
+Problem: Tier doesn't persist after refresh
+Fix: Check localStorage: 'cps_user_tier' should be set
+     Check SubscriptionContext useEffect
+
+Problem: All features locked even on paid tier
+Fix: Check tier value in console: const { tier } = useSubscription()
+     Make sure it's not 'free'
+
+Problem: Can't access paid features
+Fix: Check requiredTier on PremiumUpgrade wrapper
+     Make sure your tier >= required tier
+
+Problem: Changes to tiers don't show
+Fix: Clear localStorage: localStorage.clear()
+     Refresh page
+
+
+NEXT STEPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Now that tier selection is complete:
+
+1. ✅ Test all flows
+2. 📝 Customize pricing/features as needed  
+3. 🎨 Adjust colors/design if desired
+4. 💳 Add Stripe integration (for real payments)
+5. 📊 Add analytics tracking
+6. 🚀 Deploy and start monetizing!
+
+
+SUPPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Need help?
+- Read: ✅_TIER_SELECTION_COMPLETE.md (detailed guide)
+- Check: /components/TierSelection.tsx (main component)
+- Debug: console.log(tier) in any component
+
+
+================================================================================
+🎉 You now have a complete freemium pricing system!
+================================================================================
+
+Pro tip: Start with Free tier to test, then upgrade to see feature unlocks!
+
+Copyright © 2024 DARREN GUAY. All Rights Reserved.
+================================================================================

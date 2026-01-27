@@ -1,0 +1,288 @@
+================================================================================
+                    ⚡ DEPLOYMENT QUICK COMMANDS
+                   (Copy/Paste These Exactly)
+================================================================================
+
+📌 BEFORE YOU START
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Make sure you have:
+✅ Node.js installed (node --version)
+✅ Git installed (git --version)
+✅ Project folder open in Terminal/CMD
+✅ Supabase account created
+✅ Gemini API key ready
+
+
+🔥 STEP 1: GIT PUSH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Check what needs to be committed
+git status
+
+# Add all files
+git add .
+
+# Commit with message
+git commit -m "feat: tier selection and production ready"
+
+# Check if remote exists
+git remote -v
+
+# If no remote, add it (replace YOUR_USERNAME)
+git remote add origin https://github.com/YOUR_USERNAME/cps-punisher.git
+
+# Push to GitHub
+git push -u origin main
+
+# OR if branch is called master
+git push -u origin master
+
+
+🚀 STEP 2: VERCEL DEPLOYMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Install Vercel CLI globally
+npm install -g vercel
+
+# Check version
+vercel --version
+
+# Login to Vercel
+vercel login
+
+# Deploy to preview (first time)
+vercel
+
+# Answer the prompts:
+#   - Set up and deploy? Y
+#   - Which scope? [Just press Enter]
+#   - Link to existing project? N
+#   - Project name? cps-punisher
+#   - Code directory? [Just press Enter]
+#   - Override settings? N
+
+
+🔐 STEP 3: ENVIRONMENT VARIABLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Add Supabase URL
+vercel env add VITE_SUPABASE_URL
+# Paste: https://xxxxx.supabase.co
+# Then press Enter twice
+
+# Add Supabase Anon Key
+vercel env add VITE_SUPABASE_ANON_KEY
+# Paste: your_long_anon_key_here
+# Then press Enter twice
+
+# Add Gemini API Key
+vercel env add VITE_GEMINI_API_KEY
+# Paste: AIzaXXXXXXXXXXXXXXXXXXXXX
+# Then press Enter twice
+
+# Add Stripe Key (optional for now)
+vercel env add VITE_STRIPE_PUBLISHABLE_KEY
+# Paste: pk_test_placeholder
+# Then press Enter twice
+
+# List all environment variables
+vercel env ls
+
+
+🎯 STEP 4: PRODUCTION DEPLOYMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Deploy to production
+vercel --prod
+
+# Wait 2-3 minutes...
+# When done, you'll get your production URL!
+
+
+📋 STEP 5: USEFUL COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# List all your projects
+vercel ls
+
+# See deployment logs
+vercel logs
+
+# See project info
+vercel inspect
+
+# Remove a deployment
+vercel rm [deployment-url]
+
+# Remove environment variable
+vercel env rm VARIABLE_NAME
+
+# Pull environment variables to local
+vercel env pull
+
+# Build locally to test
+npm run build
+
+# Preview build locally
+npm run preview
+
+
+🔄 UPDATING YOUR DEPLOYED APP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# 1. Make your code changes
+
+# 2. Commit to git
+git add .
+git commit -m "your update message"
+git push
+
+# 3. Deploy to production
+vercel --prod
+
+# Done! Your app updates automatically.
+
+
+🗄️ SUPABASE DATABASE SETUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Go to: https://supabase.com/dashboard
+Click your project → SQL Editor → New Query
+
+Copy/paste each SQL block from the deployment guide:
+1. Users table
+2. Cases table  
+3. Documents table
+4. Timeline events table
+
+Run each one by clicking "Run"
+
+
+🧪 TESTING CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After deployment, test:
+
+[ ] Open your production URL
+[ ] Sign up with email/password
+[ ] See tier selection page
+[ ] Select a tier
+[ ] Enter the app
+[ ] Create a case
+[ ] Upload a document
+[ ] Check violations
+[ ] Test all tabs
+[ ] Logout and login again
+[ ] Check on mobile device
+[ ] Test in different browsers
+
+
+🚨 TROUBLESHOOTING COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# App not loading? Check logs
+vercel logs --follow
+
+# Environment variables not working?
+vercel env ls
+vercel env pull
+
+# Want to start fresh?
+vercel --force
+
+# Need to redeploy?
+vercel --prod --force
+
+# Clear build cache
+vercel build --prod
+
+# Test build locally first
+npm run build
+npm run preview
+
+
+🌐 IMPORTANT URLS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Vercel Dashboard:     https://vercel.com/dashboard
+Supabase Dashboard:   https://supabase.com/dashboard
+Gemini API Keys:      https://aistudio.google.com/app/apikey
+GitHub Tokens:        https://github.com/settings/tokens
+Stripe Dashboard:     https://dashboard.stripe.com
+
+Your production app:  https://cps-punisher.vercel.app
+(or your custom domain)
+
+
+⚡ ONE-LINE DEPLOYMENT (After initial setup)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After everything is set up, deploying updates is just:
+
+git add . && git commit -m "update" && git push && vercel --prod
+
+That's it! 🎉
+
+
+📝 NOTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- First deployment takes 5-10 minutes
+- Subsequent deployments take 2-3 minutes
+- Environment variables are encrypted and secure
+- Free Vercel plan includes:
+  - Unlimited deployments
+  - 100GB bandwidth/month
+  - Automatic HTTPS
+  - Global CDN
+  - Preview deployments
+
+
+🎯 QUICK START (Copy/Paste All)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Complete deployment in one go (after setting up GitHub remote):
+
+git add . && \
+git commit -m "feat: production ready with tier selection" && \
+git push && \
+npm install -g vercel && \
+vercel login && \
+vercel
+
+# Then add your environment variables (one at a time):
+vercel env add VITE_SUPABASE_URL
+vercel env add VITE_SUPABASE_ANON_KEY
+vercel env add VITE_GEMINI_API_KEY
+vercel env add VITE_STRIPE_PUBLISHABLE_KEY
+
+# Finally deploy to production:
+vercel --prod
+
+
+🎉 SUCCESS INDICATORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You'll know everything worked when you see:
+
+✅ Git push: "X files changed, Y insertions(+)"
+✅ Vercel deploy: "✅ Production: https://cps-punisher.vercel.app"
+✅ Opening URL: App loads, no errors
+✅ Sign up: Tier selection appears
+✅ Select tier: App loads with features
+✅ Create case: Saves successfully
+✅ Upload doc: AI analysis runs
+
+
+================================================================================
+                     🚀 YOU'RE READY TO DEPLOY!
+================================================================================
+
+Start with Step 1 (Git Push) and work your way down.
+Each command is copy/paste ready.
+
+Need help? Check: 🚀_COMPLETE_DEPLOYMENT_GUIDE.md
+
+Copyright © 2024 DARREN GUAY. All Rights Reserved.
+================================================================================

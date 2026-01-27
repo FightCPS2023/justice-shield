@@ -1,0 +1,95 @@
+═══════════════════════════════════════════════════════════════
+🔍 FIND YOUR SUPABASE ANON KEY (2 Minutes)
+═══════════════════════════════════════════════════════════════
+
+QUICK PATH:
+───────────────────────────────────────────────────────────────
+
+1. Go to: https://supabase.com/dashboard/project/rdrpwrwjqayhbsyxqaej/settings/api
+
+2. Scroll down to "Project API keys" section
+
+3. Find "anon public" (first key - the one that's NOT hidden)
+
+4. Click [Copy] button
+
+5. Done! ✅
+
+
+DETAILED STEPS:
+───────────────────────────────────────────────────────────────
+
+STEP 1: Open your Supabase dashboard
+        https://supabase.com/dashboard/project/rdrpwrwjqayhbsyxqaej
+
+STEP 2: Click "Settings" (⚙️ gear icon at bottom left)
+
+STEP 3: Click "API" in the settings menu
+
+STEP 4: Scroll down to "Project API keys" section
+
+STEP 5: You'll see TWO keys:
+
+        ┌──────────────────────────────────────────────┐
+        │ 🔑 anon public                               │
+        │ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXV...        │
+        │ [Copy] ← CLICK THIS! ✅                      │
+        └──────────────────────────────────────────────┘
+        
+        ┌──────────────────────────────────────────────┐
+        │ 🔑 service_role                              │
+        │ •••••••••••••••••••••••••••••••••••••       │
+        │ [Copy] ← DON'T CLICK THIS! ❌                │
+        └──────────────────────────────────────────────┘
+
+STEP 6: Copy the "anon public" key (the first one)
+
+
+WHAT THE KEY LOOKS LIKE:
+───────────────────────────────────────────────────────────────
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz...
+
+✓ Starts with "eyJ"
+✓ Very long (200+ characters)
+✓ Has dots (.) separating sections
+✓ Mix of letters and numbers
+
+
+NEXT STEP:
+───────────────────────────────────────────────────────────────
+
+Paste it in: /utils/supabase/info.tsx
+
+Replace this:
+  export const publicAnonKey = "YOUR_SUPABASE_ANON_KEY_WILL_GO_HERE"
+
+With your real key:
+  export const publicAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+Save the file and you're done! ✅
+
+
+CHECKLIST:
+───────────────────────────────────────────────────────────────
+
+□ Opened Supabase dashboard
+□ Clicked Settings → API
+□ Scrolled to "Project API keys"
+□ Copied "anon public" key (first one, not service_role)
+□ Pasted into /utils/supabase/info.tsx
+□ Saved file
+
+
+DIRECT LINK (FASTEST):
+───────────────────────────────────────────────────────────────
+
+https://supabase.com/dashboard/project/rdrpwrwjqayhbsyxqaej/settings/api
+
+This takes you DIRECTLY to the API keys page!
+
+
+═══════════════════════════════════════════════════════════════
+⏱️  Time: 2 minutes
+📖 Full Guide: /🔍_FIND_ANON_KEY_STEP_BY_STEP.md
+═══════════════════════════════════════════════════════════════

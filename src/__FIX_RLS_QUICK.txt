@@ -1,0 +1,107 @@
+═══════════════════════════════════════════════════════════════
+🚀 FIX SUPABASE RLS PERFORMANCE (2 MINUTES)
+═══════════════════════════════════════════════════════════════
+
+ISSUE:
+───────────────────────────────────────────────────────────────
+Table: public.evidence
+Policy: "Users can update own evidence"
+Problem: Calls auth.uid() for EVERY ROW (slow!)
+
+
+THE FIX:
+───────────────────────────────────────────────────────────────
+Wrap auth.uid() in a subquery → 10x-100x faster!
+
+Change from:  auth.uid() = user_id
+Change to:    (select auth.uid()) = user_id
+
+
+═══════════════════════════════════════════════════════════════
+QUICK FIX (30 SECONDS)
+═══════════════════════════════════════════════════════════════
+
+1. Open Supabase Dashboard: https://supabase.com/dashboard
+2. Your project → SQL Editor → New query
+3. Copy-paste this:
+
+-- Drop old policy
+DROP POLICY IF EXISTS "Users can update own evidence" 
+ON public.evidence;
+
+-- Create optimized policy
+CREATE POLICY "Users can update own evidence"
+ON public.evidence
+FOR UPDATE
+TO authenticated
+USING ((select auth.uid()) = user_id)
+WITH CHECK ((select auth.uid()) = user_id);
+
+4. Click "Run" (Ctrl+Enter)
+5. ✅ Done! 10x faster!
+
+
+═══════════════════════════════════════════════════════════════
+COMPLETE FIX (ALL TABLES - RECOMMENDED)
+═══════════════════════════════════════════════════════════════
+
+You likely have this issue on OTHER tables too!
+
+To fix ALL tables at once:
+1. Open: /🚀_FIX_SUPABASE_RLS_PERFORMANCE.md
+2. Copy the "COMPLETE FIX" SQL (Step 5)
+3. Paste in SQL Editor
+4. Run it
+5. ✅ All policies optimized!
+
+
+═══════════════════════════════════════════════════════════════
+VERIFY IT WORKED
+═══════════════════════════════════════════════════════════════
+
+Run this query:
+
+SELECT policyname, definition
+FROM pg_policies
+WHERE tablename = 'evidence'
+  AND policyname = 'Users can update own evidence';
+
+Should see: "(select auth.uid())" in definition ✅
+
+
+═══════════════════════════════════════════════════════════════
+WHY THIS MATTERS
+═══════════════════════════════════════════════════════════════
+
+BEFORE (Slow):
+  1,000 rows = 1,000 function calls ❌
+
+AFTER (Fast):
+  1,000 rows = 1 function call ✅
+
+Result: 10x-100x performance improvement! 🚀
+
+
+═══════════════════════════════════════════════════════════════
+TABLES TO FIX
+═══════════════════════════════════════════════════════════════
+
+Apply this fix to ALL your tables:
+✓ cases
+✓ documents
+✓ timeline
+✓ violations
+✓ evidence (current issue)
+✓ strategies
+✓ notes
+✓ profiles
+✓ subscriptions
+
+Use the complete SQL in the full guide!
+
+
+═══════════════════════════════════════════════════════════════
+📖 Full Guide: /🚀_FIX_SUPABASE_RLS_PERFORMANCE.md
+═══════════════════════════════════════════════════════════════
+
+Complete SQL for all tables + verification + troubleshooting

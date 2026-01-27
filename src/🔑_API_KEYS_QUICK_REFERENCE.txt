@@ -1,0 +1,148 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                  🔑 API KEYS QUICK REFERENCE                     ║
+║                    THE CPS PUNISHER                              ║
+╚══════════════════════════════════════════════════════════════════╝
+
+📍 WHERE DO API KEYS GO?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Put them in a file named: .env
+
+Location: Project root folder (same folder as package.json)
+
+Example:
+    your-project/
+    ├── .env        👈 PUT KEYS HERE!
+    ├── App.tsx
+    ├── package.json
+    └── ...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔑 REQUIRED API KEYS (3 TOTAL)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━
+
+1. SUPABASE URL
+   Variable: VITE_SUPABASE_URL
+   Get it: https://supabase.com/dashboard → Settings → API
+   Example: https://abcdefgh.supabase.co
+   Status: ✅ READY (from earlier setup)
+
+2. SUPABASE KEY
+   Variable: VITE_SUPABASE_ANON_KEY
+   Get it: https://supabase.com/dashboard → Settings → API
+   Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+   Status: ✅ READY (from earlier setup)
+
+3. GEMINI AI
+   Variable: VITE_GEMINI_API_KEY
+   Get it: https://aistudio.google.com/app/apikey
+   Your key: AIzaSyCq4oz9bOt7CadY4dgDpQqcwnXFoIRtB54
+   Status: ✅ READY TO USE!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 COPY-PASTE TEMPLATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create .env file and paste this:
+
+# Database & Auth
+VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+VITE_SUPABASE_ANON_KEY=YOUR_ANON_KEY_HERE
+
+# AI Analysis (READY TO USE!)
+VITE_GEMINI_API_KEY=AIzaSyCq4oz9bOt7CadY4dgDpQqcwnXFoIRtB54
+
+# Payments (optional - add later)
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_KEY_HERE
+
+# Legal Research (optional - recommended!)
+VITE_COURTLISTENER_API_KEY=your-courtlistener-key
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ QUICK START (3 STEPS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Step 1: Create .env file
+    touch .env
+
+Step 2: Add your keys (see template above)
+
+Step 3: Restart server
+    npm run dev
+
+DONE! ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚨 COMMON MISTAKES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ Wrong file location (.env in /components/)
+   ✅ Put .env in ROOT folder
+
+❌ Forgot VITE_ prefix
+   ✅ Must start with VITE_ for client-side
+
+❌ Spaces around equals sign (KEY = value)
+   ✅ No spaces (KEY=value)
+
+❌ Forgot to restart server
+   ✅ Always restart after editing .env
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📱 FOR VERCEL DEPLOYMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Go to Vercel Dashboard
+2. Select your project
+3. Settings → Environment Variables
+4. Add each variable:
+   - VITE_SUPABASE_URL = (your value)
+   - VITE_SUPABASE_ANON_KEY = (your value)
+   - VITE_GEMINI_API_KEY = AIzaSyCq4oz9bOt7CadY4dgDpQqcwnXFoIRtB54
+5. Redeploy
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ TESTING YOUR SETUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Start server: npm run dev
+2. Open browser console (F12)
+3. Look for: "✅ Gemini API configured"
+4. Upload a document → Try AI analysis
+5. Should work! ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🆘 NEED HELP?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Read full guide: /🔑_WHERE_API_KEYS_GO.md
+
+Or check:
+- /ENVIRONMENT_VARIABLES_GUIDE.md
+- /ACTIVATION_CHECKLIST.md
+- /GEMINI_SETUP.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 CURRENT STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Supabase - CONFIGURED (from earlier)
+✅ Gemini AI - READY (key: AIzaSyCq4oz9bOt7CadY4dgDpQqcwnXFoIRtB54)
+⏳ Stripe - Optional (can add later)
+⏳ Analytics - Optional (can add later)
+
+YOU'RE ALMOST READY TO LAUNCH! 🚀
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Last Updated: January 9, 2026
+Gemini API Key: AIzaSyCq4oz9bOt7CadY4dgDpQqcwnXFoIRtB54
+Status: READY TO USE ✅

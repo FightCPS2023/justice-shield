@@ -1,0 +1,208 @@
+================================================================================
+                    CPS PUNISHER DEPLOYMENT CHECKLIST
+                         Print This & Check Off!
+================================================================================
+
+TODAY'S DATE: _______________
+
+ESTIMATED TIME: 30-40 minutes
+
+
+STEP 1: INSTALL SOFTWARE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ ] Install Node.js from https://nodejs.org
+    Test: Open Terminal/CMD and run: node --version
+    
+[ ] Install Vercel CLI
+    Run: npm install -g vercel
+    Test: vercel --version
+
+
+STEP 2: CREATE ACCOUNTS (All FREE!)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ ] Vercel Account
+    URL: https://vercel.com/signup
+    Username: _________________________
+    
+[ ] Supabase Account  
+    URL: https://supabase.com/dashboard
+    Project Name: cps-punisher
+    Database Password: _________________________ (SAVE THIS!)
+    
+[ ] Google Gemini API
+    URL: https://aistudio.google.com/app/apikey
+    API Key: AIzaSy_________________________ (Copy to notepad!)
+    
+[ ] Stripe Account
+    URL: https://dashboard.stripe.com/register
+    Make sure in TEST MODE (orange toggle)
+
+
+STEP 3: COLLECT API KEYS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Save these to a file called "API_KEYS.txt" on your Desktop:
+
+[ ] VITE_SUPABASE_URL
+    From: Supabase → Settings → API → Project URL
+    Value: https://_________________.supabase.co
+    
+[ ] VITE_SUPABASE_ANON_KEY  
+    From: Supabase → Settings → API → anon public key
+    Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9._________________
+    
+[ ] VITE_GEMINI_API_KEY
+    From: Google AI Studio → Create API Key
+    Value: AIzaSy_____________________________
+    
+[ ] VITE_STRIPE_PUBLISHABLE_KEY
+    From: Stripe → Developers → API Keys → Publishable key (TEST MODE!)
+    Value: pk_test_____________________________
+
+
+STEP 4: DEPLOY APP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Open Terminal/Command Prompt:
+
+[ ] Login to Vercel
+    Run: vercel login
+    
+[ ] Navigate to project folder
+    Run: cd /path/to/cps-punisher
+    Test: dir (Windows) or ls (Mac) - should see package.json
+    
+[ ] Install dependencies
+    Run: npm install
+    Wait: 2-3 minutes
+    
+[ ] First deployment
+    Run: vercel
+    Answer prompts (see guide for details)
+    
+[ ] Add environment variables (run each command separately):
+    
+    Run: vercel env add VITE_SUPABASE_URL
+    Paste: (your Supabase URL)
+    
+    Run: vercel env add VITE_SUPABASE_ANON_KEY
+    Paste: (your Supabase key)
+    
+    Run: vercel env add VITE_GEMINI_API_KEY
+    Paste: (your Gemini key)
+    
+    Run: vercel env add VITE_STRIPE_PUBLISHABLE_KEY
+    Paste: (your Stripe key)
+    
+[ ] Production deployment
+    Run: vercel --prod
+    Wait: 2-3 minutes
+    
+[ ] Copy your app URL: _________________________________
+
+
+STEP 5: CONFIGURE SUPABASE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ ] Set Site URL
+    Go to: Supabase → Authentication → URL Configuration
+    Site URL: (paste your Vercel URL)
+    
+[ ] Set Redirect URLs  
+    Redirect URLs: (paste your Vercel URL)/**
+    Click: Save
+
+
+STEP 6: TEST APP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ ] Open app URL in browser
+    
+[ ] Test access code
+    Code: CPSPUNISHER2024
+    
+[ ] Create test account
+    Email: _______________________
+    Password: _____________________
+    
+[ ] Verify email
+    Check inbox for Supabase email
+    Click verification link
+    
+[ ] Log in
+    
+[ ] Create a test case
+    
+[ ] Upload a test document
+    
+[ ] Check AI analysis works
+
+
+STEP 7: CELEBRATE! 🎉
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ ] Your app is LIVE!
+[ ] Share with beta testers
+[ ] Make a difference in people's lives!
+
+
+YOUR LIVE APP URL:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    https://_________________________________
+
+
+ACCESS CODE (for Enterprise features):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    CPSPUNISHER2024
+
+
+TROUBLESHOOTING:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Problem: vercel command not found
+Fix: npm install -g vercel
+
+Problem: App shows error
+Fix: vercel env ls (check all 4 variables exist)
+     vercel --prod (redeploy)
+
+Problem: Can't create account  
+Fix: Check Supabase URL Configuration (Step 5)
+
+Problem: AI doesn't work
+Fix: Check Gemini API key is correct
+     vercel env rm VITE_GEMINI_API_KEY
+     vercel env add VITE_GEMINI_API_KEY
+     vercel --prod
+
+
+HELPFUL COMMANDS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Deploy to production:        vercel --prod
+Check environment variables: vercel env ls  
+Remove environment variable: vercel env rm VARIABLE_NAME
+Add environment variable:    vercel env add VARIABLE_NAME
+View deployment logs:        vercel logs
+
+
+NOTES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+________________________________________________________________
+
+________________________________________________________________
+
+________________________________________________________________
+
+________________________________________________________________
+
+
+COMPLETED ON: _______________
+
+TIME TAKEN: _______________ minutes
+
+STATUS: [ ] Success!  [ ] Need help
+
+
+================================================================================
+Copyright © 2024 DARREN GUAY. All Rights Reserved.
+The CPS Punisher - Changing Lives, One Case at a Time ❤️
+================================================================================

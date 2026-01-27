@@ -1,0 +1,122 @@
+================================================================================
+                    🚨 QUICK FIX: ERROR 400 (2 MINUTES)
+================================================================================
+
+ERROR 400 = Supabase doesn't know your app's URL yet.
+
+Let's fix it RIGHT NOW:
+
+
+STEP 1: GET YOUR APP URL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Look at your Terminal/Command Prompt.
+
+Find the line that says:
+    ✅ Production deployment complete!
+    🔗 https://cps-punisher-xxxxx.vercel.app
+
+Copy that URL!
+
+OR go to: https://vercel.com/dashboard
+    → Click your project
+    → Copy the domain at the top
+
+
+MY APP URL:  https://___________________________________
+
+
+STEP 2: CONFIGURE SUPABASE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Go to: https://supabase.com/dashboard
+
+2. Click your project: cps-punisher
+
+3. Click "Authentication" (left sidebar, 🔑 icon)
+
+4. Click "URL Configuration"
+
+5. In "Site URL" field, paste YOUR URL:
+   
+   ┌────────────────────────────────────────────┐
+   │ Site URL:                                  │
+   │                                            │
+   │ https://cps-punisher-xxxxx.vercel.app     │
+   │                                            │
+   └────────────────────────────────────────────┘
+
+   ⚠️ NO SLASH AT THE END!
+
+6. In "Redirect URLs" field, paste these (4 lines):
+   (Replace with YOUR actual URL!)
+
+   ┌────────────────────────────────────────────┐
+   │ Redirect URLs:                             │
+   │                                            │
+   │ https://cps-punisher-xxxxx.vercel.app     │
+   │ https://cps-punisher-xxxxx.vercel.app/**  │
+   │ http://localhost:3000                      │
+   │ http://localhost:3000/**                   │
+   │                                            │
+   └────────────────────────────────────────────┘
+
+7. Scroll down and click "SAVE"
+
+8. Wait for green success message
+
+
+STEP 3: TEST IT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Go to your app URL
+
+2. Wait 30 seconds (let Supabase update)
+
+3. Click "Get Started"
+
+4. Enter access code: CPSPUNISHER2024
+
+5. Try creating an account
+
+✅ IT SHOULD WORK NOW!
+
+
+STILL NOT WORKING?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Try these:
+
+□ Wait 1 full minute (Supabase can be slow to update)
+
+□ Clear browser cache: Ctrl+Shift+Delete
+
+□ Hard refresh: Ctrl+F5 (Windows) or Cmd+Shift+R (Mac)
+
+□ Check for typos in your Supabase URLs
+
+□ Make sure URL starts with https:// (not http://)
+
+□ Make sure NO slash at the end of Site URL
+
+□ Try a different browser (Chrome, Firefox, etc.)
+
+
+NEED MORE HELP?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Open this file for detailed instructions:
+
+    📖 🔧_FIX_ERROR_400_SIGN_IN.md
+
+Or just tell me:
+    - Your app URL
+    - What you entered in Supabase
+    - Screenshot of the error
+
+I'll help you fix it! 😊
+
+
+================================================================================
+Copyright © 2024 DARREN GUAY. All Rights Reserved.
+================================================================================
