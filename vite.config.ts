@@ -5,6 +5,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     alias: {
@@ -53,16 +54,13 @@ export default defineConfig({
     },
   },
 
-  // ⭐ ADD THIS ⭐
   optimizeDeps: {
     include: ["jspdf"]
   },
 
-  // ⭐ AND THIS ⭐
- build: {
-  target: "esnext"
-}
-
+  build: {
+    target: "esnext",
+    outDir: "build",
     rollupOptions: {
       external: []
     }
@@ -74,4 +72,3 @@ export default defineConfig({
   },
 });
 
-// redeploy
