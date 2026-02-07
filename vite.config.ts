@@ -59,9 +59,10 @@ export default defineConfig({
   },
 
   // ⭐ AND THIS ⭐
-  build: {
-    target: 'esnext',
-    outDir: "dist",
+ build: {
+  target: "esnext"
+}
+
     rollupOptions: {
       external: []
     }
