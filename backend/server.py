@@ -77,6 +77,9 @@ async def lifespan(app: FastAPI):
     await db.timeline_events.create_index("case_id")
     await db.strategies.create_index("case_id")
     await db.chat_messages.create_index([("user_id", 1), ("session_id", 1)])
+    await db.payment_transactions.create_index("session_id", unique=True)
+    await db.payment_transactions.create_index("user_id")
+    await db.calendar_events.create_index("user_id")
     
     yield
     client.close()
