@@ -21,6 +21,7 @@ Build THE CPS PUNISHER - the most powerful interactive Child Protective Services
 ## Core Requirements
 
 ### Completed Features (Feb 25, 2026)
+- [x] **DOCUMENT UPLOAD WITH AI ANALYSIS** - Core feature! Upload CPS docs and AI extracts violations, timeline, recommendations
 - [x] AI-powered case analysis using GPT-5.2
 - [x] Document generator for legal motions and letters (20+ document types)
 - [x] Violation tracker (26 violation types - constitutional + procedural)
