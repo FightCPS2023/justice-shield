@@ -12,7 +12,7 @@ import time
 from datetime import datetime
 
 class CPSPunisherTester:
-    def __init__(self, base_url="https://b200b0c8-940f-4bb9-9410-a028f0ae6175.preview.emergentagent.com"):
+    def __init__(self, base_url="https://cps-battle-station.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.user_id = None
