@@ -28,6 +28,26 @@ load_dotenv()
 MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
 DB_NAME = os.environ.get("DB_NAME", "cps_punisher")
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
+STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY")
+
+# Stripe pricing tiers (price IDs from existing Stripe products)
+STRIPE_PRICE_IDS = {
+    "essential_monthly": "price_1SZChVLer5ye2GBih8C2Cn8U",
+    "essential_annual": "price_1SZDqXLer5ye2GBi27cH4jsS",
+    "professional_monthly": "price_1SZDlfLer5ye2GBidSCef53l",
+    "professional_annual": "price_1SZDwnLer5ye2GBiqEl9SAba",
+    "attorney_monthly": "price_1SZDnkLer5ye2GBisGCQtncE",
+    "attorney_annual": "price_1SZDsSLer5ye2GBieHTotLLO",
+    "enterprise_monthly": "price_1SZDpeLer5ye2GBi9gT16zyW",
+    "enterprise_annual": "price_1SZDueLer5ye2GBiRifVwAeC",
+}
+
+TIER_PRICES = {
+    "essential": {"monthly": 39.00, "annual": 390.00},
+    "professional": {"monthly": 79.00, "annual": 790.00},
+    "attorney": {"monthly": 299.00, "annual": 2990.00},
+    "enterprise": {"monthly": 999.00, "annual": 9990.00},
+}
 
 # JWT Configuration
 SECRET_KEY = os.environ.get("SECRET_KEY", "cps-punisher-secret-key-2024-secure-random-string")
