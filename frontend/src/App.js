@@ -1100,8 +1100,14 @@ function DocumentsTab({ selectedCase }) {
   const { api } = useAuth();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [selectedDocType, setSelectedDocType] = useState('');
+  const [activeSubTab, setActiveSubTab] = useState('upload');
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState('');
+  const [dragActive, setDragActive] = useState(false);
 
   const documentTypes = [
     { id: 'motion_to_dismiss', name: 'Motion to Dismiss' },
@@ -1111,6 +1117,9 @@ function DocumentsTab({ selectedCase }) {
     { id: 'objection_letter', name: 'Written Objection' },
     { id: 'affidavit', name: 'Affidavit/Declaration' },
     { id: 'case_plan_objection', name: 'Case Plan Objection' },
+    { id: 'motion_reunification', name: 'Motion for Reunification' },
+    { id: 'emergency_motion', name: 'Emergency Motion' },
+    { id: 'complaint_1983', name: 'Section 1983 Civil Rights Complaint' },
   ];
 
   useEffect(() => {
@@ -1132,6 +1141,115 @@ function DocumentsTab({ selectedCase }) {
     }
   };
 
+  const handleFileUpload = async (file) => {
+    if (!selectedCase) {
+      toast.error('Please select a case first');
+      return;
+    }
+
+    const allowedTypes = ['.pdf', '.txt', '.png', '.jpg', '.jpeg', '.doc', '.docx'];
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!allowedTypes.includes(ext)) {
+      toast.error(`File type not supported. Allowed: ${allowedTypes.join(', ')}`);
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File too large. Maximum 10MB.');
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress('Uploading document...');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('case_id', selectedCase.id);
+      formData.append('title', file.name.replace(/\.[^/.]+$/, ''));
+      formData.append('doc_type', 'cps_document');
+      formData.append('auto_analyze', 'true');
+
+      const token = localStorage.getItem('cps_token');
+      
+      setUploadProgress('Uploading and analyzing with AI... This may take 30-60 seconds.');
+      
+      const response = await fetch(`${API_URL}/api/documents/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Upload failed');
+      }
+
+      const result = await response.json();
+      
+      setDocuments([result, ...documents]);
+      setSelectedDocument(result);
+      
+      const violationsCreated = result.analysis_result?.violations_created || 0;
+      const timelineCreated = result.analysis_result?.timeline_events_created || 0;
+      
+      toast.success(
+        `Document analyzed! Found ${violationsCreated} violations and ${timelineCreated} timeline events.`,
+        { duration: 5000 }
+      );
+      
+      setActiveSubTab('analysis');
+    } catch (error) {
+      toast.error(error.message || 'Failed to upload document');
+    } finally {
+      setUploading(false);
+      setUploadProgress('');
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileUpload(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragActive(false);
+  };
+
+  const reanalyzeDocument = async (docId) => {
+    setAnalyzing(true);
+    try {
+      const token = localStorage.getItem('cps_token');
+      const response = await fetch(`${API_URL}/api/documents/${docId}/reanalyze`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) throw new Error('Reanalysis failed');
+      
+      const result = await response.json();
+      toast.success(`Reanalysis complete! Found ${result.violations_created} new violations.`);
+      loadDocuments();
+    } catch (error) {
+      toast.error('Failed to reanalyze document');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   const generateDocument = async (docType) => {
     if (!selectedCase) {
       toast.error('Please select a case first');
@@ -1147,7 +1265,6 @@ function DocumentsTab({ selectedCase }) {
         document_type: docType
       });
       
-      // Save the generated document
       const newDoc = await api.post('/api/documents', {
         case_id: selectedCase.id,
         title: documentTypes.find(d => d.id === docType)?.name || docType,
@@ -1155,8 +1272,10 @@ function DocumentsTab({ selectedCase }) {
         doc_type: docType
       });
       
-      setDocuments([...documents, newDoc]);
+      setDocuments([newDoc, ...documents]);
+      setSelectedDocument(newDoc);
       toast.success('Document generated successfully!');
+      setActiveSubTab('analysis');
     } catch (error) {
       toast.error('Failed to generate document');
     } finally {
@@ -1170,7 +1289,7 @@ function DocumentsTab({ selectedCase }) {
       <div className="text-center py-12 animate-fadeIn" data-testid="documents-tab">
         <FileText className="w-12 h-12 mx-auto text-blue-500 mb-4" />
         <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
-        <p className="text-gray-400">Select a case to generate legal documents</p>
+        <p className="text-gray-400">Select a case to upload and analyze documents</p>
       </div>
     );
   }
@@ -1178,51 +1297,444 @@ function DocumentsTab({ selectedCase }) {
   return (
     <div className="space-y-6 animate-fadeIn" data-testid="documents-tab">
       <div>
-        <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Document Generator</h1>
-        <p className="text-gray-400">AI-powered legal document creation for {selectedCase.title}</p>
+        <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>
+          Document Analysis Center
+        </h1>
+        <p className="text-gray-400">Upload CPS documents for AI-powered analysis - {selectedCase.title}</p>
       </div>
 
-      {/* Document Types */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {documentTypes.map((doc) => (
+      {/* Sub-tabs */}
+      <div className="flex gap-2 border-b border-gray-700 pb-2">
+        {[
+          { id: 'upload', label: 'Upload & Analyze', icon: Upload },
+          { id: 'generate', label: 'Generate Documents', icon: FileText },
+          { id: 'analysis', label: 'View Analysis', icon: Brain },
+        ].map(tab => (
           <button
-            key={doc.id}
-            onClick={() => generateDocument(doc.id)}
-            disabled={generating}
-            className="p-4 bg-gray-800/50 border border-gray-700 rounded-xl hover:border-red-600/50 transition-all text-left"
+            key={tab.id}
+            onClick={() => setActiveSubTab(tab.id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition-all ${
+              activeSubTab === tab.id 
+                ? 'bg-red-600 text-white' 
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+            }`}
           >
-            <div className="flex items-center justify-between mb-2">
-              <FileText className="w-6 h-6 text-blue-500" />
-              {generating && selectedDocType === doc.id && (
-                <Loader2 className="w-5 h-5 animate-spin text-red-500" />
-              )}
-            </div>
-            <h3 className="font-semibold">{doc.name}</h3>
-            <p className="text-sm text-gray-400 mt-1">Generate with AI</p>
+            <tab.icon className="w-4 h-4" />
+            {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Generated Documents */}
-      {documents.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Generated Documents</h2>
-          <div className="space-y-3">
-            {documents.map((doc) => (
-              <div key={doc.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-                <div className="flex items-center justify-between">
+      {/* Upload Tab */}
+      {activeSubTab === 'upload' && (
+        <div className="space-y-6">
+          {/* Upload Zone */}
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${
+              dragActive 
+                ? 'border-red-500 bg-red-500/10' 
+                : 'border-gray-600 hover:border-red-600/50'
+            } ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+          >
+            {uploading ? (
+              <div className="space-y-4">
+                <Loader2 className="w-16 h-16 mx-auto text-red-500 animate-spin" />
+                <p className="text-lg font-semibold text-red-400">{uploadProgress}</p>
+                <p className="text-gray-400">AI is analyzing your document for violations and timeline events...</p>
+              </div>
+            ) : (
+              <>
+                <Upload className="w-16 h-16 mx-auto text-gray-500 mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Drop Your CPS Documents Here</h3>
+                <p className="text-gray-400 mb-4">
+                  Upload petitions, safety plans, court orders, letters, or any CPS documents
+                </p>
+                <p className="text-sm text-gray-500 mb-4">
+                  Supported: PDF, TXT, PNG, JPG, DOC, DOCX (Max 10MB)
+                </p>
+                <label className="btn-punisher cursor-pointer inline-block">
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,.txt,.png,.jpg,.jpeg,.doc,.docx"
+                    onChange={(e) => e.target.files[0] && handleFileUpload(e.target.files[0])}
+                    data-testid="file-upload-input"
+                  />
+                  <Upload className="w-5 h-5 inline mr-2" />
+                  Select File to Upload
+                </label>
+              </>
+            )}
+          </div>
+
+          {/* What AI Will Find */}
+          <div className="bg-gradient-to-r from-red-900/30 to-gray-900 border border-red-800/50 rounded-xl p-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Brain className="w-5 h-5 text-red-500" />
+              What THE CPS PUNISHER Will Analyze
+            </h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { icon: AlertTriangle, title: 'Constitutional Violations', desc: '4th, 5th, 6th, 14th Amendment violations' },
+                { icon: Clock, title: 'Timeline Events', desc: 'Every date and deadline extracted' },
+                { icon: Users, title: 'Named Individuals', desc: 'Caseworkers, judges, attorneys identified' },
+                { icon: Shield, title: 'Defense Opportunities', desc: 'Legal arguments and weaknesses' },
+                { icon: FileText, title: 'Key Allegations', desc: 'What CPS claims against you' },
+                { icon: Gavel, title: 'Motions to File', desc: 'Recommended legal actions' },
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <item.icon className="w-5 h-5 text-red-500 mt-0.5" />
                   <div>
-                    <h3 className="font-semibold">{doc.title}</h3>
-                    <p className="text-sm text-gray-400">{doc.date}</p>
+                    <p className="font-medium">{item.title}</p>
+                    <p className="text-sm text-gray-400">{item.desc}</p>
                   </div>
-                  <button className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm">
-                    <Eye className="w-4 h-4 inline mr-2" />
-                    View
-                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Uploaded Documents List */}
+          {documents.filter(d => d.source === 'upload').length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Uploaded Documents</h3>
+              <div className="space-y-3">
+                {documents.filter(d => d.source === 'upload').map(doc => (
+                  <div 
+                    key={doc.id} 
+                    className={`bg-gray-800/50 border rounded-xl p-4 cursor-pointer transition-all ${
+                      selectedDocument?.id === doc.id ? 'border-red-500' : 'border-gray-700 hover:border-gray-600'
+                    }`}
+                    onClick={() => {
+                      setSelectedDocument(doc);
+                      setActiveSubTab('analysis');
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-8 h-8 text-blue-500" />
+                        <div>
+                          <h4 className="font-semibold">{doc.title}</h4>
+                          <p className="text-sm text-gray-400">
+                            {doc.filename} • {new Date(doc.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {doc.analysis && (
+                          <span className="px-2 py-1 bg-green-600/20 text-green-400 text-xs rounded">
+                            Analyzed
+                          </span>
+                        )}
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedDocument(doc);
+                            setActiveSubTab('analysis');
+                          }}
+                          className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm"
+                        >
+                          View Analysis
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Generate Tab */}
+      {activeSubTab === 'generate' && (
+        <div className="space-y-6">
+          <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+            <p className="text-gray-300">
+              Generate professional legal documents based on your case data, violations, and timeline. 
+              AI will include relevant case law and {selectedCase.state} statutes.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {documentTypes.map((doc) => (
+              <button
+                key={doc.id}
+                onClick={() => generateDocument(doc.id)}
+                disabled={generating}
+                className="p-4 bg-gray-800/50 border border-gray-700 rounded-xl hover:border-red-600/50 transition-all text-left"
+                data-testid={`generate-${doc.id}`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <FileText className="w-6 h-6 text-blue-500" />
+                  {generating && selectedDocType === doc.id && (
+                    <Loader2 className="w-5 h-5 animate-spin text-red-500" />
+                  )}
+                </div>
+                <h3 className="font-semibold">{doc.name}</h3>
+                <p className="text-sm text-gray-400 mt-1">Generate with AI</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Analysis Tab */}
+      {activeSubTab === 'analysis' && (
+        <div className="space-y-6">
+          {selectedDocument ? (
+            <DocumentAnalysisView 
+              document={selectedDocument} 
+              onReanalyze={() => reanalyzeDocument(selectedDocument.id)}
+              analyzing={analyzing}
+            />
+          ) : (
+            <div className="text-center py-12">
+              <Brain className="w-12 h-12 mx-auto text-gray-500 mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Document Selected</h3>
+              <p className="text-gray-400">Upload a document or select one from the list to view its analysis</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Document Analysis View Component
+function DocumentAnalysisView({ document, onReanalyze, analyzing }) {
+  const analysis = document.analysis_result?.analysis || document.analysis;
+  
+  if (!analysis) {
+    return (
+      <div className="text-center py-12">
+        <AlertTriangle className="w-12 h-12 mx-auto text-yellow-500 mb-4" />
+        <h3 className="text-xl font-semibold mb-2">No Analysis Available</h3>
+        <p className="text-gray-400 mb-4">This document hasn't been analyzed yet</p>
+        <button 
+          onClick={onReanalyze}
+          disabled={analyzing}
+          className="btn-punisher"
+        >
+          {analyzing ? (
+            <><Loader2 className="w-5 h-5 animate-spin inline mr-2" /> Analyzing...</>
+          ) : (
+            <><Brain className="w-5 h-5 inline mr-2" /> Analyze Now</>
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  const data = typeof analysis === 'string' ? { raw_analysis: analysis } : analysis;
+
+  return (
+    <div className="space-y-6" data-testid="document-analysis">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">{document.title}</h2>
+          <p className="text-gray-400">{document.filename}</p>
+        </div>
+        <button 
+          onClick={onReanalyze}
+          disabled={analyzing}
+          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center gap-2"
+        >
+          {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
+          Re-analyze
+        </button>
+      </div>
+
+      {/* Summary */}
+      {data.summary && (
+        <div className="bg-gradient-to-r from-blue-900/30 to-gray-900 border border-blue-800/50 rounded-xl p-6">
+          <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+            <FileText className="w-5 h-5 text-blue-500" />
+            Document Summary
+          </h3>
+          <p className="text-gray-300">{data.summary}</p>
+          {data.document_type && (
+            <p className="text-sm text-blue-400 mt-2">Document Type: {data.document_type}</p>
+          )}
+        </div>
+      )}
+
+      {/* Violations Found */}
+      {data.violations && data.violations.length > 0 && (
+        <div className="bg-gradient-to-r from-red-900/30 to-gray-900 border border-red-800/50 rounded-xl p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+            Violations Identified ({data.violations.length})
+          </h3>
+          <div className="space-y-4">
+            {data.violations.map((v, i) => (
+              <div key={i} className="bg-black/30 rounded-lg p-4 border-l-4 border-red-500">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      v.severity === 'high' ? 'bg-red-600' : 
+                      v.severity === 'medium' ? 'bg-yellow-600' : 'bg-gray-600'
+                    }`}>
+                      {v.severity?.toUpperCase() || 'MEDIUM'}
+                    </span>
+                    <h4 className="font-semibold mt-2">{v.type?.replace(/_/g, ' ').toUpperCase()}</h4>
+                  </div>
+                </div>
+                <p className="text-gray-300 mt-2">{v.description}</p>
+                {v.legal_basis && (
+                  <p className="text-sm text-red-400 mt-2">Legal Basis: {v.legal_basis}</p>
+                )}
+                {v.defense_strategy && (
+                  <p className="text-sm text-green-400 mt-1">Defense: {v.defense_strategy}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Key Allegations */}
+      {data.key_allegations && data.key_allegations.length > 0 && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Scale className="w-5 h-5 text-yellow-500" />
+            Key Allegations Against You
+          </h3>
+          <ul className="space-y-2">
+            {data.key_allegations.map((allegation, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="text-yellow-500">•</span>
+                <span className="text-gray-300">{allegation}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Timeline Events */}
+      {data.timeline_events && data.timeline_events.length > 0 && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-purple-500" />
+            Timeline Events Extracted ({data.timeline_events.length})
+          </h3>
+          <div className="space-y-3">
+            {data.timeline_events.map((event, i) => (
+              <div key={i} className="flex items-start gap-4 border-l-2 border-purple-500/50 pl-4">
+                <div className="text-purple-400 font-mono text-sm whitespace-nowrap">
+                  {event.date || 'Unknown'}
+                </div>
+                <div>
+                  <p className="text-gray-200">{event.event}</p>
+                  {event.significance && (
+                    <p className="text-sm text-gray-400 mt-1">{event.significance}</p>
+                  )}
                 </div>
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Named Individuals */}
+      {data.named_individuals && data.named_individuals.length > 0 && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5 text-blue-500" />
+            Named Individuals
+          </h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            {data.named_individuals.map((person, i) => (
+              <div key={i} className="bg-black/30 rounded-lg p-3">
+                <p className="font-semibold">{person.name}</p>
+                <p className="text-sm text-blue-400">{person.role}</p>
+                {person.actions && <p className="text-sm text-gray-400 mt-1">{person.actions}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Defense Opportunities & Recommended Actions */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {data.defense_opportunities && data.defense_opportunities.length > 0 && (
+          <div className="bg-gradient-to-r from-green-900/30 to-gray-900 border border-green-800/50 rounded-xl p-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-green-500" />
+              Defense Opportunities
+            </h3>
+            <ul className="space-y-2">
+              {data.defense_opportunities.map((opp, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-300">{opp}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {data.recommended_actions && data.recommended_actions.length > 0 && (
+          <div className="bg-gradient-to-r from-orange-900/30 to-gray-900 border border-orange-800/50 rounded-xl p-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-orange-500" />
+              Recommended Actions
+            </h3>
+            <ul className="space-y-2">
+              {data.recommended_actions.map((action, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-orange-500 font-bold">{i + 1}.</span>
+                  <span className="text-gray-300">{action}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* Motions to Consider */}
+      {data.motions_to_consider && data.motions_to_consider.length > 0 && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Gavel className="w-5 h-5 text-red-500" />
+            Motions to Consider Filing
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {data.motions_to_consider.map((motion, i) => (
+              <span key={i} className="px-3 py-1 bg-red-600/20 text-red-400 rounded-full text-sm">
+                {motion}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Raw Analysis Fallback */}
+      {data.raw_analysis && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+          <h3 className="text-lg font-semibold mb-4">Full Analysis</h3>
+          <pre className="whitespace-pre-wrap text-gray-300 text-sm">{data.raw_analysis}</pre>
+        </div>
+      )}
+
+      {/* Red Flags */}
+      {data.red_flags && data.red_flags.length > 0 && (
+        <div className="bg-red-900/20 border border-red-800/50 rounded-xl p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+            Red Flags & Concerns
+          </h3>
+          <ul className="space-y-2">
+            {data.red_flags.map((flag, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="text-red-500">⚠</span>
+                <span className="text-gray-300">{flag}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
