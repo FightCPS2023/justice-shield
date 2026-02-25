@@ -412,8 +412,10 @@ function Dashboard({ onNavigate }) {
     { id: 'violations', icon: AlertTriangle, label: 'Violations' },
     { id: 'documents', icon: FileText, label: 'Documents' },
     { id: 'timeline', icon: Clock, label: 'Timeline' },
+    { id: 'calendar', icon: Calendar, label: 'Calendar' },
     { id: 'research', icon: Search, label: 'Legal Research' },
     { id: 'library', icon: BookOpen, label: 'Law Library' },
+    { id: 'pricing', icon: CreditCard, label: 'Upgrade Plan' },
   ];
 
   return (
