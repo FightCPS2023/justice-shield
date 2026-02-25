@@ -868,6 +868,287 @@ async def health_check():
     }
 
 
+# ============== STRIPE PAYMENT ENDPOINTS ==============
+
+class CheckoutRequest(BaseModel):
+    tier: str  # essential, professional, attorney, enterprise
+    billing_period: str = "monthly"  # monthly or annual
+    origin_url: str
+
+class CheckoutStatusRequest(BaseModel):
+    session_id: str
+
+@app.post("/api/stripe/create-checkout")
+async def create_checkout_session(request: CheckoutRequest, http_request: Request, current_user: dict = Depends(get_current_user)):
+    """Create Stripe checkout session for subscription"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
+    
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+    
+    # Validate tier
+    if request.tier not in TIER_PRICES:
+        raise HTTPException(status_code=400, detail="Invalid tier selected")
+    
+    # Get price ID from predefined map (NEVER from frontend)
+    price_key = f"{request.tier}_{request.billing_period}"
+    stripe_price_id = STRIPE_PRICE_IDS.get(price_key)
+    
+    if not stripe_price_id:
+        raise HTTPException(status_code=400, detail="Invalid billing period")
+    
+    # Build dynamic URLs from frontend origin
+    success_url = f"{request.origin_url}/success?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{request.origin_url}/pricing"
+    
+    # Initialize Stripe
+    host_url = str(http_request.base_url)
+    webhook_url = f"{host_url}api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    # Create checkout session
+    checkout_request = CheckoutSessionRequest(
+        stripe_price_id=stripe_price_id,
+        quantity=1,
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            "user_id": current_user["user_id"],
+            "email": current_user["email"],
+            "tier": request.tier,
+            "billing_period": request.billing_period
+        }
+    )
+    
+    session = await stripe_checkout.create_checkout_session(checkout_request)
+    
+    # Create pending transaction record
+    await db.payment_transactions.insert_one({
+        "_id": str(uuid.uuid4()),
+        "session_id": session.session_id,
+        "user_id": current_user["user_id"],
+        "email": current_user["email"],
+        "tier": request.tier,
+        "billing_period": request.billing_period,
+        "amount": TIER_PRICES[request.tier][request.billing_period],
+        "currency": "usd",
+        "payment_status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "url": session.url,
+        "session_id": session.session_id
+    }
+
+@app.get("/api/stripe/checkout-status/{session_id}")
+async def get_checkout_status(session_id: str, http_request: Request, current_user: dict = Depends(get_current_user)):
+    """Get checkout session status and update user tier if paid"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout
+    
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+    
+    # Check if already processed
+    transaction = await db.payment_transactions.find_one({"session_id": session_id})
+    if transaction and transaction.get("payment_status") == "paid":
+        return {
+            "status": "complete",
+            "payment_status": "paid",
+            "tier": transaction.get("tier")
+        }
+    
+    # Initialize Stripe and check status
+    host_url = str(http_request.base_url)
+    webhook_url = f"{host_url}api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    status = await stripe_checkout.get_checkout_status(session_id)
+    
+    # Update transaction and user if paid
+    if status.payment_status == "paid" and transaction:
+        # Update transaction
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {"$set": {
+                "payment_status": "paid",
+                "status": status.status,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        # Update user tier
+        await db.users.update_one(
+            {"_id": current_user["user_id"]},
+            {"$set": {
+                "tier": transaction.get("tier"),
+                "subscription_status": "active",
+                "subscription_updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+    
+    return {
+        "status": status.status,
+        "payment_status": status.payment_status,
+        "amount_total": status.amount_total,
+        "currency": status.currency
+    }
+
+@app.post("/api/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhooks"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout
+    
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+    
+    body = await request.body()
+    signature = request.headers.get("Stripe-Signature")
+    
+    host_url = str(request.base_url)
+    webhook_url = f"{host_url}api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    try:
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        
+        # Update transaction based on webhook event
+        if webhook_response.session_id:
+            transaction = await db.payment_transactions.find_one({"session_id": webhook_response.session_id})
+            
+            if transaction and webhook_response.payment_status == "paid":
+                # Update transaction
+                await db.payment_transactions.update_one(
+                    {"session_id": webhook_response.session_id},
+                    {"$set": {
+                        "payment_status": "paid",
+                        "event_type": webhook_response.event_type,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                
+                # Update user tier
+                await db.users.update_one(
+                    {"_id": transaction.get("user_id")},
+                    {"$set": {
+                        "tier": transaction.get("tier"),
+                        "subscription_status": "active",
+                        "subscription_updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+        
+        return {"status": "success"}
+    except Exception as e:
+        print(f"Webhook error: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+# ============== CALENDAR ENDPOINTS ==============
+
+class CalendarEventCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    event_date: str
+    event_time: Optional[str] = None
+    event_type: str = "general"  # court_hearing, deadline, meeting, reminder
+    case_id: Optional[str] = None
+    reminder_days: Optional[int] = 1
+
+class CalendarEventUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    event_date: Optional[str] = None
+    event_time: Optional[str] = None
+    event_type: Optional[str] = None
+    completed: Optional[bool] = None
+
+@app.post("/api/calendar")
+async def create_calendar_event(event_data: CalendarEventCreate, current_user: dict = Depends(get_current_user)):
+    """Create a calendar event"""
+    event_id = str(uuid.uuid4())
+    event = {
+        "_id": event_id,
+        "user_id": current_user["user_id"],
+        "title": event_data.title,
+        "description": event_data.description,
+        "event_date": event_data.event_date,
+        "event_time": event_data.event_time,
+        "event_type": event_data.event_type,
+        "case_id": event_data.case_id,
+        "reminder_days": event_data.reminder_days,
+        "completed": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.calendar_events.insert_one(event)
+    event["id"] = event.pop("_id")
+    return event
+
+@app.get("/api/calendar")
+async def list_calendar_events(current_user: dict = Depends(get_current_user)):
+    """List all calendar events for the user"""
+    events = []
+    async for event in db.calendar_events.find({"user_id": current_user["user_id"]}).sort("event_date", 1):
+        event["id"] = event.pop("_id")
+        events.append(event)
+    return {"events": events}
+
+@app.get("/api/calendar/{event_id}")
+async def get_calendar_event(event_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a specific calendar event"""
+    event = await db.calendar_events.find_one({"_id": event_id, "user_id": current_user["user_id"]})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    event["id"] = event.pop("_id")
+    return event
+
+@app.put("/api/calendar/{event_id}")
+async def update_calendar_event(event_id: str, event_data: CalendarEventUpdate, current_user: dict = Depends(get_current_user)):
+    """Update a calendar event"""
+    update_data = {k: v for k, v in event_data.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.calendar_events.update_one(
+        {"_id": event_id, "user_id": current_user["user_id"]},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    return {"message": "Event updated successfully"}
+
+@app.delete("/api/calendar/{event_id}")
+async def delete_calendar_event(event_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a calendar event"""
+    result = await db.calendar_events.delete_one({"_id": event_id, "user_id": current_user["user_id"]})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    return {"message": "Event deleted successfully"}
+
+@app.get("/api/calendar/upcoming/{days}")
+async def get_upcoming_events(days: int = 7, current_user: dict = Depends(get_current_user)):
+    """Get upcoming events within specified days"""
+    today = datetime.now(timezone.utc).date()
+    end_date = today + timedelta(days=days)
+    
+    events = []
+    async for event in db.calendar_events.find({
+        "user_id": current_user["user_id"],
+        "event_date": {
+            "$gte": today.isoformat(),
+            "$lte": end_date.isoformat()
+        },
+        "completed": False
+    }).sort("event_date", 1):
+        event["id"] = event.pop("_id")
+        events.append(event)
+    
+    return {"events": events, "days": days}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
