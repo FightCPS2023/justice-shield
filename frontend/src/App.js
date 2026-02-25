@@ -4,7 +4,8 @@ import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut,
   Home, Settings, Star, Check, ChevronDown, Play, Lock, CheckCircle2,
-  Loader2, Upload, Clock, Eye, Download, Plus, Trash2, Edit2, Send
+  Loader2, Upload, Clock, Eye, Download, Plus, Trash2, Edit2, Send,
+  CreditCard, Crown, Building2, Zap
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
