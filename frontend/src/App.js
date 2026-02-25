@@ -485,8 +485,10 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'violations' && <ViolationsTab selectedCase={selectedCase} />}
           {activeTab === 'documents' && <DocumentsTab selectedCase={selectedCase} />}
           {activeTab === 'timeline' && <TimelineTab selectedCase={selectedCase} />}
+          {activeTab === 'calendar' && <CalendarTab />}
           {activeTab === 'research' && <ResearchTab />}
           {activeTab === 'library' && <LawLibraryTab />}
+          {activeTab === 'pricing' && <PricingTab />}
         </div>
       </main>
 
