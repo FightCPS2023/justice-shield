@@ -46,6 +46,9 @@ Build THE CPS PUNISHER - the most powerful interactive Child Protective Services
 ### Backend API Endpoints (All Tested & Working)
 | Endpoint | Method | Description | Status |
 |----------|--------|-------------|--------|
+| `/api/documents/upload` | POST | **Upload doc + AI analysis** | ✅ |
+| `/api/documents/{doc_id}/analysis` | GET | Get document analysis | ✅ |
+| `/api/documents/{doc_id}/reanalyze` | POST | Re-run AI analysis | ✅ |
 | `/api/health` | GET | Health check | ✅ |
 | `/api/auth/signup` | POST | User registration | ✅ |
 | `/api/auth/login` | POST | User login | ✅ |
