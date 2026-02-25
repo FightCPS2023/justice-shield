@@ -1596,4 +1596,384 @@ function LawLibraryTab() {
   );
 }
 
+// Calendar Tab
+function CalendarTab() {
+  const { api } = useAuth();
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    event_date: '',
+    event_time: '',
+    event_type: 'general'
+  });
+
+  const eventTypes = [
+    { value: 'court_hearing', label: 'Court Hearing', color: 'bg-red-500' },
+    { value: 'deadline', label: 'Filing Deadline', color: 'bg-orange-500' },
+    { value: 'meeting', label: 'Meeting', color: 'bg-blue-500' },
+    { value: 'reminder', label: 'Reminder', color: 'bg-purple-500' },
+    { value: 'general', label: 'General', color: 'bg-gray-500' },
+  ];
+
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      const data = await api.get('/api/calendar');
+      setEvents(data.events || []);
+    } catch (error) {
+      console.error('Failed to load events:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const newEvent = await api.post('/api/calendar', formData);
+      setEvents([...events, newEvent].sort((a, b) => new Date(a.event_date) - new Date(b.event_date)));
+      setShowAdd(false);
+      setFormData({ title: '', description: '', event_date: '', event_time: '', event_type: 'general' });
+      toast.success('Event added to calendar!');
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (eventId) => {
+    if (!window.confirm('Delete this event?')) return;
+    try {
+      await api.delete(`/api/calendar/${eventId}`);
+      setEvents(events.filter(e => e.id !== eventId));
+      toast.success('Event deleted');
+    } catch (error) {
+      toast.error('Failed to delete event');
+    }
+  };
+
+  const getEventColor = (type) => eventTypes.find(t => t.value === type)?.color || 'bg-gray-500';
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="calendar-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Calendar</h1>
+          <p className="text-gray-400">Track court dates, deadlines, and important events</p>
+        </div>
+        <button onClick={() => setShowAdd(true)} className="btn-punisher flex items-center gap-2">
+          <Plus className="w-5 h-5" />
+          Add Event
+        </button>
+      </div>
+
+      {/* Add Event Modal */}
+      {showAdd && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 w-full max-w-lg">
+            <h2 className="text-2xl font-bold mb-4">Add Calendar Event</h2>
+            <form onSubmit={handleAdd} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Event Title*</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3"
+                  placeholder="e.g., Court Hearing"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Date*</label>
+                  <input
+                    type="date"
+                    value={formData.event_date}
+                    onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
+                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Time</label>
+                  <input
+                    type="time"
+                    value={formData.event_time}
+                    onChange={(e) => setFormData({ ...formData, event_time: e.target.value })}
+                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Event Type</label>
+                <select
+                  value={formData.event_type}
+                  onChange={(e) => setFormData({ ...formData, event_type: e.target.value })}
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3"
+                >
+                  {eventTypes.map((type) => (
+                    <option key={type.value} value={type.value}>{type.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 h-20"
+                  placeholder="Additional notes..."
+                />
+              </div>
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-3 border border-gray-600 rounded-lg hover:bg-gray-700">
+                  Cancel
+                </button>
+                <button type="submit" disabled={loading} className="flex-1 btn-punisher">
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Add Event'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Events List */}
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-red-500" />
+        </div>
+      ) : events.length === 0 ? (
+        <div className="text-center py-12 bg-gray-800/50 border border-gray-700 rounded-xl">
+          <Calendar className="w-12 h-12 mx-auto text-gray-600 mb-4" />
+          <h3 className="text-xl font-semibold mb-2">No Events Scheduled</h3>
+          <p className="text-gray-400 mb-4">Add court dates, deadlines, and reminders</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {events.map((event) => (
+            <div key={event.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 flex items-start justify-between">
+              <div className="flex gap-4">
+                <div className={`w-2 rounded-full ${getEventColor(event.event_type)}`} />
+                <div>
+                  <h3 className="font-semibold text-lg">{event.title}</h3>
+                  <p className="text-red-400 text-sm">
+                    {new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    {event.event_time && ` at ${event.event_time}`}
+                  </p>
+                  {event.description && <p className="text-gray-400 text-sm mt-1">{event.description}</p>}
+                  <span className="inline-block mt-2 px-2 py-1 bg-gray-700 rounded text-xs">
+                    {eventTypes.find(t => t.value === event.event_type)?.label || 'General'}
+                  </span>
+                </div>
+              </div>
+              <button onClick={() => handleDelete(event.id)} className="text-gray-500 hover:text-red-500">
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Pricing Tab
+function PricingTab() {
+  const { api, user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [billingPeriod, setBillingPeriod] = useState('monthly');
+
+  const tiers = [
+    {
+      id: 'essential',
+      name: 'Essential',
+      icon: Star,
+      color: 'from-blue-400 to-blue-600',
+      monthly: 39,
+      annual: 390,
+      description: 'Perfect for parents starting their defense',
+      features: [
+        '25 document uploads/month',
+        'AI document analysis',
+        'Defense strategy suggestions',
+        'Motion templates',
+        'Timeline builder',
+        'Community forum access'
+      ]
+    },
+    {
+      id: 'professional',
+      name: 'Professional',
+      icon: Crown,
+      color: 'from-purple-400 to-purple-600',
+      monthly: 79,
+      annual: 790,
+      popular: true,
+      description: 'Complete legal defense toolkit',
+      features: [
+        'UNLIMITED document uploads',
+        'Advanced AI analysis',
+        'AI document generation',
+        'Legal research hub',
+        'Case law access',
+        '7-day free trial',
+        'Priority support'
+      ]
+    },
+    {
+      id: 'attorney',
+      name: 'Attorney Suite',
+      icon: Scale,
+      color: 'from-amber-400 to-amber-600',
+      monthly: 299,
+      annual: 2990,
+      description: 'Professional tools for attorneys',
+      features: [
+        'Everything in Professional',
+        '500 AI credits/month',
+        'Multi-client management',
+        'Federal litigation tools',
+        'Section 1983 generator',
+        'White-label reports',
+        'Priority phone support'
+      ]
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      icon: Building2,
+      color: 'from-rose-400 to-rose-600',
+      monthly: 999,
+      annual: 9990,
+      description: 'For law firms & organizations',
+      features: [
+        'Everything in Attorney',
+        'Unlimited team members',
+        'Custom branding',
+        'API access',
+        'Dedicated support',
+        '24/7 priority support'
+      ]
+    }
+  ];
+
+  const handleSubscribe = async (tier) => {
+    setLoading(true);
+    try {
+      const response = await api.post('/api/stripe/create-checkout', {
+        tier: tier.id,
+        billing_period: billingPeriod,
+        origin_url: window.location.origin
+      });
+      
+      if (response.url) {
+        window.location.href = response.url;
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to start checkout');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="pricing-tab">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Oswald, sans-serif' }}>Upgrade Your Plan</h1>
+        <p className="text-gray-400">Current plan: <span className="text-red-500 font-semibold">{user?.tier?.toUpperCase() || 'FREE'}</span></p>
+      </div>
+
+      {/* Billing Toggle */}
+      <div className="flex justify-center">
+        <div className="bg-gray-800 rounded-full p-1 flex">
+          <button
+            onClick={() => setBillingPeriod('monthly')}
+            className={`px-6 py-2 rounded-full transition-colors ${billingPeriod === 'monthly' ? 'bg-red-600 text-white' : 'text-gray-400'}`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setBillingPeriod('annual')}
+            className={`px-6 py-2 rounded-full transition-colors ${billingPeriod === 'annual' ? 'bg-red-600 text-white' : 'text-gray-400'}`}
+          >
+            Annual <span className="text-green-400 text-xs ml-1">Save 17%</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Pricing Cards */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {tiers.map((tier) => (
+          <div
+            key={tier.id}
+            className={`relative bg-gray-800/50 border rounded-xl p-6 ${tier.popular ? 'border-purple-500 border-2' : 'border-gray-700'}`}
+          >
+            {tier.popular && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-purple-600 rounded-full text-xs font-bold">
+                MOST POPULAR
+              </div>
+            )}
+            
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${tier.color} flex items-center justify-center mb-4`}>
+              <tier.icon className="w-6 h-6 text-white" />
+            </div>
+            
+            <h3 className="text-xl font-bold mb-1">{tier.name}</h3>
+            <p className="text-gray-400 text-sm mb-4">{tier.description}</p>
+            
+            <div className="mb-4">
+              <span className="text-4xl font-bold">${billingPeriod === 'monthly' ? tier.monthly : tier.annual}</span>
+              <span className="text-gray-400">/{billingPeriod === 'monthly' ? 'mo' : 'yr'}</span>
+            </div>
+
+            <button
+              onClick={() => handleSubscribe(tier)}
+              disabled={loading || user?.tier === tier.id}
+              className={`w-full py-3 rounded-lg font-semibold mb-4 ${
+                user?.tier === tier.id
+                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  : tier.popular
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white'
+                  : 'bg-red-600 hover:bg-red-700 text-white'
+              }`}
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 
+               user?.tier === tier.id ? 'Current Plan' : 'Subscribe'}
+            </button>
+
+            <div className="space-y-2">
+              {tier.features.map((feature, i) => (
+                <div key={i} className="flex items-start gap-2 text-sm">
+                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-300">{feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Trust Badges */}
+      <div className="text-center text-sm text-gray-500 space-y-2">
+        <div className="flex justify-center gap-6">
+          <span className="flex items-center gap-1"><Shield className="w-4 h-4" /> Secure Payment</span>
+          <span className="flex items-center gap-1"><Lock className="w-4 h-4" /> Encrypted</span>
+          <span className="flex items-center gap-1"><Check className="w-4 h-4" /> Cancel Anytime</span>
+        </div>
+        <p>All plans include a 30-day money-back guarantee</p>
+      </div>
+    </div>
+  );
+}
+
 export default App;
