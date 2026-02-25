@@ -1,495 +1,378 @@
+#!/usr/bin/env python3
 """
-CPS Punisher Backend API Testing
-Comprehensive test suite for all backend functionality
+CPS Punisher Backend API Tests - Iteration 2
+Focus: Testing AI endpoints that were previously failing (500 errors)
+Previous iteration showed core CRUD working, AI features broken
 """
 
 import requests
 import json
-import uuid
 import sys
-from datetime import datetime, timezone
+import time
+from datetime import datetime
 
 class CPSPunisherTester:
     def __init__(self, base_url="https://b200b0c8-940f-4bb9-9410-a028f0ae6175.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
-        self.user_data = None
-        self.test_case_id = None
+        self.user_id = None
+        self.test_case_id = "7f01ed6e-e796-43cd-bfa0-7d2c84dd44c6"  # Provided test case
         self.tests_run = 0
         self.tests_passed = 0
-        self.session = requests.Session()
-        
-        # Test user data
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.test_user = {
-            "name": f"Test Warrior {timestamp}",
-            "email": f"test_warrior_{timestamp}@cps-test.com",
-            "password": "TestPassword123!"
-        }
-        
-        print(f"🚀 Testing CPS Punisher API at: {base_url}")
-        print(f"📧 Test user: {self.test_user['email']}")
+        self.failed_tests = []
 
-    def run_test(self, name, method, endpoint, expected_status, data=None, headers=None):
-        """Run a single API test"""
+    def log(self, message):
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
+
+    def run_test(self, name, method, endpoint, expected_status, data=None, timeout=30):
+        """Run a single API test with error details"""
         url = f"{self.base_url}{endpoint}"
-        test_headers = {'Content-Type': 'application/json'}
-        
+        headers = {'Content-Type': 'application/json'}
         if self.token:
-            test_headers['Authorization'] = f'Bearer {self.token}'
-        if headers:
-            test_headers.update(headers)
+            headers['Authorization'] = f'Bearer {self.token}'
 
         self.tests_run += 1
-        print(f"\n🔍 Testing {name}...")
-        print(f"   {method} {endpoint}")
+        self.log(f"🔍 Testing {name}...")
         
         try:
             if method == 'GET':
-                response = self.session.get(url, headers=test_headers, timeout=30)
+                response = requests.get(url, headers=headers, timeout=timeout)
             elif method == 'POST':
-                response = self.session.post(url, json=data, headers=test_headers, timeout=30)
+                response = requests.post(url, json=data, headers=headers, timeout=timeout)
             elif method == 'PUT':
-                response = self.session.put(url, json=data, headers=test_headers, timeout=30)
-            elif method == 'DELETE':
-                response = self.session.delete(url, headers=test_headers, timeout=30)
+                response = requests.put(url, json=data, headers=headers, timeout=timeout)
 
             success = response.status_code == expected_status
             if success:
                 self.tests_passed += 1
-                print(f"✅ PASSED - Status: {response.status_code}")
+                self.log(f"✅ PASSED - {name} - Status: {response.status_code}")
                 try:
                     return True, response.json()
                 except:
                     return True, {}
             else:
-                print(f"❌ FAILED - Expected {expected_status}, got {response.status_code}")
+                error_detail = "Unknown error"
                 try:
                     error_data = response.json()
-                    print(f"   Error: {error_data}")
+                    error_detail = error_data.get('detail', str(error_data))
                 except:
-                    print(f"   Error: {response.text[:200]}")
+                    error_detail = response.text
+
+                self.log(f"❌ FAILED - {name}")
+                self.log(f"   Expected: {expected_status}, Got: {response.status_code}")
+                self.log(f"   Error: {error_detail}")
+                
+                self.failed_tests.append({
+                    "test": name,
+                    "endpoint": endpoint,
+                    "expected": expected_status,
+                    "actual": response.status_code,
+                    "error": error_detail
+                })
+                
                 return False, {}
 
         except requests.exceptions.Timeout:
-            print(f"❌ FAILED - Request timeout (30s)")
+            self.log(f"❌ FAILED - {name} - TIMEOUT after {timeout}s")
+            self.failed_tests.append({
+                "test": name,
+                "endpoint": endpoint,
+                "error": f"Request timeout after {timeout}s"
+            })
             return False, {}
         except Exception as e:
-            print(f"❌ FAILED - Error: {str(e)}")
+            self.log(f"❌ FAILED - {name} - Exception: {str(e)}")
+            self.failed_tests.append({
+                "test": name,
+                "endpoint": endpoint,
+                "error": str(e)
+            })
             return False, {}
 
     def test_health_check(self):
-        """Test health check endpoint"""
-        success, data = self.run_test(
-            "Health Check",
-            "GET",
-            "/api/health",
-            200
-        )
-        if success:
-            print(f"   Service: {data.get('service', 'Unknown')}")
-            print(f"   Version: {data.get('version', 'Unknown')}")
-        return success
+        """Test basic health endpoint"""
+        return self.run_test("Health Check", "GET", "/api/health", 200)
 
-    def test_user_signup(self):
-        """Test user registration"""
-        success, data = self.run_test(
-            "User Signup",
-            "POST",
-            "/api/auth/signup",
-            200,
-            self.test_user
-        )
-        if success:
-            self.token = data.get('access_token')
-            self.user_data = data
-            print(f"   User ID: {data.get('user_id')}")
-            print(f"   Tier: {data.get('tier')}")
-        return success
-
-    def test_user_login(self):
-        """Test user login (create fresh user for login test)"""
-        # Create a new user for login test
-        login_user = {
-            "name": f"Login Test User {datetime.now().strftime('%H%M%S')}",
-            "email": f"login_test_{datetime.now().strftime('%H%M%S')}@cps-test.com",
-            "password": "LoginTest123!"
-        }
-        
-        # First create the user
-        success, _ = self.run_test(
-            "Create User for Login Test",
-            "POST",
-            "/api/auth/signup",
-            200,
-            login_user
-        )
-        if not success:
-            return False
-            
-        # Now test login
-        success, data = self.run_test(
-            "User Login",
+    def test_login(self):
+        """Test login with provided test credentials"""
+        self.log("🔐 Testing login with provided test user...")
+        success, response = self.run_test(
+            "Login Test User",
             "POST",
             "/api/auth/login",
             200,
-            {"email": login_user["email"], "password": login_user["password"]}
+            data={"email": "demo2@cpspunisher.com", "password": "demo123456"}
         )
-        return success
+        if success and 'access_token' in response:
+            self.token = response['access_token']
+            self.user_id = response.get('user_id')
+            self.log(f"✅ Login successful - Token acquired, User ID: {self.user_id}")
+            return True
+        return False
 
-    def test_get_user_profile(self):
-        """Test get current user profile"""
-        success, data = self.run_test(
-            "Get User Profile",
-            "GET",
-            "/api/auth/me",
-            200
-        )
-        if success:
-            print(f"   Name: {data.get('name')}")
-            print(f"   Email: {data.get('email')}")
-        return success
-
-    def test_create_case(self):
-        """Test creating a new CPS case"""
-        case_data = {
-            "title": f"Test Case {datetime.now().strftime('%H%M%S')}",
-            "description": "This is a test CPS case for API validation",
-            "state": "CA",
-            "case_number": f"TEST-{uuid.uuid4().hex[:8].upper()}",
-            "children_names": ["Test Child 1", "Test Child 2"]
-        }
+    def test_ai_chat_endpoint(self):
+        """Test AI chat endpoint - was previously returning 500"""
+        self.log("🤖 Testing AI Chat endpoint (GPT-5.2)...")
         
-        success, data = self.run_test(
-            "Create CPS Case",
-            "POST",
-            "/api/cases",
-            200,
-            case_data
-        )
-        if success:
-            self.test_case_id = data.get('id')
-            print(f"   Case ID: {self.test_case_id}")
-            print(f"   Case Title: {data.get('title')}")
-        return success
-
-    def test_list_cases(self):
-        """Test listing user cases"""
-        success, data = self.run_test(
-            "List Cases",
-            "GET",
-            "/api/cases",
-            200
-        )
-        if success:
-            cases = data.get('cases', [])
-            print(f"   Found {len(cases)} cases")
-        return success
-
-    def test_get_case(self):
-        """Test getting specific case"""
-        if not self.test_case_id:
-            print("❌ SKIPPED - No case ID available")
-            return False
-            
-        success, data = self.run_test(
-            "Get Specific Case",
-            "GET",
-            f"/api/cases/{self.test_case_id}",
-            200
-        )
-        return success
-
-    def test_ai_chat(self):
-        """Test AI chat assistant"""
-        chat_data = {
-            "message": "What are my constitutional rights in a CPS case?",
-            "case_id": self.test_case_id
-        }
-        
-        success, data = self.run_test(
-            "AI Chat Assistant",
-            "POST",
+        # Test basic chat without case context
+        success, response = self.run_test(
+            "AI Chat - Basic Query",
+            "POST", 
             "/api/ai/chat",
             200,
-            chat_data
+            data={
+                "message": "What are my constitutional rights in a CPS case?",
+                "session_id": None,
+                "case_id": None
+            },
+            timeout=45  # AI responses can be slower
         )
+        
         if success:
-            response_text = data.get('response', '')
-            print(f"   Response length: {len(response_text)} chars")
-            print(f"   Session ID: {data.get('session_id')}")
-            # Check if response contains relevant legal content
-            if any(keyword in response_text.lower() for keyword in ['constitutional', 'rights', 'amendment', 'cps', 'legal']):
-                print("   ✅ Response contains relevant legal content")
+            if 'response' in response and response['response']:
+                self.log(f"✅ AI Chat working - Response length: {len(response['response'])} chars")
+                self.log(f"   Sample: {response['response'][:100]}...")
+                return True
             else:
-                print("   ⚠️ Response may not contain expected legal content")
-        return success
+                self.log("❌ AI Chat response empty or malformed")
+                self.failed_tests.append({
+                    "test": "AI Chat Response Quality",
+                    "issue": "Response empty or missing"
+                })
+        return False
 
-    def test_create_violation(self):
-        """Test creating a violation"""
+    def test_ai_chat_with_case(self):
+        """Test AI chat with case context"""
         if not self.test_case_id:
-            print("❌ SKIPPED - No case ID available")
-            return False
+            self.log("⚠️  Skipping case context test - no test case available")
+            return True
             
-        violation_data = {
-            "case_id": self.test_case_id,
-            "violation_type": "4th Amendment - Unreasonable Search",
-            "description": "CPS conducted search without proper warrant or exigent circumstances",
-            "severity": "high",
-            "date": "2024-01-15",
-            "statute_reference": "4th Amendment, US Constitution"
-        }
-        
-        success, data = self.run_test(
-            "Create Violation",
+        self.log("🤖 Testing AI Chat with case context...")
+        success, response = self.run_test(
+            "AI Chat - With Case Context",
             "POST",
-            "/api/violations",
+            "/api/ai/chat", 
             200,
-            violation_data
+            data={
+                "message": "Analyze my case for constitutional violations",
+                "case_id": self.test_case_id
+            },
+            timeout=45
         )
-        if success:
-            print(f"   Violation ID: {data.get('id')}")
-            print(f"   Type: {data.get('violation_type')}")
-        return success
-
-    def test_list_violations(self):
-        """Test listing violations for case"""
-        if not self.test_case_id:
-            print("❌ SKIPPED - No case ID available")
-            return False
-            
-        success, data = self.run_test(
-            "List Violations",
-            "GET",
-            f"/api/violations/{self.test_case_id}",
-            200
-        )
-        if success:
-            violations = data.get('violations', [])
-            print(f"   Found {len(violations)} violations")
-        return success
-
-    def test_create_timeline_event(self):
-        """Test creating timeline event"""
-        if not self.test_case_id:
-            print("❌ SKIPPED - No case ID available")
-            return False
-            
-        event_data = {
-            "case_id": self.test_case_id,
-            "title": "Initial CPS Contact",
-            "description": "First contact from CPS worker regarding allegations",
-            "date": "2024-01-10",
-            "event_type": "contact"
-        }
         
-        success, data = self.run_test(
-            "Create Timeline Event",
-            "POST",
-            "/api/timeline",
-            200,
-            event_data
-        )
-        if success:
-            print(f"   Event ID: {data.get('id')}")
-            print(f"   Title: {data.get('title')}")
-        return success
+        if success and 'response' in response:
+            self.log(f"✅ AI Chat with case context working")
+            return True
+        return False
 
-    def test_list_timeline(self):
-        """Test listing timeline events"""
-        if not self.test_case_id:
-            print("❌ SKIPPED - No case ID available")
-            return False
-            
-        success, data = self.run_test(
-            "List Timeline Events",
-            "GET",
-            f"/api/timeline/{self.test_case_id}",
-            200
-        )
-        if success:
-            events = data.get('events', [])
-            print(f"   Found {len(events)} timeline events")
-        return success
-
-    def test_legal_research(self):
-        """Test AI legal research"""
-        research_data = {
-            "query": "Emergency removal timeframes in California",
-            "state": "CA",
-            "topic": "emergency removal"
-        }
+    def test_legal_research_endpoint(self):
+        """Test Legal Research endpoint - was previously returning 500"""
+        self.log("📚 Testing Legal Research endpoint...")
         
-        success, data = self.run_test(
-            "Legal Research AI",
+        success, response = self.run_test(
+            "Legal Research - General Query",
             "POST",
             "/api/ai/legal-research",
             200,
-            research_data
+            data={
+                "query": "Emergency removal timeframes in CPS cases",
+                "state": "CA",
+                "topic": "procedural_rights"
+            },
+            timeout=45
         )
-        if success:
-            results = data.get('research_results', '')
-            print(f"   Research results length: {len(results)} chars")
-            if any(keyword in results.lower() for keyword in ['california', 'removal', 'emergency', 'statute']):
-                print("   ✅ Research contains relevant legal information")
-        return success
-
-    def test_document_generator(self):
-        """Test AI document generator"""
-        if not self.test_case_id:
-            print("❌ SKIPPED - No case ID available")
-            return False
-            
-        doc_data = {
-            "case_id": self.test_case_id,
-            "document_type": "motion_to_dismiss",
-            "custom_data": {"specific_grounds": "Lack of evidence"}
-        }
         
-        success, data = self.run_test(
-            "Document Generator",
+        if success:
+            if 'research_results' in response and response['research_results']:
+                self.log(f"✅ Legal Research working - Result length: {len(response['research_results'])} chars")
+                self.log(f"   Sample: {response['research_results'][:100]}...")
+                return True
+            else:
+                self.log("❌ Legal Research response empty")
+                self.failed_tests.append({
+                    "test": "Legal Research Response",
+                    "issue": "No research_results in response"
+                })
+        return False
+
+    def test_document_generator_endpoint(self):
+        """Test Document Generator endpoint - was previously returning 500"""
+        if not self.test_case_id:
+            self.log("⚠️  Skipping document generation - no test case")
+            return True
+            
+        self.log("📄 Testing Document Generator endpoint...")
+        
+        success, response = self.run_test(
+            "Document Generator - Motion to Dismiss",
             "POST",
             "/api/ai/generate-document",
             200,
-            doc_data
+            data={
+                "case_id": self.test_case_id,
+                "document_type": "motion_to_dismiss",
+                "custom_data": {"urgency": "high"}
+            },
+            timeout=60  # Document generation can take longer
         )
+        
         if success:
-            document = data.get('document', '')
-            print(f"   Generated document length: {len(document)} chars")
-            if any(keyword in document.lower() for keyword in ['motion', 'dismiss', 'court', 'legal']):
-                print("   ✅ Document contains legal content")
-        return success
+            if 'document' in response and response['document']:
+                self.log(f"✅ Document Generator working - Document length: {len(response['document'])} chars")
+                self.log(f"   Sample: {response['document'][:100]}...")
+                return True
+            else:
+                self.log("❌ Document Generator response empty")
+                self.failed_tests.append({
+                    "test": "Document Generator Response", 
+                    "issue": "No document in response"
+                })
+        return False
 
-    def test_law_library_states(self):
-        """Test law library states list"""
-        success, data = self.run_test(
-            "Law Library - Get States",
+    def test_law_library_endpoint(self):
+        """Test Law Library endpoint - was previously returning 500"""
+        self.log("⚖️  Testing Law Library endpoint...")
+        
+        # Test states list first
+        success, response = self.run_test(
+            "Law Library - States List",
             "GET",
             "/api/law-library/states",
             200
         )
-        if success:
-            states = data.get('states', [])
-            print(f"   Found {len(states)} states")
-            if len(states) >= 50:
-                print("   ✅ All US states available")
-        return success
-
-    def test_law_library_state_info(self):
-        """Test getting specific state law information"""
-        success, data = self.run_test(
+        
+        if not success:
+            return False
+            
+        # Test specific state info
+        success, response = self.run_test(
             "Law Library - California Info",
             "GET",
             "/api/law-library/CA",
-            200
+            200,
+            timeout=45
         )
+        
         if success:
-            law_info = data.get('law_info', '')
-            print(f"   California law info length: {len(law_info)} chars")
-            if any(keyword in law_info.lower() for keyword in ['california', 'statute', 'cps', 'agency']):
-                print("   ✅ State info contains relevant legal content")
-        return success
+            if 'law_info' in response and response['law_info']:
+                self.log(f"✅ Law Library working - Info length: {len(response['law_info'])} chars")
+                self.log(f"   Sample: {response['law_info'][:100]}...")
+                return True
+            else:
+                self.log("❌ Law Library response empty")
+                self.failed_tests.append({
+                    "test": "Law Library State Info",
+                    "issue": "No law_info in response"
+                })
+        return False
 
-    def run_all_tests(self):
-        """Run all tests in order"""
-        print("=" * 80)
-        print("🛡️  THE CPS PUNISHER - COMPREHENSIVE API TESTING")
-        print("=" * 80)
+    def test_case_creation_flow(self):
+        """Test case creation to ensure we can use AI features with cases"""
+        self.log("📁 Testing case creation for AI integration...")
         
-        # Basic health check
-        if not self.test_health_check():
-            print("\n💥 CRITICAL: Health check failed - API may be down")
-            return False
-
-        # Authentication tests
-        if not self.test_user_signup():
-            print("\n💥 CRITICAL: User signup failed")
-            return False
-            
-        if not self.test_user_login():
-            print("\n💥 CRITICAL: User login failed")
-            return False
-            
-        if not self.test_get_user_profile():
-            print("\n⚠️  WARNING: Get user profile failed")
-
-        # Case management
-        if not self.test_create_case():
-            print("\n💥 CRITICAL: Case creation failed")
-            return False
-            
-        self.test_list_cases()
-        self.test_get_case()
-
-        # AI Features
-        if not self.test_ai_chat():
-            print("\n⚠️  WARNING: AI Chat failed - check EMERGENT_LLM_KEY")
+        success, response = self.run_test(
+            "Create Test Case",
+            "POST",
+            "/api/cases",
+            200,
+            data={
+                "title": "Test AI Integration Case",
+                "description": "Testing AI features with real case data",
+                "state": "TX",
+                "case_number": "TEST-2025-001",
+                "children_names": ["Test Child"]
+            }
+        )
         
-        # Case features (require active case)
-        self.test_create_violation()
-        self.test_list_violations()
-        self.test_create_timeline_event()
-        self.test_list_timeline()
+        if success and 'id' in response:
+            self.test_case_id = response['id']
+            self.log(f"✅ Case created successfully - ID: {self.test_case_id}")
+            return True
+        return False
 
-        # AI Research and Documents
-        if not self.test_legal_research():
-            print("\n⚠️  WARNING: Legal Research failed")
+    def test_violation_creation(self):
+        """Test adding violation for AI analysis"""
+        if not self.test_case_id:
+            self.log("⚠️  Skipping violation test - no case available")
+            return True
             
-        if not self.test_document_generator():
-            print("\n⚠️  WARNING: Document Generator failed")
+        self.log("⚠️  Testing violation creation...")
+        
+        success, response = self.run_test(
+            "Create Test Violation",
+            "POST",
+            "/api/violations",
+            200,
+            data={
+                "case_id": self.test_case_id,
+                "violation_type": "4th Amendment - Unreasonable Search",
+                "description": "CPS entered home without warrant or exigent circumstances",
+                "severity": "high",
+                "date": "2025-01-15",
+                "statute_reference": "4th Amendment US Constitution"
+            }
+        )
+        
+        if success:
+            self.log(f"✅ Violation created successfully")
+            return True
+        return False
 
-        # Law Library
-        self.test_law_library_states()
-        self.test_law_library_state_info()
+    def run_comprehensive_test(self):
+        """Run all tests in logical order"""
+        self.log("🚀 Starting CPS Punisher AI Features Test - Iteration 2")
+        self.log("="*60)
+        
+        # Basic connectivity
+        if not self.test_health_check()[0]:
+            self.log("💀 Health check failed - aborting tests")
+            return self.print_results()
+            
+        # Authentication 
+        if not self.test_login():
+            self.log("💀 Login failed - aborting tests")
+            return self.print_results()
+            
+        # Create test case for AI features
+        self.test_case_creation_flow()
+        self.test_violation_creation()
+        
+        # Core AI Features Tests (these were failing in iteration 1)
+        self.log("\n🤖 Testing AI Features (Previously Broken)...")
+        self.test_ai_chat_endpoint()
+        self.test_ai_chat_with_case()
+        self.test_legal_research_endpoint()
+        self.test_document_generator_endpoint()
+        self.test_law_library_endpoint()
+        
+        return self.print_results()
 
-        return True
-
-    def print_summary(self):
-        """Print test summary"""
-        print("\n" + "=" * 80)
-        print("📊 TEST SUMMARY")
-        print("=" * 80)
-        print(f"Tests Run: {self.tests_run}")
-        print(f"Tests Passed: {self.tests_passed}")
-        print(f"Tests Failed: {self.tests_run - self.tests_passed}")
+    def print_results(self):
+        """Print comprehensive test results"""
+        self.log("="*60)
+        self.log(f"🏁 TEST RESULTS SUMMARY")
+        self.log(f"📊 Tests passed: {self.tests_passed}/{self.tests_run}")
         
         success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
-        print(f"Success Rate: {success_rate:.1f}%")
+        self.log(f"📈 Success rate: {success_rate:.1f}%")
         
-        if success_rate >= 90:
-            print("🎉 EXCELLENT: Backend is working well!")
-        elif success_rate >= 75:
-            print("✅ GOOD: Backend is mostly functional")  
-        elif success_rate >= 50:
-            print("⚠️  WARNING: Backend has significant issues")
+        if self.failed_tests:
+            self.log(f"\n❌ FAILED TESTS ({len(self.failed_tests)}):")
+            for failure in self.failed_tests:
+                self.log(f"   • {failure.get('test', 'Unknown')}")
+                if 'endpoint' in failure:
+                    self.log(f"     Endpoint: {failure['endpoint']}")
+                if 'error' in failure:
+                    self.log(f"     Error: {failure['error']}")
         else:
-            print("💥 CRITICAL: Backend is not functional")
+            self.log("\n🎉 ALL TESTS PASSED!")
             
-        print("=" * 80)
-        
-        return success_rate
+        return success_rate >= 90  # Success if 90%+ pass rate
 
 def main():
-    """Main test execution"""
     tester = CPSPunisherTester()
-    
-    try:
-        success = tester.run_all_tests()
-        success_rate = tester.print_summary()
-        
-        # Return appropriate exit code
-        if success_rate >= 75:
-            return 0
-        else:
-            return 1
-            
-    except KeyboardInterrupt:
-        print("\n\n🛑 Tests interrupted by user")
-        tester.print_summary()
-        return 2
-    except Exception as e:
-        print(f"\n\n💥 Test suite crashed: {str(e)}")
-        return 3
+    success = tester.run_comprehensive_test()
+    return 0 if success else 1
 
 if __name__ == "__main__":
     sys.exit(main())
