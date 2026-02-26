@@ -412,9 +412,18 @@ function Dashboard({ onNavigate }) {
     { id: 'violations', icon: AlertTriangle, label: 'Violations' },
     { id: 'documents', icon: FileText, label: 'Documents' },
     { id: 'timeline', icon: Clock, label: 'Timeline' },
+    { id: 'evidence', icon: Eye, label: 'Evidence' },
+    { id: 'communications', icon: MessageSquare, label: 'Communications' },
+    { id: 'courtfilings', icon: Gavel, label: 'Court Filings' },
+    { id: 'judgewatch', icon: Scale, label: 'Judge Watch' },
+    { id: 'strategy', icon: Shield, label: 'Defense Strategy' },
+    { id: 'criminal', icon: AlertTriangle, label: 'Criminal Case' },
+    { id: 'services', icon: Users, label: 'Services' },
     { id: 'calendar', icon: Calendar, label: 'Calendar' },
     { id: 'research', icon: Search, label: 'Legal Research' },
     { id: 'library', icon: BookOpen, label: 'Law Library' },
+    { id: 'forum', icon: Users, label: 'Community' },
+    { id: 'advocates', icon: Users, label: 'Find Advocates' },
     { id: 'pricing', icon: CreditCard, label: 'Upgrade Plan' },
   ];
 
