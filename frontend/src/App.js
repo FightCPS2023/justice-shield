@@ -499,6 +499,8 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'chat' && <ChatTab selectedCase={selectedCase} />}
           {activeTab === 'expert' && <ExpertLegalAITab selectedCase={selectedCase} />}
           {activeTab === 'section1983' && <Section1983Tab selectedCase={selectedCase} />}
+          {activeTab === 'incidents' && <IncidentAnalyzerTab selectedCase={selectedCase} />}
+          {activeTab === 'legaldb' && <LegalKnowledgeBaseTab />}
           {activeTab === 'podcast' && <PodcastCreatorTab selectedCase={selectedCase} />}
           {activeTab === 'caselaw' && <CaseLawAnalysisTab selectedCase={selectedCase} />}
           {activeTab === 'violations' && <ViolationsTab selectedCase={selectedCase} />}
