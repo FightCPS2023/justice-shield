@@ -2066,6 +2066,271 @@ async def get_checkout_status(session_id: str, http_request: Request, current_us
     return {"status": status.status, "payment_status": status.payment_status}
 
 
+# ============== LEGAL KNOWLEDGE BASE API ==============
+
+@app.get("/api/legal/supreme-court-cases")
+async def get_supreme_court_cases():
+    """Get comprehensive Supreme Court case database for CPS defense"""
+    return {
+        "cases": SUPREME_COURT_CASES,
+        "count": len(SUPREME_COURT_CASES),
+        "description": "Landmark Supreme Court cases for CPS and family law defense"
+    }
+
+@app.get("/api/legal/circuit-court-cases")
+async def get_circuit_court_cases():
+    """Get Federal Circuit Court precedents for CPS Section 1983 claims"""
+    return {
+        "cases": CIRCUIT_COURT_CASES,
+        "count": len(CIRCUIT_COURT_CASES),
+        "description": "Critical Federal Circuit Court precedents - essential for Section 1983 claims"
+    }
+
+@app.get("/api/legal/blacks-law")
+async def get_blacks_law_definitions():
+    """Get Black's Law Dictionary definitions for CPS legal terms"""
+    return {
+        "definitions": BLACKS_LAW_DEFINITIONS,
+        "count": len(BLACKS_LAW_DEFINITIONS),
+        "source": "Black's Law Dictionary (11th ed. 2019)"
+    }
+
+@app.get("/api/legal/constitutional-rights")
+async def get_constitutional_rights():
+    """Get constitutional rights analysis for CPS cases"""
+    return {
+        "rights": CONSTITUTIONAL_RIGHTS,
+        "description": "Constitutional amendments and their application in CPS cases"
+    }
+
+@app.get("/api/legal/violation-analysis/{violation_type}")
+async def get_violation_analysis(violation_type: str):
+    """Get detailed analysis for a specific violation type"""
+    if violation_type in VIOLATION_ANALYSIS:
+        analysis = VIOLATION_ANALYSIS[violation_type]
+        case_law = get_relevant_case_law(violation_type)
+        immunity = analyze_qualified_immunity(violation_type)
+        return {
+            "violation_type": violation_type,
+            "analysis": analysis,
+            "relevant_case_law": case_law,
+            "qualified_immunity_analysis": immunity
+        }
+    else:
+        # Return generic analysis
+        return {
+            "violation_type": violation_type,
+            "case_law": get_relevant_case_law(violation_type),
+            "qualified_immunity": analyze_qualified_immunity(violation_type)
+        }
+
+@app.get("/api/legal/rooker-feldman")
+async def get_rooker_feldman_guidance():
+    """Get Rooker-Feldman doctrine and avoidance strategies"""
+    return {
+        "doctrine": ROOKER_FELDMAN,
+        "description": "Critical guidance for avoiding Rooker-Feldman dismissal in Section 1983 cases"
+    }
+
+@app.get("/api/legal/section-1983-guide")
+async def get_section_1983_guide():
+    """Get comprehensive Section 1983 litigation guide"""
+    return {
+        "guide": SECTION_1983,
+        "description": "Complete guide to 42 U.S.C. § 1983 civil rights litigation against CPS"
+    }
+
+@app.get("/api/legal/federal-statutes")
+async def get_federal_statutes():
+    """Get federal statutes relevant to CPS cases (CAPTA, ASFA, ICWA)"""
+    return {
+        "statutes": FEDERAL_STATUTES,
+        "description": "Federal statutes governing child welfare: CAPTA, ASFA, ICWA"
+    }
+
+@app.post("/api/legal/analyze-violation")
+async def analyze_specific_violation(
+    violation_type: str = Body(...),
+    facts: dict = Body(default={}),
+    state: str = Body(default="TX"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Analyze a specific violation with AI using the legal knowledge base.
+    This is the most powerful legal analysis feature.
+    """
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    # Get relevant legal knowledge
+    case_law = get_relevant_case_law(violation_type)
+    immunity = analyze_qualified_immunity(violation_type)
+    violation_info = VIOLATION_ANALYSIS.get(violation_type, {})
+    
+    # Build comprehensive context
+    context = f"""
+VIOLATION TYPE: {violation_type}
+
+CONSTITUTIONAL BASIS: {case_law.get('constitutional_basis', 'Constitutional violation')}
+
+RELEVANT SUPREME COURT PRECEDENTS:
+{json.dumps([SUPREME_COURT_CASES.get(k, {}) for k in ['troxel', 'stanley', 'santosky', 'camara']], indent=2)}
+
+RELEVANT CIRCUIT COURT PRECEDENTS:
+{json.dumps(case_law.get('relevant_cases', []), indent=2)}
+
+VIOLATION ANALYSIS:
+{json.dumps(violation_info, indent=2)}
+
+QUALIFIED IMMUNITY ANALYSIS:
+{json.dumps(immunity, indent=2)}
+
+ROOKER-FELDMAN AVOIDANCE:
+{json.dumps(ROOKER_FELDMAN.get('avoidance_strategies', []), indent=2)}
+
+FACTS OF THIS CASE:
+{json.dumps(facts, indent=2)}
+
+STATE: {state}
+"""
+
+    system_prompt = """You are THE CPS PUNISHER - the most knowledgeable legal AI for CPS cases.
+
+You have access to comprehensive legal knowledge including:
+- Supreme Court precedents (Troxel, Stanley, Santosky, Lassiter, Camara)
+- Federal Circuit Court precedents (Calabretta v. Floyd, Wallis v. Spencer, Duchesne v. Sugarman)
+- Black's Law Dictionary definitions
+- Section 1983 civil rights guidance
+- Rooker-Feldman avoidance strategies
+- Qualified immunity analysis
+
+Analyze this violation using your legal knowledge. Be AGGRESSIVE in identifying violations.
+Cite specific cases with their holdings. Explain how to defeat qualified immunity.
+Provide a Section 1983 viability assessment.
+
+Format your response with:
+1. VIOLATION IDENTIFIED
+2. CONSTITUTIONAL BASIS
+3. SUPPORTING CASE LAW (with citations and holdings)
+4. QUALIFIED IMMUNITY ANALYSIS
+5. SECTION 1983 VIABILITY
+6. RECOMMENDED LEGAL STRATEGY
+7. POTENTIAL DAMAGES"""
+
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"violation-{uuid.uuid4().hex[:8]}",
+        system_message=system_prompt
+    ).with_model("openai", "gpt-5.2")
+    
+    prompt = f"""Analyze this {violation_type} violation with comprehensive legal analysis:
+
+{context}
+
+Provide your expert legal analysis."""
+
+    response = await chat.send_message(UserMessage(text=prompt))
+    
+    return {
+        "violation_type": violation_type,
+        "analysis": response,
+        "case_law_cited": case_law,
+        "qualified_immunity": immunity,
+        "section_1983_viable": case_law.get("section_1983_viable", True)
+    }
+
+
+@app.get("/api/legal/incident-types")
+async def get_incident_types():
+    """Get all incident/violation types with analysis guidance"""
+    return {
+        "incident_types": [
+            {
+                "id": "warrantless_entry",
+                "name": "Warrantless Home Entry",
+                "description": "CPS entered home without warrant, consent, or exigent circumstances",
+                "constitutional_basis": "Fourth Amendment",
+                "key_case": "Calabretta v. Floyd, 189 F.3d 808 (9th Cir. 1999)",
+                "section_1983_viable": True,
+                "qualified_immunity_likely_defeated": True
+            },
+            {
+                "id": "coerced_consent",
+                "name": "Coerced Consent",
+                "description": "CPS obtained entry through threats, deception, or coercion",
+                "constitutional_basis": "Fourth Amendment",
+                "key_case": "Schneckloth v. Bustamonte, 412 U.S. 218 (1973)",
+                "section_1983_viable": True
+            },
+            {
+                "id": "strip_search",
+                "name": "Strip Search of Child",
+                "description": "Invasive physical examination without warrant or exigency",
+                "constitutional_basis": "Fourth Amendment",
+                "key_case": "Wallis v. Spencer, 202 F.3d 1126 (9th Cir. 2000)",
+                "section_1983_viable": True,
+                "qualified_immunity_likely_defeated": True
+            },
+            {
+                "id": "emergency_removal_no_danger",
+                "name": "Emergency Removal Without Imminent Danger",
+                "description": "Children removed without evidence of imminent danger",
+                "constitutional_basis": "Fourth and Fourteenth Amendments",
+                "key_case": "Gates v. Texas DHS, 537 F.3d 404 (5th Cir. 2008)",
+                "section_1983_viable": True
+            },
+            {
+                "id": "inadequate_investigation",
+                "name": "Inadequate Investigation",
+                "description": "Removal without reasonable investigation",
+                "constitutional_basis": "Fourteenth Amendment Due Process",
+                "key_case": "Duchesne v. Sugarman, 566 F.2d 817 (2nd Cir. 1977)",
+                "section_1983_viable": True
+            },
+            {
+                "id": "fabricated_evidence",
+                "name": "Fabricated Evidence",
+                "description": "Caseworker fabricated or falsified evidence",
+                "constitutional_basis": "Fourteenth Amendment Due Process",
+                "key_case": "Devereaux v. Abbey, 263 F.3d 1070 (9th Cir. 2001)",
+                "section_1983_viable": True,
+                "qualified_immunity_likely_defeated": True
+            },
+            {
+                "id": "procedural_due_process",
+                "name": "Procedural Due Process Violation",
+                "description": "Failed to provide proper notice or hearing",
+                "constitutional_basis": "Fourteenth Amendment",
+                "key_case": "Mathews v. Eldridge, 424 U.S. 319 (1976)",
+                "section_1983_viable": True
+            },
+            {
+                "id": "denial_of_counsel",
+                "name": "Denial of Right to Counsel",
+                "description": "Proceedings held without attorney when required",
+                "constitutional_basis": "Fourteenth Amendment / Sixth Amendment",
+                "key_case": "Lassiter v. DSS, 452 U.S. 18 (1981)",
+                "section_1983_viable": True
+            },
+            {
+                "id": "fifth_amendment",
+                "name": "Fifth Amendment Violation",
+                "description": "Compelled self-incriminating statements",
+                "constitutional_basis": "Fifth Amendment",
+                "key_case": "Minnesota v. Murphy, 465 U.S. 420 (1984)",
+                "section_1983_viable": True
+            },
+            {
+                "id": "icwa_violation",
+                "name": "ICWA Violation",
+                "description": "Indian Child Welfare Act requirements not followed",
+                "constitutional_basis": "Federal Statute (25 U.S.C. §§ 1901-1963)",
+                "requirements": ["Notice to tribe", "Active efforts", "Placement preferences", "Qualified expert witness"],
+                "section_1983_viable": True
+            }
+        ]
+    }
+
+
 # ============== HEALTH CHECK ==============
 
 @app.get("/api/health")
