@@ -167,6 +167,10 @@ Build THE CPS PUNISHER - the most powerful interactive Child Protective Services
 - [ ] Codebase refactoring (break down monolithic server.py and App.js)
 
 ### P2 (Medium Priority)
+- [ ] Case export to PDF
+- [ ] Email notifications for calendar reminders
+- [ ] Document templates library
+- [ ] Multi-user case sharing
 - [ ] Mobile-responsive PWA
 - [ ] Offline document access
 - [ ] Attorney directory by state (populated)
@@ -179,7 +183,8 @@ Build THE CPS PUNISHER - the most powerful interactive Child Protective Services
 - [ ] Bulk document generation
 
 ## Technical Notes
-- AI responses take ~10-30 seconds (GPT-5.2 processing time)
+- AI responses take ~10-60 seconds (GPT-5.2 processing time)
+- Strategy Builder AI can take 60-90 seconds (complex analysis)
 - State law information dynamically generated via GPT-5.2
 - MongoDB indexes on user_id, case_id, session_id for performance
 - JWT tokens expire in 30 days
@@ -191,5 +196,6 @@ Build THE CPS PUNISHER - the most powerful interactive Child Protective Services
 - All generated documents require attorney review
 
 ## Test Credentials
-- Email: test@example.com
+- Email: strategytester@test.com
 - Password: Test123!
+- Test Case ID: c003e28f-3b38-4686-9c71-0465b716bbe3
