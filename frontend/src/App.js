@@ -2506,4 +2506,1709 @@ function PricingTab() {
   );
 }
 
+// Evidence Tab
+function EvidenceTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [evidence, setEvidence] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    evidence_type: 'document',
+    date_obtained: '',
+    source: '',
+    supports_defense: true
+  });
+
+  const evidenceTypes = [
+    { id: 'document', label: 'Document' },
+    { id: 'photo', label: 'Photo/Image' },
+    { id: 'video', label: 'Video' },
+    { id: 'audio', label: 'Audio Recording' },
+    { id: 'testimony', label: 'Testimony/Statement' },
+    { id: 'medical', label: 'Medical Record' },
+    { id: 'school', label: 'School Record' },
+    { id: 'character', label: 'Character Reference' },
+    { id: 'expert', label: 'Expert Opinion' },
+    { id: 'other', label: 'Other' }
+  ];
+
+  useEffect(() => {
+    if (selectedCase) loadEvidence();
+  }, [selectedCase]);
+
+  const loadEvidence = async () => {
+    setLoading(true);
+    try {
+      const data = await api.get(`/api/evidence/${selectedCase.id}`);
+      setEvidence(data.evidence || []);
+    } catch (error) {
+      console.error('Failed to load evidence:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const newEvidence = await api.post('/api/evidence', {
+        ...formData,
+        case_id: selectedCase.id
+      });
+      setEvidence([newEvidence, ...evidence]);
+      setShowAdd(false);
+      setFormData({ title: '', description: '', evidence_type: 'document', date_obtained: '', source: '', supports_defense: true });
+      toast.success('Evidence added!');
+    } catch (error) {
+      toast.error('Failed to add evidence');
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12" data-testid="evidence-tab">
+        <Eye className="w-12 h-12 mx-auto text-green-500 mb-4" />
+        <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
+        <p className="text-gray-400">Select a case to manage evidence</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="evidence-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Evidence Tracker</h1>
+          <p className="text-gray-400">Manage evidence for {selectedCase.title}</p>
+        </div>
+        <button onClick={() => setShowAdd(true)} className="btn-punisher">
+          <Plus className="w-5 h-5 inline mr-2" /> Add Evidence
+        </button>
+      </div>
+
+      {/* Add Evidence Modal */}
+      {showAdd && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-lg">
+            <h2 className="text-xl font-bold mb-4">Add Evidence</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Title</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Type</label>
+                <select
+                  value={formData.evidence_type}
+                  onChange={(e) => setFormData({...formData, evidence_type: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                >
+                  {evidenceTypes.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-24"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Date Obtained</label>
+                  <input
+                    type="date"
+                    value={formData.date_obtained}
+                    onChange={(e) => setFormData({...formData, date_obtained: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Source</label>
+                  <input
+                    type="text"
+                    value={formData.source}
+                    onChange={(e) => setFormData({...formData, source: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="Where from?"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.supports_defense}
+                  onChange={(e) => setFormData({...formData, supports_defense: e.target.checked})}
+                  className="w-4 h-4"
+                />
+                <label className="text-sm">This evidence supports the defense</label>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher">Add Evidence</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Evidence List */}
+      {loading ? (
+        <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
+      ) : evidence.length === 0 ? (
+        <div className="text-center py-12 bg-gray-800/30 rounded-xl">
+          <Eye className="w-12 h-12 mx-auto text-gray-600 mb-4" />
+          <p className="text-gray-400">No evidence added yet</p>
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 gap-4">
+          {evidence.map(item => (
+            <div key={item.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-1 rounded text-xs ${item.supports_defense ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'}`}>
+                    {item.supports_defense ? 'SUPPORTS DEFENSE' : 'AGAINST'}
+                  </span>
+                  <span className="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs">{item.evidence_type}</span>
+                </div>
+              </div>
+              <h3 className="font-semibold text-lg">{item.title}</h3>
+              <p className="text-gray-400 text-sm mt-1">{item.description}</p>
+              {item.source && <p className="text-xs text-gray-500 mt-2">Source: {item.source}</p>}
+              {item.date_obtained && <p className="text-xs text-gray-500">Obtained: {item.date_obtained}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Communications Tab
+function CommunicationsTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [communications, setCommunications] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [formData, setFormData] = useState({
+    contact_type: 'phone',
+    contact_with: '',
+    date: '',
+    summary: '',
+    favorable: null
+  });
+
+  const contactTypes = [
+    { id: 'phone', label: 'Phone Call' },
+    { id: 'email', label: 'Email' },
+    { id: 'in_person', label: 'In Person' },
+    { id: 'text', label: 'Text Message' },
+    { id: 'letter', label: 'Letter' },
+    { id: 'court', label: 'Court Proceeding' }
+  ];
+
+  useEffect(() => {
+    if (selectedCase) loadCommunications();
+  }, [selectedCase]);
+
+  const loadCommunications = async () => {
+    setLoading(true);
+    try {
+      const data = await api.get(`/api/communications/${selectedCase.id}`);
+      setCommunications(data.communications || []);
+    } catch (error) {
+      console.error('Failed to load communications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const newComm = await api.post('/api/communications', {
+        ...formData,
+        case_id: selectedCase.id
+      });
+      setCommunications([newComm, ...communications]);
+      setShowAdd(false);
+      setFormData({ contact_type: 'phone', contact_with: '', date: '', summary: '', favorable: null });
+      toast.success('Communication logged!');
+    } catch (error) {
+      toast.error('Failed to log communication');
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12" data-testid="communications-tab">
+        <MessageSquare className="w-12 h-12 mx-auto text-blue-500 mb-4" />
+        <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
+        <p className="text-gray-400">Select a case to log communications</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="communications-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Communication Log</h1>
+          <p className="text-gray-400">Track all communications for {selectedCase.title}</p>
+        </div>
+        <button onClick={() => setShowAdd(true)} className="btn-punisher">
+          <Plus className="w-5 h-5 inline mr-2" /> Log Communication
+        </button>
+      </div>
+
+      {/* Add Communication Modal */}
+      {showAdd && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-lg">
+            <h2 className="text-xl font-bold mb-4">Log Communication</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Type</label>
+                  <select
+                    value={formData.contact_type}
+                    onChange={(e) => setFormData({...formData, contact_type: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  >
+                    {contactTypes.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Date</label>
+                  <input
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({...formData, date: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Contact With</label>
+                <input
+                  type="text"
+                  value={formData.contact_with}
+                  onChange={(e) => setFormData({...formData, contact_with: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  placeholder="e.g., Caseworker Jane Smith"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Summary</label>
+                <textarea
+                  value={formData.summary}
+                  onChange={(e) => setFormData({...formData, summary: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-32"
+                  placeholder="What was discussed?"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Was this favorable?</label>
+                <div className="flex gap-4">
+                  <button type="button" onClick={() => setFormData({...formData, favorable: true})}
+                    className={`flex-1 py-2 rounded-lg ${formData.favorable === true ? 'bg-green-600' : 'bg-gray-700'}`}>
+                    Favorable
+                  </button>
+                  <button type="button" onClick={() => setFormData({...formData, favorable: false})}
+                    className={`flex-1 py-2 rounded-lg ${formData.favorable === false ? 'bg-red-600' : 'bg-gray-700'}`}>
+                    Unfavorable
+                  </button>
+                  <button type="button" onClick={() => setFormData({...formData, favorable: null})}
+                    className={`flex-1 py-2 rounded-lg ${formData.favorable === null ? 'bg-gray-600' : 'bg-gray-700'}`}>
+                    Neutral
+                  </button>
+                </div>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher">Log Communication</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Communications List */}
+      {loading ? (
+        <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
+      ) : communications.length === 0 ? (
+        <div className="text-center py-12 bg-gray-800/30 rounded-xl">
+          <MessageSquare className="w-12 h-12 mx-auto text-gray-600 mb-4" />
+          <p className="text-gray-400">No communications logged yet</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {communications.map(comm => (
+            <div key={comm.id} className={`bg-gray-800/50 border-l-4 rounded-r-xl p-4 ${
+              comm.favorable === true ? 'border-green-500' : comm.favorable === false ? 'border-red-500' : 'border-gray-500'
+            }`}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <span className="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs">{comm.contact_type}</span>
+                  <span className="text-gray-400">{comm.date}</span>
+                </div>
+                {comm.favorable !== null && (
+                  <span className={`px-2 py-1 rounded text-xs ${comm.favorable ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'}`}>
+                    {comm.favorable ? 'FAVORABLE' : 'UNFAVORABLE'}
+                  </span>
+                )}
+              </div>
+              <h3 className="font-semibold">{comm.contact_with}</h3>
+              <p className="text-gray-400 text-sm mt-1">{comm.summary}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Court Filings Tab
+function CourtFilingsTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [filings, setFilings] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [formData, setFormData] = useState({
+    filing_type: 'motion',
+    title: '',
+    date_filed: '',
+    status: 'pending',
+    content: ''
+  });
+
+  const filingTypes = [
+    { id: 'motion', label: 'Motion' },
+    { id: 'petition', label: 'Petition' },
+    { id: 'answer', label: 'Answer/Response' },
+    { id: 'objection', label: 'Objection' },
+    { id: 'brief', label: 'Brief' },
+    { id: 'order', label: 'Court Order' },
+    { id: 'subpoena', label: 'Subpoena' },
+    { id: 'notice', label: 'Notice' },
+    { id: 'appeal', label: 'Appeal' },
+    { id: 'other', label: 'Other' }
+  ];
+
+  const statusTypes = [
+    { id: 'pending', label: 'Pending', color: 'bg-yellow-600/20 text-yellow-400' },
+    { id: 'filed', label: 'Filed', color: 'bg-blue-600/20 text-blue-400' },
+    { id: 'granted', label: 'Granted', color: 'bg-green-600/20 text-green-400' },
+    { id: 'denied', label: 'Denied', color: 'bg-red-600/20 text-red-400' },
+    { id: 'withdrawn', label: 'Withdrawn', color: 'bg-gray-600/20 text-gray-400' }
+  ];
+
+  useEffect(() => {
+    if (selectedCase) loadFilings();
+  }, [selectedCase]);
+
+  const loadFilings = async () => {
+    setLoading(true);
+    try {
+      const data = await api.get(`/api/court-filings/${selectedCase.id}`);
+      setFilings(data.filings || []);
+    } catch (error) {
+      console.error('Failed to load filings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const newFiling = await api.post('/api/court-filings', {
+        ...formData,
+        case_id: selectedCase.id
+      });
+      setFilings([newFiling, ...filings]);
+      setShowAdd(false);
+      setFormData({ filing_type: 'motion', title: '', date_filed: '', status: 'pending', content: '' });
+      toast.success('Court filing added!');
+    } catch (error) {
+      toast.error('Failed to add filing');
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12" data-testid="courtfilings-tab">
+        <Gavel className="w-12 h-12 mx-auto text-purple-500 mb-4" />
+        <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
+        <p className="text-gray-400">Select a case to manage court filings</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="courtfilings-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Court Filings</h1>
+          <p className="text-gray-400">Track all filings for {selectedCase.title}</p>
+        </div>
+        <button onClick={() => setShowAdd(true)} className="btn-punisher">
+          <Plus className="w-5 h-5 inline mr-2" /> Add Filing
+        </button>
+      </div>
+
+      {/* Add Filing Modal */}
+      {showAdd && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">Add Court Filing</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Filing Type</label>
+                  <select
+                    value={formData.filing_type}
+                    onChange={(e) => setFormData({...formData, filing_type: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  >
+                    {filingTypes.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Status</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({...formData, status: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  >
+                    {statusTypes.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Title</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  placeholder="e.g., Motion to Dismiss"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Date Filed</label>
+                <input
+                  type="date"
+                  value={formData.date_filed}
+                  onChange={(e) => setFormData({...formData, date_filed: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Content/Notes</label>
+                <textarea
+                  value={formData.content}
+                  onChange={(e) => setFormData({...formData, content: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-32"
+                  placeholder="Filing content or notes..."
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher">Add Filing</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Filings List */}
+      {loading ? (
+        <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
+      ) : filings.length === 0 ? (
+        <div className="text-center py-12 bg-gray-800/30 rounded-xl">
+          <Gavel className="w-12 h-12 mx-auto text-gray-600 mb-4" />
+          <p className="text-gray-400">No court filings yet</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filings.map(filing => {
+            const statusInfo = statusTypes.find(s => s.id === filing.status) || statusTypes[0];
+            return (
+              <div key={filing.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <Gavel className="w-5 h-5 text-purple-500" />
+                    <span className="px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs uppercase">{filing.filing_type}</span>
+                  </div>
+                  <span className={`px-2 py-1 rounded text-xs ${statusInfo.color}`}>{statusInfo.label}</span>
+                </div>
+                <h3 className="font-semibold text-lg">{filing.title}</h3>
+                {filing.date_filed && <p className="text-sm text-gray-400 mt-1">Filed: {filing.date_filed}</p>}
+                {filing.content && <p className="text-gray-400 text-sm mt-2">{filing.content}</p>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Judge Watch Tab
+function JudgeWatchTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [judgeResearch, setJudgeResearch] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [showAdd, setShowAdd] = useState(false);
+  const [formData, setFormData] = useState({
+    judge_name: '',
+    court: '',
+    research_notes: '',
+    judicial_philosophy: '',
+    known_rulings: []
+  });
+  const [rulingInput, setRulingInput] = useState('');
+
+  useEffect(() => {
+    if (selectedCase) loadJudgeResearch();
+  }, [selectedCase]);
+
+  const loadJudgeResearch = async () => {
+    setLoading(true);
+    try {
+      const data = await api.get(`/api/judge-research/${selectedCase.id}`);
+      setJudgeResearch(data.judge_research);
+    } catch (error) {
+      console.error('Failed to load judge research:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchJudge = async (name) => {
+    if (!name || name.length < 3) return;
+    setSearching(true);
+    try {
+      const data = await api.get(`/api/courtlistener/judges?name=${encodeURIComponent(name)}`);
+      setSearchResults(data.results || []);
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const research = await api.post('/api/judge-research', {
+        ...formData,
+        case_id: selectedCase.id
+      });
+      setJudgeResearch(research);
+      setShowAdd(false);
+      toast.success('Judge research saved!');
+    } catch (error) {
+      toast.error('Failed to save research');
+    }
+  };
+
+  const addRuling = () => {
+    if (rulingInput.trim()) {
+      setFormData({...formData, known_rulings: [...formData.known_rulings, rulingInput.trim()]});
+      setRulingInput('');
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12" data-testid="judgewatch-tab">
+        <Scale className="w-12 h-12 mx-auto text-yellow-500 mb-4" />
+        <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
+        <p className="text-gray-400">Select a case to research the judge</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="judgewatch-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Judge Watch</h1>
+          <p className="text-gray-400">Research your judge for {selectedCase.title}</p>
+        </div>
+        {!judgeResearch && (
+          <button onClick={() => setShowAdd(true)} className="btn-punisher">
+            <Plus className="w-5 h-5 inline mr-2" /> Add Judge Research
+          </button>
+        )}
+      </div>
+
+      {/* Add/Edit Modal */}
+      {showAdd && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">Judge Research</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Judge Name</label>
+                  <input
+                    type="text"
+                    value={formData.judge_name}
+                    onChange={(e) => { setFormData({...formData, judge_name: e.target.value}); searchJudge(e.target.value); }}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="Full name"
+                    required
+                  />
+                  {searchResults.length > 0 && (
+                    <div className="mt-2 bg-gray-700 rounded-lg max-h-40 overflow-y-auto">
+                      {searchResults.slice(0, 5).map((judge, i) => (
+                        <button key={i} type="button"
+                          onClick={() => { setFormData({...formData, judge_name: judge.name_full || judge.name}); setSearchResults([]); }}
+                          className="w-full text-left px-3 py-2 hover:bg-gray-600 text-sm">
+                          {judge.name_full || judge.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Court</label>
+                  <input
+                    type="text"
+                    value={formData.court}
+                    onChange={(e) => setFormData({...formData, court: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="e.g., Travis County Family Court"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Judicial Philosophy</label>
+                <textarea
+                  value={formData.judicial_philosophy}
+                  onChange={(e) => setFormData({...formData, judicial_philosophy: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-20"
+                  placeholder="What is their general approach? Pro-CPS? Pro-reunification?"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Research Notes</label>
+                <textarea
+                  value={formData.research_notes}
+                  onChange={(e) => setFormData({...formData, research_notes: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-32"
+                  placeholder="Any important information about this judge..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Known Rulings</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={rulingInput}
+                    onChange={(e) => setRulingInput(e.target.value)}
+                    className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="Add a known ruling..."
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addRuling())}
+                  />
+                  <button type="button" onClick={addRuling} className="px-4 py-2 bg-gray-600 rounded-lg">Add</button>
+                </div>
+                {formData.known_rulings.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {formData.known_rulings.map((ruling, i) => (
+                      <span key={i} className="px-2 py-1 bg-gray-700 rounded text-sm flex items-center gap-1">
+                        {ruling}
+                        <button type="button" onClick={() => setFormData({...formData, known_rulings: formData.known_rulings.filter((_, j) => j !== i)})}
+                          className="text-red-400 hover:text-red-300">&times;</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher">Save Research</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Judge Research Display */}
+      {loading ? (
+        <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
+      ) : judgeResearch ? (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-yellow-900/30 to-gray-900 border border-yellow-800/50 rounded-xl p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-3">
+                  <Scale className="w-8 h-8 text-yellow-500" />
+                  {judgeResearch.judge_name}
+                </h2>
+                {judgeResearch.court && <p className="text-gray-400 mt-1">{judgeResearch.court}</p>}
+              </div>
+              <button onClick={() => { setFormData(judgeResearch); setShowAdd(true); }} className="px-3 py-1 bg-gray-700 rounded text-sm">
+                <Edit2 className="w-4 h-4 inline mr-1" /> Edit
+              </button>
+            </div>
+          </div>
+
+          {judgeResearch.judicial_philosophy && (
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <Brain className="w-5 h-5 text-purple-500" /> Judicial Philosophy
+              </h3>
+              <p className="text-gray-300">{judgeResearch.judicial_philosophy}</p>
+            </div>
+          )}
+
+          {judgeResearch.research_notes && (
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-500" /> Research Notes
+              </h3>
+              <p className="text-gray-300 whitespace-pre-wrap">{judgeResearch.research_notes}</p>
+            </div>
+          )}
+
+          {judgeResearch.known_rulings && judgeResearch.known_rulings.length > 0 && (
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Gavel className="w-5 h-5 text-red-500" /> Known Rulings
+              </h3>
+              <ul className="space-y-2">
+                {judgeResearch.known_rulings.map((ruling, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="text-red-500">•</span>
+                    <span className="text-gray-300">{ruling}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="text-center py-12 bg-gray-800/30 rounded-xl">
+          <Scale className="w-12 h-12 mx-auto text-gray-600 mb-4" />
+          <p className="text-gray-400 mb-4">No judge research yet for this case</p>
+          <button onClick={() => setShowAdd(true)} className="btn-punisher">
+            <Plus className="w-5 h-5 inline mr-2" /> Add Judge Research
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Defense Strategy Tab
+function DefenseStrategyTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [strategies, setStrategies] = useState([]);
+  const [generatedStrategy, setGeneratedStrategy] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    priority: 'medium',
+    legal_basis: '',
+    case_law_support: []
+  });
+
+  useEffect(() => {
+    if (selectedCase) loadStrategies();
+  }, [selectedCase]);
+
+  const loadStrategies = async () => {
+    setLoading(true);
+    try {
+      const data = await api.get(`/api/strategies/${selectedCase.id}`);
+      setStrategies(data.strategies || []);
+    } catch (error) {
+      console.error('Failed to load strategies:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateStrategy = async () => {
+    setGenerating(true);
+    try {
+      const data = await api.post(`/api/ai/defense-strategy?case_id=${selectedCase.id}`);
+      setGeneratedStrategy(data);
+      toast.success('Defense strategy generated!');
+    } catch (error) {
+      toast.error('Failed to generate strategy');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const newStrategy = await api.post('/api/strategies', {
+        ...formData,
+        case_id: selectedCase.id
+      });
+      setStrategies([newStrategy, ...strategies]);
+      setShowAdd(false);
+      setFormData({ title: '', description: '', priority: 'medium', legal_basis: '', case_law_support: [] });
+      toast.success('Strategy added!');
+    } catch (error) {
+      toast.error('Failed to add strategy');
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12" data-testid="strategy-tab">
+        <Shield className="w-12 h-12 mx-auto text-green-500 mb-4" />
+        <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
+        <p className="text-gray-400">Select a case to build defense strategies</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="strategy-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Defense Strategy</h1>
+          <p className="text-gray-400">Build your defense for {selectedCase.title}</p>
+        </div>
+        <div className="flex gap-3">
+          <button onClick={generateStrategy} disabled={generating} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg flex items-center gap-2">
+            {generating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Brain className="w-5 h-5" />}
+            AI Generate Strategy
+          </button>
+          <button onClick={() => setShowAdd(true)} className="btn-punisher">
+            <Plus className="w-5 h-5 inline mr-2" /> Add Strategy
+          </button>
+        </div>
+      </div>
+
+      {/* AI Generated Strategy */}
+      {generatedStrategy && (
+        <div className="bg-gradient-to-r from-purple-900/30 to-gray-900 border border-purple-800/50 rounded-xl p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Brain className="w-5 h-5 text-purple-500" />
+            AI-Generated Defense Strategy
+          </h3>
+          <div className="prose prose-invert max-w-none">
+            <pre className="whitespace-pre-wrap text-gray-300 text-sm bg-black/30 p-4 rounded-lg overflow-auto max-h-96">
+              {generatedStrategy.strategy}
+            </pre>
+          </div>
+          <p className="text-xs text-gray-500 mt-4">
+            Generated: {new Date(generatedStrategy.generated_at).toLocaleString()} | 
+            Analyzed: {generatedStrategy.violations_analyzed} violations, {generatedStrategy.events_analyzed} events
+          </p>
+        </div>
+      )}
+
+      {/* Add Strategy Modal */}
+      {showAdd && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-lg">
+            <h2 className="text-xl font-bold mb-4">Add Defense Strategy</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Strategy Title</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  placeholder="e.g., Fourth Amendment Challenge"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Priority</label>
+                <select
+                  value={formData.priority}
+                  onChange={(e) => setFormData({...formData, priority: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                >
+                  <option value="high">High Priority</option>
+                  <option value="medium">Medium Priority</option>
+                  <option value="low">Low Priority</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-24"
+                  placeholder="Describe the strategy..."
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Legal Basis</label>
+                <input
+                  type="text"
+                  value={formData.legal_basis}
+                  onChange={(e) => setFormData({...formData, legal_basis: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  placeholder="e.g., Fourth Amendment, State Statute §123.45"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher">Add Strategy</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Strategies List */}
+      {loading ? (
+        <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
+      ) : strategies.length === 0 && !generatedStrategy ? (
+        <div className="text-center py-12 bg-gray-800/30 rounded-xl">
+          <Shield className="w-12 h-12 mx-auto text-gray-600 mb-4" />
+          <p className="text-gray-400 mb-4">No defense strategies yet</p>
+          <button onClick={generateStrategy} disabled={generating} className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg">
+            {generating ? <Loader2 className="w-5 h-5 animate-spin inline mr-2" /> : <Brain className="w-5 h-5 inline mr-2" />}
+            Generate AI Strategy
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {strategies.map(strategy => (
+            <div key={strategy.id} className={`bg-gray-800/50 border-l-4 rounded-r-xl p-4 ${
+              strategy.priority === 'high' ? 'border-red-500' : strategy.priority === 'medium' ? 'border-yellow-500' : 'border-gray-500'
+            }`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className={`px-2 py-1 rounded text-xs ${
+                  strategy.priority === 'high' ? 'bg-red-600/20 text-red-400' : 
+                  strategy.priority === 'medium' ? 'bg-yellow-600/20 text-yellow-400' : 'bg-gray-600/20 text-gray-400'
+                }`}>
+                  {strategy.priority.toUpperCase()} PRIORITY
+                </span>
+              </div>
+              <h3 className="font-semibold text-lg">{strategy.title}</h3>
+              <p className="text-gray-400 text-sm mt-1">{strategy.description}</p>
+              {strategy.legal_basis && (
+                <p className="text-sm text-green-400 mt-2">Legal Basis: {strategy.legal_basis}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Criminal Case Tab
+function CriminalCaseTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [criminalCase, setCriminalCase] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [formData, setFormData] = useState({
+    criminal_case_number: '',
+    court: '',
+    prosecutor: '',
+    defense_attorney: '',
+    bond_status: '',
+    next_court_date: '',
+    relation_to_cps: '',
+    charges: []
+  });
+  const [chargeInput, setChargeInput] = useState({ charge: '', statute: '', severity: 'misdemeanor' });
+
+  useEffect(() => {
+    if (selectedCase) loadCriminalCase();
+  }, [selectedCase]);
+
+  const loadCriminalCase = async () => {
+    setLoading(true);
+    try {
+      const data = await api.get(`/api/criminal-case/${selectedCase.id}`);
+      setCriminalCase(data.criminal_case);
+    } catch (error) {
+      console.error('Failed to load criminal case:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const data = await api.post('/api/criminal-case', {
+        ...formData,
+        case_id: selectedCase.id
+      });
+      setCriminalCase(data);
+      setShowAdd(false);
+      toast.success('Criminal case info saved!');
+    } catch (error) {
+      toast.error('Failed to save criminal case');
+    }
+  };
+
+  const addCharge = () => {
+    if (chargeInput.charge.trim()) {
+      setFormData({...formData, charges: [...formData.charges, {...chargeInput}]});
+      setChargeInput({ charge: '', statute: '', severity: 'misdemeanor' });
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12" data-testid="criminal-tab">
+        <AlertTriangle className="w-12 h-12 mx-auto text-orange-500 mb-4" />
+        <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
+        <p className="text-gray-400">Select a case to link criminal charges</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="criminal-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Criminal Case Link</h1>
+          <p className="text-gray-400">Track related criminal charges for {selectedCase.title}</p>
+        </div>
+        {!criminalCase && (
+          <button onClick={() => setShowAdd(true)} className="btn-punisher">
+            <Plus className="w-5 h-5 inline mr-2" /> Link Criminal Case
+          </button>
+        )}
+      </div>
+
+      {/* Add Modal */}
+      {showAdd && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">Link Criminal Case</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Case Number</label>
+                  <input
+                    type="text"
+                    value={formData.criminal_case_number}
+                    onChange={(e) => setFormData({...formData, criminal_case_number: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Court</label>
+                  <input
+                    type="text"
+                    value={formData.court}
+                    onChange={(e) => setFormData({...formData, court: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Prosecutor</label>
+                  <input
+                    type="text"
+                    value={formData.prosecutor}
+                    onChange={(e) => setFormData({...formData, prosecutor: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Defense Attorney</label>
+                  <input
+                    type="text"
+                    value={formData.defense_attorney}
+                    onChange={(e) => setFormData({...formData, defense_attorney: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Bond Status</label>
+                  <input
+                    type="text"
+                    value={formData.bond_status}
+                    onChange={(e) => setFormData({...formData, bond_status: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="e.g., $10,000 bond posted"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Next Court Date</label>
+                  <input
+                    type="date"
+                    value={formData.next_court_date}
+                    onChange={(e) => setFormData({...formData, next_court_date: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Relation to CPS Case</label>
+                <textarea
+                  value={formData.relation_to_cps}
+                  onChange={(e) => setFormData({...formData, relation_to_cps: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-20"
+                  placeholder="How does this criminal case relate to the CPS case?"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Charges</label>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={chargeInput.charge}
+                    onChange={(e) => setChargeInput({...chargeInput, charge: e.target.value})}
+                    className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="Charge description"
+                  />
+                  <select
+                    value={chargeInput.severity}
+                    onChange={(e) => setChargeInput({...chargeInput, severity: e.target.value})}
+                    className="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  >
+                    <option value="infraction">Infraction</option>
+                    <option value="misdemeanor">Misdemeanor</option>
+                    <option value="felony">Felony</option>
+                  </select>
+                  <button type="button" onClick={addCharge} className="px-4 py-2 bg-gray-600 rounded-lg">Add</button>
+                </div>
+                {formData.charges.length > 0 && (
+                  <div className="space-y-2">
+                    {formData.charges.map((charge, i) => (
+                      <div key={i} className="flex items-center justify-between bg-gray-700 rounded-lg px-3 py-2">
+                        <span>{charge.charge}</span>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded text-xs ${
+                            charge.severity === 'felony' ? 'bg-red-600' : 
+                            charge.severity === 'misdemeanor' ? 'bg-yellow-600' : 'bg-gray-600'
+                          }`}>{charge.severity}</span>
+                          <button type="button" onClick={() => setFormData({...formData, charges: formData.charges.filter((_, j) => j !== i)})}
+                            className="text-red-400">&times;</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher">Save Criminal Case</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Criminal Case Display */}
+      {loading ? (
+        <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
+      ) : criminalCase ? (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-orange-900/30 to-gray-900 border border-orange-800/50 rounded-xl p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <AlertTriangle className="w-6 h-6 text-orange-500" />
+                  Criminal Case #{criminalCase.criminal_case_number || 'N/A'}
+                </h2>
+                {criminalCase.court && <p className="text-gray-400">{criminalCase.court}</p>}
+              </div>
+              <button onClick={() => { setFormData(criminalCase); setShowAdd(true); }} className="px-3 py-1 bg-gray-700 rounded text-sm">
+                <Edit2 className="w-4 h-4 inline mr-1" /> Edit
+              </button>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-4 mt-4">
+              {criminalCase.prosecutor && (
+                <div className="bg-black/30 rounded-lg p-3">
+                  <p className="text-xs text-gray-500">Prosecutor</p>
+                  <p className="font-medium">{criminalCase.prosecutor}</p>
+                </div>
+              )}
+              {criminalCase.defense_attorney && (
+                <div className="bg-black/30 rounded-lg p-3">
+                  <p className="text-xs text-gray-500">Defense Attorney</p>
+                  <p className="font-medium">{criminalCase.defense_attorney}</p>
+                </div>
+              )}
+              {criminalCase.bond_status && (
+                <div className="bg-black/30 rounded-lg p-3">
+                  <p className="text-xs text-gray-500">Bond Status</p>
+                  <p className="font-medium">{criminalCase.bond_status}</p>
+                </div>
+              )}
+              {criminalCase.next_court_date && (
+                <div className="bg-black/30 rounded-lg p-3">
+                  <p className="text-xs text-gray-500">Next Court Date</p>
+                  <p className="font-medium text-red-400">{criminalCase.next_court_date}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {criminalCase.charges && criminalCase.charges.length > 0 && (
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+              <h3 className="font-semibold mb-4">Charges ({criminalCase.charges.length})</h3>
+              <div className="space-y-2">
+                {criminalCase.charges.map((charge, i) => (
+                  <div key={i} className="flex items-center justify-between bg-black/30 rounded-lg px-4 py-3">
+                    <span>{charge.charge}</span>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      charge.severity === 'felony' ? 'bg-red-600' : 
+                      charge.severity === 'misdemeanor' ? 'bg-yellow-600' : 'bg-gray-600'
+                    }`}>{charge.severity?.toUpperCase()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {criminalCase.relation_to_cps && (
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+              <h3 className="font-semibold mb-2">Relation to CPS Case</h3>
+              <p className="text-gray-300">{criminalCase.relation_to_cps}</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="text-center py-12 bg-gray-800/30 rounded-xl">
+          <AlertTriangle className="w-12 h-12 mx-auto text-gray-600 mb-4" />
+          <p className="text-gray-400 mb-4">No linked criminal case</p>
+          <button onClick={() => setShowAdd(true)} className="btn-punisher">
+            <Plus className="w-5 h-5 inline mr-2" /> Link Criminal Case
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Services Tab
+function ServicesTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [formData, setFormData] = useState({
+    service_type: '',
+    provider: '',
+    start_date: '',
+    end_date: '',
+    status: 'in_progress',
+    notes: ''
+  });
+
+  const serviceTypes = [
+    'Parenting Classes', 'Drug Testing', 'Counseling', 'Therapy', 'Anger Management',
+    'Domestic Violence Classes', 'Substance Abuse Treatment', 'Mental Health Evaluation',
+    'Home Study', 'Supervised Visitation', 'Family Therapy', 'Other'
+  ];
+
+  const statusTypes = [
+    { id: 'not_started', label: 'Not Started', color: 'bg-gray-600/20 text-gray-400' },
+    { id: 'in_progress', label: 'In Progress', color: 'bg-blue-600/20 text-blue-400' },
+    { id: 'completed', label: 'Completed', color: 'bg-green-600/20 text-green-400' },
+    { id: 'failed', label: 'Failed/Non-Compliant', color: 'bg-red-600/20 text-red-400' }
+  ];
+
+  useEffect(() => {
+    if (selectedCase) loadServices();
+  }, [selectedCase]);
+
+  const loadServices = async () => {
+    setLoading(true);
+    try {
+      const data = await api.get(`/api/services/${selectedCase.id}`);
+      setServices(data.services || []);
+    } catch (error) {
+      console.error('Failed to load services:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const newService = await api.post('/api/services', {
+        ...formData,
+        case_id: selectedCase.id
+      });
+      setServices([newService, ...services]);
+      setShowAdd(false);
+      setFormData({ service_type: '', provider: '', start_date: '', end_date: '', status: 'in_progress', notes: '' });
+      toast.success('Service added!');
+    } catch (error) {
+      toast.error('Failed to add service');
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12" data-testid="services-tab">
+        <Users className="w-12 h-12 mx-auto text-teal-500 mb-4" />
+        <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
+        <p className="text-gray-400">Select a case to track services</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="services-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Case Plan Services</h1>
+          <p className="text-gray-400">Track required services for {selectedCase.title}</p>
+        </div>
+        <button onClick={() => setShowAdd(true)} className="btn-punisher">
+          <Plus className="w-5 h-5 inline mr-2" /> Add Service
+        </button>
+      </div>
+
+      {/* Add Modal */}
+      {showAdd && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-lg">
+            <h2 className="text-xl font-bold mb-4">Add Service</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Service Type</label>
+                <select
+                  value={formData.service_type}
+                  onChange={(e) => setFormData({...formData, service_type: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  required
+                >
+                  <option value="">Select service...</option>
+                  {serviceTypes.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Provider</label>
+                <input
+                  type="text"
+                  value={formData.provider}
+                  onChange={(e) => setFormData({...formData, provider: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  placeholder="Provider name/agency"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Start Date</label>
+                  <input
+                    type="date"
+                    value={formData.start_date}
+                    onChange={(e) => setFormData({...formData, start_date: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">End Date</label>
+                  <input
+                    type="date"
+                    value={formData.end_date}
+                    onChange={(e) => setFormData({...formData, end_date: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Status</label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({...formData, status: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                >
+                  {statusTypes.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Notes</label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-20"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher">Add Service</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Services List */}
+      {loading ? (
+        <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
+      ) : services.length === 0 ? (
+        <div className="text-center py-12 bg-gray-800/30 rounded-xl">
+          <Users className="w-12 h-12 mx-auto text-gray-600 mb-4" />
+          <p className="text-gray-400">No services tracked yet</p>
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 gap-4">
+          {services.map(service => {
+            const statusInfo = statusTypes.find(s => s.id === service.status) || statusTypes[1];
+            return (
+              <div key={service.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`px-2 py-1 rounded text-xs ${statusInfo.color}`}>{statusInfo.label}</span>
+                </div>
+                <h3 className="font-semibold text-lg">{service.service_type}</h3>
+                {service.provider && <p className="text-gray-400 text-sm">Provider: {service.provider}</p>}
+                <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                  {service.start_date && <span>Start: {service.start_date}</span>}
+                  {service.end_date && <span>End: {service.end_date}</span>}
+                </div>
+                {service.notes && <p className="text-sm text-gray-400 mt-2">{service.notes}</p>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Forum Tab
+function ForumTab() {
+  const { api } = useAuth();
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
+  const [formData, setFormData] = useState({ title: '', content: '', category: 'general' });
+
+  const categories = [
+    { id: 'general', label: 'General Discussion' },
+    { id: 'legal', label: 'Legal Questions' },
+    { id: 'victories', label: 'Victories & Success Stories' },
+    { id: 'support', label: 'Support & Encouragement' },
+    { id: 'resources', label: 'Resources & Tips' }
+  ];
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  const loadPosts = async () => {
+    try {
+      const data = await api.get('/api/forum/posts');
+      setPosts(data.posts || []);
+    } catch (error) {
+      console.error('Failed to load posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const newPost = await api.post('/api/forum/posts', formData);
+      setPosts([newPost, ...posts]);
+      setShowAdd(false);
+      setFormData({ title: '', content: '', category: 'general' });
+      toast.success('Post created!');
+    } catch (error) {
+      toast.error('Failed to create post');
+    }
+  };
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="forum-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Community Forum</h1>
+          <p className="text-gray-400">Connect with other parents fighting CPS</p>
+        </div>
+        <button onClick={() => setShowAdd(true)} className="btn-punisher">
+          <Plus className="w-5 h-5 inline mr-2" /> New Post
+        </button>
+      </div>
+
+      {/* Add Post Modal */}
+      {showAdd && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-lg">
+            <h2 className="text-xl font-bold mb-4">Create Post</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Category</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({...formData, category: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                >
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Title</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Content</label>
+                <textarea
+                  value={formData.content}
+                  onChange={(e) => setFormData({...formData, content: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-32"
+                  required
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher">Post</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Posts */}
+      {loading ? (
+        <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
+      ) : posts.length === 0 ? (
+        <div className="text-center py-12 bg-gray-800/30 rounded-xl">
+          <Users className="w-12 h-12 mx-auto text-gray-600 mb-4" />
+          <p className="text-gray-400">No posts yet. Be the first to share!</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {posts.map(post => (
+            <div key={post.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs">{post.category}</span>
+                <span className="text-gray-500 text-sm">{post.author_name}</span>
+                <span className="text-gray-600 text-xs">{new Date(post.created_at).toLocaleDateString()}</span>
+              </div>
+              <h3 className="font-semibold text-lg">{post.title}</h3>
+              <p className="text-gray-400 mt-2">{post.content}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Advocates Tab
+function AdvocatesTab() {
+  const { api } = useAuth();
+  const [advocates, setAdvocates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stateFilter, setStateFilter] = useState('');
+
+  const states = [
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+  ];
+
+  useEffect(() => {
+    loadAdvocates();
+  }, [stateFilter]);
+
+  const loadAdvocates = async () => {
+    setLoading(true);
+    try {
+      const url = stateFilter ? `/api/advocates?state=${stateFilter}` : '/api/advocates';
+      const data = await api.get(url);
+      setAdvocates(data.advocates || []);
+    } catch (error) {
+      console.error('Failed to load advocates:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="advocates-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Find Advocates</h1>
+          <p className="text-gray-400">Connect with family advocates and attorneys in your state</p>
+        </div>
+        <select
+          value={stateFilter}
+          onChange={(e) => setStateFilter(e.target.value)}
+          className="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+        >
+          <option value="">All States</option>
+          {states.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
+      ) : advocates.length === 0 ? (
+        <div className="text-center py-12 bg-gray-800/30 rounded-xl">
+          <Users className="w-12 h-12 mx-auto text-gray-600 mb-4" />
+          <p className="text-gray-400 mb-2">No advocates listed yet for {stateFilter || 'any state'}</p>
+          <p className="text-sm text-gray-500">Check back soon as we grow our directory</p>
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {advocates.map(advocate => (
+            <div key={advocate.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-purple-600 rounded-full flex items-center justify-center">
+                  <Users className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">{advocate.name}</h3>
+                  <p className="text-sm text-gray-400">{advocate.type}</p>
+                  <p className="text-xs text-gray-500">{advocate.state}</p>
+                </div>
+              </div>
+              {advocate.description && <p className="text-gray-400 text-sm mt-3">{advocate.description}</p>}
+              {advocate.contact && <p className="text-blue-400 text-sm mt-2">{advocate.contact}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default App;
