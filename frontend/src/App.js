@@ -5367,4 +5367,653 @@ function LegalKnowledgeBaseTab() {
   );
 }
 
+// Rights Guide Tab
+function RightsGuideTab() {
+  const { api } = useAuth();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState(0);
+
+  useEffect(() => {
+    loadRightsGuide();
+  }, []);
+
+  const loadRightsGuide = async () => {
+    try {
+      const rights = await api.get('/api/rights-guide');
+      setData(rights);
+    } catch (error) {
+      console.error('Failed to load rights guide');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>;
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="rights-tab">
+      <div className="bg-gradient-to-r from-blue-900/50 to-gray-900 border border-blue-800/50 rounded-xl p-6">
+        <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
+          <Shield className="w-8 h-8 text-blue-500" />
+          Know Your Rights
+        </h1>
+        <p className="text-gray-300 mt-2">
+          Your constitutional rights during CPS interactions. Know them. Assert them. Protect your family.
+        </p>
+      </div>
+
+      {/* Quick Rights */}
+      {data?.quick_rights && (
+        <div className="grid md:grid-cols-2 gap-4">
+          {data.quick_rights.map((qr, i) => (
+            <div key={i} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+              <h3 className="font-semibold text-yellow-400">{qr.question}</h3>
+              <p className="text-gray-300 mt-2">{qr.answer}</p>
+              <p className="text-xs text-blue-400 mt-2">{qr.legal_basis}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Category Tabs */}
+      {data?.categories && (
+        <>
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {data.categories.map((cat, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveCategory(i)}
+                className={`px-4 py-2 rounded-lg whitespace-nowrap flex items-center gap-2 ${
+                  activeCategory === i ? 'bg-blue-600' : 'bg-gray-800 hover:bg-gray-700'
+                }`}
+              >
+                <Shield className="w-4 h-4" />
+                {cat.title}
+              </button>
+            ))}
+          </div>
+
+          {/* Rights List */}
+          <div className="space-y-4">
+            {data.categories[activeCategory]?.rights.map((right, i) => (
+              <div key={i} className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+                <h3 className="text-xl font-bold text-blue-400">{right.title}</h3>
+                <p className="text-gray-300 mt-2">{right.description}</p>
+                {right.details && (
+                  <ul className="mt-4 space-y-2">
+                    {right.details.map((detail, j) => (
+                      <li key={j} className="flex items-start gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-400">{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {right.key_case && (
+                  <p className="text-sm text-purple-400 mt-4">Key Case: {right.key_case}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Evidence Checklist Tab
+function EvidenceChecklistTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [checklist, setChecklist] = useState(null);
+  const [checkedItems, setCheckedItems] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadChecklist();
+    if (selectedCase) loadSavedChecklist();
+  }, [selectedCase]);
+
+  const loadChecklist = async () => {
+    try {
+      const data = await api.get('/api/evidence-checklist');
+      setChecklist(data);
+    } catch (error) {
+      console.error('Failed to load checklist');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadSavedChecklist = async () => {
+    if (!selectedCase) return;
+    try {
+      const data = await api.get(`/api/evidence-checklist/${selectedCase.id}`);
+      setCheckedItems(data.checked_items || {});
+    } catch (error) {
+      console.error('Failed to load saved checklist');
+    }
+  };
+
+  const toggleItem = async (categoryIndex, itemIndex) => {
+    const key = `${categoryIndex}-${itemIndex}`;
+    const newChecked = { ...checkedItems, [key]: !checkedItems[key] };
+    setCheckedItems(newChecked);
+    
+    if (selectedCase) {
+      try {
+        await api.post(`/api/evidence-checklist/${selectedCase.id}`, { checked_items: newChecked });
+      } catch (error) {
+        console.error('Failed to save');
+      }
+    }
+  };
+
+  const totalItems = checklist?.categories?.reduce((sum, cat) => sum + cat.items.length, 0) || 0;
+  const checkedCount = Object.values(checkedItems).filter(Boolean).length;
+  const progress = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
+
+  if (loading) {
+    return <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>;
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="evidencelist-tab">
+      <div className="bg-gradient-to-r from-green-900/50 to-gray-900 border border-green-800/50 rounded-xl p-6">
+        <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
+          <CheckCircle2 className="w-8 h-8 text-green-500" />
+          Evidence Checklist
+        </h1>
+        <p className="text-gray-300 mt-2">
+          Build the strongest possible case. Check off evidence as you gather it.
+        </p>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-medium">Your Progress</span>
+          <span className="text-green-400">{checkedCount} / {totalItems} ({progress}%)</span>
+        </div>
+        <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Categories */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {checklist?.categories?.map((category, catIndex) => {
+          const catChecked = category.items.filter((_, i) => checkedItems[`${catIndex}-${i}`]).length;
+          return (
+            <div key={catIndex} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-green-500" />
+                  {category.title}
+                </h3>
+                <span className="text-sm text-gray-400">{catChecked}/{category.items.length}</span>
+              </div>
+              <div className="space-y-2">
+                {category.items.map((item, itemIndex) => {
+                  const key = `${catIndex}-${itemIndex}`;
+                  const isChecked = checkedItems[key];
+                  return (
+                    <label key={itemIndex} className="flex items-start gap-3 cursor-pointer p-2 rounded hover:bg-gray-700/50">
+                      <input
+                        type="checkbox"
+                        checked={isChecked || false}
+                        onChange={() => toggleItem(catIndex, itemIndex)}
+                        className="w-4 h-4 mt-0.5"
+                      />
+                      <span className={`text-sm ${isChecked ? 'text-gray-500 line-through' : 'text-gray-300'}`}>
+                        {item}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Visitation Log Tab
+function VisitationLogTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [visits, setVisits] = useState([]);
+  const [stats, setStats] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [formData, setFormData] = useState({
+    date: new Date().toISOString().split('T')[0],
+    time: '10:00',
+    duration: 60,
+    location: '',
+    supervisor: '',
+    child_emotional_state: 'happy',
+    what_happened: '',
+    child_quotes: '',
+    supervisor_issues: '',
+    visit_allowed: true,
+    reason_denied: '',
+    notes: ''
+  });
+
+  const emotionalStates = [
+    { id: 'happy', label: 'Happy', icon: '😊', color: 'text-green-400' },
+    { id: 'neutral', label: 'Neutral', icon: '😐', color: 'text-yellow-400' },
+    { id: 'sad', label: 'Sad', icon: '😢', color: 'text-blue-400' },
+    { id: 'distressed', label: 'Distressed', icon: '😰', color: 'text-red-400' }
+  ];
+
+  useEffect(() => {
+    if (selectedCase) loadVisits();
+  }, [selectedCase]);
+
+  const loadVisits = async () => {
+    setLoading(true);
+    try {
+      const data = await api.get(`/api/visitation/${selectedCase.id}`);
+      setVisits(data.visits || []);
+      setStats(data.stats || {});
+    } catch (error) {
+      console.error('Failed to load visits');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const newVisit = await api.post('/api/visitation', {
+        ...formData,
+        case_id: selectedCase.id
+      });
+      setVisits([newVisit, ...visits]);
+      setShowAdd(false);
+      toast.success('Visit logged!');
+    } catch (error) {
+      toast.error('Failed to log visit');
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12" data-testid="visitation-tab">
+        <Users className="w-12 h-12 mx-auto text-pink-500 mb-4" />
+        <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
+        <p className="text-gray-400">Select a case to log visitations</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="visitation-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Visitation Log</h1>
+          <p className="text-gray-400">Track visits with your children - {selectedCase.title}</p>
+        </div>
+        <button onClick={() => setShowAdd(true)} className="btn-punisher">
+          <Plus className="w-5 h-5 inline mr-2" /> Log Visit
+        </button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 text-center">
+          <p className="text-3xl font-bold text-blue-400">{stats.total_visits || 0}</p>
+          <p className="text-sm text-gray-400">Total Visits</p>
+        </div>
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 text-center">
+          <p className="text-3xl font-bold text-green-400">{stats.total_hours || 0}h</p>
+          <p className="text-sm text-gray-400">Total Time</p>
+        </div>
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 text-center">
+          <p className="text-3xl font-bold text-red-400">{stats.denied_visits || 0}</p>
+          <p className="text-sm text-gray-400">Denied Visits</p>
+        </div>
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 text-center">
+          <p className="text-3xl font-bold text-yellow-400">{stats.denial_rate || 0}%</p>
+          <p className="text-sm text-gray-400">Denial Rate</p>
+        </div>
+      </div>
+
+      {/* Add Visit Modal */}
+      {showAdd && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">Log Visitation</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Date</label>
+                  <input type="date" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" required />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Time</label>
+                  <input type="time" value={formData.time} onChange={(e) => setFormData({...formData, time: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Duration (min)</label>
+                  <input type="number" value={formData.duration} onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value)})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" />
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-center">
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={formData.visit_allowed} onChange={(e) => setFormData({...formData, visit_allowed: e.target.checked})}
+                    className="w-4 h-4" />
+                  <span>Visit Allowed</span>
+                </label>
+              </div>
+
+              {!formData.visit_allowed && (
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Reason Denied</label>
+                  <input type="text" value={formData.reason_denied} onChange={(e) => setFormData({...formData, reason_denied: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" placeholder="Why was visit denied?" />
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Location</label>
+                  <input type="text" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Supervisor</label>
+                  <input type="text" value={formData.supervisor} onChange={(e) => setFormData({...formData, supervisor: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Child's Emotional State</label>
+                <div className="flex gap-2">
+                  {emotionalStates.map(state => (
+                    <button key={state.id} type="button"
+                      onClick={() => setFormData({...formData, child_emotional_state: state.id})}
+                      className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 ${
+                        formData.child_emotional_state === state.id ? 'bg-gray-600 ring-2 ring-blue-500' : 'bg-gray-700'
+                      }`}>
+                      <span className="text-xl">{state.icon}</span>
+                      <span className="text-sm">{state.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">What Happened</label>
+                <textarea value={formData.what_happened} onChange={(e) => setFormData({...formData, what_happened: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-24" placeholder="Describe the visit..." />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Child Quotes (important for court!)</label>
+                <textarea value={formData.child_quotes} onChange={(e) => setFormData({...formData, child_quotes: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-16" placeholder="Exact quotes from your child..." />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Supervisor Issues</label>
+                <textarea value={formData.supervisor_issues} onChange={(e) => setFormData({...formData, supervisor_issues: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-16" placeholder="Any problems with supervisor?" />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher">Log Visit</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Visits List */}
+      {loading ? (
+        <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
+      ) : visits.length === 0 ? (
+        <div className="text-center py-12 bg-gray-800/30 rounded-xl">
+          <Users className="w-12 h-12 mx-auto text-gray-600 mb-4" />
+          <p className="text-gray-400">No visits logged yet</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {visits.map(visit => {
+            const emotionInfo = emotionalStates.find(e => e.id === visit.child_emotional_state) || emotionalStates[0];
+            return (
+              <div key={visit.id} className={`bg-gray-800/50 border-l-4 rounded-r-xl p-4 ${
+                visit.visit_allowed ? 'border-green-500' : 'border-red-500'
+              }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold">{visit.date}</span>
+                    <span className="text-gray-400">{visit.time}</span>
+                    <span className="text-gray-400">{visit.duration} min</span>
+                    <span className={emotionInfo.color}>{emotionInfo.icon} {emotionInfo.label}</span>
+                  </div>
+                  {!visit.visit_allowed && (
+                    <span className="px-2 py-1 bg-red-600/20 text-red-400 rounded text-xs">DENIED</span>
+                  )}
+                </div>
+                {visit.location && <p className="text-sm text-gray-400">Location: {visit.location}</p>}
+                {visit.supervisor && <p className="text-sm text-gray-400">Supervisor: {visit.supervisor}</p>}
+                {visit.what_happened && <p className="text-gray-300 mt-2">{visit.what_happened}</p>}
+                {visit.child_quotes && (
+                  <p className="text-blue-400 mt-2 italic">"{visit.child_quotes}"</p>
+                )}
+                {visit.supervisor_issues && (
+                  <p className="text-red-400 mt-2">Issues: {visit.supervisor_issues}</p>
+                )}
+                {visit.reason_denied && (
+                  <p className="text-red-400 mt-2">Reason Denied: {visit.reason_denied}</p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Court Hearings Tab with Countdown
+function CourtHearingsTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [hearings, setHearings] = useState([]);
+  const [nextHearing, setNextHearing] = useState(null);
+  const [hearingTypes, setHearingTypes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [formData, setFormData] = useState({
+    date: '',
+    time: '09:00',
+    hearing_type: 'adjudication',
+    judge: '',
+    location: '',
+    notes: ''
+  });
+
+  useEffect(() => {
+    loadHearingTypes();
+    if (selectedCase) loadHearings();
+  }, [selectedCase]);
+
+  const loadHearingTypes = async () => {
+    try {
+      const data = await api.get('/api/court-hearings/types');
+      setHearingTypes(data.hearing_types || []);
+    } catch (error) {
+      console.error('Failed to load hearing types');
+    }
+  };
+
+  const loadHearings = async () => {
+    setLoading(true);
+    try {
+      const data = await api.get(`/api/court-hearings/${selectedCase.id}`);
+      setHearings(data.hearings || []);
+      setNextHearing(data.next_hearing);
+    } catch (error) {
+      console.error('Failed to load hearings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const newHearing = await api.post('/api/court-hearings', {
+        ...formData,
+        case_id: selectedCase.id
+      });
+      setHearings([...hearings, newHearing].sort((a, b) => new Date(a.date) - new Date(b.date)));
+      if (!nextHearing || newHearing.days_until < nextHearing.days_until) {
+        setNextHearing(newHearing);
+      }
+      setShowAdd(false);
+      toast.success('Hearing added!');
+    } catch (error) {
+      toast.error('Failed to add hearing');
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12" data-testid="courthearings-tab">
+        <Calendar className="w-12 h-12 mx-auto text-red-500 mb-4" />
+        <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
+        <p className="text-gray-400">Select a case to manage court hearings</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="courthearings-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Court Hearings</h1>
+          <p className="text-gray-400">Upcoming hearings for {selectedCase.title}</p>
+        </div>
+        <button onClick={() => setShowAdd(true)} className="btn-punisher">
+          <Plus className="w-5 h-5 inline mr-2" /> Add Hearing
+        </button>
+      </div>
+
+      {/* Countdown Timer */}
+      {nextHearing && (
+        <div className="bg-gradient-to-r from-red-900/50 to-orange-900/50 border border-red-800/50 rounded-xl p-6 text-center">
+          <p className="text-gray-400 text-sm">NEXT HEARING IN</p>
+          <p className="text-6xl font-bold text-red-400 my-4">{nextHearing.days_until}</p>
+          <p className="text-2xl text-gray-300">DAYS</p>
+          <div className="mt-4">
+            <p className="text-xl font-semibold">{hearingTypes.find(t => t.value === nextHearing.hearing_type)?.label || nextHearing.hearing_type}</p>
+            <p className="text-gray-400">{nextHearing.date} at {nextHearing.time}</p>
+            {nextHearing.location && <p className="text-gray-500">{nextHearing.location}</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Add Hearing Modal */}
+      {showAdd && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-lg">
+            <h2 className="text-xl font-bold mb-4">Add Court Hearing</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Hearing Type</label>
+                <select value={formData.hearing_type} onChange={(e) => setFormData({...formData, hearing_type: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2">
+                  {hearingTypes.map(type => (
+                    <option key={type.value} value={type.value}>{type.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Date</label>
+                  <input type="date" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" required />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Time</label>
+                  <input type="time" value={formData.time} onChange={(e) => setFormData({...formData, time: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Judge</label>
+                <input type="text" value={formData.judge} onChange={(e) => setFormData({...formData, judge: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" placeholder="Judge name" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Location</label>
+                <input type="text" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" placeholder="Courtroom address" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Notes</label>
+                <textarea value={formData.notes} onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-20" />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher">Add Hearing</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Hearings List */}
+      {loading ? (
+        <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
+      ) : hearings.length === 0 ? (
+        <div className="text-center py-12 bg-gray-800/30 rounded-xl">
+          <Calendar className="w-12 h-12 mx-auto text-gray-600 mb-4" />
+          <p className="text-gray-400">No hearings scheduled yet</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {hearings.map(hearing => {
+            const typeInfo = hearingTypes.find(t => t.value === hearing.hearing_type);
+            return (
+              <div key={hearing.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-lg">{typeInfo?.label || hearing.hearing_type}</h3>
+                    <p className="text-gray-400">{hearing.date} at {hearing.time}</p>
+                    {hearing.location && <p className="text-gray-500 text-sm">{hearing.location}</p>}
+                    {hearing.judge && <p className="text-gray-500 text-sm">Judge: {hearing.judge}</p>}
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-red-400">{hearing.days_until}</p>
+                    <p className="text-xs text-gray-500">DAYS</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default App;
