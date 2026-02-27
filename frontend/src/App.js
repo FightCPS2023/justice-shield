@@ -455,7 +455,7 @@ function Dashboard({ onNavigate }) {
           </div>
         </div>
 
-        <nav className="p-4 space-y-1">
+        <nav className="p-4 space-y-1 max-h-[calc(100vh-180px)] overflow-y-auto">
           {menuItems.map((item) => (
             <button
               key={item.id}
@@ -463,12 +463,15 @@ function Dashboard({ onNavigate }) {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 activeTab === item.id 
                   ? 'bg-red-600/20 text-red-500 border border-red-600/30' 
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                  : item.highlight 
+                    ? 'text-purple-400 hover:bg-purple-900/30 hover:text-purple-300 border border-purple-800/30'
+                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               }`}
               data-testid={`nav-${item.id}`}
             >
-              <item.icon className="w-5 h-5" />
+              <item.icon className={`w-5 h-5 ${item.highlight ? 'text-purple-400' : ''}`} />
               {item.label}
+              {item.highlight && <span className="text-xs bg-purple-600/30 text-purple-300 px-2 py-0.5 rounded-full ml-auto">NEW</span>}
             </button>
           ))}
         </nav>
