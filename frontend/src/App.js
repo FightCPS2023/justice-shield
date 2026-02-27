@@ -506,6 +506,10 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'cases' && <CasesTab cases={cases} setCases={setCases} selectedCase={selectedCase} setSelectedCase={setSelectedCase} />}
           {activeTab === 'chat' && <ChatTab selectedCase={selectedCase} />}
           {activeTab === 'expert' && <ExpertLegalAITab selectedCase={selectedCase} />}
+          {activeTab === 'strategybuilder' && <LegalStrategyBuilderTab selectedCase={selectedCase} />}
+          {activeTab === 'argumentgen' && <ArgumentGeneratorTab selectedCase={selectedCase} />}
+          {activeTab === 'evidencemapper' && <EvidenceMapperTab selectedCase={selectedCase} />}
+          {activeTab === 'precedentfinder' && <PrecedentFinderTab selectedCase={selectedCase} />}
           {activeTab === 'section1983' && <Section1983Tab selectedCase={selectedCase} />}
           {activeTab === 'incidents' && <IncidentAnalyzerTab selectedCase={selectedCase} />}
           {activeTab === 'legaldb' && <LegalKnowledgeBaseTab />}
