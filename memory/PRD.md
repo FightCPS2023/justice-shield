@@ -94,8 +94,18 @@ Build THE CPS PUNISHER - the most powerful interactive Child Protective Services
 - My Cases management with state selection
 - AI Chat assistant with case context
 - Violation tracker with 26+ violation types
+- Document Upload with AI Analysis (Core Feature!)
 - Document generator with 20+ document types
 - Timeline builder with event types
+- **Evidence Tracker** - Track all evidence (NEW!)
+- **Communications Log** - Log all CPS communications (NEW!)
+- **Court Filings** - Track motions, petitions, orders (NEW!)
+- **Judge Watch** - Research your judge (NEW!)
+- **Defense Strategy** - AI-generated + manual strategies (NEW!)
+- **Criminal Case Link** - Track related criminal charges (NEW!)
+- **Services Tracker** - Track case plan services (NEW!)
+- **Community Forum** - Connect with other parents (NEW!)
+- **Advocates Directory** - Find help by state (NEW!)
 - Calendar for court dates and deadlines
 - Legal Research with state filtering
 - Law Library for all 50 states
