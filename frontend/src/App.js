@@ -494,9 +494,18 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'violations' && <ViolationsTab selectedCase={selectedCase} />}
           {activeTab === 'documents' && <DocumentsTab selectedCase={selectedCase} />}
           {activeTab === 'timeline' && <TimelineTab selectedCase={selectedCase} />}
+          {activeTab === 'evidence' && <EvidenceTab selectedCase={selectedCase} />}
+          {activeTab === 'communications' && <CommunicationsTab selectedCase={selectedCase} />}
+          {activeTab === 'courtfilings' && <CourtFilingsTab selectedCase={selectedCase} />}
+          {activeTab === 'judgewatch' && <JudgeWatchTab selectedCase={selectedCase} />}
+          {activeTab === 'strategy' && <DefenseStrategyTab selectedCase={selectedCase} />}
+          {activeTab === 'criminal' && <CriminalCaseTab selectedCase={selectedCase} />}
+          {activeTab === 'services' && <ServicesTab selectedCase={selectedCase} />}
           {activeTab === 'calendar' && <CalendarTab />}
           {activeTab === 'research' && <ResearchTab />}
           {activeTab === 'library' && <LawLibraryTab />}
+          {activeTab === 'forum' && <ForumTab />}
+          {activeTab === 'advocates' && <AdvocatesTab />}
           {activeTab === 'pricing' && <PricingTab />}
         </div>
       </main>
