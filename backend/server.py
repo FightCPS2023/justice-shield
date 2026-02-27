@@ -2331,6 +2331,486 @@ async def get_incident_types():
     }
 
 
+# ============== VISITATION LOG ==============
+
+@app.post("/api/visitation")
+async def create_visitation(
+    case_id: str = Body(...),
+    date: str = Body(...),
+    time: str = Body(default="10:00"),
+    duration: int = Body(default=60),
+    location: str = Body(default=""),
+    supervisor: str = Body(default=""),
+    child_emotional_state: str = Body(default="happy"),
+    what_happened: str = Body(default=""),
+    child_quotes: str = Body(default=""),
+    supervisor_issues: str = Body(default=""),
+    visit_allowed: bool = Body(default=True),
+    reason_denied: str = Body(default=""),
+    notes: str = Body(default=""),
+    current_user: dict = Depends(get_current_user)
+):
+    """Log a visitation with your children"""
+    await get_case_with_ownership(case_id, current_user["user_id"])
+    
+    visit_id = str(uuid.uuid4())
+    visit = {
+        "_id": visit_id,
+        "case_id": case_id,
+        "user_id": current_user["user_id"],
+        "date": date,
+        "time": time,
+        "duration": duration,
+        "location": location,
+        "supervisor": supervisor,
+        "child_emotional_state": child_emotional_state,
+        "what_happened": what_happened,
+        "child_quotes": child_quotes,
+        "supervisor_issues": supervisor_issues,
+        "visit_allowed": visit_allowed,
+        "reason_denied": reason_denied,
+        "notes": notes,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.visitations.insert_one(visit)
+    visit["id"] = visit.pop("_id")
+    return visit
+
+@app.get("/api/visitation/{case_id}")
+async def get_visitations(case_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all visitation logs for a case"""
+    await get_case_with_ownership(case_id, current_user["user_id"])
+    
+    visits = await db.visitations.find({"case_id": case_id}).sort("date", -1).to_list(200)
+    for v in visits:
+        v["id"] = v.pop("_id")
+    
+    # Calculate stats
+    total_visits = len(visits)
+    denied_visits = len([v for v in visits if not v.get("visit_allowed", True)])
+    total_hours = sum(v.get("duration", 0) for v in visits) / 60
+    
+    return {
+        "visits": visits,
+        "stats": {
+            "total_visits": total_visits,
+            "denied_visits": denied_visits,
+            "total_hours": round(total_hours, 1),
+            "denial_rate": round((denied_visits / total_visits * 100) if total_visits > 0 else 0, 1)
+        }
+    }
+
+
+# ============== COURT HEARINGS & COUNTDOWN ==============
+
+HEARING_TYPES = [
+    {"value": "detention", "label": "Detention Hearing (Emergency Removal)", "color": "red", "prep_days": 1},
+    {"value": "adjudication", "label": "Adjudication Hearing (Did abuse/neglect occur?)", "color": "orange", "prep_days": 14},
+    {"value": "disposition", "label": "Disposition Hearing (What happens next?)", "color": "yellow", "prep_days": 14},
+    {"value": "review_6", "label": "6-Month Review Hearing", "color": "blue", "prep_days": 7},
+    {"value": "review_12", "label": "12-Month Permanency Hearing", "color": "indigo", "prep_days": 14},
+    {"value": "review_18", "label": "18-Month Review", "color": "purple", "prep_days": 14},
+    {"value": "termination", "label": "Termination of Parental Rights Trial", "color": "red", "prep_days": 30},
+    {"value": "appeal", "label": "Appeal Hearing", "color": "gray", "prep_days": 14},
+    {"value": "other", "label": "Other Hearing", "color": "gray", "prep_days": 7}
+]
+
+DEFAULT_PREP_CHECKLIST = [
+    "Review all case documents",
+    "Meet with attorney 3+ days before hearing",
+    "Prepare testimony and practice answers",
+    "Gather all evidence and certificates",
+    "Arrange childcare/transportation",
+    "Plan professional outfit",
+    "Get good night sleep before hearing",
+    "Arrive 30 minutes early",
+    "Turn off cell phone"
+]
+
+WHAT_TO_BRING = [
+    "All service completion certificates",
+    "Drug test results",
+    "Visitation logs",
+    "Communication records",
+    "Witness list and contact info",
+    "Pen and notepad",
+    "Copy of case plan",
+    "Evidence photos/documents",
+    "Character reference letters"
+]
+
+@app.get("/api/court-hearings/types")
+async def get_hearing_types():
+    """Get all hearing types with preparation info"""
+    return {
+        "hearing_types": HEARING_TYPES,
+        "default_checklist": DEFAULT_PREP_CHECKLIST,
+        "what_to_bring": WHAT_TO_BRING
+    }
+
+@app.post("/api/court-hearings")
+async def create_court_hearing(
+    case_id: str = Body(...),
+    date: str = Body(...),
+    time: str = Body(default="09:00"),
+    hearing_type: str = Body(...),
+    judge: str = Body(default=""),
+    location: str = Body(default=""),
+    notes: str = Body(default=""),
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a court hearing with countdown and preparation checklist"""
+    await get_case_with_ownership(case_id, current_user["user_id"])
+    
+    hearing_id = str(uuid.uuid4())
+    hearing = {
+        "_id": hearing_id,
+        "case_id": case_id,
+        "user_id": current_user["user_id"],
+        "date": date,
+        "time": time,
+        "hearing_type": hearing_type,
+        "judge": judge,
+        "location": location,
+        "notes": notes,
+        "prep_checklist": [{"id": str(i), "text": item, "completed": False} for i, item in enumerate(DEFAULT_PREP_CHECKLIST)],
+        "what_to_bring": WHAT_TO_BRING,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.court_hearings.insert_one(hearing)
+    hearing["id"] = hearing.pop("_id")
+    
+    # Calculate countdown
+    hearing_date = datetime.strptime(date, "%Y-%m-%d")
+    days_until = (hearing_date - datetime.now()).days
+    hearing["days_until"] = max(0, days_until)
+    
+    return hearing
+
+@app.get("/api/court-hearings/{case_id}")
+async def get_court_hearings(case_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all court hearings for a case with countdowns"""
+    await get_case_with_ownership(case_id, current_user["user_id"])
+    
+    hearings = await db.court_hearings.find({"case_id": case_id}).sort("date", 1).to_list(50)
+    
+    for h in hearings:
+        h["id"] = h.pop("_id")
+        # Calculate countdown
+        try:
+            hearing_date = datetime.strptime(h["date"], "%Y-%m-%d")
+            h["days_until"] = max(0, (hearing_date - datetime.now()).days)
+        except:
+            h["days_until"] = 0
+    
+    # Get next upcoming hearing
+    upcoming = [h for h in hearings if h["days_until"] > 0]
+    next_hearing = upcoming[0] if upcoming else None
+    
+    return {
+        "hearings": hearings,
+        "next_hearing": next_hearing
+    }
+
+@app.put("/api/court-hearings/{hearing_id}/checklist")
+async def update_hearing_checklist(
+    hearing_id: str,
+    checklist: list = Body(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Update hearing preparation checklist"""
+    hearing = await db.court_hearings.find_one({"_id": hearing_id, "user_id": current_user["user_id"]})
+    if not hearing:
+        raise HTTPException(status_code=404, detail="Hearing not found")
+    
+    await db.court_hearings.update_one(
+        {"_id": hearing_id},
+        {"$set": {"prep_checklist": checklist}}
+    )
+    
+    return {"message": "Checklist updated", "checklist": checklist}
+
+
+# ============== RIGHTS GUIDE ==============
+
+@app.get("/api/rights-guide")
+async def get_rights_guide():
+    """Get comprehensive rights guide for CPS interactions"""
+    return {
+        "categories": [
+            {
+                "title": "Your Constitutional Rights",
+                "icon": "shield",
+                "color": "blue",
+                "rights": [
+                    {
+                        "title": "4th Amendment - Protection from Unreasonable Search",
+                        "description": "You have the right to refuse CPS entry into your home without a warrant, court order, or your consent.",
+                        "details": [
+                            "You can refuse to let CPS in unless they have a warrant",
+                            "Exigent circumstances (immediate danger) is an exception",
+                            "If you let them in, you can ask them to leave at any time",
+                            "You can limit their access to certain areas",
+                            "Anything you show them can be used against you"
+                        ],
+                        "key_case": "Calabretta v. Floyd, 189 F.3d 808 (9th Cir. 1999)"
+                    },
+                    {
+                        "title": "5th Amendment - Right Against Self-Incrimination",
+                        "description": "You have the right to remain silent and not answer questions that might incriminate you.",
+                        "details": [
+                            "You can refuse to answer questions",
+                            "Politely say 'I prefer not to answer without my attorney present'",
+                            "Silence cannot be held against you in court",
+                            "Don't try to explain or defend yourself without counsel",
+                            "Everything you say CAN and WILL be used against you"
+                        ],
+                        "key_case": "Minnesota v. Murphy, 465 U.S. 420 (1984)"
+                    },
+                    {
+                        "title": "14th Amendment - Due Process Rights",
+                        "description": "You have the right to fair legal proceedings before your parental rights can be terminated.",
+                        "details": [
+                            "Right to notice of allegations and hearings",
+                            "Right to present evidence and witnesses",
+                            "Right to confront accusers",
+                            "Right to appeal decisions",
+                            "Government must prove case by clear and convincing evidence"
+                        ],
+                        "key_case": "Santosky v. Kramer, 455 U.S. 745 (1982)"
+                    }
+                ]
+            },
+            {
+                "title": "During CPS Investigation",
+                "icon": "alert",
+                "color": "orange",
+                "rights": [
+                    {
+                        "title": "Right to Legal Representation",
+                        "description": "You have the right to an attorney before and during all CPS interactions.",
+                        "details": [
+                            "Request a court-appointed attorney if you cannot afford one",
+                            "Do not sign ANYTHING without attorney review",
+                            "You can stop the interview to consult with your attorney",
+                            "Bring your attorney to all meetings and interviews",
+                            "CPS must stop questioning if you invoke this right"
+                        ]
+                    },
+                    {
+                        "title": "Right to Know the Allegations",
+                        "description": "CPS must tell you specifically what you are being accused of.",
+                        "details": [
+                            "Request written allegations and who made them",
+                            "They must tell you what evidence they have",
+                            "You have right to see investigative reports",
+                            "Ask for specifics - dates, incidents, witnesses",
+                            "Vague allegations are not sufficient"
+                        ]
+                    },
+                    {
+                        "title": "Right to Refuse Interviews & Tests",
+                        "description": "You can decline to be interviewed or tested without a court order.",
+                        "details": [
+                            "You can refuse drug tests without court order",
+                            "You can refuse psychological evaluations",
+                            "You can refuse to let them interview you",
+                            "Children can only be interviewed with your permission (in most states)",
+                            "Refusing is NOT admission of guilt"
+                        ]
+                    }
+                ]
+            },
+            {
+                "title": "After Removal or Court Involvement",
+                "icon": "check",
+                "color": "green",
+                "rights": [
+                    {
+                        "title": "Right to Visitation",
+                        "description": "You have the right to visit your children unless a court specifically orders otherwise.",
+                        "details": [
+                            "Visits can only be denied by court order",
+                            "You can request more frequent or longer visits",
+                            "Document all visits and any issues",
+                            "Report any violations of visitation orders",
+                            "Visitation denial can be grounds for complaint"
+                        ]
+                    },
+                    {
+                        "title": "Right to Reunification Services",
+                        "description": "CPS must make 'reasonable efforts' to reunite your family.",
+                        "details": [
+                            "CPS must provide services to help you meet case plan goals",
+                            "Services must be accessible and appropriate",
+                            "Document any services they fail to provide",
+                            "Failure to make reasonable efforts is a defense",
+                            "This is required by federal law (ASFA)"
+                        ],
+                        "key_statute": "Adoption and Safe Families Act (ASFA)"
+                    },
+                    {
+                        "title": "Right to Appeal",
+                        "description": "You have the right to appeal court decisions you disagree with.",
+                        "details": [
+                            "Deadlines are strict - usually 30-60 days",
+                            "You need an attorney for appeals",
+                            "Keep copies of all court orders",
+                            "Document all procedural violations",
+                            "Appeals can reverse wrongful decisions"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "quick_rights": [
+            {
+                "question": "Can CPS enter my home without permission?",
+                "answer": "NO - CPS needs your consent, a warrant, or exigent circumstances (immediate danger) to enter your home.",
+                "legal_basis": "Fourth Amendment, Calabretta v. Floyd (9th Cir. 1999)"
+            },
+            {
+                "question": "Do I have to take a drug test if CPS asks?",
+                "answer": "NO (before court order) - CPS cannot force you to drug test without a court order. Refusing may be noted, but you have the right.",
+                "legal_basis": "Fourth Amendment, Fifth Amendment"
+            },
+            {
+                "question": "Can CPS interview my child at school without me?",
+                "answer": "VARIES BY STATE - Some states allow it, others require parental consent. Check your state law. You can instruct your child's school to contact you first.",
+                "legal_basis": "State-specific statutes"
+            },
+            {
+                "question": "What if CPS threatens to take my kids if I don't cooperate?",
+                "answer": "This may be coercion. You have rights. Politely assert them and contact an attorney immediately. Document the threat.",
+                "legal_basis": "Fourth Amendment, Due Process"
+            }
+        ]
+    }
+
+
+# ============== EVIDENCE CHECKLIST ==============
+
+@app.get("/api/evidence-checklist")
+async def get_evidence_checklist():
+    """Get comprehensive evidence checklist for building your case"""
+    return {
+        "categories": [
+            {
+                "title": "Documentation & Records",
+                "icon": "file-text",
+                "items": [
+                    "All CPS reports and correspondence",
+                    "Court documents and orders",
+                    "Case plan and service agreements",
+                    "Your notes from all CPS interactions (dates, times, what was said)",
+                    "Text messages and emails with CPS",
+                    "Any recordings of interactions (if legal in your state)",
+                    "Medical records showing child's health",
+                    "School records showing attendance and performance",
+                    "Therapy or counseling records",
+                    "Drug test results (if applicable)"
+                ]
+            },
+            {
+                "title": "Character & Parenting Evidence",
+                "icon": "heart",
+                "items": [
+                    "Character reference letters from teachers, doctors, neighbors",
+                    "Employment records showing stability",
+                    "Certificates from completed parenting classes",
+                    "Proof of participation in recommended services",
+                    "Religious or community involvement documentation",
+                    "Volunteer work or positive activities",
+                    "Evidence of bond with your children (cards, drawings, photos)",
+                    "Witness statements supporting your parenting"
+                ]
+            },
+            {
+                "title": "Home & Living Conditions",
+                "icon": "home",
+                "items": [
+                    "Photos of home showing clean, safe environment",
+                    "Lease or mortgage showing stable housing",
+                    "Utility bills showing services are on",
+                    "Photos of children's rooms and beds",
+                    "Photos of food in refrigerator/pantry",
+                    "Home safety measures (smoke detectors, locks, etc.)",
+                    "Documentation of any home improvements made"
+                ]
+            },
+            {
+                "title": "Photos & Video Evidence",
+                "icon": "camera",
+                "items": [
+                    "Photos of children looking healthy and happy",
+                    "Photos from family activities and outings",
+                    "Photos showing child's belongings and living space",
+                    "Before/after photos if CPS claims were about home conditions",
+                    "Photos of any alleged injuries (with timestamps)",
+                    "Video of positive parent-child interactions",
+                    "Photos showing children in your care over time"
+                ]
+            },
+            {
+                "title": "Witness Information",
+                "icon": "users",
+                "items": [
+                    "List of potential witnesses with contact information",
+                    "People who have observed you parenting",
+                    "People who can testify to false allegations",
+                    "Professionals who have worked with your family",
+                    "Family members who can support your case",
+                    "Neighbors who know your family",
+                    "Teachers, coaches, or mentors of your children"
+                ]
+            },
+            {
+                "title": "Evidence Contradicting CPS Claims",
+                "icon": "file-check",
+                "items": [
+                    "Documents showing CPS statements are false",
+                    "Timeline showing contradictions in their reports",
+                    "Receipts or records disproving allegations",
+                    "Alibi evidence (if accused of something you didn't do)",
+                    "Expert reports contradicting CPS conclusions",
+                    "Evidence of bias by investigator",
+                    "Proof of services you were denied",
+                    "Documentation of procedural violations"
+                ]
+            }
+        ]
+    }
+
+
+@app.post("/api/evidence-checklist/{case_id}")
+async def save_evidence_checklist(
+    case_id: str,
+    checked_items: dict = Body(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Save evidence checklist progress for a case"""
+    await get_case_with_ownership(case_id, current_user["user_id"])
+    
+    await db.evidence_checklists.update_one(
+        {"case_id": case_id, "user_id": current_user["user_id"]},
+        {"$set": {"checked_items": checked_items, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    
+    return {"message": "Checklist saved", "checked_items": checked_items}
+
+@app.get("/api/evidence-checklist/{case_id}")
+async def get_case_evidence_checklist(case_id: str, current_user: dict = Depends(get_current_user)):
+    """Get saved evidence checklist for a case"""
+    await get_case_with_ownership(case_id, current_user["user_id"])
+    
+    checklist = await db.evidence_checklists.find_one({"case_id": case_id, "user_id": current_user["user_id"]})
+    
+    return {"checked_items": checklist.get("checked_items", {}) if checklist else {}}
+
+
 # ============== HEALTH CHECK ==============
 
 @app.get("/api/health")
