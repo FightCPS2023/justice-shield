@@ -64,6 +64,12 @@ Build THE CPS PUNISHER - the most powerful interactive Child Protective Services
 ### Backend API Endpoints (All Tested & Working)
 | Endpoint | Method | Description | Status |
 |----------|--------|-------------|--------|
+| `/api/strategy-builder/build` | POST | **Legal Strategy Builder** | ✅ (NEW) |
+| `/api/argument-generator/generate` | POST | **Argument Generator** | ✅ (NEW) |
+| `/api/evidence-mapper/map` | POST | **Evidence-Precedent Mapper** | ✅ (NEW) |
+| `/api/precedent-finder/search` | POST | **Legal Precedent Finder** | ✅ (NEW) |
+| `/api/strategy-builder/saved/{case_id}` | GET | Get saved strategies | ✅ (NEW) |
+| `/api/argument-generator/saved/{case_id}` | GET | Get saved arguments | ✅ (NEW) |
 | `/api/documents/upload` | POST | **Upload doc + AI analysis** | ✅ |
 | `/api/documents/{doc_id}/analysis` | GET | Get document analysis | ✅ |
 | `/api/documents/{doc_id}/reanalyze` | POST | Re-run AI analysis | ✅ |
@@ -115,15 +121,19 @@ Build THE CPS PUNISHER - the most powerful interactive Child Protective Services
 - Document Upload with AI Analysis (Core Feature!)
 - Document generator with 20+ document types
 - Timeline builder with event types
-- **Evidence Tracker** - Track all evidence (NEW!)
-- **Communications Log** - Log all CPS communications (NEW!)
-- **Court Filings** - Track motions, petitions, orders (NEW!)
-- **Judge Watch** - Research your judge (NEW!)
-- **Defense Strategy** - AI-generated + manual strategies (NEW!)
-- **Criminal Case Link** - Track related criminal charges (NEW!)
-- **Services Tracker** - Track case plan services (NEW!)
-- **Community Forum** - Connect with other parents (NEW!)
-- **Advocates Directory** - Find help by state (NEW!)
+- **🆕 Legal Strategy Builder** - Build comprehensive defense strategies
+- **🆕 Argument Generator** - Generate court-ready legal arguments
+- **🆕 Evidence Mapper** - Map evidence to legal precedents
+- **🆕 Precedent Finder** - Find case law precedents
+- **Evidence Tracker** - Track all evidence
+- **Communications Log** - Log all CPS communications
+- **Court Filings** - Track motions, petitions, orders
+- **Judge Watch** - Research your judge
+- **Defense Strategy** - AI-generated + manual strategies
+- **Criminal Case Link** - Track related criminal charges
+- **Services Tracker** - Track case plan services
+- **Community Forum** - Connect with other parents
+- **Advocates Directory** - Find help by state
 - Calendar for court dates and deadlines
 - Legal Research with state filtering
 - Law Library for all 50 states
