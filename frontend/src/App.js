@@ -6016,4 +6016,736 @@ function CourtHearingsTab({ selectedCase }) {
   );
 }
 
+// =============== ADVANCED LEGAL STRATEGY COMPONENTS ===============
+
+// Legal Strategy Builder Tab
+function LegalStrategyBuilderTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [strategy, setStrategy] = useState(null);
+  const [savedStrategies, setSavedStrategies] = useState([]);
+  const [showSaved, setShowSaved] = useState(false);
+  const [config, setConfig] = useState({
+    goal: 'reunification',
+    aggressive_level: 'medium'
+  });
+
+  useEffect(() => {
+    if (selectedCase) {
+      loadSavedStrategies();
+    }
+  }, [selectedCase]);
+
+  const loadSavedStrategies = async () => {
+    if (!selectedCase) return;
+    try {
+      const data = await api.get(`/api/strategy-builder/saved/${selectedCase.id}`);
+      setSavedStrategies(data.strategies || []);
+    } catch (error) {
+      console.error('Failed to load strategies:', error);
+    }
+  };
+
+  const buildStrategy = async () => {
+    if (!selectedCase) {
+      toast.error('Please select a case first');
+      return;
+    }
+
+    setLoading(true);
+    setStrategy(null);
+
+    try {
+      const response = await api.post('/api/strategy-builder/build', {
+        case_id: selectedCase.id,
+        goal: config.goal,
+        aggressive_level: config.aggressive_level
+      });
+      setStrategy(response);
+      loadSavedStrategies();
+      toast.success('Strategy built successfully!');
+    } catch (error) {
+      toast.error('Failed to build strategy: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12 animate-fadeIn" data-testid="strategy-builder-tab">
+        <Shield className="w-16 h-16 mx-auto text-gray-600 mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Legal Strategy Builder</h2>
+        <p className="text-gray-400">Please select a case to build a comprehensive legal strategy</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="strategy-builder-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>
+            Legal Strategy Builder
+          </h1>
+          <p className="text-gray-400">Build a comprehensive defense strategy for your case</p>
+        </div>
+        {savedStrategies.length > 0 && (
+          <button
+            onClick={() => setShowSaved(!showSaved)}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center gap-2"
+          >
+            <FileText className="w-4 h-4" />
+            Saved ({savedStrategies.length})
+          </button>
+        )}
+      </div>
+
+      {/* Case Info */}
+      <div className="bg-purple-900/20 border border-purple-600/30 rounded-xl p-4">
+        <p className="text-purple-400 text-sm">
+          <Shield className="w-4 h-4 inline mr-2" />
+          <strong>Selected Case:</strong> {selectedCase.title} ({selectedCase.state})
+        </p>
+      </div>
+
+      {/* Configuration */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+          <label className="block text-sm font-medium mb-3">Strategy Goal</label>
+          <div className="space-y-2">
+            {[
+              { value: 'reunification', label: 'Reunification', desc: 'Focus on returning children' },
+              { value: 'dismissal', label: 'Dismissal', desc: 'Challenge the petition' },
+              { value: 'appeal', label: 'Appeal', desc: 'Challenge court rulings' },
+              { value: 'section_1983', label: 'Section 1983', desc: 'Civil rights lawsuit' }
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setConfig({ ...config, goal: opt.value })}
+                className={`w-full p-3 rounded-lg text-left transition-colors ${
+                  config.goal === opt.value
+                    ? 'bg-red-600/30 border-2 border-red-500'
+                    : 'bg-gray-700/50 border border-gray-600 hover:border-gray-500'
+                }`}
+              >
+                <span className="font-medium">{opt.label}</span>
+                <span className="text-gray-400 text-sm ml-2">- {opt.desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+          <label className="block text-sm font-medium mb-3">Aggressive Level</label>
+          <div className="space-y-2">
+            {[
+              { value: 'conservative', label: 'Conservative', desc: 'Cooperative approach' },
+              { value: 'medium', label: 'Medium', desc: 'Balanced defense' },
+              { value: 'aggressive', label: 'Aggressive', desc: 'Challenge everything' }
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setConfig({ ...config, aggressive_level: opt.value })}
+                className={`w-full p-3 rounded-lg text-left transition-colors ${
+                  config.aggressive_level === opt.value
+                    ? 'bg-red-600/30 border-2 border-red-500'
+                    : 'bg-gray-700/50 border border-gray-600 hover:border-gray-500'
+                }`}
+              >
+                <span className="font-medium">{opt.label}</span>
+                <span className="text-gray-400 text-sm ml-2">- {opt.desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Build Button */}
+      <button
+        onClick={buildStrategy}
+        disabled={loading}
+        className="w-full btn-punisher py-4 text-lg flex items-center justify-center gap-2"
+        data-testid="build-strategy-btn"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Building Strategy (this may take 30-60 seconds)...
+          </>
+        ) : (
+          <>
+            <Brain className="w-5 h-5" />
+            Build Comprehensive Strategy
+          </>
+        )}
+      </button>
+
+      {/* Strategy Result */}
+      {strategy && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-semibold flex items-center gap-2">
+              <Shield className="w-5 h-5 text-red-500" />
+              Your Legal Strategy
+            </h3>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 bg-purple-600/20 text-purple-400 rounded-full text-sm">
+                Goal: {config.goal.replace('_', ' ').toUpperCase()}
+              </span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(strategy.strategy);
+                  toast.success('Strategy copied to clipboard!');
+                }}
+                className="p-2 hover:bg-gray-700 rounded-lg"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          <div className="prose prose-invert max-w-none">
+            <div className="whitespace-pre-wrap text-gray-300">{strategy.strategy}</div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-700 flex gap-4 text-sm text-gray-500">
+            <span>Violations analyzed: {strategy.case_context?.violations_count || 0}</span>
+            <span>Evidence analyzed: {strategy.case_context?.evidence_count || 0}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Saved Strategies */}
+      {showSaved && savedStrategies.length > 0 && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+          <h3 className="font-semibold mb-4">Previously Generated Strategies</h3>
+          <div className="space-y-3">
+            {savedStrategies.map(s => (
+              <div
+                key={s.id}
+                onClick={() => setStrategy(s)}
+                className="p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-700"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{s.goal.replace('_', ' ').toUpperCase()} Strategy</span>
+                  <span className="text-gray-500 text-sm">{new Date(s.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Argument Generator Tab
+function ArgumentGeneratorTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [arguments_, setArguments] = useState(null);
+  const [argumentType, setArgumentType] = useState('general');
+
+  const generateArguments = async () => {
+    if (!selectedCase) {
+      toast.error('Please select a case first');
+      return;
+    }
+
+    setLoading(true);
+    setArguments(null);
+
+    try {
+      const response = await api.post('/api/argument-generator/generate', {
+        case_id: selectedCase.id,
+        argument_type: argumentType
+      });
+      setArguments(response);
+      toast.success('Arguments generated successfully!');
+    } catch (error) {
+      toast.error('Failed to generate arguments: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12 animate-fadeIn" data-testid="argument-generator-tab">
+        <Scale className="w-16 h-16 mx-auto text-gray-600 mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Argument Generator</h2>
+        <p className="text-gray-400">Please select a case to generate legal arguments</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="argument-generator-tab">
+      <div>
+        <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>
+          Argument Generator
+        </h1>
+        <p className="text-gray-400">Generate court-ready legal arguments from your case data</p>
+      </div>
+
+      {/* Case Info */}
+      <div className="bg-blue-900/20 border border-blue-600/30 rounded-xl p-4">
+        <p className="text-blue-400 text-sm">
+          <Scale className="w-4 h-4 inline mr-2" />
+          <strong>Case:</strong> {selectedCase.title} ({selectedCase.state})
+        </p>
+      </div>
+
+      {/* Argument Type Selection */}
+      <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+        <label className="block text-sm font-medium mb-3">Argument Type</label>
+        <div className="grid md:grid-cols-2 gap-2">
+          {[
+            { value: 'general', label: 'General Defense', icon: Shield },
+            { value: 'constitutional', label: 'Constitutional', icon: Scale },
+            { value: 'procedural', label: 'Procedural', icon: FileText },
+            { value: 'section_1983', label: 'Section 1983', icon: Gavel }
+          ].map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setArgumentType(opt.value)}
+              className={`p-4 rounded-lg text-left flex items-center gap-3 transition-colors ${
+                argumentType === opt.value
+                  ? 'bg-red-600/30 border-2 border-red-500'
+                  : 'bg-gray-700/50 border border-gray-600 hover:border-gray-500'
+              }`}
+            >
+              <opt.icon className="w-5 h-5 text-red-400" />
+              <span className="font-medium">{opt.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Generate Button */}
+      <button
+        onClick={generateArguments}
+        disabled={loading}
+        className="w-full btn-punisher py-4 text-lg flex items-center justify-center gap-2"
+        data-testid="generate-arguments-btn"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Generating Arguments...
+          </>
+        ) : (
+          <>
+            <Scale className="w-5 h-5" />
+            Generate Legal Arguments
+          </>
+        )}
+      </button>
+
+      {/* Arguments Result */}
+      {arguments_ && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-semibold flex items-center gap-2">
+              <Scale className="w-5 h-5 text-blue-500" />
+              Generated Arguments
+            </h3>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(arguments_.arguments);
+                toast.success('Arguments copied to clipboard!');
+              }}
+              className="p-2 hover:bg-gray-700 rounded-lg"
+            >
+              <Copy className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="prose prose-invert max-w-none">
+            <div className="whitespace-pre-wrap text-gray-300">{arguments_.arguments}</div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-700 flex gap-4 text-sm text-gray-500">
+            <span>Violations used: {arguments_.violations_analyzed}</span>
+            <span>Evidence used: {arguments_.evidence_analyzed}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Evidence Argument Mapper Tab  
+function EvidenceMapperTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [mapping, setMapping] = useState(null);
+  const [evidence, setEvidence] = useState([]);
+  const [selectedEvidence, setSelectedEvidence] = useState(null);
+  const [customEvidence, setCustomEvidence] = useState('');
+  const [violationType, setViolationType] = useState('');
+
+  useEffect(() => {
+    if (selectedCase) {
+      loadEvidence();
+    }
+  }, [selectedCase]);
+
+  const loadEvidence = async () => {
+    try {
+      const data = await api.get(`/api/evidence/${selectedCase.id}`);
+      setEvidence(data.evidence || []);
+    } catch (error) {
+      console.error('Failed to load evidence:', error);
+    }
+  };
+
+  const mapEvidence = async () => {
+    if (!selectedCase) {
+      toast.error('Please select a case first');
+      return;
+    }
+
+    const evidenceDesc = selectedEvidence 
+      ? `${selectedEvidence.title}: ${selectedEvidence.description}`
+      : customEvidence;
+
+    if (!evidenceDesc.trim()) {
+      toast.error('Please select or describe evidence to map');
+      return;
+    }
+
+    setLoading(true);
+    setMapping(null);
+
+    try {
+      const response = await api.post('/api/evidence-mapper/map', {
+        case_id: selectedCase.id,
+        evidence_description: evidenceDesc,
+        violation_type: violationType || null
+      });
+      setMapping(response);
+      toast.success('Evidence mapped to precedents!');
+    } catch (error) {
+      toast.error('Failed to map evidence: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12 animate-fadeIn" data-testid="evidence-mapper-tab">
+        <Eye className="w-16 h-16 mx-auto text-gray-600 mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Evidence Argument Mapper</h2>
+        <p className="text-gray-400">Please select a case to map evidence to legal precedents</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="evidence-mapper-tab">
+      <div>
+        <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>
+          Evidence Argument Mapper
+        </h1>
+        <p className="text-gray-400">Map your evidence to legal precedents and arguments</p>
+      </div>
+
+      {/* Evidence Selection */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+          <label className="block text-sm font-medium mb-3">Select Existing Evidence</label>
+          {evidence.length > 0 ? (
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {evidence.map(e => (
+                <button
+                  key={e.id}
+                  onClick={() => { setSelectedEvidence(e); setCustomEvidence(''); }}
+                  className={`w-full p-3 rounded-lg text-left transition-colors ${
+                    selectedEvidence?.id === e.id
+                      ? 'bg-green-600/30 border-2 border-green-500'
+                      : 'bg-gray-700/50 border border-gray-600 hover:border-gray-500'
+                  }`}
+                >
+                  <span className="font-medium">{e.title}</span>
+                  <p className="text-gray-400 text-sm truncate">{e.description}</p>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No evidence logged. Add evidence or describe below.</p>
+          )}
+        </div>
+
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+          <label className="block text-sm font-medium mb-3">Or Describe Evidence</label>
+          <textarea
+            value={customEvidence}
+            onChange={(e) => { setCustomEvidence(e.target.value); setSelectedEvidence(null); }}
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 h-32 focus:outline-none focus:border-red-600"
+            placeholder="Describe the evidence you want to map (e.g., 'CPS caseworker entered home without consent or warrant on 10/15/2024')"
+          />
+          
+          <label className="block text-sm font-medium mt-4 mb-2">Related Violation Type (optional)</label>
+          <select
+            value={violationType}
+            onChange={(e) => setViolationType(e.target.value)}
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3"
+          >
+            <option value="">Select type</option>
+            <option value="warrantless_entry">Warrantless Entry</option>
+            <option value="coerced_consent">Coerced Consent</option>
+            <option value="strip_search">Strip Search</option>
+            <option value="emergency_removal_no_danger">Emergency Removal</option>
+            <option value="fabricated_evidence">Fabricated Evidence</option>
+            <option value="procedural_due_process">Due Process Violation</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Map Button */}
+      <button
+        onClick={mapEvidence}
+        disabled={loading || (!selectedEvidence && !customEvidence.trim())}
+        className="w-full btn-punisher py-4 text-lg flex items-center justify-center gap-2"
+        data-testid="map-evidence-btn"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Mapping Evidence to Precedents...
+          </>
+        ) : (
+          <>
+            <Eye className="w-5 h-5" />
+            Map Evidence to Legal Arguments
+          </>
+        )}
+      </button>
+
+      {/* Mapping Result */}
+      {mapping && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-semibold flex items-center gap-2">
+              <Eye className="w-5 h-5 text-green-500" />
+              Evidence-to-Precedent Mapping
+            </h3>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(mapping.mapping);
+                toast.success('Mapping copied to clipboard!');
+              }}
+              className="p-2 hover:bg-gray-700 rounded-lg"
+            >
+              <Copy className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="prose prose-invert max-w-none">
+            <div className="whitespace-pre-wrap text-gray-300">{mapping.mapping}</div>
+          </div>
+          
+          {mapping.relevant_case_law && (
+            <div className="mt-4 pt-4 border-t border-gray-700">
+              <h4 className="font-semibold mb-2 text-green-400">Relevant Case Law Found:</h4>
+              <div className="text-sm text-gray-400">
+                <p>Constitutional Basis: {mapping.relevant_case_law.constitutional_basis}</p>
+                {mapping.relevant_case_law.relevant_cases && (
+                  <p className="mt-1">Related Cases: {mapping.relevant_case_law.relevant_cases.join(', ')}</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Legal Precedent Finder Tab
+function PrecedentFinderTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [precedents, setPrecedents] = useState(null);
+  const [violationType, setViolationType] = useState('warrantless_entry');
+  const [state, setState] = useState(selectedCase?.state || '');
+  const [includeOptions, setIncludeOptions] = useState({ federal: true, state: true });
+
+  const findPrecedents = async () => {
+    setLoading(true);
+    setPrecedents(null);
+
+    try {
+      const response = await api.post('/api/precedent-finder/search', {
+        violation_type: violationType,
+        state: state || null,
+        include_federal: includeOptions.federal,
+        include_state: includeOptions.state
+      });
+      setPrecedents(response);
+      toast.success('Precedents found!');
+    } catch (error) {
+      toast.error('Failed to find precedents: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="precedent-finder-tab">
+      <div>
+        <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>
+          Legal Precedent Finder
+        </h1>
+        <p className="text-gray-400">Find case law precedents for specific violations</p>
+      </div>
+
+      {/* Search Configuration */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+          <label className="block text-sm font-medium mb-3">Violation Type</label>
+          <select
+            value={violationType}
+            onChange={(e) => setViolationType(e.target.value)}
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3"
+          >
+            <option value="warrantless_entry">Warrantless Home Entry</option>
+            <option value="coerced_consent">Coerced Consent</option>
+            <option value="strip_search">Strip Search of Child</option>
+            <option value="emergency_removal">Emergency Removal</option>
+            <option value="fabricated_evidence">Fabricated Evidence</option>
+            <option value="due_process">Due Process Violation</option>
+            <option value="inadequate_investigation">Inadequate Investigation</option>
+            <option value="fifth_amendment">Fifth Amendment Violation</option>
+            <option value="icwa_violation">ICWA Violation</option>
+            <option value="section_1983">Section 1983 Claims</option>
+          </select>
+
+          <label className="block text-sm font-medium mt-4 mb-2">State (optional)</label>
+          <input
+            type="text"
+            value={state}
+            onChange={(e) => setState(e.target.value)}
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3"
+            placeholder="e.g., TX, CA, NY"
+          />
+        </div>
+
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+          <label className="block text-sm font-medium mb-3">Include Precedents From</label>
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-lg cursor-pointer">
+              <input
+                type="checkbox"
+                checked={includeOptions.federal}
+                onChange={(e) => setIncludeOptions({ ...includeOptions, federal: e.target.checked })}
+                className="w-5 h-5 rounded border-gray-600 text-red-600 focus:ring-red-500"
+              />
+              <div>
+                <span className="font-medium">Federal Courts</span>
+                <p className="text-gray-400 text-sm">Supreme Court, Circuit Courts</p>
+              </div>
+            </label>
+            <label className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-lg cursor-pointer">
+              <input
+                type="checkbox"
+                checked={includeOptions.state}
+                onChange={(e) => setIncludeOptions({ ...includeOptions, state: e.target.checked })}
+                className="w-5 h-5 rounded border-gray-600 text-red-600 focus:ring-red-500"
+              />
+              <div>
+                <span className="font-medium">State Courts</span>
+                <p className="text-gray-400 text-sm">State Supreme and Appellate Courts</p>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Search Button */}
+      <button
+        onClick={findPrecedents}
+        disabled={loading}
+        className="w-full btn-punisher py-4 text-lg flex items-center justify-center gap-2"
+        data-testid="find-precedents-btn"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Searching Legal Databases...
+          </>
+        ) : (
+          <>
+            <Search className="w-5 h-5" />
+            Find Legal Precedents
+          </>
+        )}
+      </button>
+
+      {/* Precedents Result */}
+      {precedents && (
+        <div className="space-y-4">
+          {/* AI Analysis */}
+          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-yellow-500" />
+                Precedent Analysis
+              </h3>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(precedents.precedent_analysis);
+                  toast.success('Analysis copied to clipboard!');
+                }}
+                className="p-2 hover:bg-gray-700 rounded-lg"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="prose prose-invert max-w-none">
+              <div className="whitespace-pre-wrap text-gray-300">{precedents.precedent_analysis}</div>
+            </div>
+          </div>
+
+          {/* Supreme Court Cases */}
+          {precedents.supreme_court_cases?.length > 0 && (
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+              <h4 className="font-semibold mb-3 flex items-center gap-2">
+                <Gavel className="w-4 h-4 text-red-500" />
+                Relevant Supreme Court Cases
+              </h4>
+              <div className="space-y-2">
+                {precedents.supreme_court_cases.map((c, i) => (
+                  <div key={i} className="p-3 bg-gray-700/50 rounded-lg">
+                    <p className="font-medium text-red-400">{c.name}</p>
+                    <p className="text-sm text-gray-400">{c.citation} ({c.year})</p>
+                    <p className="text-sm mt-1">{c.holding}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Circuit Court Cases */}
+          {precedents.circuit_court_cases?.length > 0 && (
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+              <h4 className="font-semibold mb-3 flex items-center gap-2">
+                <Scale className="w-4 h-4 text-blue-500" />
+                Relevant Circuit Court Cases
+              </h4>
+              <div className="space-y-2">
+                {precedents.circuit_court_cases.map((c, i) => (
+                  <div key={i} className="p-3 bg-gray-700/50 rounded-lg">
+                    <p className="font-medium text-blue-400">{c.name}</p>
+                    <p className="text-sm text-gray-400">{c.citation}</p>
+                    <p className="text-sm mt-1">{c.holding}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default App;
