@@ -3973,7 +3973,7 @@ async def map_evidence_to_precedents(
     relevant_cases = get_relevant_case_law(request.violation_type or "general")
     immunity_analysis = analyze_qualified_immunity(request.violation_type or "general")
     
-    system_message = f"""You are THE CPS PUNISHER EVIDENCE MAPPER - expert at connecting evidence to legal precedents.
+    system_message = """You are THE CPS PUNISHER EVIDENCE MAPPER - expert at connecting evidence to legal precedents.
 
 Your task is to show exactly HOW specific evidence supports legal arguments in CPS cases.
 
