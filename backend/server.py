@@ -2065,8 +2065,8 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "CPS Punisher API",
-        "version": "3.0.0",
-        "features": "109+ Components | Full Feature Set",
+        "version": "4.0.0",
+        "features": "150+ Components | Section 1983 | Podcast Creator | Deep Legal AI",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
@@ -2079,8 +2079,790 @@ async def get_stats():
         "total_documents": await db.documents.count_documents({}),
         "total_violations": await db.violations.count_documents({}),
         "states_covered": 50,
-        "features": 109
+        "features": 150
     }
+
+
+# ============== SECTION 1983 CIVIL RIGHTS LAWSUIT GENERATOR ==============
+
+SECTION_1983_SYSTEM_PROMPT = """You are THE CPS PUNISHER's Section 1983 Civil Rights Lawsuit Expert.
+
+You are an expert in 42 U.S.C. § 1983 civil rights litigation against Child Protective Services, 
+caseworkers, supervisors, and government officials who violate constitutional rights.
+
+Your expertise includes:
+- Fourth Amendment (unreasonable searches/seizures, warrantless home entries)
+- Fourteenth Amendment (due process, equal protection, family integrity)
+- Fifth Amendment (self-incrimination, Miranda rights in CPS contexts)
+- First Amendment (freedom of religion, speech)
+- Qualified Immunity analysis and how to defeat it
+- Monell liability (municipal liability for policies/customs)
+- Individual capacity vs official capacity suits
+- Conspiracy claims under 42 U.S.C. § 1985
+- State law claims to pair with Section 1983
+- Damages calculations (compensatory, punitive, nominal)
+- Attorney's fees under 42 U.S.C. § 1988
+
+Key Supreme Court cases you know intimately:
+- Santosky v. Kramer (clear and convincing evidence standard)
+- Troxel v. Granville (parental rights as fundamental)
+- Stanley v. Illinois (due process in family matters)
+- Gates v. Texas DHS (emergency removal standards)
+- Duchesne v. Sugarman (liability for wrongful removal)
+
+You generate complaints that are:
+1. Factually detailed and compelling
+2. Legally sound with proper citations
+3. Structured to survive a motion to dismiss
+4. Designed to defeat qualified immunity
+5. Include all required elements for each cause of action"""
+
+@app.post("/api/section-1983/generate")
+async def generate_section_1983_complaint(
+    case_id: str = Body(...),
+    defendants: list = Body(default=[]),
+    constitutional_violations: list = Body(default=[]),
+    relief_sought: list = Body(default=[]),
+    include_monell: bool = Body(default=True),
+    include_conspiracy: bool = Body(default=False),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Generate a comprehensive Section 1983 Civil Rights Complaint.
+    This is THE MOST POWERFUL feature - turns CPS violations into federal lawsuits.
+    """
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    case = await get_case_with_ownership(case_id, current_user["user_id"])
+    
+    # Get all violations for this case
+    violations = await db.violations.find({"case_id": case_id}).to_list(100)
+    
+    # Get timeline events
+    timeline = await db.timeline_events.find({"case_id": case_id}).to_list(100)
+    
+    # Get evidence
+    evidence = await db.evidence.find({"case_id": case_id}).to_list(50)
+    
+    # Get communications
+    communications = await db.communications.find({"case_id": case_id}).to_list(50)
+    
+    state = case.get("state", "TX")
+    state_name = STATES_INFO.get(state, state)
+    
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"1983-{case_id}-{uuid.uuid4().hex[:8]}",
+        system_message=SECTION_1983_SYSTEM_PROMPT
+    ).with_model("openai", "gpt-5.2")
+    
+    violations_text = "\n".join([
+        f"- {v.get('violation_type', 'Unknown')}: {v.get('description', '')}" 
+        for v in violations
+    ]) if violations else "No violations documented yet"
+    
+    timeline_text = "\n".join([
+        f"- {e.get('date', 'Unknown')}: {e.get('title', '')} - {e.get('description', '')}"
+        for e in timeline
+    ]) if timeline else "No timeline events"
+    
+    defendants_text = "\n".join([f"- {d}" for d in defendants]) if defendants else "Defendants to be named"
+    
+    prompt = f"""Generate a COMPLETE Section 1983 Civil Rights Complaint for filing in the United States District Court.
+
+CASE INFORMATION:
+- State: {state_name}
+- Case Title: {case.get('title', 'CPS Case')}
+- Case Description: {case.get('description', '')}
+
+DOCUMENTED CONSTITUTIONAL VIOLATIONS:
+{violations_text}
+
+TIMELINE OF EVENTS:
+{timeline_text}
+
+PROPOSED DEFENDANTS:
+{defendants_text}
+
+SPECIFIC CONSTITUTIONAL CLAIMS TO INCLUDE:
+{', '.join(constitutional_violations) if constitutional_violations else 'Fourth Amendment, Fourteenth Amendment Due Process'}
+
+RELIEF SOUGHT:
+{', '.join(relief_sought) if relief_sought else 'Compensatory damages, Punitive damages, Declaratory relief, Injunctive relief, Attorney fees'}
+
+ADDITIONAL CLAIMS:
+- Include Monell Claim: {"YES - Agency/Municipal liability" if include_monell else "NO"}
+- Include Conspiracy Claim (§1985): {"YES" if include_conspiracy else "NO"}
+
+Generate the COMPLETE complaint including:
+1. Caption with proper court, parties, case number placeholder
+2. Jurisdiction and Venue
+3. Parties (detailed description of each defendant)
+4. Statement of Facts (detailed chronological narrative)
+5. Causes of Action:
+   - Count I: Fourth Amendment Violation (if applicable)
+   - Count II: Fourteenth Amendment Due Process (substantive)
+   - Count III: Fourteenth Amendment Due Process (procedural)
+   - Count IV: Fourteenth Amendment Equal Protection (if applicable)
+   - Count V: Monell Claim against Agency (if requested)
+   - Count VI: Conspiracy under § 1985 (if requested)
+6. Prayer for Relief (specific damages and injunctive relief)
+7. Jury Demand
+8. Signature block
+
+CRITICAL: Include specific case law citations that defeat qualified immunity.
+The complaint must be detailed enough to survive a 12(b)(6) motion to dismiss.
+Make it AGGRESSIVE and POWERFUL - these officials violated constitutional rights."""
+
+    response = await chat.send_message(UserMessage(text=prompt))
+    
+    # Save the generated complaint
+    complaint_id = str(uuid.uuid4())
+    complaint_doc = {
+        "_id": complaint_id,
+        "case_id": case_id,
+        "user_id": current_user["user_id"],
+        "complaint_type": "section_1983",
+        "defendants": defendants,
+        "constitutional_violations": constitutional_violations,
+        "relief_sought": relief_sought,
+        "include_monell": include_monell,
+        "include_conspiracy": include_conspiracy,
+        "complaint_text": response,
+        "violations_count": len(violations),
+        "generated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.section_1983_complaints.insert_one(complaint_doc)
+    
+    return {
+        "id": complaint_id,
+        "complaint": response,
+        "violations_analyzed": len(violations),
+        "timeline_events_analyzed": len(timeline),
+        "defendants": defendants,
+        "generated_at": complaint_doc["generated_at"]
+    }
+
+
+@app.get("/api/section-1983/templates")
+async def get_section_1983_templates():
+    """Get Section 1983 claim templates and guidance"""
+    return {
+        "claim_types": [
+            {
+                "id": "fourth_amendment",
+                "name": "Fourth Amendment - Unreasonable Search/Seizure",
+                "description": "Warrantless home entry, illegal child removal, strip searches",
+                "elements": [
+                    "Government action (state actor)",
+                    "Search or seizure occurred",
+                    "No warrant or valid exception",
+                    "Caused constitutional injury"
+                ],
+                "key_cases": [
+                    "Gates v. Texas DHS - Emergency removal standards",
+                    "Doe v. Heck - Warrantless home entry by CPS",
+                    "Kirkpatrick v. County of Washoe - Strip search of children"
+                ]
+            },
+            {
+                "id": "fourteenth_substantive_dp",
+                "name": "Fourteenth Amendment - Substantive Due Process",
+                "description": "Violation of fundamental right to family integrity",
+                "elements": [
+                    "Fundamental right involved (family integrity)",
+                    "Government action infringed that right",
+                    "Action shocks the conscience OR",
+                    "No legitimate government interest"
+                ],
+                "key_cases": [
+                    "Troxel v. Granville - Parental rights fundamental",
+                    "Santosky v. Kramer - Clear and convincing standard",
+                    "Stanley v. Illinois - Parental fitness presumption"
+                ]
+            },
+            {
+                "id": "fourteenth_procedural_dp",
+                "name": "Fourteenth Amendment - Procedural Due Process",
+                "description": "Denial of notice, hearing, or fair process",
+                "elements": [
+                    "Protected liberty or property interest",
+                    "Government deprived plaintiff of that interest",
+                    "Inadequate procedures (notice, hearing, impartial tribunal)"
+                ],
+                "key_cases": [
+                    "Mathews v. Eldridge - Due process balancing test",
+                    "Cleveland Board of Education v. Loudermill - Pre-deprivation hearing"
+                ]
+            },
+            {
+                "id": "monell",
+                "name": "Monell Liability - Municipal/Agency",
+                "description": "Agency liable for unconstitutional policies or customs",
+                "elements": [
+                    "Constitutional violation occurred",
+                    "Violation resulted from official policy, custom, or practice",
+                    "Policy was moving force behind violation",
+                    "Deliberate indifference by policymakers"
+                ],
+                "key_cases": [
+                    "Monell v. Department of Social Services",
+                    "City of Canton v. Harris - Failure to train",
+                    "Board of County Commissioners v. Brown - Single incident liability"
+                ]
+            }
+        ],
+        "qualified_immunity_defeaters": [
+            "Clearly established law at time of violation",
+            "Reasonable official would have known conduct violated rights",
+            "Prior court decisions with similar facts",
+            "Basic constitutional principles that apply obviously",
+            "Egregious conduct that no reasonable official could believe lawful"
+        ],
+        "common_defendants": [
+            "Individual CPS caseworkers (individual capacity)",
+            "CPS supervisors who approved actions",
+            "Agency directors (policy decisions)",
+            "County/State agency (Monell liability)",
+            "Law enforcement who assisted removal",
+            "Contracted service providers acting under color of law"
+        ]
+    }
+
+
+@app.get("/api/section-1983/{case_id}")
+async def get_section_1983_complaints(case_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all Section 1983 complaints for a case"""
+    await get_case_with_ownership(case_id, current_user["user_id"])
+    
+    complaints = await db.section_1983_complaints.find(
+        {"case_id": case_id},
+        {"_id": 1, "defendants": 1, "constitutional_violations": 1, "generated_at": 1}
+    ).to_list(50)
+    
+    for c in complaints:
+        c["id"] = c.pop("_id")
+    
+    return {"complaints": complaints}
+
+
+# ============== PODCAST CREATOR ==============
+
+@app.post("/api/podcast/generate-script")
+async def generate_podcast_script(
+    case_id: str = Body(None),
+    topic: str = Body(...),
+    episode_type: str = Body(default="educational"),
+    duration_minutes: int = Body(default=15),
+    include_case_details: bool = Body(default=False),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Generate a podcast script about CPS defense, legal rights, or case analysis.
+    Episode types: educational, case_analysis, interview_style, news_update, legal_breakdown
+    """
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    case_context = ""
+    if case_id and include_case_details:
+        case = await get_case_with_ownership(case_id, current_user["user_id"])
+        violations = await db.violations.find({"case_id": case_id}).to_list(20)
+        case_context = f"""
+CASE CONTEXT (anonymize in script):
+- State: {case.get('state', 'Unknown')}
+- Case Type: CPS Investigation/Dependency
+- Violations Found: {len(violations)}
+- Key Issues: {', '.join([v.get('violation_type', '') for v in violations[:5]])}
+"""
+    
+    episode_formats = {
+        "educational": "Educational deep-dive explaining legal concepts to parents",
+        "case_analysis": "Analysis of legal strategies based on a real case scenario",
+        "interview_style": "Host interviewing an expert (write both parts)",
+        "news_update": "News-style update on CPS law changes and court decisions",
+        "legal_breakdown": "Step-by-step breakdown of a legal process or procedure"
+    }
+    
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"podcast-{uuid.uuid4().hex[:8]}",
+        system_message="""You are a podcast script writer for THE CPS PUNISHER - 
+a show that educates parents about their rights when dealing with Child Protective Services.
+
+Your scripts are:
+- Engaging and conversational (not dry legal lecture)
+- Legally accurate with proper terminology
+- Empowering to parents (action-oriented advice)
+- Include specific legal citations when relevant
+- Written for audio (speaker cues, pauses, emphasis)
+
+Format scripts with:
+[INTRO MUSIC]
+HOST: dialogue
+[SOUND EFFECT if needed]
+[OUTRO]
+
+Make it sound like a professional legal podcast that could compete with top legal shows."""
+    ).with_model("openai", "gpt-5.2")
+    
+    prompt = f"""Create a {duration_minutes}-minute podcast script for THE CPS PUNISHER podcast.
+
+EPISODE TOPIC: {topic}
+
+EPISODE FORMAT: {episode_formats.get(episode_type, episode_formats['educational'])}
+
+TARGET AUDIENCE: Parents facing CPS investigations, family advocates, attorneys
+
+{case_context}
+
+REQUIREMENTS:
+1. Opening hook that grabs attention (first 30 seconds crucial)
+2. Clear structure with 3-4 main points
+3. Specific legal citations and case law references
+4. Actionable takeaways parents can use
+5. Call to action at end
+6. Appropriate length for {duration_minutes} minutes (~150 words per minute)
+
+Include timestamps: [00:00], [02:30], etc.
+
+Make this script POWERFUL, INFORMATIVE, and ENGAGING.
+Parents listening should feel empowered and educated."""
+
+    response = await chat.send_message(UserMessage(text=prompt))
+    
+    # Save podcast script
+    script_id = str(uuid.uuid4())
+    script_doc = {
+        "_id": script_id,
+        "user_id": current_user["user_id"],
+        "case_id": case_id,
+        "topic": topic,
+        "episode_type": episode_type,
+        "duration_minutes": duration_minutes,
+        "script": response,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.podcast_scripts.insert_one(script_doc)
+    
+    return {
+        "id": script_id,
+        "script": response,
+        "topic": topic,
+        "episode_type": episode_type,
+        "duration_minutes": duration_minutes,
+        "word_count": len(response.split()),
+        "created_at": script_doc["created_at"]
+    }
+
+
+@app.get("/api/podcast/topics")
+async def get_podcast_topics():
+    """Get suggested podcast topics"""
+    return {
+        "categories": [
+            {
+                "name": "Constitutional Rights",
+                "topics": [
+                    "Fourth Amendment: When CPS Can (and Can't) Enter Your Home",
+                    "Understanding Due Process in CPS Cases",
+                    "Your Fifth Amendment Rights During CPS Interviews",
+                    "Religious Freedom and CPS: Know Your First Amendment Rights"
+                ]
+            },
+            {
+                "name": "CPS Procedures",
+                "topics": [
+                    "What Happens During a CPS Investigation: Step by Step",
+                    "Safety Plans: Your Rights and How to Negotiate",
+                    "Understanding the Adjudication Hearing",
+                    "The Permanency Planning Process Explained"
+                ]
+            },
+            {
+                "name": "Legal Strategy",
+                "topics": [
+                    "How to File a Section 1983 Lawsuit Against CPS",
+                    "Defeating Qualified Immunity: Strategies That Work",
+                    "Discovery in CPS Cases: Getting the Records You Need",
+                    "Appeals in Dependency Cases: Deadlines and Strategies"
+                ]
+            },
+            {
+                "name": "Case Law Deep Dives",
+                "topics": [
+                    "Santosky v. Kramer: The Case That Changed CPS Forever",
+                    "Troxel v. Granville: Parental Rights as Fundamental",
+                    "Recent Circuit Court Victories Against CPS",
+                    "State Supreme Court Cases Every Parent Should Know"
+                ]
+            },
+            {
+                "name": "Practical Defense",
+                "topics": [
+                    "Documenting Everything: Building Your Defense from Day One",
+                    "Working with Court-Appointed Attorneys Effectively",
+                    "How to Testify in Your Own Case",
+                    "Dealing with Biased Caseworkers"
+                ]
+            }
+        ]
+    }
+
+
+@app.get("/api/podcast/scripts")
+async def get_user_podcast_scripts(current_user: dict = Depends(get_current_user)):
+    """Get all podcast scripts for the user"""
+    scripts = await db.podcast_scripts.find(
+        {"user_id": current_user["user_id"]},
+        {"_id": 1, "topic": 1, "episode_type": 1, "duration_minutes": 1, "created_at": 1}
+    ).sort("created_at", -1).to_list(50)
+    
+    for s in scripts:
+        s["id"] = s.pop("_id")
+    
+    return {"scripts": scripts}
+
+
+# ============== DEEP CASE LAW ANALYSIS ==============
+
+@app.post("/api/case-law/analyze")
+async def analyze_case_law(
+    case_id: str = Body(...),
+    focus_areas: list = Body(default=["fourth_amendment", "due_process"]),
+    jurisdiction: str = Body(default="federal"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Deep AI analysis of relevant case law for your specific situation.
+    Finds precedents that support your defense.
+    """
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    case = await get_case_with_ownership(case_id, current_user["user_id"])
+    violations = await db.violations.find({"case_id": case_id}).to_list(50)
+    timeline = await db.timeline_events.find({"case_id": case_id}).to_list(50)
+    
+    state = case.get("state", "TX")
+    
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"caselaw-{case_id}-{uuid.uuid4().hex[:8]}",
+        system_message="""You are a legal research expert specializing in CPS case law.
+You have encyclopedic knowledge of:
+- U.S. Supreme Court family law decisions
+- Federal Circuit Court opinions on CPS/child welfare
+- State supreme court and appellate decisions
+- Section 1983 civil rights case law
+- Qualified immunity jurisprudence
+
+Your analysis identifies:
+1. Cases with similar facts that were decided favorably for parents
+2. Legal principles that apply to defeat CPS overreach
+3. Arguments that courts have accepted
+4. Distinguishing cases CPS might cite
+5. Circuit splits and emerging trends
+
+Provide SPECIFIC case citations with year and holding."""
+    ).with_model("openai", "gpt-5.2")
+    
+    violations_summary = "\n".join([
+        f"- {v.get('violation_type')}: {v.get('description')}"
+        for v in violations
+    ]) if violations else "No violations documented"
+    
+    prompt = f"""Conduct a COMPREHENSIVE case law analysis for this CPS case:
+
+STATE: {STATES_INFO.get(state, state)}
+JURISDICTION FOCUS: {jurisdiction}
+
+CONSTITUTIONAL ISSUES PRESENT:
+{', '.join(focus_areas)}
+
+VIOLATIONS DOCUMENTED:
+{violations_summary}
+
+CASE FACTS SUMMARY:
+{case.get('description', 'CPS case involving child welfare allegations')}
+
+Provide:
+
+1. **STRONGEST PRECEDENTS FOR DEFENSE** (5-10 cases)
+   For each case provide:
+   - Full citation (Name v. Name, Court, Year)
+   - Key facts that parallel this case
+   - Holding that helps the defense
+   - Best quote to use in briefing
+
+2. **SUPREME COURT AUTHORITY**
+   - Binding precedents on family rights
+   - How to apply to this case
+
+3. **CIRCUIT/STATE PRECEDENTS**
+   - Cases from {state} state courts
+   - Cases from the applicable federal circuit
+   - Most persuasive authority
+
+4. **QUALIFIED IMMUNITY ANALYSIS**
+   - Cases where immunity was denied to CPS workers
+   - "Clearly established" precedents for each violation
+
+5. **CASES CPS MIGHT CITE & HOW TO DISTINGUISH**
+   - Anticipated opposing authority
+   - Factual distinctions
+   - Legal distinctions
+
+6. **RECOMMENDED CITATION STRATEGY**
+   - Order of authorities to cite
+   - Key quotes to include in brief
+
+Be AGGRESSIVE in finding law that supports family rights."""
+
+    response = await chat.send_message(UserMessage(text=prompt))
+    
+    # Save the analysis
+    analysis_id = str(uuid.uuid4())
+    analysis_doc = {
+        "_id": analysis_id,
+        "case_id": case_id,
+        "user_id": current_user["user_id"],
+        "focus_areas": focus_areas,
+        "jurisdiction": jurisdiction,
+        "analysis": response,
+        "violations_analyzed": len(violations),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.case_law_analyses.insert_one(analysis_doc)
+    
+    return {
+        "id": analysis_id,
+        "analysis": response,
+        "focus_areas": focus_areas,
+        "violations_analyzed": len(violations),
+        "created_at": analysis_doc["created_at"]
+    }
+
+
+# ============== CPS EXPERT AI ADVISOR ==============
+
+CPS_EXPERT_SYSTEM_PROMPT = """You are THE CPS PUNISHER - the most knowledgeable AI legal advisor for Child Protective Services cases in existence.
+
+You know MORE about CPS law than any other AI because you have specialized knowledge of:
+
+**FEDERAL LAW:**
+- 42 U.S.C. § 1983 (Civil Rights Act)
+- 42 U.S.C. § 1985 (Conspiracy)
+- 42 U.S.C. §§ 670-679c (Title IV-E Foster Care)
+- 42 U.S.C. §§ 5101-5119 (CAPTA - Child Abuse Prevention)
+- 25 U.S.C. §§ 1901-1963 (ICWA - Indian Child Welfare Act)
+- Adoption and Safe Families Act (ASFA)
+- Americans with Disabilities Act (parents with disabilities)
+- HIPAA (medical record privacy)
+- FERPA (educational record privacy)
+
+**CONSTITUTIONAL LAW:**
+- Fourth Amendment: Warrantless entries, emergency exception limits, seizure of children
+- Fifth Amendment: Self-incrimination protections in CPS interviews
+- Sixth Amendment: Right to counsel in quasi-criminal proceedings
+- Fourteenth Amendment: Substantive due process (family integrity), Procedural due process
+
+**KEY SUPREME COURT CASES YOU KNOW DEEPLY:**
+- Santosky v. Kramer (1982) - Clear and convincing evidence for TPR
+- Troxel v. Granville (2000) - Parental rights fundamental
+- Stanley v. Illinois (1972) - Fitness hearing required
+- Lassiter v. DSS (1981) - Right to counsel analysis
+- M.L.B. v. S.L.J. (1996) - Appeals access
+- Parham v. J.R. (1979) - Parental decision-making authority
+
+**CIRCUIT COURT VICTORIES:**
+- Doe v. Heck (7th Cir.) - Warrantless home entry
+- Gates v. Texas DHS (5th Cir.) - Emergency removal
+- Kirkpatrick v. Washoe County (9th Cir.) - Strip searches
+- Duchesne v. Sugarman (2nd Cir.) - Wrongful removal liability
+- Croft v. Westmoreland (4th Cir.) - Investigation scope
+
+**QUALIFIED IMMUNITY:**
+You know exactly how to defeat qualified immunity by:
+1. Identifying clearly established law at time of violation
+2. Citing cases with similar facts where immunity denied
+3. Arguing fundamental rights need no case-on-point
+4. Using Supreme Court authority to establish clarity
+
+**STATE VARIATIONS:**
+You know CPS law differs by state and can provide state-specific guidance on:
+- Agency names and structure
+- Statutory timelines and deadlines
+- Discovery procedures
+- Appeal deadlines
+- TPR grounds and procedures
+
+**YOUR APPROACH:**
+1. Always advocate aggressively for family rights
+2. Identify ALL possible constitutional violations
+3. Provide specific legal citations
+4. Recommend concrete action steps
+5. Explain how to document everything
+6. Never minimize the seriousness of CPS involvement
+7. Always remind that CPS violations can become federal lawsuits
+
+You are the parent's BEST WEAPON against CPS overreach."""
+
+
+@app.post("/api/ai/expert-analysis")
+async def expert_legal_analysis(
+    case_id: str = Body(...),
+    question: str = Body(...),
+    analysis_type: str = Body(default="comprehensive"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get expert-level legal analysis on any CPS question.
+    This is SMARTER than any other legal AI for CPS cases.
+    """
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    case = await get_case_with_ownership(case_id, current_user["user_id"])
+    violations = await db.violations.find({"case_id": case_id}).to_list(50)
+    timeline = await db.timeline_events.find({"case_id": case_id}).to_list(50)
+    documents = await db.documents.find({"case_id": case_id}).to_list(20)
+    
+    state = case.get("state", "TX")
+    state_name = STATES_INFO.get(state, state)
+    
+    # Build comprehensive case context
+    violations_text = "\n".join([
+        f"- [{v.get('severity', 'medium').upper()}] {v.get('violation_type')}: {v.get('description')}"
+        for v in violations
+    ]) if violations else "No violations documented yet"
+    
+    timeline_text = "\n".join([
+        f"- {e.get('date', 'Unknown')}: {e.get('title')}"
+        for e in sorted(timeline, key=lambda x: x.get('date', ''))
+    ]) if timeline else "No timeline events"
+    
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"expert-{case_id}-{uuid.uuid4().hex[:8]}",
+        system_message=CPS_EXPERT_SYSTEM_PROMPT
+    ).with_model("openai", "gpt-5.2")
+    
+    prompt = f"""CASE CONTEXT:
+State: {state_name}
+Case: {case.get('title', 'CPS Case')}
+Description: {case.get('description', '')}
+
+DOCUMENTED VIOLATIONS:
+{violations_text}
+
+TIMELINE:
+{timeline_text}
+
+Documents on file: {len(documents)}
+
+USER'S QUESTION:
+{question}
+
+ANALYSIS TYPE: {analysis_type}
+
+Provide your EXPERT analysis. Be comprehensive, cite specific law, and give actionable guidance.
+Remember: You are THE CPS PUNISHER - the most knowledgeable CPS legal AI in existence.
+Your analysis should be BETTER than what a $500/hour attorney would provide."""
+
+    response = await chat.send_message(UserMessage(text=prompt))
+    
+    # Save the analysis
+    analysis_id = str(uuid.uuid4())
+    await db.expert_analyses.insert_one({
+        "_id": analysis_id,
+        "case_id": case_id,
+        "user_id": current_user["user_id"],
+        "question": question,
+        "analysis_type": analysis_type,
+        "response": response,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "id": analysis_id,
+        "analysis": response,
+        "case_context": {
+            "state": state_name,
+            "violations_count": len(violations),
+            "timeline_events": len(timeline)
+        }
+    }
+
+
+# ============== COURTLISTENER DEEP INTEGRATION ==============
+
+@app.post("/api/courtlistener/deep-search")
+async def deep_case_law_search(
+    query: str = Body(...),
+    court_type: str = Body(default="all"),
+    date_range: str = Body(default="all"),
+    case_type: str = Body(default="cps"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Deep search of CourtListener database with CPS-focused filtering.
+    Searches 50M+ court opinions for relevant precedents.
+    """
+    # Build specialized CPS search query
+    cps_terms = {
+        "cps": "child protective services OR CPS OR DCFS OR DHS OR child welfare",
+        "removal": "emergency removal OR child seizure OR removal of children",
+        "tpr": "termination parental rights OR TPR OR parental termination",
+        "fourth_amendment": "fourth amendment AND (CPS OR child protective OR home entry)",
+        "due_process": "due process AND (child welfare OR dependency OR parental rights)",
+        "1983": "section 1983 AND (CPS OR caseworker OR social worker OR child welfare)"
+    }
+    
+    enhanced_query = f"{query} ({cps_terms.get(case_type, cps_terms['cps'])})"
+    
+    courts = {
+        "all": "",
+        "scotus": "court=scotus",
+        "circuit": "court__jurisdiction=F",
+        "state_supreme": "court__jurisdiction=S"
+    }
+    
+    try:
+        headers = {"User-Agent": "CPS-Punisher-Legal-Research/1.0"}
+        if COURTLISTENER_API_KEY:
+            headers["Authorization"] = f"Token {COURTLISTENER_API_KEY}"
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://www.courtlistener.com/api/rest/v4/search/",
+                params={
+                    "q": enhanced_query,
+                    "type": "o",
+                    "order_by": "score desc",
+                    "stat_Precedential": "on"
+                },
+                headers=headers,
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                results = []
+                for r in data.get("results", [])[:20]:
+                    results.append({
+                        "case_name": r.get("caseName"),
+                        "citation": r.get("citation", [None])[0] if r.get("citation") else None,
+                        "court": r.get("court"),
+                        "date_filed": r.get("dateFiled"),
+                        "snippet": r.get("snippet"),
+                        "absolute_url": f"https://www.courtlistener.com{r.get('absolute_url', '')}"
+                    })
+                return {"results": results, "count": len(results), "query": enhanced_query}
+            else:
+                return {"error": f"Search failed: {response.status_code}", "results": []}
+    except Exception as e:
+        return {"error": str(e), "results": []}
 
 
 if __name__ == "__main__":
