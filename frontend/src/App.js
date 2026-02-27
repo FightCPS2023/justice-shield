@@ -511,6 +511,10 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'documents' && <DocumentsTab selectedCase={selectedCase} />}
           {activeTab === 'timeline' && <TimelineTab selectedCase={selectedCase} />}
           {activeTab === 'evidence' && <EvidenceTab selectedCase={selectedCase} />}
+          {activeTab === 'evidencelist' && <EvidenceChecklistTab selectedCase={selectedCase} />}
+          {activeTab === 'visitation' && <VisitationLogTab selectedCase={selectedCase} />}
+          {activeTab === 'courthearings' && <CourtHearingsTab selectedCase={selectedCase} />}
+          {activeTab === 'rights' && <RightsGuideTab />}
           {activeTab === 'communications' && <CommunicationsTab selectedCase={selectedCase} />}
           {activeTab === 'courtfilings' && <CourtFilingsTab selectedCase={selectedCase} />}
           {activeTab === 'judgewatch' && <JudgeWatchTab selectedCase={selectedCase} />}
