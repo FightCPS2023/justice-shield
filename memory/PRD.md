@@ -3,6 +3,8 @@
 ## Original Problem Statement
 Build THE CPS PUNISHER - the most powerful interactive Child Protective Services defense platform. An AI-powered case analyzer, document creator, resources law library, calendar, and comprehensive family defense tool. The app should surpass existing legal tools like LexisNexis for CPS-specific cases.
 
+## Version 4.0 - POWERHOUSE LEGAL AI
+
 ## Architecture & Tech Stack
 - **Frontend**: React.js with Tailwind CSS, Lucide icons, Sonner notifications
 - **Backend**: Python FastAPI with MongoDB (motor async driver)
@@ -10,6 +12,7 @@ Build THE CPS PUNISHER - the most powerful interactive Child Protective Services
 - **Payments**: Stripe integration with 4 subscription tiers
 - **Authentication**: JWT-based email authentication
 - **Database**: MongoDB for users, cases, documents, violations, timeline, calendar, payments
+- **Legal Research**: CourtListener API integration (50M+ court opinions)
 
 ## User Personas
 1. **Parents Fighting CPS**: Primary users defending against CPS allegations
