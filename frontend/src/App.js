@@ -4219,4 +4219,743 @@ function AdvocatesTab() {
   );
 }
 
+// Expert Legal AI Tab - SMARTER THAN ANY OTHER LEGAL AI
+function ExpertLegalAITab({ selectedCase }) {
+  const { api } = useAuth();
+  const [question, setQuestion] = useState('');
+  const [analysisType, setAnalysisType] = useState('comprehensive');
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
+  const [history, setHistory] = useState([]);
+
+  const analysisTypes = [
+    { id: 'comprehensive', label: 'Comprehensive Analysis', desc: 'Full legal analysis with citations' },
+    { id: 'strategy', label: 'Strategy Focus', desc: 'Defense strategy recommendations' },
+    { id: 'constitutional', label: 'Constitutional Analysis', desc: 'Focus on constitutional violations' },
+    { id: 'procedural', label: 'Procedural Analysis', desc: 'CPS procedure violations' },
+    { id: 'quick', label: 'Quick Answer', desc: 'Concise response' }
+  ];
+
+  const sampleQuestions = [
+    "What are my rights if CPS shows up at my door without a warrant?",
+    "How do I challenge an emergency removal in court?",
+    "What constitutes a Fourth Amendment violation by CPS?",
+    "How do I file a complaint against my caseworker?",
+    "What are the deadlines for CPS to file their petition?",
+    "Can CPS interview my child at school without my consent?",
+    "What is the standard for termination of parental rights?",
+    "How do I request discovery in my dependency case?"
+  ];
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!question.trim() || !selectedCase) return;
+
+    setLoading(true);
+    try {
+      const data = await api.post('/api/ai/expert-analysis', {
+        case_id: selectedCase.id,
+        question: question,
+        analysis_type: analysisType
+      });
+      setResponse(data);
+      setHistory([{ question, response: data, timestamp: new Date() }, ...history]);
+    } catch (error) {
+      toast.error('Failed to get expert analysis');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12" data-testid="expert-tab">
+        <Brain className="w-16 h-16 mx-auto text-purple-500 mb-4" />
+        <h3 className="text-2xl font-semibold mb-2">Expert Legal AI</h3>
+        <p className="text-gray-400">Select a case to get expert legal analysis</p>
+        <p className="text-sm text-gray-500 mt-2">This AI knows MORE about CPS law than any other legal AI</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="expert-tab">
+      <div>
+        <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
+          <Brain className="w-8 h-8 text-purple-500" />
+          Expert Legal AI
+        </h1>
+        <p className="text-gray-400">The most knowledgeable CPS legal AI in existence - {selectedCase.title}</p>
+      </div>
+
+      {/* Input Form */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm text-gray-400 mb-2">Analysis Type</label>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            {analysisTypes.map(type => (
+              <button
+                key={type.id}
+                type="button"
+                onClick={() => setAnalysisType(type.id)}
+                className={`p-3 rounded-lg text-left transition-all ${
+                  analysisType === type.id
+                    ? 'bg-purple-600 border-purple-500'
+                    : 'bg-gray-800 border-gray-700 hover:border-purple-600/50'
+                } border`}
+              >
+                <p className="font-medium text-sm">{type.label}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm text-gray-400 mb-2">Your Legal Question</label>
+          <textarea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Ask any CPS legal question - I know more than any other legal AI..."
+            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 h-32 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+            required
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {sampleQuestions.slice(0, 4).map((q, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setQuestion(q)}
+              className="px-3 py-1 bg-gray-800 border border-gray-700 rounded-full text-xs hover:border-purple-500 transition-colors"
+            >
+              {q.substring(0, 40)}...
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading || !question.trim()}
+          className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <><Loader2 className="w-6 h-6 animate-spin" /> Analyzing (30-60 seconds)...</>
+          ) : (
+            <><Brain className="w-6 h-6" /> Get Expert Analysis</>
+          )}
+        </button>
+      </form>
+
+      {/* Response */}
+      {response && (
+        <div className="bg-gradient-to-r from-purple-900/30 to-gray-900 border border-purple-800/50 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Brain className="w-5 h-5 text-purple-500" />
+              Expert Analysis
+            </h3>
+            <button
+              onClick={() => navigator.clipboard.writeText(response.analysis)}
+              className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm flex items-center gap-1"
+            >
+              <Copy className="w-4 h-4" /> Copy
+            </button>
+          </div>
+          <div className="prose prose-invert max-w-none">
+            <pre className="whitespace-pre-wrap text-gray-300 text-sm bg-black/30 p-4 rounded-lg overflow-auto max-h-[600px]">
+              {response.analysis}
+            </pre>
+          </div>
+          <div className="mt-4 flex gap-4 text-xs text-gray-500">
+            <span>Violations analyzed: {response.case_context?.violations_count || 0}</span>
+            <span>Timeline events: {response.case_context?.timeline_events || 0}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Section 1983 Civil Rights Lawsuit Tab
+function Section1983Tab({ selectedCase }) {
+  const { api } = useAuth();
+  const [templates, setTemplates] = useState(null);
+  const [generating, setGenerating] = useState(false);
+  const [complaint, setComplaint] = useState(null);
+  const [defendants, setDefendants] = useState(['']);
+  const [violations, setViolations] = useState(['fourth_amendment', 'fourteenth_substantive_dp']);
+  const [includeMonell, setIncludeMonell] = useState(true);
+  const [includeConspiracy, setIncludeConspiracy] = useState(false);
+
+  useEffect(() => {
+    loadTemplates();
+  }, []);
+
+  const loadTemplates = async () => {
+    try {
+      const data = await api.get('/api/section-1983/templates');
+      setTemplates(data);
+    } catch (error) {
+      console.error('Failed to load templates');
+    }
+  };
+
+  const generateComplaint = async () => {
+    if (!selectedCase) {
+      toast.error('Select a case first');
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const data = await api.post('/api/section-1983/generate', {
+        case_id: selectedCase.id,
+        defendants: defendants.filter(d => d.trim()),
+        constitutional_violations: violations,
+        include_monell: includeMonell,
+        include_conspiracy: includeConspiracy,
+        relief_sought: ['Compensatory damages', 'Punitive damages', 'Declaratory relief', 'Injunctive relief', 'Attorney fees']
+      });
+      setComplaint(data);
+      toast.success('Section 1983 Complaint generated!');
+    } catch (error) {
+      toast.error('Failed to generate complaint');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const addDefendant = () => setDefendants([...defendants, '']);
+  const updateDefendant = (index, value) => {
+    const updated = [...defendants];
+    updated[index] = value;
+    setDefendants(updated);
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12" data-testid="section1983-tab">
+        <Gavel className="w-16 h-16 mx-auto text-red-500 mb-4" />
+        <h3 className="text-2xl font-semibold mb-2">Section 1983 Lawsuit Generator</h3>
+        <p className="text-gray-400">Select a case to generate a federal civil rights complaint</p>
+        <p className="text-sm text-red-400 mt-2">Turn CPS violations into federal lawsuits</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="section1983-tab">
+      <div className="bg-gradient-to-r from-red-900/50 to-gray-900 border border-red-800/50 rounded-xl p-6">
+        <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
+          <Gavel className="w-8 h-8 text-red-500" />
+          Section 1983 Civil Rights Lawsuit
+        </h1>
+        <p className="text-gray-300 mt-2">
+          42 U.S.C. § 1983 allows you to sue government officials who violate your constitutional rights.
+          This is YOUR most powerful weapon against CPS overreach.
+        </p>
+      </div>
+
+      {/* Claim Types Reference */}
+      {templates && (
+        <div className="grid md:grid-cols-2 gap-4">
+          {templates.claim_types.map(claim => (
+            <div key={claim.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="checkbox"
+                  checked={violations.includes(claim.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setViolations([...violations, claim.id]);
+                    } else {
+                      setViolations(violations.filter(v => v !== claim.id));
+                    }
+                  }}
+                  className="w-4 h-4"
+                />
+                <h3 className="font-semibold text-red-400">{claim.name}</h3>
+              </div>
+              <p className="text-sm text-gray-400 mb-2">{claim.description}</p>
+              <div className="text-xs text-gray-500">
+                <p className="font-medium">Elements:</p>
+                <ul className="list-disc list-inside">
+                  {claim.elements.slice(0, 3).map((e, i) => <li key={i}>{e}</li>)}
+                </ul>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Defendants */}
+      <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+        <h3 className="font-semibold mb-4">Defendants to Sue</h3>
+        {defendants.map((defendant, i) => (
+          <div key={i} className="flex gap-2 mb-2">
+            <input
+              type="text"
+              value={defendant}
+              onChange={(e) => updateDefendant(i, e.target.value)}
+              placeholder="e.g., Jane Smith, CPS Caseworker (Individual Capacity)"
+              className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+            />
+            {defendants.length > 1 && (
+              <button onClick={() => setDefendants(defendants.filter((_, j) => j !== i))} className="px-3 py-2 bg-red-600/20 text-red-400 rounded-lg">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        ))}
+        <button onClick={addDefendant} className="mt-2 px-4 py-2 bg-gray-700 rounded-lg text-sm flex items-center gap-2">
+          <Plus className="w-4 h-4" /> Add Defendant
+        </button>
+        
+        {templates && (
+          <div className="mt-4 text-xs text-gray-500">
+            <p className="font-medium">Common defendants:</p>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {templates.common_defendants.map((d, i) => (
+                <button
+                  key={i}
+                  onClick={() => setDefendants([...defendants.filter(x => x), d])}
+                  className="px-2 py-1 bg-gray-700 rounded hover:bg-gray-600"
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Options */}
+      <div className="flex gap-4">
+        <label className="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3">
+          <input type="checkbox" checked={includeMonell} onChange={(e) => setIncludeMonell(e.target.checked)} className="w-4 h-4" />
+          <span>Include Monell Claim (Sue the Agency)</span>
+        </label>
+        <label className="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3">
+          <input type="checkbox" checked={includeConspiracy} onChange={(e) => setIncludeConspiracy(e.target.checked)} className="w-4 h-4" />
+          <span>Include §1985 Conspiracy Claim</span>
+        </label>
+      </div>
+
+      {/* Generate Button */}
+      <button
+        onClick={generateComplaint}
+        disabled={generating || violations.length === 0}
+        className="w-full py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
+      >
+        {generating ? (
+          <><Loader2 className="w-6 h-6 animate-spin" /> Generating Federal Lawsuit (60-90 seconds)...</>
+        ) : (
+          <><Gavel className="w-6 h-6" /> Generate Section 1983 Complaint</>
+        )}
+      </button>
+
+      {/* Generated Complaint */}
+      {complaint && (
+        <div className="bg-gradient-to-r from-red-900/30 to-gray-900 border border-red-800/50 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold flex items-center gap-2">
+              <FileText className="w-6 h-6 text-red-500" />
+              Generated Section 1983 Complaint
+            </h3>
+            <div className="flex gap-2">
+              <button
+                onClick={() => navigator.clipboard.writeText(complaint.complaint)}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center gap-2"
+              >
+                <Copy className="w-4 h-4" /> Copy
+              </button>
+              <button className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg flex items-center gap-2">
+                <Download className="w-4 h-4" /> Download
+              </button>
+            </div>
+          </div>
+          <pre className="whitespace-pre-wrap text-gray-300 text-sm bg-black/50 p-6 rounded-lg overflow-auto max-h-[800px] font-mono">
+            {complaint.complaint}
+          </pre>
+          <p className="text-xs text-gray-500 mt-4">
+            Generated: {new Date(complaint.generated_at).toLocaleString()} | 
+            Violations analyzed: {complaint.violations_analyzed}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Podcast Creator Tab
+function PodcastCreatorTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [topics, setTopics] = useState(null);
+  const [generating, setGenerating] = useState(false);
+  const [script, setScript] = useState(null);
+  const [formData, setFormData] = useState({
+    topic: '',
+    episode_type: 'educational',
+    duration_minutes: 15,
+    include_case_details: false
+  });
+  const [scripts, setScripts] = useState([]);
+
+  useEffect(() => {
+    loadTopics();
+    loadScripts();
+  }, []);
+
+  const loadTopics = async () => {
+    try {
+      const data = await api.get('/api/podcast/topics');
+      setTopics(data);
+    } catch (error) {
+      console.error('Failed to load topics');
+    }
+  };
+
+  const loadScripts = async () => {
+    try {
+      const data = await api.get('/api/podcast/scripts');
+      setScripts(data.scripts || []);
+    } catch (error) {
+      console.error('Failed to load scripts');
+    }
+  };
+
+  const generateScript = async () => {
+    if (!formData.topic.trim()) {
+      toast.error('Enter a podcast topic');
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const payload = {
+        ...formData,
+        case_id: selectedCase?.id || null
+      };
+      const data = await api.post('/api/podcast/generate-script', payload);
+      setScript(data);
+      loadScripts();
+      toast.success('Podcast script generated!');
+    } catch (error) {
+      toast.error('Failed to generate script');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const episodeTypes = [
+    { id: 'educational', label: 'Educational', desc: 'Deep-dive on legal concepts' },
+    { id: 'case_analysis', label: 'Case Analysis', desc: 'Analyze legal strategies' },
+    { id: 'interview_style', label: 'Interview', desc: 'Host + expert format' },
+    { id: 'news_update', label: 'News Update', desc: 'Legal news and changes' },
+    { id: 'legal_breakdown', label: 'Legal Breakdown', desc: 'Step-by-step procedures' }
+  ];
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="podcast-tab">
+      <div className="bg-gradient-to-r from-pink-900/50 to-purple-900/50 border border-pink-800/50 rounded-xl p-6">
+        <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
+          <Mic className="w-8 h-8 text-pink-500" />
+          Podcast Script Creator
+        </h1>
+        <p className="text-gray-300 mt-2">
+          Create professional podcast scripts about CPS defense, legal rights, and case strategies.
+          Educate and empower parents through audio content.
+        </p>
+      </div>
+
+      {/* Episode Configuration */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Episode Topic</label>
+            <input
+              type="text"
+              value={formData.topic}
+              onChange={(e) => setFormData({...formData, topic: e.target.value})}
+              placeholder="e.g., Understanding Your Fourth Amendment Rights"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Episode Type</label>
+            <div className="grid grid-cols-2 gap-2">
+              {episodeTypes.map(type => (
+                <button
+                  key={type.id}
+                  onClick={() => setFormData({...formData, episode_type: type.id})}
+                  className={`p-3 rounded-lg text-left border ${
+                    formData.episode_type === type.id
+                      ? 'bg-pink-600/20 border-pink-500'
+                      : 'bg-gray-800 border-gray-700'
+                  }`}
+                >
+                  <p className="font-medium text-sm">{type.label}</p>
+                  <p className="text-xs text-gray-500">{type.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Duration: {formData.duration_minutes} minutes</label>
+            <input
+              type="range"
+              min="5"
+              max="60"
+              step="5"
+              value={formData.duration_minutes}
+              onChange={(e) => setFormData({...formData, duration_minutes: parseInt(e.target.value)})}
+              className="w-full"
+            />
+          </div>
+
+          {selectedCase && (
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.include_case_details}
+                onChange={(e) => setFormData({...formData, include_case_details: e.target.checked})}
+                className="w-4 h-4"
+              />
+              <span className="text-sm">Include case details (anonymized)</span>
+            </label>
+          )}
+
+          <button
+            onClick={generateScript}
+            disabled={generating || !formData.topic.trim()}
+            className="w-full py-4 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 rounded-xl font-bold flex items-center justify-center gap-2"
+          >
+            {generating ? (
+              <><Loader2 className="w-5 h-5 animate-spin" /> Generating Script...</>
+            ) : (
+              <><Mic className="w-5 h-5" /> Generate Podcast Script</>
+            )}
+          </button>
+        </div>
+
+        {/* Topic Suggestions */}
+        {topics && (
+          <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4 max-h-[500px] overflow-y-auto">
+            <h3 className="font-semibold mb-4">Suggested Topics</h3>
+            {topics.categories.map((cat, i) => (
+              <div key={i} className="mb-4">
+                <p className="text-sm font-medium text-pink-400 mb-2">{cat.name}</p>
+                <div className="space-y-1">
+                  {cat.topics.map((topic, j) => (
+                    <button
+                      key={j}
+                      onClick={() => setFormData({...formData, topic})}
+                      className="w-full text-left px-3 py-2 bg-gray-800/50 hover:bg-gray-700 rounded text-sm"
+                    >
+                      {topic}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Generated Script */}
+      {script && (
+        <div className="bg-gradient-to-r from-pink-900/30 to-purple-900/30 border border-pink-800/50 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold flex items-center gap-2">
+              <Radio className="w-6 h-6 text-pink-500" />
+              {script.topic}
+            </h3>
+            <div className="flex gap-2">
+              <span className="px-3 py-1 bg-gray-700 rounded text-sm">{script.duration_minutes} min</span>
+              <span className="px-3 py-1 bg-gray-700 rounded text-sm">{script.word_count} words</span>
+              <button
+                onClick={() => navigator.clipboard.writeText(script.script)}
+                className="px-4 py-1 bg-pink-600 hover:bg-pink-700 rounded flex items-center gap-1"
+              >
+                <Copy className="w-4 h-4" /> Copy
+              </button>
+            </div>
+          </div>
+          <pre className="whitespace-pre-wrap text-gray-300 text-sm bg-black/50 p-6 rounded-lg overflow-auto max-h-[600px]">
+            {script.script}
+          </pre>
+        </div>
+      )}
+
+      {/* Previous Scripts */}
+      {scripts.length > 0 && (
+        <div>
+          <h3 className="font-semibold mb-3">Previous Scripts</h3>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {scripts.slice(0, 6).map(s => (
+              <div key={s.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                <Mic className="w-5 h-5 text-pink-500 mb-2" />
+                <h4 className="font-medium text-sm line-clamp-2">{s.topic}</h4>
+                <div className="flex gap-2 mt-2 text-xs text-gray-500">
+                  <span>{s.episode_type}</span>
+                  <span>{s.duration_minutes} min</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Case Law Analysis Tab
+function CaseLawAnalysisTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState(null);
+  const [focusAreas, setFocusAreas] = useState(['fourth_amendment', 'due_process']);
+  const [jurisdiction, setJurisdiction] = useState('federal');
+
+  const focusOptions = [
+    { id: 'fourth_amendment', label: 'Fourth Amendment' },
+    { id: 'due_process', label: 'Due Process' },
+    { id: 'equal_protection', label: 'Equal Protection' },
+    { id: 'qualified_immunity', label: 'Qualified Immunity' },
+    { id: 'emergency_removal', label: 'Emergency Removal' },
+    { id: 'tpr', label: 'Termination of Parental Rights' }
+  ];
+
+  const runAnalysis = async () => {
+    if (!selectedCase) {
+      toast.error('Select a case first');
+      return;
+    }
+
+    setAnalyzing(true);
+    try {
+      const data = await api.post('/api/case-law/analyze', {
+        case_id: selectedCase.id,
+        focus_areas: focusAreas,
+        jurisdiction
+      });
+      setAnalysis(data);
+      toast.success('Case law analysis complete!');
+    } catch (error) {
+      toast.error('Failed to analyze case law');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  if (!selectedCase) {
+    return (
+      <div className="text-center py-12" data-testid="caselaw-tab">
+        <BookOpen className="w-16 h-16 mx-auto text-blue-500 mb-4" />
+        <h3 className="text-2xl font-semibold mb-2">Deep Case Law Analysis</h3>
+        <p className="text-gray-400">Select a case to find relevant precedents</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="caselaw-tab">
+      <div>
+        <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
+          <BookOpen className="w-8 h-8 text-blue-500" />
+          Deep Case Law Analysis
+        </h1>
+        <p className="text-gray-400">AI-powered analysis of relevant precedents for {selectedCase.title}</p>
+      </div>
+
+      {/* Configuration */}
+      <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-4">
+        <div>
+          <label className="block text-sm text-gray-400 mb-2">Focus Areas</label>
+          <div className="flex flex-wrap gap-2">
+            {focusOptions.map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => {
+                  if (focusAreas.includes(opt.id)) {
+                    setFocusAreas(focusAreas.filter(f => f !== opt.id));
+                  } else {
+                    setFocusAreas([...focusAreas, opt.id]);
+                  }
+                }}
+                className={`px-3 py-2 rounded-lg border ${
+                  focusAreas.includes(opt.id)
+                    ? 'bg-blue-600 border-blue-500'
+                    : 'bg-gray-800 border-gray-700'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm text-gray-400 mb-2">Jurisdiction</label>
+          <div className="flex gap-2">
+            {[
+              { id: 'federal', label: 'Federal Courts' },
+              { id: 'state', label: 'State Courts' },
+              { id: 'both', label: 'Both' }
+            ].map(j => (
+              <button
+                key={j.id}
+                onClick={() => setJurisdiction(j.id)}
+                className={`px-4 py-2 rounded-lg border ${
+                  jurisdiction === j.id
+                    ? 'bg-blue-600 border-blue-500'
+                    : 'bg-gray-800 border-gray-700'
+                }`}
+              >
+                {j.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={runAnalysis}
+          disabled={analyzing || focusAreas.length === 0}
+          className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-xl font-bold flex items-center justify-center gap-2"
+        >
+          {analyzing ? (
+            <><Loader2 className="w-5 h-5 animate-spin" /> Analyzing Case Law (60-90 seconds)...</>
+          ) : (
+            <><Search className="w-5 h-5" /> Find Relevant Precedents</>
+          )}
+        </button>
+      </div>
+
+      {/* Analysis Results */}
+      {analysis && (
+        <div className="bg-gradient-to-r from-blue-900/30 to-gray-900 border border-blue-800/50 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold">Case Law Analysis</h3>
+            <button
+              onClick={() => navigator.clipboard.writeText(analysis.analysis)}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center gap-2"
+            >
+              <Copy className="w-4 h-4" /> Copy
+            </button>
+          </div>
+          <pre className="whitespace-pre-wrap text-gray-300 text-sm bg-black/50 p-6 rounded-lg overflow-auto max-h-[800px]">
+            {analysis.analysis}
+          </pre>
+          <p className="text-xs text-gray-500 mt-4">
+            Analyzed: {analysis.violations_analyzed} violations | Focus: {analysis.focus_areas?.join(', ')}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default App;
