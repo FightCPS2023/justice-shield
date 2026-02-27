@@ -411,6 +411,8 @@ function Dashboard({ onNavigate }) {
     { id: 'chat', icon: MessageSquare, label: 'AI Assistant' },
     { id: 'expert', icon: Brain, label: 'Expert Legal AI' },
     { id: 'section1983', icon: Gavel, label: 'Section 1983 Lawsuit' },
+    { id: 'incidents', icon: AlertTriangle, label: 'Incident Analyzer' },
+    { id: 'legaldb', icon: BookOpen, label: 'Legal Knowledge Base' },
     { id: 'podcast', icon: Mic, label: 'Podcast Creator' },
     { id: 'caselaw', icon: BookOpen, label: 'Case Law Analysis' },
     { id: 'violations', icon: AlertTriangle, label: 'Violations' },
