@@ -4,6 +4,30 @@
 
 ### Major Features Added
 
+#### Original App Components Integrated (BATCH 2)
+- **Know Your Rights Guide** - Comprehensive constitutional rights during CPS interactions
+  - 3 categories: Constitutional Rights, During Investigation, After Removal
+  - 4 Quick Rights Q&A for common questions
+  - Key cases cited for each right
+- **Evidence Checklist** - 6 categories with checkable items
+  - Documentation & Records
+  - Character & Parenting Evidence
+  - Home & Living Conditions
+  - Photos & Video Evidence
+  - Witness Information
+  - Evidence Contradicting CPS
+  - Progress tracking with save functionality
+- **Visitation Log** - Track all visits with children
+  - Emotional state tracking
+  - Child quotes documentation (critical for court!)
+  - Supervisor issues
+  - Visit denial tracking with stats
+- **Court Hearings with Countdown** - Never miss a hearing
+  - 9 hearing types (Detention, Adjudication, Disposition, Reviews, TPR, Appeal)
+  - Days countdown timer
+  - Preparation checklist
+  - What to bring list
+
 #### Legal Knowledge Base (NEW!)
 - **Supreme Court Cases Database** - 6 landmark cases with full holdings, quotes, applications
   - Troxel v. Granville (2000) - Fundamental parental rights
