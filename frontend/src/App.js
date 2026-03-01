@@ -494,6 +494,7 @@ function Dashboard({ onNavigate }) {
     { id: 'incidents', icon: AlertTriangle, label: 'Incident Analyzer' },
     { id: 'legaldb', icon: BookOpen, label: 'Legal Knowledge Base' },
     { id: 'rights', icon: Shield, label: 'Know Your Rights' },
+    { id: 'ada', icon: Scale, label: 'ADA Compliance', highlight: true },
     { id: 'podcast', icon: Mic, label: 'Podcast Creator' },
     { id: 'caselaw', icon: BookOpen, label: 'Case Law Analysis' },
     { id: 'violations', icon: AlertTriangle, label: 'Violations' },
