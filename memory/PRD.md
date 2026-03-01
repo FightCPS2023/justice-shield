@@ -1,268 +1,95 @@
 # THE CPS PUNISHER - Product Requirements Document
-## www.thecpspunisher.com
 
 ## Original Problem Statement
-Build THE CPS PUNISHER - the most powerful interactive Child Protective Services defense platform. An AI-powered case analyzer, document creator, resources law library, calendar, and comprehensive family defense tool. The app should surpass existing legal tools like LexisNexis for CPS-specific cases.
+Build the most powerful, interactive legal application for Child Protective Services (CPS) cases - an "unstoppable defender of the family." Port all functionality (324+ features) from an existing application and enhance with superior AI and legal knowledge.
 
-## Version 4.6 - CASE PREPARATION KIT (March 1, 2026)
+## Tech Stack
+- **Frontend:** React, Vite, Tailwind CSS, shadcn/ui, lucide-react
+- **Backend:** Python, FastAPI, Pydantic, Motor (async MongoDB)
+- **AI:** LiteLLM via Emergent integrations (GPT-5.2)
+- **PDF:** ReportLab, PyPDF
+- **Payments:** Stripe (live keys)
+- **Auth:** JWT + Google OAuth
+- **Database:** MongoDB
 
-### Latest Update (March 1, 2026)
-- **NEW: Case Preparation Kit** - Comprehensive court-ready PDF bundle
-  - 12-page PDF with professional formatting
-  - Includes: Cover page, TOC, Case Info, Violations, Timeline, Evidence, Documents, Notes, Strategies, Communications, Court Filings, Legal Disclaimers
-  - One-click download from Case Detail Modal
-  - CPS Punisher branding throughout
-- **FIXED: Case Detail Modal** - Header now stays visible (sticky positioning)
+## Architecture
+- `/app/backend/server.py` - Main backend (monolithic, ~6800 lines)
+- `/app/frontend/src/App.js` - Main frontend (monolithic, ~8500 lines)
+- `/app/frontend/src/components/tabs/index.jsx` - Extracted tab components (not yet wired in)
+- `/app/backend/routes/` - Modular route files (partially set up)
 
-## Version 4.5 - NOTEPAD + COURTLISTENER UI + PDF EXPORT (March 1, 2026)
+## Completed Features
 
-### Latest Update (March 1, 2026)
-- **NEW: Legal Notepad** - Save statutes, case law, and research notes (global + per-case)
-- **NEW: CourtListener UI** - Search 50M+ court opinions with filters by court and date
-- **NEW: PDF Export** - Export single notes or all notes as professional PDFs
-- **NEW: Save from Law Library** - One-click save state CPS laws to notepad
-- **NEW: Save from CourtListener** - Save court cases to notepad with citations
-- **FIXED: Law Library** - Was timing out (60+ seconds), now loads instantly (<0.5s)
-- **FIXED: Route ordering bug** - PDF export all notes endpoint now correctly handles 'all' path
+### Core Platform
+- JWT auth + Google OAuth
+- Case management (CRUD)
+- Stripe payments (live)
+- Passcode system for tier access
+- 50-state CPS law library
+- AI-powered chat assistant
+- Legal research tools
+- Document generation (10 types)
+- Violation tracking
+- Timeline management
+- Evidence management
+- Court hearings tracker
+- Communications log
+- Strategy builder
+- Argument generator
+- Evidence mapper
+- Precedent finder
+- Section 1983 lawsuit tools
+- Incident analyzer
+- Legal knowledge base
+- Know Your Rights guide
+- Podcast creator
+- Case law analysis
+- Visitation log
+- Court filings
+- Judge watch
+- Criminal case tools
+- Services tracker
+- Calendar
+- Community forum
+- Find advocates
 
-## Architecture & Tech Stack
-- **Frontend**: React.js with Tailwind CSS, Lucide icons, Sonner notifications
-- **Backend**: Python FastAPI with MongoDB (motor async driver)
-- **AI**: GPT-5.2 via emergentintegrations library with Emergent LLM Key
-- **AI Streaming**: Server-Sent Events (SSE) for real-time responses
-- **Payments**: Stripe integration with 4 subscription tiers (LIVE KEYS)
-- **Authentication**: JWT-based email auth + Google OAuth via Emergent Auth
-- **Database**: MongoDB for users, cases, documents, violations, timeline, calendar, payments, notepad
-- **Legal Research**: CourtListener API integration (50M+ court opinions)
-- **PDF Generation**: reportlab library
+### Recent Additions (March 2026)
+- **Legal Notepad** - Create, tag, export notes as PDFs
+- **CourtListener UI** - Search 50M+ court opinions
+- **Case Preparation Kit** - 12-page court-ready PDF bundle
+- **ADA Compliance Center** - 9-section tool: Federal law, case law, state laws (50 states), common violations, False Claims Act, Civil Guardian/GAL, case analysis, search
+- **Enhanced Document Uploads** (March 1, 2026):
+  - Multi-file selection
+  - Folder upload (webkitdirectory)
+  - Drag-and-drop (files and folders, recursive)
+  - Upload queue with per-file status tracking
+  - Batch processing with violation/timeline counts
 
-## User Personas
-1. **Parents Fighting CPS**: Primary users defending against CPS allegations
-2. **Family Advocates**: Helping families navigate CPS system
-3. **Legal Researchers**: Studying CPS law across states
-4. **Self-Represented Litigants**: Pro se parents in family court
-5. **Attorneys**: Legal professionals using the Attorney Suite ($299/mo)
+## Key Endpoints
+- `/api/auth/signup`, `/api/auth/login`, `/api/auth/me`
+- `/api/cases` (CRUD)
+- `/api/documents/upload` (multipart), `/api/documents/{case_id}`
+- `/api/notes` (CRUD), `/api/notes/all/pdf`
+- `/api/courtlistener/search`
+- `/api/cases/{case_id}/court-prep-kit`
+- `/api/ada/federal-law`, `/api/ada/case-law`, `/api/ada/violations`
+- `/api/ada/state/{state}`, `/api/ada/false-claims-act`, `/api/ada/civil-guardian`
+- `/api/ada/analyze-case/{case_id}`
 
-## Core Requirements
+## Pending Tasks
 
-### Completed Features (March 1, 2026)
+### P1 - Codebase Refactoring
+- Break `server.py` into modular route files
+- Break `App.js` into modular components
+- Wire `tabs/index.jsx` components into main app
 
-#### 🆕 LEGAL NOTEPAD + PDF EXPORT (March 1, 2026)
-- [x] **Legal Notepad CRUD** - Create, read, update, delete notes
-- [x] **Notepad Categories** - General, Statutes, Case Law, Strategy, Timeline
-- [x] **Global vs Case Notes** - Notes can be global or attached to specific cases
-- [x] **Save from Law Library** - One-click save state CPS laws
-- [x] **Save from CourtListener** - Save court opinions with citations
-- [x] **PDF Export Single** - Export individual notes as PDF
-- [x] **PDF Export All** - Export all notes as single PDF document
+### P2 - Future Features
+- Facebook OAuth (needs user's App ID & Secret)
+- Deeper CourtListener integration
+- Attorney Suite multi-client management
+- Email notifications for case updates
+- "Centinet law AI" exploration
 
-#### 🆕 COURTLISTENER UI (March 1, 2026)
-- [x] **Search Court Opinions** - Search 50M+ court opinions
-- [x] **Court Filter** - Filter by Supreme Court, Circuit Courts
-- [x] **Date Range Filter** - Filter by filed date
-- [x] **Case Details Display** - Case name, citation, court, date, snippet
-- [x] **Save to Notepad** - Save relevant cases for research
-
-#### 🆕 LAW LIBRARY FIX (March 1, 2026)
-- [x] **50 State Database** - Pre-built CPS law data for all states
-- [x] **Instant Loading** - <0.5s response time vs previous 60+ second timeout
-- [x] **Federal Law Section** - CAPTA, ASFA, ICWA, §1983 references
-- [x] **Save to Notepad Button** - One-click save state laws
-
-#### AI STREAMING + GOOGLE OAUTH (March 1, 2026)
-- [x] **AI Chat Streaming** - Real-time response streaming via SSE for instant feedback
-- [x] **Google OAuth** - "Continue with Google" social login via Emergent Auth
-- [x] **OAuth Callback Handler** - Automatic session_id processing from URL hash
-
-#### ADVANCED LEGAL STRATEGY COMPONENTS (Feb 27, 2026)
-- [x] **Legal Strategy Builder** - Build comprehensive defense strategies
-- [x] **Argument Generator** - Generate court-ready legal arguments with citations
-- [x] **Evidence Argument Mapper** - Map evidence to legal precedents
-- [x] **Legal Precedent Finder** - Find relevant case law
-- [x] **Expert Legal AI** - Smarter than any other legal AI for CPS cases
-- [x] **Deep Case Law Analysis** - AI-powered precedent research
-- [x] **CourtListener Deep Integration** - Search 50M+ court opinions
-
-#### CORE FEATURES
-- [x] **DOCUMENT UPLOAD WITH AI ANALYSIS** - Core feature! Upload CPS docs and AI extracts violations, timeline, recommendations
-- [x] AI-powered case analysis using GPT-5.2
-- [x] Document generator for legal motions and letters (20+ document types)
-- [x] Violation tracker (26 violation types - constitutional + procedural)
-- [x] Law Library covering all 50 states
-- [x] Case timeline builder
-- [x] Legal research AI assistant
-- [x] User authentication (email/password with JWT)
-- [x] Case management system (CRUD with ownership)
-- [x] Calendar for court dates and deadlines
-- [x] Stripe payment integration with 4 tiers
-- [x] Evidence item tracking
-- [x] Communication log
-- [x] Service records tracking
-- [x] Court filings management
-- [x] Criminal case component
-- [x] Judge research feature
-- [x] Defense strategy generator
-- [x] CourtListener API integration
-- [x] Community forum (basic)
-- [x] Advocate directory
-
-### Backend API Endpoints (All Tested & Working)
-| Endpoint | Method | Description | Status |
-|----------|--------|-------------|--------|
-| `/api/strategy-builder/build` | POST | **Legal Strategy Builder** | ✅ (NEW) |
-| `/api/argument-generator/generate` | POST | **Argument Generator** | ✅ (NEW) |
-| `/api/evidence-mapper/map` | POST | **Evidence-Precedent Mapper** | ✅ (NEW) |
-| `/api/precedent-finder/search` | POST | **Legal Precedent Finder** | ✅ (NEW) |
-| `/api/strategy-builder/saved/{case_id}` | GET | Get saved strategies | ✅ (NEW) |
-| `/api/argument-generator/saved/{case_id}` | GET | Get saved arguments | ✅ (NEW) |
-| `/api/documents/upload` | POST | **Upload doc + AI analysis** | ✅ |
-| `/api/documents/{doc_id}/analysis` | GET | Get document analysis | ✅ |
-| `/api/documents/{doc_id}/reanalyze` | POST | Re-run AI analysis | ✅ |
-| `/api/health` | GET | Health check | ✅ |
-| `/api/auth/signup` | POST | User registration | ✅ |
-| `/api/auth/login` | POST | User login | ✅ |
-| `/api/auth/me` | GET | Get user profile | ✅ |
-| `/api/auth/profile` | PUT | Update profile | ✅ |
-| `/api/cases` | GET/POST | List/Create cases | ✅ |
-| `/api/cases/{id}` | GET/PUT/DELETE | Case CRUD | ✅ |
-| `/api/cases/{id}/summary` | GET | Full case summary | ✅ |
-| `/api/violations` | POST | Create violation | ✅ |
-| `/api/violations/{case_id}` | GET | List violations | ✅ |
-| `/api/violations/types` | GET | Get 26 violation types | ✅ |
-| `/api/timeline` | POST | Create timeline event | ✅ |
-| `/api/timeline/{case_id}` | GET | List events | ✅ |
-| `/api/documents` | POST | Create document | ✅ |
-| `/api/documents/{case_id}` | GET | List documents | ✅ |
-| `/api/strategies` | POST/GET | Defense strategies | ✅ |
-| `/api/evidence` | POST/GET | Evidence items | ✅ |
-| `/api/communications` | POST/GET | Communication log | ✅ |
-| `/api/services` | POST/GET | Service records | ✅ |
-| `/api/court-filings` | POST/GET | Court filings | ✅ |
-| `/api/criminal-case` | POST/GET | Criminal cases | ✅ |
-| `/api/judge-research` | POST/GET | Judge research | ✅ |
-| `/api/calendar` | GET/POST | Calendar events | ✅ |
-| `/api/calendar/upcoming/{days}` | GET | Upcoming events | ✅ |
-| `/api/ai/chat` | POST | AI chat assistant | ✅ |
-| `/api/ai/analyze-document` | POST | Document analysis | ✅ |
-| `/api/ai/generate-document` | POST | Generate 20+ doc types | ✅ |
-| `/api/ai/defense-strategy` | POST | Strategy generator | ✅ |
-| `/api/ai/legal-research` | POST | AI research | ✅ |
-| `/api/law-library/states` | GET | All 50 states | ✅ |
-| `/api/law-library/{state}` | GET | State-specific law | ✅ |
-| `/api/courtlistener/search` | GET | Case law search | ✅ |
-| `/api/courtlistener/judges` | GET | Judge search | ✅ |
-| `/api/stripe/create-checkout` | POST | Payment checkout | ✅ |
-| `/api/stripe/checkout-status/{id}` | GET | Payment status | ✅ |
-| `/api/forum/posts` | GET/POST | Forum posts | ✅ |
-| `/api/advocates` | GET | Advocate directory | ✅ |
-
-### Frontend Features (All Working)
-- Landing page with CPS PUNISHER branding
-- Authentication (signup/login) with JWT
-- Dashboard with overview, stats, quick actions
-- My Cases management with state selection
-- AI Chat assistant with case context
-- Violation tracker with 26+ violation types
-- Document Upload with AI Analysis (Core Feature!)
-- Document generator with 20+ document types
-- Timeline builder with event types
-- **🆕 Legal Strategy Builder** - Build comprehensive defense strategies
-- **🆕 Argument Generator** - Generate court-ready legal arguments
-- **🆕 Evidence Mapper** - Map evidence to legal precedents
-- **🆕 Precedent Finder** - Find case law precedents
-- **Evidence Tracker** - Track all evidence
-- **Communications Log** - Log all CPS communications
-- **Court Filings** - Track motions, petitions, orders
-- **Judge Watch** - Research your judge
-- **Defense Strategy** - AI-generated + manual strategies
-- **Criminal Case Link** - Track related criminal charges
-- **Services Tracker** - Track case plan services
-- **Community Forum** - Connect with other parents
-- **Advocates Directory** - Find help by state
-- Calendar for court dates and deadlines
-- Legal Research with state filtering
-- Law Library for all 50 states
-- Pricing page with 4 subscription tiers
-
-### Stripe Pricing Tiers
-| Tier | Monthly | Annual | Features |
-|------|---------|--------|----------|
-| Essential | $39 | $390 | 25 docs/mo, AI analysis, templates |
-| Professional | $79 | $790 | Unlimited docs, AI generation, case law |
-| Attorney Suite | $299 | $2,990 | Multi-client, Section 1983, white-label |
-| Enterprise | $999 | $9,990 | Unlimited team, API, custom branding |
-
-## Testing Status (March 1, 2026)
-- **Backend**: 100% pass rate - All endpoints including new streaming + OAuth
-- **Frontend**: 100% - Google sign-in button visible, streaming chat works
-- **Test file**: `/app/backend/tests/test_streaming_oauth.py`
-- **Test report**: `/app/test_reports/iteration_6.json`
-
-## Prioritized Backlog
-
-### P0 (Critical - Completed ✅)
-- [x] ~~Document upload with AI analysis~~ **DONE!**
-- [x] ~~Advanced Legal Strategy Components~~ **DONE!** (Feb 27, 2026)
-- [x] ~~AI Response Streaming~~ **DONE!** (March 1, 2026)
-- [x] ~~Google OAuth~~ **DONE!** (March 1, 2026)
-- [x] ~~Law Library Fix - Instant Loading~~ **DONE!** (March 1, 2026)
-
-### P1 (High Priority - Next)
-- [ ] Facebook OAuth integration (requires Facebook App credentials)
-- [x] **Codebase refactoring - COMPLETE**
-  - Backend modules created:
-    - `/app/backend/config.py` - Centralized configuration
-    - `/app/backend/database.py` - DB connection management  
-    - `/app/backend/auth.py` - JWT/auth utilities
-    - `/app/backend/models/schemas.py` - All Pydantic models (30+)
-    - `/app/backend/routes/auth_routes.py` - Authentication endpoints
-    - `/app/backend/routes/cases_routes.py` - Case CRUD endpoints
-    - `/app/backend/routes/notepad_routes.py` - Notepad endpoints
-    - `/app/backend/routes/export_routes.py` - PDF export endpoints
-  - Frontend modules created:
-    - `/app/frontend/src/context/AuthContext.jsx` - Auth state management
-    - `/app/frontend/src/components/LandingPage.jsx` - Landing page
-    - `/app/frontend/src/components/AuthPage.jsx` - Auth page
-    - `/app/frontend/src/components/tabs/index.jsx` - All 42 tab components
-  - Original files preserved as backups
-- [ ] Stripe webhook signature verification
-
-### P2 (Medium Priority)
-- [ ] Case export to PDF
-- [ ] Email notifications for calendar reminders
-- [ ] Document templates library
-- [ ] Multi-user case sharing
-- [ ] Mobile-responsive PWA
-- [ ] Offline document access
-- [ ] Attorney directory by state (populated)
-- [ ] Community forum moderation
-
-### P3 (Future Enhancements)
-- [ ] Video consultation scheduling
-- [ ] Court document filing integration
-- [ ] Case analytics dashboard
-- [ ] Bulk document generation
-
-## Technical Notes
-- AI responses take ~10-60 seconds (GPT-5.2 processing time)
-- Strategy Builder AI can take 60-90 seconds (complex analysis)
-- **Law Library now uses pre-built database - loads in <0.5 seconds**
-- MongoDB indexes on user_id, case_id, session_id for performance
-- JWT tokens expire in 30 days
-- All AI responses include legal disclaimers
-
-## Testing Status (March 1, 2026)
-- **Backend**: 100% pass rate - All endpoints including Law Library (iteration_8.json)
-- **Frontend**: 100% - Law Library grid, instant loading verified
-- **Law Library Tests**: `/app/backend/tests/test_law_library.py` - 7/7 tests passed
-- **Test report**: `/app/test_reports/iteration_8.json`
-
-## Legal Disclaimers
-- Platform provides legal EDUCATION, not legal advice
-- Users should consult licensed attorneys
-- All generated documents require attorney review
-
-## Test Credentials
-- Email: strategytester@test.com
-- Password: Test123!
-- Test Case ID: c003e28f-3b38-4686-9c71-0465b716bbe3
+## Credentials
+- Passcode: `EMERGENT_FULL_ACCESS` (Enterprise tier)
+- Stripe: Live keys configured
