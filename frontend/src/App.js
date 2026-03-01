@@ -987,9 +987,39 @@ function CaseDetailModal({ caseData, onClose, api }) {
               <p className="text-gray-400 text-sm">State: {caseData.state} | Case #: {caseData.case_number || 'N/A'}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded-lg">
-            <X className="w-6 h-6" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={async () => {
+                try {
+                  const token = localStorage.getItem('cps_token');
+                  const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/export/case/${caseData.id}/preparation-kit`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                  });
+                  if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Court_Preparation_Kit_${caseData.title.replace(/\s+/g, '_')}.pdf`;
+                    a.click();
+                    toast.success('Court Preparation Kit downloaded!');
+                  } else {
+                    toast.error('Failed to generate kit');
+                  }
+                } catch (error) {
+                  toast.error('Download failed');
+                }
+              }}
+              className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-lg font-semibold flex items-center gap-2 text-sm shadow-lg"
+              data-testid="download-prep-kit-btn"
+            >
+              <Download className="w-4 h-4" />
+              Court Prep Kit
+            </button>
+            <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded-lg">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
         {/* Section Tabs */}
