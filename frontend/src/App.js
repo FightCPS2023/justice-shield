@@ -2140,6 +2140,15 @@ function LawLibraryTab() {
       {loading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-red-500" />
+          <span className="ml-3 text-gray-400">Loading state CPS law information...</span>
+        </div>
+      )}
+
+      {!selectedState && !loading && (
+        <div className="text-center py-12 bg-gray-800/30 border border-gray-700 rounded-xl">
+          <BookOpen className="w-16 h-16 mx-auto text-gray-600 mb-4" />
+          <h3 className="text-xl font-semibold mb-2">Select a State</h3>
+          <p className="text-gray-400">Click on a state abbreviation above to view CPS laws, statutes, timelines, and procedures for that state.</p>
         </div>
       )}
 
