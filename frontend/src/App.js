@@ -613,6 +613,8 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'calendar' && <CalendarTab />}
           {activeTab === 'research' && <ResearchTab />}
           {activeTab === 'library' && <LawLibraryTab />}
+          {activeTab === 'courtlistener' && <CourtListenerTab selectedCase={selectedCase} />}
+          {activeTab === 'notepad' && <NotepadTab selectedCase={selectedCase} />}
           {activeTab === 'forum' && <ForumTab />}
           {activeTab === 'advocates' && <AdvocatesTab />}
           {activeTab === 'pricing' && <PricingTab />}
