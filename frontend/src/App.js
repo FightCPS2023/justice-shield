@@ -5,7 +5,8 @@ import {
   MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut,
   Home, Settings, Star, Check, ChevronDown, Play, Lock, CheckCircle2,
   Loader2, Upload, Clock, Eye, Download, Plus, Trash2, Edit2, Send,
-  CreditCard, Crown, Building2, Zap, Mic, Radio, Volume2, Copy, Key
+  CreditCard, Crown, Building2, Zap, Mic, Radio, Volume2, Copy, Key,
+  MapPin
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
