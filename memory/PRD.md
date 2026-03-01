@@ -4,24 +4,27 @@
 ## Original Problem Statement
 Build THE CPS PUNISHER - the most powerful interactive Child Protective Services defense platform. An AI-powered case analyzer, document creator, resources law library, calendar, and comprehensive family defense tool. The app should surpass existing legal tools like LexisNexis for CPS-specific cases.
 
-## Version 4.4 - LAW LIBRARY FIX + 50 STATE DATABASE (March 1, 2026)
+## Version 4.5 - NOTEPAD + COURTLISTENER UI + PDF EXPORT (March 1, 2026)
 
 ### Latest Update (March 1, 2026)
+- **NEW: Legal Notepad** - Save statutes, case law, and research notes (global + per-case)
+- **NEW: CourtListener UI** - Search 50M+ court opinions with filters by court and date
+- **NEW: PDF Export** - Export single notes or all notes as professional PDFs
+- **NEW: Save from Law Library** - One-click save state CPS laws to notepad
+- **NEW: Save from CourtListener** - Save court cases to notepad with citations
 - **FIXED: Law Library** - Was timing out (60+ seconds), now loads instantly (<0.5s)
-- **Added: Pre-built STATE_CPS_DATABASE** - All 50 states with CPS agency, statutes, timeframes, case law
-- **Added: FEDERAL_CPS_LAW** - CAPTA, ASFA, ICWA, constitutional rights references
-- **Added: format_state_law_info()** - Helper function for beautifully formatted legal info
-- **Added: "Instant Access" badge** - Visual indicator that data is from pre-built database
+- **FIXED: Route ordering bug** - PDF export all notes endpoint now correctly handles 'all' path
 
 ## Architecture & Tech Stack
 - **Frontend**: React.js with Tailwind CSS, Lucide icons, Sonner notifications
 - **Backend**: Python FastAPI with MongoDB (motor async driver)
 - **AI**: GPT-5.2 via emergentintegrations library with Emergent LLM Key
 - **AI Streaming**: Server-Sent Events (SSE) for real-time responses
-- **Payments**: Stripe integration with 4 subscription tiers
+- **Payments**: Stripe integration with 4 subscription tiers (LIVE KEYS)
 - **Authentication**: JWT-based email auth + Google OAuth via Emergent Auth
-- **Database**: MongoDB for users, cases, documents, violations, timeline, calendar, payments
+- **Database**: MongoDB for users, cases, documents, violations, timeline, calendar, payments, notepad
 - **Legal Research**: CourtListener API integration (50M+ court opinions)
+- **PDF Generation**: reportlab library
 
 ## User Personas
 1. **Parents Fighting CPS**: Primary users defending against CPS allegations
@@ -34,20 +37,38 @@ Build THE CPS PUNISHER - the most powerful interactive Child Protective Services
 
 ### Completed Features (March 1, 2026)
 
-#### 🆕 AI STREAMING + GOOGLE OAUTH (March 1, 2026)
+#### 🆕 LEGAL NOTEPAD + PDF EXPORT (March 1, 2026)
+- [x] **Legal Notepad CRUD** - Create, read, update, delete notes
+- [x] **Notepad Categories** - General, Statutes, Case Law, Strategy, Timeline
+- [x] **Global vs Case Notes** - Notes can be global or attached to specific cases
+- [x] **Save from Law Library** - One-click save state CPS laws
+- [x] **Save from CourtListener** - Save court opinions with citations
+- [x] **PDF Export Single** - Export individual notes as PDF
+- [x] **PDF Export All** - Export all notes as single PDF document
+
+#### 🆕 COURTLISTENER UI (March 1, 2026)
+- [x] **Search Court Opinions** - Search 50M+ court opinions
+- [x] **Court Filter** - Filter by Supreme Court, Circuit Courts
+- [x] **Date Range Filter** - Filter by filed date
+- [x] **Case Details Display** - Case name, citation, court, date, snippet
+- [x] **Save to Notepad** - Save relevant cases for research
+
+#### 🆕 LAW LIBRARY FIX (March 1, 2026)
+- [x] **50 State Database** - Pre-built CPS law data for all states
+- [x] **Instant Loading** - <0.5s response time vs previous 60+ second timeout
+- [x] **Federal Law Section** - CAPTA, ASFA, ICWA, §1983 references
+- [x] **Save to Notepad Button** - One-click save state laws
+
+#### AI STREAMING + GOOGLE OAUTH (March 1, 2026)
 - [x] **AI Chat Streaming** - Real-time response streaming via SSE for instant feedback
 - [x] **Google OAuth** - "Continue with Google" social login via Emergent Auth
 - [x] **OAuth Callback Handler** - Automatic session_id processing from URL hash
 
-#### 🆕 ADVANCED LEGAL STRATEGY COMPONENTS (Feb 27, 2026)
-- [x] **Legal Strategy Builder** - Build comprehensive defense strategies with goal selection (reunification/dismissal/appeal/Section 1983) and aggression levels
-- [x] **Argument Generator** - Generate court-ready legal arguments with citations (constitutional, procedural, Section 1983)
-- [x] **Evidence Argument Mapper** - Map evidence to legal precedents and constitutional violations
-- [x] **Legal Precedent Finder** - Find relevant case law from Supreme Court and Circuit Courts
-
-#### POWERHOUSE FEATURES
-- [x] **Section 1983 Civil Rights Lawsuit Generator** - Generate federal lawsuits against CPS
-- [x] **Podcast Script Creator** - Create professional podcast scripts about CPS defense
+#### ADVANCED LEGAL STRATEGY COMPONENTS (Feb 27, 2026)
+- [x] **Legal Strategy Builder** - Build comprehensive defense strategies
+- [x] **Argument Generator** - Generate court-ready legal arguments with citations
+- [x] **Evidence Argument Mapper** - Map evidence to legal precedents
+- [x] **Legal Precedent Finder** - Find relevant case law
 - [x] **Expert Legal AI** - Smarter than any other legal AI for CPS cases
 - [x] **Deep Case Law Analysis** - AI-powered precedent research
 - [x] **CourtListener Deep Integration** - Search 50M+ court opinions
