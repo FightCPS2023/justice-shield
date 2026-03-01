@@ -6233,7 +6233,7 @@ function LegalStrategyBuilderTab({ selectedCase }) {
   if (!selectedCase) {
     return (
       <div className="text-center py-12 animate-fadeIn" data-testid="strategy-builder-tab">
-        <Shield className="w-16 h-16 mx-auto text-gray-600 mb-4" />
+        <img src="/images/shield-logo.png" alt="CPS Punisher" className="w-20 h-24 mx-auto mb-4" />
         <h2 className="text-2xl font-bold mb-2">Legal Strategy Builder</h2>
         <p className="text-gray-400">Please select a case to build a comprehensive legal strategy</p>
       </div>
@@ -6243,11 +6243,14 @@ function LegalStrategyBuilderTab({ selectedCase }) {
   return (
     <div className="space-y-6 animate-fadeIn" data-testid="strategy-builder-tab">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>
-            Legal Strategy Builder
-          </h1>
-          <p className="text-gray-400">Build a comprehensive defense strategy for your case</p>
+        <div className="flex items-center gap-4">
+          <img src="/images/shield-logo.png" alt="Logo" className="w-12 h-14 hidden md:block" />
+          <div>
+            <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>
+              Legal Strategy Builder
+            </h1>
+            <p className="text-gray-400">Build a comprehensive defense strategy for your case</p>
+          </div>
         </div>
         {savedStrategies.length > 0 && (
           <button
