@@ -605,6 +605,7 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'visitation' && <VisitationLogTab selectedCase={selectedCase} />}
           {activeTab === 'courthearings' && <CourtHearingsTab selectedCase={selectedCase} />}
           {activeTab === 'rights' && <RightsGuideTab />}
+          {activeTab === 'ada' && <ADAComplianceTab selectedCase={selectedCase} />}
           {activeTab === 'communications' && <CommunicationsTab selectedCase={selectedCase} />}
           {activeTab === 'courtfilings' && <CourtFilingsTab selectedCase={selectedCase} />}
           {activeTab === 'judgewatch' && <JudgeWatchTab selectedCase={selectedCase} />}
