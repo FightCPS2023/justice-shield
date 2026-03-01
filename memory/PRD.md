@@ -198,9 +198,19 @@ Build THE CPS PUNISHER - the most powerful interactive Child Protective Services
 - [x] ~~Law Library Fix - Instant Loading~~ **DONE!** (March 1, 2026)
 
 ### P1 (High Priority - Next)
-- [ ] Facebook OAuth integration  
+- [ ] Facebook OAuth integration (requires Facebook App credentials)
+- [x] Codebase refactoring - **IN PROGRESS**
+  - [x] Created `/app/backend/config.py` - centralized configuration
+  - [x] Created `/app/backend/database.py` - DB connection management
+  - [x] Created `/app/backend/auth.py` - auth utilities
+  - [x] Created `/app/backend/models/schemas.py` - Pydantic models
+  - [x] Created `/app/backend/routes/auth_routes.py` - auth endpoints
+  - [x] Created `/app/backend/routes/cases_routes.py` - case endpoints
+  - [x] Created `/app/frontend/src/context/AuthContext.jsx` - auth context
+  - [x] Created `/app/frontend/src/components/LandingPage.jsx` - landing page
+  - [ ] Remaining: Extract 40+ tab components from App.js
+  - [ ] Remaining: Connect modular routes to main server.py
 - [ ] Stripe webhook signature verification
-- [ ] Codebase refactoring (break down monolithic server.py and App.js)
 
 ### P2 (Medium Priority)
 - [ ] Case export to PDF
