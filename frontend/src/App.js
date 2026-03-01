@@ -580,7 +580,7 @@ function Dashboard({ onNavigate }) {
             <Menu className="w-6 h-6" />
           </button>
           <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6 text-red-600" />
+            <img src="/images/shield-logo.png" alt="Logo" className="w-8 h-10 object-contain" />
             <span className="font-bold">CPS PUNISHER</span>
           </div>
           <div className="w-10" />
