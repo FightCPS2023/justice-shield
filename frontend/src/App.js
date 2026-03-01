@@ -1642,6 +1642,13 @@ function DocumentsTab({ selectedCase }) {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [uploadProgress, setUploadProgress] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const [uploadQueue, setUploadQueue] = useState([]);
+  const [batchUploading, setBatchUploading] = useState(false);
+  const fileInputRef = React.useRef(null);
+  const folderInputRef = React.useRef(null);
+
+  const ALLOWED_EXTENSIONS = ['.pdf', '.txt', '.png', '.jpg', '.jpeg', '.doc', '.docx'];
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
   const documentTypes = [
     { id: 'motion_to_dismiss', name: 'Motion to Dismiss' },
@@ -1675,79 +1682,166 @@ function DocumentsTab({ selectedCase }) {
     }
   };
 
-  const handleFileUpload = async (file) => {
+  const validateFile = (file) => {
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) return `Unsupported type: ${ext}`;
+    if (file.size > MAX_FILE_SIZE) return 'File too large (max 10MB)';
+    return null;
+  };
+
+  const uploadSingleFile = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('case_id', selectedCase.id);
+    formData.append('title', file.name.replace(/\.[^/.]+$/, ''));
+    formData.append('doc_type', 'cps_document');
+    formData.append('auto_analyze', 'true');
+
+    const token = localStorage.getItem('cps_token');
+    const response = await fetch(`${API_URL}/api/documents/upload`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Upload failed' }));
+      throw new Error(error.detail || 'Upload failed');
+    }
+    return response.json();
+  };
+
+  const handleBatchUpload = async (fileList) => {
     if (!selectedCase) {
       toast.error('Please select a case first');
       return;
     }
 
-    const allowedTypes = ['.pdf', '.txt', '.png', '.jpg', '.jpeg', '.doc', '.docx'];
-    const ext = '.' + file.name.split('.').pop().toLowerCase();
-    if (!allowedTypes.includes(ext)) {
-      toast.error(`File type not supported. Allowed: ${allowedTypes.join(', ')}`);
+    const files = Array.from(fileList);
+    if (files.length === 0) return;
+
+    // Validate and build queue
+    const queue = files.map(file => {
+      const error = validateFile(file);
+      return {
+        file,
+        name: file.name,
+        size: file.size,
+        status: error ? 'error' : 'pending',
+        error: error || null,
+        result: null
+      };
+    });
+
+    const validCount = queue.filter(q => q.status === 'pending').length;
+    const invalidCount = queue.filter(q => q.status === 'error').length;
+
+    if (validCount === 0) {
+      toast.error(`No valid files to upload. ${invalidCount} file(s) skipped.`);
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('File too large. Maximum 10MB.');
-      return;
+    if (invalidCount > 0) {
+      toast.warning(`${invalidCount} file(s) skipped (unsupported type or too large)`);
     }
 
-    setUploading(true);
-    setUploadProgress('Uploading document...');
+    setUploadQueue(queue);
+    setBatchUploading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('case_id', selectedCase.id);
-      formData.append('title', file.name.replace(/\.[^/.]+$/, ''));
-      formData.append('doc_type', 'cps_document');
-      formData.append('auto_analyze', 'true');
+    // Process files sequentially
+    const updatedQueue = [...queue];
+    const newDocs = [];
 
-      const token = localStorage.getItem('cps_token');
-      
-      setUploadProgress('Uploading and analyzing with AI... This may take 30-60 seconds.');
-      
-      const response = await fetch(`${API_URL}/api/documents/upload`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
+    for (let i = 0; i < updatedQueue.length; i++) {
+      if (updatedQueue[i].status === 'error') continue;
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Upload failed');
+      updatedQueue[i].status = 'uploading';
+      setUploadQueue([...updatedQueue]);
+
+      try {
+        const result = await uploadSingleFile(updatedQueue[i].file);
+        updatedQueue[i].status = 'done';
+        updatedQueue[i].result = result;
+        newDocs.push(result);
+      } catch (err) {
+        updatedQueue[i].status = 'error';
+        updatedQueue[i].error = err.message;
       }
-
-      const result = await response.json();
-      
-      setDocuments([result, ...documents]);
-      setSelectedDocument(result);
-      
-      const violationsCreated = result.analysis_result?.violations_created || 0;
-      const timelineCreated = result.analysis_result?.timeline_events_created || 0;
-      
-      toast.success(
-        `Document analyzed! Found ${violationsCreated} violations and ${timelineCreated} timeline events.`,
-        { duration: 5000 }
-      );
-      
-      setActiveSubTab('analysis');
-    } catch (error) {
-      toast.error(error.message || 'Failed to upload document');
-    } finally {
-      setUploading(false);
-      setUploadProgress('');
+      setUploadQueue([...updatedQueue]);
     }
+
+    // Update document list
+    if (newDocs.length > 0) {
+      setDocuments(prev => [...newDocs, ...prev]);
+      const totalViolations = newDocs.reduce((sum, d) => sum + (d.analysis_result?.violations_created || 0), 0);
+      const totalTimeline = newDocs.reduce((sum, d) => sum + (d.analysis_result?.timeline_events_created || 0), 0);
+      toast.success(
+        `${newDocs.length} document(s) uploaded! Found ${totalViolations} violations and ${totalTimeline} timeline events.`,
+        { duration: 6000 }
+      );
+    }
+
+    setBatchUploading(false);
+  };
+
+  // Legacy single-file handler (kept for backwards compat)
+  const handleFileUpload = async (file) => {
+    await handleBatchUpload([file]);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileUpload(e.dataTransfer.files[0]);
+    const items = e.dataTransfer.items;
+    const files = [];
+
+    // Handle folder drops (webkitGetAsEntry)
+    if (items && items.length > 0 && items[0].webkitGetAsEntry) {
+      const entries = [];
+      for (let i = 0; i < items.length; i++) {
+        const entry = items[i].webkitGetAsEntry();
+        if (entry) entries.push(entry);
+      }
+
+      const readEntries = (dirEntry) => {
+        return new Promise((resolve) => {
+          const reader = dirEntry.createReader();
+          const allEntries = [];
+          const readBatch = () => {
+            reader.readEntries((batch) => {
+              if (batch.length === 0) {
+                resolve(allEntries);
+              } else {
+                allEntries.push(...batch);
+                readBatch();
+              }
+            });
+          };
+          readBatch();
+        });
+      };
+
+      const getFile = (fileEntry) => {
+        return new Promise((resolve) => fileEntry.file(resolve));
+      };
+
+      const processEntries = async (entryList) => {
+        for (const entry of entryList) {
+          if (entry.isFile) {
+            const file = await getFile(entry);
+            files.push(file);
+          } else if (entry.isDirectory) {
+            const subEntries = await readEntries(entry);
+            await processEntries(subEntries);
+          }
+        }
+      };
+
+      processEntries(entries).then(() => {
+        if (files.length > 0) handleBatchUpload(files);
+      });
+    } else if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleBatchUpload(e.dataTransfer.files);
     }
   };
 
@@ -1756,8 +1850,19 @@ function DocumentsTab({ selectedCase }) {
     setDragActive(true);
   };
 
-  const handleDragLeave = () => {
+  const handleDragLeave = (e) => {
+    e.preventDefault();
     setDragActive(false);
+  };
+
+  const clearQueue = () => {
+    setUploadQueue([]);
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   const reanalyzeDocument = async (docId) => {
