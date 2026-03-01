@@ -421,6 +421,124 @@ async def update_profile(update_data: dict, current_user: dict = Depends(get_cur
     return {"message": "Profile updated"}
 
 
+# ============== GOOGLE OAUTH ENDPOINTS ==============
+
+@app.post("/api/auth/google/session")
+async def process_google_session(request: Request):
+    """
+    Process Google OAuth session_id from Emergent Auth
+    REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+    """
+    data = await request.json()
+    session_id = data.get("session_id")
+    
+    if not session_id:
+        raise HTTPException(status_code=400, detail="session_id is required")
+    
+    # Exchange session_id for user data from Emergent Auth
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+                headers={"X-Session-ID": session_id}
+            )
+            if response.status_code != 200:
+                raise HTTPException(status_code=401, detail="Invalid session")
+            
+            auth_data = response.json()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Auth service error: {str(e)}")
+    
+    email = auth_data.get("email")
+    name = auth_data.get("name", "User")
+    picture = auth_data.get("picture", "")
+    session_token = auth_data.get("session_token")
+    
+    if not email or not session_token:
+        raise HTTPException(status_code=400, detail="Invalid auth response")
+    
+    # Check if user exists, if not create
+    existing_user = await db.users.find_one({"email": email})
+    
+    if existing_user:
+        user_id = existing_user["_id"]
+        # Update user info if needed
+        await db.users.update_one(
+            {"_id": user_id},
+            {"$set": {
+                "name": name,
+                "picture": picture,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+    else:
+        # Create new user
+        user_id = str(uuid.uuid4())
+        await db.users.insert_one({
+            "_id": user_id,
+            "email": email,
+            "name": name,
+            "picture": picture,
+            "auth_provider": "google",
+            "tier": "free",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    # Store session
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+    await db.user_sessions.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "session_token": session_token,
+            "expires_at": expires_at.isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    
+    # Create JWT token for the user (compatible with existing auth)
+    access_token = create_access_token({"user_id": user_id, "email": email})
+    
+    # Create response with cookie
+    response_data = {
+        "access_token": access_token,
+        "user_id": user_id,
+        "email": email,
+        "name": name,
+        "picture": picture,
+        "tier": "free"
+    }
+    
+    from fastapi.responses import JSONResponse
+    response = JSONResponse(content=response_data)
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        max_age=7*24*60*60,  # 7 days
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="none"
+    )
+    
+    return response
+
+
+@app.post("/api/auth/google/logout")
+async def google_logout(request: Request):
+    """Logout and clear Google OAuth session"""
+    session_token = request.cookies.get("session_token")
+    
+    if session_token:
+        await db.user_sessions.delete_one({"session_token": session_token})
+    
+    from fastapi.responses import JSONResponse
+    response = JSONResponse(content={"message": "Logged out"})
+    response.delete_cookie(key="session_token", path="/")
+    return response
+
+
 # ============== CASES ENDPOINTS ==============
 
 @app.post("/api/cases")
