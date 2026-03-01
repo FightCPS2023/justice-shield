@@ -1,3 +1,21 @@
+/**
+ * CPS Punisher - All Tab Components
+ * Extracted from App.js for better organization
+ */
+import React, { useState, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
+import { 
+  Plus, Edit, Trash2, Save, X, Loader2, ChevronRight, ChevronDown,
+  FileText, Upload, Download, Eye, AlertTriangle, Calendar, Clock,
+  Scale, Shield, Brain, Gavel, Users, MessageSquare, Search, BookOpen,
+  CheckCircle2, XCircle, AlertCircle, ArrowRight, ExternalLink, Mic,
+  Play, Pause, RefreshCw, Filter, MoreVertical, Copy, Check, Send,
+  Home, FolderOpen, FileWarning, Award, Target, Zap, Database, Lock,
+  CreditCard, Star, BarChart3, TrendingUp, Activity, Lightbulb, 
+  PenTool, UserCheck, Phone, Mail, MapPin, Building, Newspaper
+} from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+
 function OverviewTab({ cases, setActiveTab }) {
   const quickActions = [
     { icon: Plus, label: 'New Case', action: () => setActiveTab('cases'), color: 'bg-red-600' },
@@ -7283,3 +7301,45 @@ function NotepadTab({ selectedCase }) {
 }
 
 export default App;
+
+// Export all tab components
+export {
+  OverviewTab,
+  CasesTab,
+  CaseDetailModal,
+  ChatTab,
+  ViolationsTab,
+  DocumentsTab,
+  DocumentAnalysisView,
+  TimelineTab,
+  ResearchTab,
+  LawLibraryTab,
+  CalendarTab,
+  PricingTab,
+  PasscodeRedemption,
+  EvidenceTab,
+  CommunicationsTab,
+  CourtFilingsTab,
+  JudgeWatchTab,
+  DefenseStrategyTab,
+  CriminalCaseTab,
+  ServicesTab,
+  ForumTab,
+  AdvocatesTab,
+  ExpertLegalAITab,
+  Section1983Tab,
+  PodcastCreatorTab,
+  CaseLawAnalysisTab,
+  IncidentAnalyzerTab,
+  LegalKnowledgeBaseTab,
+  RightsGuideTab,
+  EvidenceChecklistTab,
+  VisitationLogTab,
+  CourtHearingsTab,
+  LegalStrategyBuilderTab,
+  ArgumentGeneratorTab,
+  EvidenceMapperTab,
+  PrecedentFinderTab,
+  CourtListenerTab,
+  NotepadTab,
+};
