@@ -639,11 +639,15 @@ function OverviewTab({ cases, setActiveTab }) {
 
   return (
     <div className="space-y-6 animate-fadeIn" data-testid="overview-tab">
-      <div>
-        <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Oswald, sans-serif' }}>
-          Welcome Back, Punisher
-        </h1>
-        <p className="text-gray-400">Continue your fight for your family</p>
+      {/* Header with Chrome Logo */}
+      <div className="flex items-center gap-6">
+        <img src="/images/chrome-logo.jpg" alt="CPS Punisher" className="w-32 h-auto hidden md:block" />
+        <div>
+          <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Oswald, sans-serif' }}>
+            Welcome Back, Punisher
+          </h1>
+          <p className="text-gray-400">Continue your fight for your family</p>
+        </div>
       </div>
 
       {/* Quick Actions */}
