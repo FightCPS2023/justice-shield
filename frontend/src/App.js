@@ -4621,11 +4621,13 @@ function Section1983Tab({ selectedCase }) {
             <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
               <Gavel className="w-8 h-8 text-red-500" />
               Section 1983 Civil Rights Lawsuit
-        </h1>
-        <p className="text-gray-300 mt-2">
-          42 U.S.C. § 1983 allows you to sue government officials who violate your constitutional rights.
-          This is YOUR most powerful weapon against CPS overreach.
-        </p>
+            </h1>
+            <p className="text-gray-300 mt-2">
+              42 U.S.C. § 1983 allows you to sue government officials who violate your constitutional rights.
+              This is YOUR most powerful weapon against CPS overreach.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Claim Types Reference */}
