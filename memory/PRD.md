@@ -24,7 +24,12 @@ Build THE CPS PUNISHER - the most powerful interactive Child Protective Services
 
 ## Core Requirements
 
-### Completed Features (Feb 27, 2026)
+### Completed Features (March 1, 2026)
+
+#### 🆕 AI STREAMING + GOOGLE OAUTH (March 1, 2026)
+- [x] **AI Chat Streaming** - Real-time response streaming via SSE for instant feedback
+- [x] **Google OAuth** - "Continue with Google" social login via Emergent Auth
+- [x] **OAuth Callback Handler** - Automatic session_id processing from URL hash
 
 #### 🆕 ADVANCED LEGAL STRATEGY COMPONENTS (Feb 27, 2026)
 - [x] **Legal Strategy Builder** - Build comprehensive defense strategies with goal selection (reunification/dismissal/appeal/Section 1983) and aggression levels
