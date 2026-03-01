@@ -821,11 +821,12 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
 
 // AI Chat Tab
 function ChatTab({ selectedCase }) {
-  const { api } = useAuth();
+  const { api, token } = useAuth();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState(null);
+  const [streamingContent, setStreamingContent] = useState('');
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -835,19 +836,65 @@ function ChatTab({ selectedCase }) {
     setInput('');
     setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
     setLoading(true);
+    setStreamingContent('');
 
     try {
-      const response = await api.post('/api/ai/chat', {
-        message: userMessage,
-        session_id: sessionId,
-        case_id: selectedCase?.id
+      // Use streaming endpoint for real-time response
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai/chat/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          session_id: sessionId,
+          case_id: selectedCase?.id
+        })
       });
-      
-      setSessionId(response.session_id);
-      setMessages((prev) => [...prev, { role: 'assistant', content: response.response }]);
+
+      if (!response.ok) throw new Error('Stream failed');
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullContent = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const text = decoder.decode(value);
+        const lines = text.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.error) {
+                throw new Error(data.error);
+              }
+              if (data.chunk) {
+                fullContent += data.chunk;
+                setStreamingContent(fullContent);
+              }
+              if (data.done && data.session_id) {
+                setSessionId(data.session_id);
+              }
+            } catch (parseError) {
+              // Skip parse errors for incomplete chunks
+            }
+          }
+        }
+      }
+
+      // Add complete message to history
+      setMessages((prev) => [...prev, { role: 'assistant', content: fullContent }]);
+      setStreamingContent('');
     } catch (error) {
+      console.error('Chat error:', error);
       toast.error('Failed to get AI response');
       setMessages((prev) => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
+      setStreamingContent('');
     } finally {
       setLoading(false);
     }
