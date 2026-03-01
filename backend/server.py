@@ -3609,6 +3609,69 @@ async def save_from_courtlistener(
 
 # ============== PDF EXPORT ==============
 
+# IMPORTANT: /all/pdf route must come BEFORE /{entry_id}/pdf to avoid route matching issues
+@app.get("/api/export/notepad/all/pdf")
+async def export_all_notes_to_pdf(
+    case_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export all notepad entries as single PDF"""
+    from io import BytesIO
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+    from reportlab.lib.units import inch
+    from fastapi.responses import StreamingResponse
+    
+    query = {"user_id": current_user["user_id"]}
+    if case_id:
+        query["case_id"] = case_id
+    
+    entries = []
+    async for entry in db.notepad_entries.find(query).sort("created_at", -1):
+        entries.append(entry)
+    
+    if not entries:
+        raise HTTPException(status_code=404, detail="No notes found")
+    
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=20, spaceAfter=20)
+    
+    story = []
+    story.append(Paragraph("THE CPS PUNISHER - Legal Research Notebook", title_style))
+    story.append(Paragraph(f"Total Notes: {len(entries)}", styles['Normal']))
+    story.append(Spacer(1, 20))
+    
+    for i, entry in enumerate(entries):
+        if i > 0:
+            story.append(PageBreak())
+        
+        story.append(Paragraph(entry.get("title", "Untitled"), styles['Heading2']))
+        story.append(Paragraph(f"Category: {entry.get('category', 'general')} | Created: {entry.get('created_at', 'N/A')[:10]}", styles['Italic']))
+        story.append(Spacer(1, 10))
+        
+        content = entry.get("content", "").replace("\n", "<br/>")
+        content = content.replace("═", "-").replace("📋", "*").replace("📚", "*")
+        content = content.replace("🏛️", "*").replace("📅", "*").replace("📝", "*")
+        content = content.replace("🔗", "*").replace("⏱️", "*").replace("📜", "*")
+        content = content.replace("⚖️", "*").replace("📖", "*").replace("📌", "*")
+        
+        story.append(Paragraph(content, styles['Normal']))
+    
+    doc.build(story)
+    buffer.seek(0)
+    
+    filename = f"cps_punisher_all_notes.pdf"
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
 @app.get("/api/export/notepad/{entry_id}/pdf")
 async def export_notepad_to_pdf(entry_id: str, current_user: dict = Depends(get_current_user)):
     """Export a notepad entry as PDF"""
