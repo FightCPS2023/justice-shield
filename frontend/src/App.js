@@ -144,7 +144,12 @@ function App() {
   if (loading || processingOAuth) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center">
-        <Loader2 className="w-12 h-12 text-red-600 animate-spin" />
+        <img 
+          src="/images/shield-logo.png" 
+          alt="Loading" 
+          className="w-24 h-28 animate-pulse mb-4"
+        />
+        <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
         {processingOAuth && (
           <p className="text-gray-400 mt-4">Signing in with Google...</p>
         )}
