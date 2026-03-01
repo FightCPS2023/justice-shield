@@ -2182,6 +2182,230 @@ STATES_INFO = {
     "WI": "Wisconsin", "WY": "Wyoming"
 }
 
+# Comprehensive pre-built state CPS law database - INSTANT LOADING
+STATE_CPS_DATABASE = {
+    "TX": {
+        "agency": "Texas Department of Family and Protective Services (DFPS)",
+        "statutes": "Texas Family Code, Chapters 261-266",
+        "timeframes": {
+            "Emergency Removal Hearing": "14 days (adversary hearing)",
+            "Status Hearing": "60 days from temporary order",
+            "Permanency Hearing": "12 months from removal",
+            "Dismissal Deadline": "12 months (18 with extension)"
+        },
+        "key_statutes": [
+            "§261.001 - Definitions of abuse and neglect",
+            "§262.101 - Filing suit without prior investigation",
+            "§262.102 - Emergency removal without court order",
+            "§262.201 - Full adversary hearing requirements",
+            "§263.401 - Dismissal date and extensions",
+            "§161.001 - Grounds for TPR"
+        ],
+        "discovery": "Texas Rules of Civil Procedure; DFPS must produce case file within 30 days of motion",
+        "key_cases": ["In re E.R., 385 S.W.3d 552 (Tex. 2012)", "In re J.F.C., 96 S.W.3d 256 (Tex. 2002)"],
+        "constitution": "Texas Constitution Art. I, §19 - Due process"
+    },
+    "CA": {
+        "agency": "California Department of Social Services (CDSS)",
+        "statutes": "Welfare & Institutions Code §300-395",
+        "timeframes": {
+            "Detention Hearing": "48 hours (court days)",
+            "Jurisdiction Hearing": "15 court days from detention",
+            "Disposition Hearing": "10 court days from jurisdiction",
+            "Review Hearing": "Every 6 months",
+            "Permanency Hearing": "12 months from removal"
+        },
+        "key_statutes": [
+            "WIC §300 - Definitions of dependent child",
+            "WIC §306 - Emergency removal authority",
+            "WIC §319 - Detention hearing procedures",
+            "WIC §361 - Removal (clear and convincing)",
+            "WIC §366.26 - TPR procedures"
+        ],
+        "discovery": "WIC §827; petition juvenile court for case access",
+        "key_cases": ["In re Jasmon O. (1994) 8 Cal.4th 398", "In re Malinda S. (1990) 51 Cal.3d 368"],
+        "constitution": "California Constitution Art. I, §7 - Due process"
+    },
+    "NY": {
+        "agency": "Office of Children and Family Services (OCFS)",
+        "statutes": "Family Court Act Article 10",
+        "timeframes": {
+            "Initial Hearing": "24 hours of removal",
+            "Fact-Finding": "60 days from filing",
+            "Disposition": "50 days from fact-finding",
+            "Permanency Hearing": "12 months maximum"
+        },
+        "key_statutes": [
+            "FCA §1012 - Definitions",
+            "FCA §1024 - Emergency removal",
+            "FCA §1028 - Return of child hearing",
+            "FCA §1046 - Evidence rules",
+            "FCA §1052 - Dispositional alternatives"
+        ],
+        "discovery": "FCA §1038; records available to respondent",
+        "key_cases": ["Nicholson v. Scoppetta (2004)", "In re Marino S. (1993)"],
+        "constitution": "NY Constitution Art. I, §6 - Due process"
+    },
+    "FL": {
+        "agency": "Department of Children and Families (DCF)",
+        "statutes": "Florida Statutes Chapter 39",
+        "timeframes": {
+            "Shelter Hearing": "24 hours",
+            "Arraignment": "28 days",
+            "Adjudication": "30 days of arraignment",
+            "Disposition": "15 days of adjudication",
+            "Judicial Review": "Every 6 months"
+        },
+        "key_statutes": [
+            "§39.01 - Definitions",
+            "§39.401 - Taking child into custody",
+            "§39.402 - Shelter placement",
+            "§39.521 - Disposition hearing",
+            "§39.806 - TPR grounds"
+        ],
+        "discovery": "Florida Rules of Juvenile Procedure 8.245",
+        "key_cases": ["Padgett v. Dept. of HRS (1991)", "In re D.A.D. (2006)"],
+        "constitution": "Florida Constitution Art. I, §9 - Due process"
+    },
+    "IL": {
+        "agency": "Department of Children and Family Services (DCFS)",
+        "statutes": "705 ILCS 405 (Juvenile Court Act)",
+        "timeframes": {
+            "Temporary Custody Hearing": "48 hours",
+            "Adjudicatory Hearing": "90 days",
+            "Dispositional Hearing": "30 days after adjudication",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "705 ILCS 405/2-3 - Neglected/abused minor",
+            "705 ILCS 405/2-10 - Temporary custody",
+            "705 ILCS 405/2-21 - Adjudicatory hearing",
+            "705 ILCS 405/2-28 - TPR"
+        ],
+        "discovery": "Illinois Supreme Court Rule 411",
+        "key_cases": ["In re D.T. (2008)", "In re M.M. (2016)"],
+        "constitution": "Illinois Constitution Art. I, §2 - Due process"
+    },
+    "PA": {
+        "agency": "Department of Human Services",
+        "statutes": "42 Pa.C.S. Chapter 63 (Juvenile Act)",
+        "timeframes": {
+            "Shelter Care Hearing": "72 hours",
+            "Adjudicatory Hearing": "10 days (child in care)",
+            "Dispositional Hearing": "20 days",
+            "Permanency Hearing": "6 months"
+        },
+        "key_statutes": [
+            "23 Pa.C.S. §6303 - Definitions",
+            "42 Pa.C.S. §6324 - Taking into custody",
+            "42 Pa.C.S. §6341 - Adjudicatory hearing"
+        ],
+        "discovery": "Pa.R.J.C.P. 340",
+        "key_cases": ["In re L.M. (2011)", "In re Adoption of R.B.F. (2002)"],
+        "constitution": "Pennsylvania Constitution Art. I, §9 - Due process"
+    },
+    "OH": {
+        "agency": "Ohio Department of Job and Family Services",
+        "statutes": "Ohio Revised Code Chapter 2151",
+        "timeframes": {
+            "Shelter Care Hearing": "72 hours",
+            "Adjudicatory Hearing": "30 days (90 if continued)",
+            "Dispositional Hearing": "30 days after adjudication",
+            "Review Hearing": "Every 12 months"
+        },
+        "key_statutes": [
+            "ORC §2151.03 - Neglected child",
+            "ORC §2151.031 - Abused child",
+            "ORC §2151.414 - TPR"
+        ],
+        "discovery": "Ohio Juv. R. 24",
+        "key_cases": ["In re C.F. (2007)", "In re Adoption of Masa (2001)"],
+        "constitution": "Ohio Constitution Art. I, §16 - Due process"
+    },
+    "GA": {
+        "agency": "Division of Family and Children Services (DFCS)",
+        "statutes": "O.C.G.A. Title 15, Chapter 11",
+        "timeframes": {
+            "Preliminary Protective Hearing": "72 hours",
+            "Adjudicatory Hearing": "10 days",
+            "Dispositional Hearing": "30 days",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "O.C.G.A. §15-11-2 - Definitions",
+            "O.C.G.A. §15-11-133 - Emergency custody",
+            "O.C.G.A. §15-11-310 - TPR"
+        ],
+        "discovery": "O.C.G.A. §15-11-170",
+        "key_cases": ["In re R.M. (2009)", "In re M.K.S. (2011)"],
+        "constitution": "Georgia Constitution Art. I, §1, ¶1 - Due process"
+    },
+    "NC": {
+        "agency": "Division of Social Services",
+        "statutes": "N.C.G.S. Chapter 7B",
+        "timeframes": {
+            "Nonsecure Custody Hearing": "7 days",
+            "Adjudicatory Hearing": "60 days",
+            "Dispositional Hearing": "30 days after adjudication",
+            "Review Hearing": "90 days, then every 6 months"
+        },
+        "key_statutes": [
+            "N.C.G.S. §7B-101 - Definitions",
+            "N.C.G.S. §7B-500 - Taking into custody",
+            "N.C.G.S. §7B-1111 - TPR grounds"
+        ],
+        "discovery": "N.C.G.S. §7B-700",
+        "key_cases": ["In re J.N. (2010)", "In re Montgomery (2009)"],
+        "constitution": "North Carolina Constitution Art. I, §19 - Due process"
+    },
+    "MI": {
+        "agency": "Michigan Department of Health and Human Services",
+        "statutes": "MCL Chapter 712A (Probate Code)",
+        "timeframes": {
+            "Preliminary Hearing": "24 hours",
+            "Adjudication": "63 days (child in care)",
+            "Disposition": "28 days after adjudication",
+            "Review Hearing": "Every 91 days"
+        },
+        "key_statutes": [
+            "MCL §712A.2 - Jurisdiction",
+            "MCL §712A.13a - Preliminary hearing",
+            "MCL §712A.19b - TPR"
+        ],
+        "discovery": "MCR 3.922",
+        "key_cases": ["In re Sanders (2007)", "In re Rood (2009)"],
+        "constitution": "Michigan Constitution Art. I, §17 - Due process"
+    }
+}
+
+# Federal law that applies to ALL states
+FEDERAL_CPS_LAW = {
+    "statutes": [
+        "42 U.S.C. §671-679b - Title IV-E Foster Care",
+        "42 U.S.C. §5101-5119 - Child Abuse Prevention and Treatment Act (CAPTA)",
+        "42 U.S.C. §670-679c - Adoption and Safe Families Act (ASFA)",
+        "25 U.S.C. §1901-1963 - Indian Child Welfare Act (ICWA)",
+        "42 U.S.C. §1983 - Civil Rights (for suing CPS)"
+    ],
+    "constitutional_rights": [
+        "4th Amendment - Protection against unreasonable searches/seizures",
+        "5th Amendment - Due process, self-incrimination protection",
+        "6th Amendment - Right to counsel in criminal matters",
+        "14th Amendment - Due process, equal protection"
+    ],
+    "supreme_court_cases": [
+        "Troxel v. Granville (2000) - Parental rights fundamental",
+        "Santosky v. Kramer (1982) - Clear and convincing standard for TPR",
+        "Stanley v. Illinois (1972) - Unwed fathers' rights",
+        "Lassiter v. DSS (1981) - Right to counsel in TPR"
+    ],
+    "asfa_requirements": {
+        "15_22_month_rule": "State must file TPR if child in care 15 of last 22 months",
+        "reasonable_efforts": "Agency must make reasonable efforts to reunify",
+        "exceptions": "Aggravated circumstances, abandonment, prior TPR"
+    }
+}
+
 @app.get("/api/law-library/states")
 async def get_all_states():
     """Get list of all states"""
