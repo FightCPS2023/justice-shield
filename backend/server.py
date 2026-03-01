@@ -36,6 +36,13 @@ from legal_knowledge import (
     SECTION_1983, FEDERAL_STATUTES, get_relevant_case_law, analyze_qualified_immunity
 )
 
+# Import ADA knowledge base
+from ada_knowledge import (
+    ADA_FEDERAL_LAW, CPS_ADA_REQUIREMENTS, ADA_CASE_LAW, FALSE_CLAIMS_ACT,
+    CIVIL_GUARDIAN_ADA, STATE_ADA_CPS_DATABASE, ADA_COMPLIANCE_CHECKLIST,
+    COMMON_ADA_VIOLATIONS, analyze_case_for_ada_violations
+)
+
 load_dotenv()
 
 # MongoDB setup
