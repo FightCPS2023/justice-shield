@@ -418,6 +418,48 @@ async def update_profile(update_data: dict, current_user: dict = Depends(get_cur
     return {"message": "Profile updated"}
 
 
+# ============== FULL ACCESS PASSCODE ==============
+
+class PasscodeRequest(BaseModel):
+    passcode: str
+
+@app.post("/api/auth/redeem-passcode")
+async def redeem_passcode(request: PasscodeRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Redeem a passcode for full enterprise access to all features.
+    This grants the user enterprise tier permanently.
+    """
+    if request.passcode != FULL_ACCESS_PASSCODE:
+        raise HTTPException(status_code=400, detail="Invalid passcode")
+    
+    # Upgrade user to enterprise tier
+    await db.users.update_one(
+        {"_id": current_user["user_id"]},
+        {"$set": {
+            "tier": "enterprise",
+            "tier_source": "passcode",
+            "passcode_redeemed_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Log the redemption
+    await db.passcode_redemptions.insert_one({
+        "_id": str(uuid.uuid4()),
+        "user_id": current_user["user_id"],
+        "email": current_user.get("email"),
+        "passcode_used": "***REDACTED***",
+        "tier_granted": "enterprise",
+        "redeemed_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "success": True,
+        "message": "Full access granted! You now have Enterprise tier access to all features.",
+        "new_tier": "enterprise"
+    }
+
+
 # ============== GOOGLE OAUTH ENDPOINTS ==============
 
 @app.post("/api/auth/google/session")
