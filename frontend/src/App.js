@@ -172,41 +172,44 @@ function LandingPage({ onNavigate }) {
     <div className="min-h-screen bg-black">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-red-950/30" />
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: 'radial-gradient(circle at 25% 25%, rgba(220, 38, 38, 0.3) 0%, transparent 50%)',
-        }} />
+        {/* Background with hero image */}
+        <div className="absolute inset-0">
+          <img 
+            src="/images/hero-logo.jpg" 
+            alt="The CPS Punisher" 
+            className="w-full h-full object-cover opacity-60"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+        </div>
         
         <div className="relative z-10 container mx-auto px-4 text-center max-w-5xl py-20">
           {/* Badges */}
           <div className="flex items-center justify-center gap-4 mb-8 flex-wrap">
-            <span className="px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm flex items-center gap-2">
+            <span className="px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm">
               <Brain className="w-4 h-4 text-red-500" />
               AI-Powered Analysis
             </span>
-            <span className="px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm flex items-center gap-2">
+            <span className="px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm">
               <Shield className="w-4 h-4 text-red-500" />
               50 States Covered
             </span>
-            <span className="px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm flex items-center gap-2">
+            <span className="px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm">
               <Lock className="w-4 h-4 text-red-500" />
               100% Confidential
             </span>
           </div>
 
-          {/* Logo */}
+          {/* Chrome Logo */}
           <div className="mb-8">
-            <Shield className="w-24 h-24 mx-auto text-red-600 animate-pulse" style={{ filter: 'drop-shadow(0 0 20px rgba(220, 38, 38, 0.5))' }} />
+            <img 
+              src="/images/chrome-logo.jpg" 
+              alt="CPS Punisher Logo" 
+              className="w-80 md:w-96 mx-auto"
+              style={{ filter: 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.3))' }}
+            />
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold mb-4 tracking-tight" style={{ fontFamily: 'Oswald, sans-serif' }}>
-            <span className="text-white">THE CPS</span>
-          </h1>
-          <h1 className="text-6xl md:text-8xl font-bold mb-8 tracking-wider text-glow" style={{ fontFamily: 'Oswald, sans-serif' }}>
-            <span className="gradient-text">PUNISHER</span>
-          </h1>
-
-          <p className="text-xl md:text-2xl text-red-400 mb-4 uppercase tracking-wide">
+          <p className="text-xl md:text-2xl text-red-400 mb-4 uppercase tracking-wide font-bold">
             The Legal Educator They Didn't Want You To Find!
           </p>
           
