@@ -721,6 +721,7 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
   const { api } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [viewingCase, setViewingCase] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
