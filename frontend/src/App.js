@@ -2710,6 +2710,9 @@ function PricingTab() {
         ))}
       </div>
 
+      {/* Passcode Redemption */}
+      <PasscodeRedemption />
+
       {/* Trust Badges */}
       <div className="text-center text-sm text-gray-500 space-y-2">
         <div className="flex justify-center gap-6">
@@ -2719,6 +2722,81 @@ function PricingTab() {
         </div>
         <p>All plans include a 30-day money-back guarantee</p>
       </div>
+    </div>
+  );
+}
+
+// Passcode Redemption Component
+function PasscodeRedemption() {
+  const { api } = useAuth();
+  const [passcode, setPasscode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showInput, setShowInput] = useState(false);
+
+  const handleRedeem = async (e) => {
+    e.preventDefault();
+    if (!passcode.trim()) {
+      toast.error('Please enter a passcode');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await api.post('/api/auth/redeem-passcode', { passcode: passcode.trim() });
+      toast.success(response.message || 'Full access granted!');
+      setPasscode('');
+      setShowInput(false);
+      // Refresh the page to update tier
+      window.location.reload();
+    } catch (error) {
+      toast.error(error.message || 'Invalid passcode');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 border border-gray-700 rounded-xl p-6 text-center">
+      <div className="flex items-center justify-center gap-2 mb-2">
+        <Key className="w-5 h-5 text-yellow-500" />
+        <h3 className="text-lg font-semibold">Have a Passcode?</h3>
+      </div>
+      <p className="text-gray-400 text-sm mb-4">Enter your access code for full enterprise features</p>
+      
+      {!showInput ? (
+        <button
+          onClick={() => setShowInput(true)}
+          className="px-6 py-2 bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-500 hover:to-amber-500 rounded-lg font-semibold transition-all"
+        >
+          Enter Passcode
+        </button>
+      ) : (
+        <form onSubmit={handleRedeem} className="flex gap-2 max-w-md mx-auto">
+          <input
+            type="text"
+            value={passcode}
+            onChange={(e) => setPasscode(e.target.value.toUpperCase())}
+            placeholder="Enter passcode..."
+            className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 uppercase tracking-wider"
+            data-testid="passcode-input"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-6 py-2 bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-500 hover:to-amber-500 rounded-lg font-semibold transition-all disabled:opacity-50"
+            data-testid="redeem-passcode-btn"
+          >
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Redeem'}
+          </button>
+          <button
+            type="button"
+            onClick={() => { setShowInput(false); setPasscode(''); }}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+          >
+            Cancel
+          </button>
+        </form>
+      )}
     </div>
   );
 }
