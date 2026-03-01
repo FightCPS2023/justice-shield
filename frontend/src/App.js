@@ -512,6 +512,8 @@ function Dashboard({ onNavigate }) {
     { id: 'calendar', icon: Calendar, label: 'Calendar' },
     { id: 'research', icon: Search, label: 'Legal Research' },
     { id: 'library', icon: BookOpen, label: 'Law Library' },
+    { id: 'courtlistener', icon: Scale, label: 'Court Opinions', highlight: true },
+    { id: 'notepad', icon: FileText, label: 'Legal Notepad', highlight: true },
     { id: 'forum', icon: Users, label: 'Community' },
     { id: 'advocates', icon: Users, label: 'Find Advocates' },
     { id: 'pricing', icon: CreditCard, label: 'Upgrade Plan' },
