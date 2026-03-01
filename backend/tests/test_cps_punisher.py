@@ -8,7 +8,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://case-analyzer-15.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://courtroom-ai-1.preview.emergentagent.com')
 
 # Test user credentials
 TEST_EMAIL = f"test_{uuid.uuid4().hex[:8]}@example.com"
