@@ -103,6 +103,7 @@ async def lifespan(app: FastAPI):
         "generated_documents": [("case_id", False)],
         "forum_posts": [("user_id", False)],
         "advocate_directory": [("state", False)],
+        "notepad_entries": [("user_id", False), ("case_id", False)],
     }
     
     for collection, indexes in collections_indexes.items():
