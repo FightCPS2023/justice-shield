@@ -49,8 +49,21 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState('landing');
+  const [processingOAuth, setProcessingOAuth] = useState(false);
 
   useEffect(() => {
+    // Check for OAuth callback with session_id in URL hash
+    const hash = window.location.hash;
+    if (hash && hash.includes('session_id=')) {
+      setProcessingOAuth(true);
+      const sessionId = hash.split('session_id=')[1]?.split('&')[0];
+      if (sessionId) {
+        processGoogleAuth(sessionId);
+        return;
+      }
+    }
+
+    // Normal auth check
     const token = localStorage.getItem('cps_token');
     const userData = localStorage.getItem('cps_user');
     if (token && userData) {
@@ -59,6 +72,38 @@ function App() {
     }
     setLoading(false);
   }, []);
+
+  const processGoogleAuth = async (sessionId) => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/google/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId }),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Google authentication failed');
+      }
+
+      const data = await response.json();
+      localStorage.setItem('cps_token', data.access_token);
+      localStorage.setItem('cps_user', JSON.stringify(data));
+      setUser(data);
+      setCurrentView('dashboard');
+      
+      // Clear the hash from URL
+      window.history.replaceState(null, '', window.location.pathname);
+      toast.success(`Welcome, ${data.name}! Signed in with Google.`);
+    } catch (error) {
+      console.error('Google auth error:', error);
+      toast.error('Google sign-in failed. Please try again.');
+      setCurrentView('auth');
+    } finally {
+      setProcessingOAuth(false);
+      setLoading(false);
+    }
+  };
 
   const login = async (email, password) => {
     try {
@@ -96,10 +141,13 @@ function App() {
     toast.success('Logged out successfully');
   };
 
-  if (loading) {
+  if (loading || processingOAuth) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center">
         <Loader2 className="w-12 h-12 text-red-600 animate-spin" />
+        {processingOAuth && (
+          <p className="text-gray-400 mt-4">Signing in with Google...</p>
+        )}
       </div>
     );
   }
