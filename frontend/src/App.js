@@ -951,10 +951,19 @@ function ChatTab({ selectedCase }) {
           </div>
         ))}
 
-        {loading && (
+        {loading && streamingContent && (
           <div className="flex justify-start">
-            <div className="bg-gray-700/50 border border-gray-600 p-4 rounded-xl">
+            <div className="max-w-3xl p-4 rounded-xl bg-gray-700/50 border border-gray-600">
+              <p className="whitespace-pre-wrap">{streamingContent}<span className="animate-pulse">▊</span></p>
+            </div>
+          </div>
+        )}
+
+        {loading && !streamingContent && (
+          <div className="flex justify-start">
+            <div className="bg-gray-700/50 border border-gray-600 p-4 rounded-xl flex items-center gap-2">
               <Loader2 className="w-5 h-5 animate-spin text-purple-500" />
+              <span className="text-gray-400 text-sm">Thinking...</span>
             </div>
           </div>
         )}
