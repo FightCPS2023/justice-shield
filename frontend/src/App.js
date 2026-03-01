@@ -4438,10 +4438,10 @@ function ExpertLegalAITab({ selectedCase }) {
   if (!selectedCase) {
     return (
       <div className="text-center py-12" data-testid="expert-tab">
-        <Brain className="w-16 h-16 mx-auto text-purple-500 mb-4" />
+        <img src="/images/chrome-logo.jpg" alt="CPS Punisher" className="w-48 mx-auto mb-4" />
         <h3 className="text-2xl font-semibold mb-2">Expert Legal AI</h3>
         <p className="text-gray-400">Select a case to get expert legal analysis</p>
-        <p className="text-sm text-gray-500 mt-2">This AI knows MORE about CPS law than any other legal AI</p>
+        <p className="text-sm text-red-400 mt-2">SMARTER than any other legal AI for CPS cases</p>
       </div>
     );
   }
