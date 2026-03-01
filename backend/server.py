@@ -2414,49 +2414,162 @@ async def get_all_states():
 
 @app.get("/api/law-library/{state_code}")
 async def get_state_law_info(state_code: str, current_user: dict = Depends(get_current_user)):
-    """Get comprehensive CPS law information for a state"""
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
-    
-    state_name = STATES_INFO.get(state_code.upper())
+    """Get comprehensive CPS law information for a state - INSTANT LOADING from pre-built database"""
+    state_code = state_code.upper()
+    state_name = STATES_INFO.get(state_code)
     if not state_name:
         raise HTTPException(status_code=404, detail="State not found")
     
-    chat = LlmChat(
-        api_key=EMERGENT_LLM_KEY,
-        session_id=f"state-law-{state_code}",
-        system_message="You are a legal expert providing comprehensive CPS law information."
-    ).with_model("openai", "gpt-5.2")
+    # Use pre-built database for instant response
+    state_data = STATE_CPS_DATABASE.get(state_code)
     
-    prompt = f"""Provide comprehensive CPS law information for {state_name} ({state_code}):
+    if state_data:
+        # Format the pre-built data into readable format
+        formatted_info = format_state_law_info(state_code, state_name, state_data)
+        return {
+            "state_code": state_code,
+            "state_name": state_name,
+            "law_info": formatted_info,
+            "federal_law": FEDERAL_CPS_LAW,
+            "source": "pre_built_database"
+        }
+    else:
+        # Return generic template with federal law for states not yet in database
+        generic_info = get_generic_state_info(state_code, state_name)
+        return {
+            "state_code": state_code,
+            "state_name": state_name,
+            "law_info": generic_info,
+            "federal_law": FEDERAL_CPS_LAW,
+            "source": "generic_template"
+        }
 
-1. **CPS Agency Name**: Official state child welfare agency
-2. **Governing Statutes**: Primary statutes and code sections
-3. **Key Timeframes**:
-   - Emergency removal hearing deadline
-   - Adjudication/jurisdiction hearing deadline
-   - Review hearing schedule
-   - Permanency planning deadline
-   - Termination of parental rights timeline
-4. **Discovery Rights**: How to obtain CPS records
-5. **Parental Rights Statutes**: TPR grounds and procedures
-6. **Notice Requirements**: Service of process deadlines
-7. **Court Caption Format**: Proper format for legal filings
-8. **Important Case Law**: Key state precedents for CPS defense
-9. **CPS Policy Manual**: How to access official policies
-10. **State Constitution**: Relevant parental rights provisions
-11. **ICWA Applicability**: State ICWA implementation
-12. **Reasonable Efforts Standard**: State requirements
-13. **Appeal Process**: Deadlines and procedures
-
-Be specific with statute citations and case law."""
-
-    response = await chat.send_message(UserMessage(text=prompt))
+def format_state_law_info(state_code: str, state_name: str, data: dict) -> str:
+    """Format pre-built state data into readable format"""
+    timeframes = data.get("timeframes", {})
+    timeframes_text = "\n".join([f"   • {k}: {v}" for k, v in timeframes.items()])
     
-    return {
-        "state_code": state_code,
-        "state_name": state_name,
-        "law_info": response
-    }
+    statutes_text = "\n".join([f"   • {s}" for s in data.get("key_statutes", [])])
+    cases_text = "\n".join([f"   • {c}" for c in data.get("key_cases", [])])
+    
+    return f"""
+═══════════════════════════════════════════════════════════════════
+           {state_name.upper()} ({state_code}) CPS LAW GUIDE
+═══════════════════════════════════════════════════════════════════
+
+📋 CPS AGENCY
+   {data.get('agency', 'State Child Welfare Agency')}
+
+📚 GOVERNING STATUTES
+   {data.get('statutes', 'State Family Code')}
+
+⏱️ KEY TIMEFRAMES
+{timeframes_text}
+
+📜 KEY STATUTORY PROVISIONS
+{statutes_text}
+
+📖 DISCOVERY RIGHTS
+   {data.get('discovery', 'Consult state rules of procedure')}
+
+⚖️ IMPORTANT STATE CASE LAW
+{cases_text}
+
+🏛️ STATE CONSTITUTIONAL PROTECTION
+   {data.get('constitution', f'{state_name} Constitution - Due Process Clause')}
+
+═══════════════════════════════════════════════════════════════════
+                    FEDERAL LAW THAT APPLIES
+═══════════════════════════════════════════════════════════════════
+
+📋 FEDERAL STATUTES
+   • 42 U.S.C. §671-679b - Title IV-E Foster Care
+   • 42 U.S.C. §5101-5119 - CAPTA (Child Abuse Prevention & Treatment Act)
+   • 42 U.S.C. §670-679c - ASFA (Adoption & Safe Families Act)
+   • 25 U.S.C. §1901-1963 - ICWA (Indian Child Welfare Act)
+   • 42 U.S.C. §1983 - Civil Rights (for suing CPS workers)
+
+🏛️ CONSTITUTIONAL RIGHTS
+   • 4th Amendment - Protection against warrantless searches
+   • 5th Amendment - Due process, self-incrimination protection
+   • 14th Amendment - Due process, equal protection
+   
+⚖️ KEY SUPREME COURT PRECEDENTS
+   • Troxel v. Granville (2000) - Parental rights are FUNDAMENTAL
+   • Santosky v. Kramer (1982) - Clear & convincing evidence for TPR
+   • Stanley v. Illinois (1972) - Due process before termination
+   • Lassiter v. DSS (1981) - Right to counsel considerations
+
+📌 ASFA 15/22 MONTH RULE
+   State must file TPR petition if child in foster care 15 of last 22 months
+   (with exceptions for aggravated circumstances)
+
+═══════════════════════════════════════════════════════════════════
+"""
+
+def get_generic_state_info(state_code: str, state_name: str) -> str:
+    """Generate generic info for states not in the pre-built database"""
+    return f"""
+═══════════════════════════════════════════════════════════════════
+           {state_name.upper()} ({state_code}) CPS LAW GUIDE
+═══════════════════════════════════════════════════════════════════
+
+📋 CPS AGENCY
+   {state_name} Department of Children and Family Services
+   (Contact your state legislature website for exact agency name)
+
+📚 GOVERNING STATUTES
+   {state_name} Family Code / Children's Code
+   (Search your state's legislative database for specific citations)
+
+⏱️ TYPICAL CPS TIMEFRAMES (VERIFY WITH YOUR STATE LAW)
+   • Emergency/Shelter Hearing: Usually 24-72 hours
+   • Adjudication/Jurisdiction Hearing: 30-90 days
+   • Disposition Hearing: 15-30 days after adjudication
+   • Review Hearings: Every 6 months
+   • Permanency Hearing: Within 12 months of removal
+   
+📜 IMPORTANT: VERIFY ALL TIMEFRAMES WITH YOUR STATE CODE
+   Timeframes vary significantly by state. Missing a deadline
+   can have serious consequences for your case.
+
+📖 DISCOVERY RIGHTS
+   Contact the court clerk or your attorney for procedures
+   to obtain your CPS case file in {state_name}.
+
+═══════════════════════════════════════════════════════════════════
+                    FEDERAL LAW THAT APPLIES
+═══════════════════════════════════════════════════════════════════
+
+📋 FEDERAL STATUTES (APPLY TO ALL STATES)
+   • 42 U.S.C. §671-679b - Title IV-E Foster Care
+   • 42 U.S.C. §5101-5119 - CAPTA (Child Abuse Prevention & Treatment Act)
+   • 42 U.S.C. §670-679c - ASFA (Adoption & Safe Families Act)
+   • 25 U.S.C. §1901-1963 - ICWA (Indian Child Welfare Act)
+   • 42 U.S.C. §1983 - Civil Rights (for suing CPS workers)
+
+🏛️ CONSTITUTIONAL RIGHTS (APPLY EVERYWHERE)
+   • 4th Amendment - Protection against warrantless searches
+   • 5th Amendment - Due process, self-incrimination protection
+   • 14th Amendment - Due process, equal protection
+   
+⚖️ KEY SUPREME COURT PRECEDENTS
+   • Troxel v. Granville (2000) - Parental rights are FUNDAMENTAL
+   • Santosky v. Kramer (1982) - Clear & convincing evidence for TPR
+   • Stanley v. Illinois (1972) - Due process before termination
+   • Lassiter v. DSS (1981) - Right to counsel considerations
+
+📌 ASFA 15/22 MONTH RULE
+   State must file TPR petition if child in foster care 15 of last 22 months
+   (with exceptions for aggravated circumstances)
+
+═══════════════════════════════════════════════════════════════════
+         For state-specific citations, consult:
+         • Your state's legislative website
+         • A family law attorney in {state_name}
+         • Your local law library
+═══════════════════════════════════════════════════════════════════
+"""
 
 
 # ============== COMMUNITY FORUM ==============
