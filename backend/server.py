@@ -2215,11 +2215,16 @@ async def create_checkout_session(request: CheckoutRequest, http_request: Reques
     if not STRIPE_API_KEY:
         raise HTTPException(status_code=500, detail="Stripe not configured")
     
-    price_key = f"{request.tier}_{request.billing_period}"
-    stripe_price_id = STRIPE_PRICE_IDS.get(price_key)
+    # Get pricing from server-side configuration (NEVER accept amount from frontend)
+    tier_pricing = TIER_PRICING.get(request.tier)
+    if not tier_pricing:
+        raise HTTPException(status_code=400, detail="Invalid tier")
     
-    if not stripe_price_id:
-        raise HTTPException(status_code=400, detail="Invalid tier or billing period")
+    amount = tier_pricing.get(request.billing_period)
+    if not amount:
+        raise HTTPException(status_code=400, detail="Invalid billing period")
+    
+    tier_name = tier_pricing.get("name", request.tier.title())
     
     success_url = f"{request.origin_url}/payment-success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{request.origin_url}/pricing"
@@ -2228,14 +2233,16 @@ async def create_checkout_session(request: CheckoutRequest, http_request: Reques
     webhook_url = f"{host_url}api/webhook/stripe"
     stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
     
+    # Use amount-based checkout instead of price_id
     checkout_request = CheckoutSessionRequest(
-        stripe_price_id=stripe_price_id,
-        quantity=1,
+        amount=amount,
+        currency="usd",
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={
             "user_id": current_user["user_id"],
             "tier": request.tier,
+            "tier_name": tier_name,
             "billing_period": request.billing_period
         }
     )
@@ -2247,7 +2254,10 @@ async def create_checkout_session(request: CheckoutRequest, http_request: Reques
         "session_id": session.session_id,
         "user_id": current_user["user_id"],
         "tier": request.tier,
+        "tier_name": tier_name,
         "billing_period": request.billing_period,
+        "amount": amount,
+        "currency": "usd",
         "payment_status": "pending",
         "created_at": datetime.now(timezone.utc).isoformat()
     })
