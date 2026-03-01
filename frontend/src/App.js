@@ -2620,10 +2620,24 @@ function PricingTab() {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn" data-testid="pricing-tab">
+    <div className="space-y-8 animate-fadeIn" data-testid="pricing-tab">
+      {/* Header */}
       <div className="text-center">
+        <img src="/images/chrome-logo.jpg" alt="CPS Punisher" className="w-48 mx-auto mb-4" />
         <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Oswald, sans-serif' }}>Upgrade Your Plan</h1>
         <p className="text-gray-400">Current plan: <span className="text-red-500 font-semibold">{user?.tier?.toUpperCase() || 'FREE'}</span></p>
+      </div>
+
+      {/* Free Tier Banner */}
+      <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 text-center">
+        <h3 className="text-xl font-bold mb-2">Free Plan Includes:</h3>
+        <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-400">
+          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> 5 Doc Uploads/Month</span>
+          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> 10 AI Credits</span>
+          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> Basic Case Management</span>
+          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> Know Your Rights Guide</span>
+          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> Community Forum</span>
+        </div>
       </div>
 
       {/* Billing Toggle */}
