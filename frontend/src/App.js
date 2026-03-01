@@ -2505,8 +2505,8 @@ function PricingTab() {
       name: 'Essential',
       icon: Star,
       color: 'from-blue-400 to-blue-600',
-      monthly: 39,
-      annual: 390,
+      monthly: 49,
+      annual: 490,
       description: 'Perfect for parents starting their defense',
       features: [
         '25 document uploads/month',
@@ -2522,8 +2522,8 @@ function PricingTab() {
       name: 'Professional',
       icon: Crown,
       color: 'from-purple-400 to-purple-600',
-      monthly: 79,
-      annual: 790,
+      monthly: 99,
+      annual: 990,
       popular: true,
       description: 'Complete legal defense toolkit',
       features: [
