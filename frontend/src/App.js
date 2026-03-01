@@ -641,7 +641,7 @@ function OverviewTab({ cases, setActiveTab }) {
     <div className="space-y-6 animate-fadeIn" data-testid="overview-tab">
       <div>
         <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Oswald, sans-serif' }}>
-          Welcome Back, Warrior
+          Welcome Back, Punisher
         </h1>
         <p className="text-gray-400">Continue your fight for your family</p>
       </div>
