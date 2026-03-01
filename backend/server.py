@@ -305,6 +305,23 @@ class ForumPostCreate(BaseModel):
     category: str
     tags: Optional[List[str]] = []
 
+# Legal Notepad Models
+class NotepadEntryCreate(BaseModel):
+    case_id: Optional[str] = None  # None for global notes
+    title: str
+    content: str
+    category: str = "general"  # general, statute, case_law, strategy, timeline
+    state: Optional[str] = None
+    source_type: Optional[str] = None  # law_library, courtlistener, manual
+    source_reference: Optional[str] = None
+    tags: Optional[List[str]] = []
+
+class NotepadEntryUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    category: Optional[str] = None
+    tags: Optional[List[str]] = None
+
 
 # ============== HELPERS ==============
 
