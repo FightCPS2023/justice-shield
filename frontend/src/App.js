@@ -532,9 +532,9 @@ function Dashboard({ onNavigate }) {
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-black border-r border-gray-800 transform transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-4 border-b border-gray-800">
           <div className="flex items-center gap-3">
-            <Shield className="w-8 h-8 text-red-600" />
+            <img src="/images/shield-logo.png" alt="Logo" className="w-10 h-12 object-contain" />
             <div>
-              <h1 className="font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>CPS PUNISHER</h1>
+              <h1 className="font-bold text-white" style={{ fontFamily: 'Oswald, sans-serif' }}>CPS PUNISHER</h1>
               <p className="text-xs text-gray-500">{user?.email}</p>
             </div>
           </div>
