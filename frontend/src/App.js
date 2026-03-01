@@ -2602,11 +2602,27 @@ function LawLibraryTab() {
 
       {stateInfo && !loading && (
         <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-          <h2 className="text-2xl font-bold mb-4">
-            {states.find(s => s.code === selectedState)?.name} CPS Law
-          </h2>
-          <div className="prose prose-invert max-w-none">
-            <pre className="whitespace-pre-wrap text-sm text-gray-300">{stateInfo}</pre>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-red-500" style={{ fontFamily: 'Oswald, sans-serif' }}>
+              {states.find(s => s.code === selectedState)?.name} CPS Law Guide
+            </h2>
+            <span className="px-3 py-1 bg-green-600/20 border border-green-500 text-green-400 text-xs rounded-full flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" />
+              Instant Access
+            </span>
+          </div>
+          <div className="prose prose-invert max-w-none bg-black/30 rounded-lg p-6 border border-gray-700/50">
+            <pre className="whitespace-pre-wrap text-sm text-gray-300 font-mono leading-relaxed">{stateInfo}</pre>
+          </div>
+          <div className="mt-4 flex items-center gap-4 text-sm text-gray-500">
+            <span className="flex items-center gap-1">
+              <Shield className="w-4 h-4" />
+              State-specific statutes & timelines
+            </span>
+            <span className="flex items-center gap-1">
+              <Scale className="w-4 h-4" />
+              Key case law included
+            </span>
           </div>
         </div>
       )}
