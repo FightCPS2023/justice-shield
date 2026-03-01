@@ -341,6 +341,35 @@ async def get_case_with_ownership(case_id: str, user_id: str):
     return case
 
 
+# ============== HEALTH & API INFO ENDPOINTS ==============
+
+@app.get("/api")
+async def api_root():
+    """Root API endpoint for health probes"""
+    return {
+        "service": "CPS Punisher API",
+        "status": "operational",
+        "version": "4.0.0",
+        "docs": "/docs"
+    }
+
+@app.get("/api/user/")
+async def api_user_root():
+    """User API root for health probes"""
+    return {"status": "ok", "endpoint": "user"}
+
+@app.get("/api-docs/swagger.json")
+async def swagger_json_redirect():
+    """Redirect to OpenAPI schema"""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/openapi.json")
+
+@app.get("/api/swagger.json")
+async def api_swagger_json():
+    """Return OpenAPI schema"""
+    return app.openapi()
+
+
 # ============== AUTH ENDPOINTS ==============
 
 @app.post("/api/auth/signup", response_model=TokenResponse)
