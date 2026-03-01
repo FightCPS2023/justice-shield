@@ -4604,7 +4604,7 @@ function Section1983Tab({ selectedCase }) {
   if (!selectedCase) {
     return (
       <div className="text-center py-12" data-testid="section1983-tab">
-        <Gavel className="w-16 h-16 mx-auto text-red-500 mb-4" />
+        <img src="/images/shield-logo.png" alt="CPS Punisher" className="w-24 h-28 mx-auto mb-4" />
         <h3 className="text-2xl font-semibold mb-2">Section 1983 Lawsuit Generator</h3>
         <p className="text-gray-400">Select a case to generate a federal civil rights complaint</p>
         <p className="text-sm text-red-400 mt-2">Turn CPS violations into federal lawsuits</p>
@@ -4615,9 +4615,12 @@ function Section1983Tab({ selectedCase }) {
   return (
     <div className="space-y-6 animate-fadeIn" data-testid="section1983-tab">
       <div className="bg-gradient-to-r from-red-900/50 to-gray-900 border border-red-800/50 rounded-xl p-6">
-        <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
-          <Gavel className="w-8 h-8 text-red-500" />
-          Section 1983 Civil Rights Lawsuit
+        <div className="flex items-center gap-4">
+          <img src="/images/shield-logo.png" alt="Logo" className="w-16 h-20 hidden md:block" />
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
+              <Gavel className="w-8 h-8 text-red-500" />
+              Section 1983 Civil Rights Lawsuit
         </h1>
         <p className="text-gray-300 mt-2">
           42 U.S.C. § 1983 allows you to sue government officials who violate your constitutional rights.
