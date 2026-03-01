@@ -1,178 +1,194 @@
 <analysis>**original_problem_statement:**
-The user wants to create an application called THE CPS PUNISHER. The goal is to build the most powerful, interactive legal application for Child Protective Services (CPS) cases, designed to be an unstoppable defender of the family. The core requirement is to port over all functionality (324+ features) from an existing, comprehensive application provided by the user in a ZIP file () and to enhance it with superior AI and legal knowledge to surpass any existing legal tech tool, specifically mentioning Westlaw as a benchmark.
+The user wants to create an application called THE CPS PUNISHER. The goal is to build the most powerful, interactive legal application for Child Protective Services (CPS) cases, designed to be an unstoppable defender of the family. The core requirement is to port over all functionality (324+ features) from an existing, comprehensive application and enhance it with superior AI and legal knowledge to surpass any existing legal tech tool.
 
 **PRODUCT REQUIREMENTS:**
--   **Core App Replication:** Recreate all features from the user's provided application. This includes a document analyzer, case manager, legal research tools, evidence trackers, and various generators (lawsuits, podcasts).
--   **Superior Legal Research:** The application's research capabilities must be better and bigger than Westlaw, using all references from the original app and potentially new sources like centinet law ai.
+-   **Core App Replication:** Recreate all features from the user's provided application.
+-   **Superior Legal Research:** The app's research capabilities must be better and bigger than Westlaw.
+-   **New Features Requested:**
+    -   **Legal Notepad:** A feature to save, organize, and export legal notes and statutes.
+    -   **CourtListener UI:** A user interface to search the CourtListener database.
+    -   **Case Preparation Kit:** A tool to generate a comprehensive, court-ready PDF bundle for a case.
+    -   **ADA Accommodations Section:** A comprehensive research tool for ADA rules, regulations, and case law for all 50 states.
+    -   **ADA Compliance Analyzer:** A feature to cross-reference case files for ADA violations.
+    -   **Enhanced File Uploads:** Folder upload, drag-and-drop, and multi-file selection for the document analyzer.
 -   **Integrations:**
     -   Authentication: Email/Password, Google, Facebook.
-    -   Payments: Stripe (Live keys are now integrated).
-    -   Deep Legal APIs: CourtListener, etc.
--   **UI/UX:** Integrate the specific graphics and visual style from the original application to make the new app untouchable.
--   **Tiered Access & Passcode:** Implement pricing tiers and a universal full access passcode.
--   **Deployment Readiness:** The application must be deployable.
+    -   Payments: Stripe (Live keys are integrated).
+    -   Legal APIs: CourtListener.
+-   **UI/UX:** Integrate the specific graphics and visual style from the original application.
+-   **Deployment:** The user wants to deploy the app to their custom domain .
 
 **User's preferred language**: English
 
 **what currently exists?**
-A comprehensive full-stack application with a FastAPI backend and a React frontend. The backend is a large monolith () with over 90 endpoints handling auth (JWT, Google OAuth), case management, document uploads (including PDF text extraction), AI analysis, advanced legal strategy generation, a passcode system, and live Stripe payments. The frontend is also a large monolith () providing UIs for all features, including a multi-tiered pricing page and a detailed case-view modal. The app has been styled with user-provided graphics. However, the codebase is critically overdue for refactoring, and some core features like the Law Library are non-functional due to performance bottlenecks.
+A comprehensive full-stack application with a FastAPI backend and a React frontend. The backend () and frontend () are still largely monolithic, though initial refactoring has created new directory structures (, ). The application is feature-rich, including JWT & Google OAuth, case management, document analysis, live Stripe payments, a passcode system, and several advanced legal tools:
+-   A fully functional Law Library with instant access to all 50 states' CPS laws.
+-   A Legal Notepad to save, view, and export notes as PDFs.
+-   A Court Opinions tab with a working UI to search the CourtListener database.
+-   A Case Preparation Kit feature that generates a comprehensive 12-page PDF report for any case.
+-   A placeholder UI for a new ADA Compliance section.
 
 **Last working item**:
--   **Last item agent was working:** The user reported that the Law Library tab was empty and demanded that the legal research capabilities be expanded to be better and bigger than Westlaw, referencing CourtListener and centinet law ai. The agent investigated and confirmed the Law Library endpoint was timing out due to slow AI generation. The agent's last action was to begin implementing a large, pre-built, file-based legal knowledge database to provide instant results for the Law Library and serve as a foundation for more advanced legal research.
+-   **Last item agent was working:** The agent was implementing the user's request for an **ADA Accommodations Section** and **enhanced file uploads**. The agent created the backend data and endpoints for the ADA feature and added the new tab to the frontend UI. However, this introduced a bug. The user then immediately requested folder/drag-and-drop upload functionality. The agent's last action was acknowledging this new request.
 -   **Status:** IN PROGRESS
--   **Agent Testing Done:** N (Work was just beginning)
+-   **Agent Testing Done:** N
 -   **Which testing method agent to use?** both
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Law Library is Empty/Non-Functional (P0)**
-    -   **Description:** When a user clicks a state in the Law Library, nothing loads. This is a direct blocker reported by the user. The agent identified that the underlying API endpoint () times out because it relies on a slow, on-the-fly AI generation process.
-    -   **Attempted fixes:** The agent started to implement a pre-built legal knowledge base to replace the slow AI call.
+-   **Issue 1: ADA Compliance Tab is Broken (P0)**
+    -   **Description:** The newly added ADA Compliance tab crashes the frontend because the  icon was used in the  component but not imported in .
+    -   **Attempted fixes:** None. The agent was interrupted by a new user request before fixing the bug.
     -   **Next debug checklist:**
-        1.  Complete the implementation of the new, pre-built  in .
-        2.  Modify the  endpoint to query this new database instead of calling the AI model.
-        3.  Update the frontend  component to handle the new, faster data structure.
-        4.  Verify that selecting a state instantly loads the corresponding legal information.
-    -   **Why fix this issue and what will be achieved with the fix?** This is the user's highest priority. Fixing it will make a core feature functional and dramatically improve user experience by providing instant access to legal information.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** both
+        1.  Open .
+        2.  Add  to the  statement at the top of the file.
+        3.  Verify the frontend loads without crashing and the ADA tab is visible.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a blocker for developing the ADA feature, which is a high-priority user request. Fixing it will make the UI stable again.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** frontend
     -   **Blocked on other issue:** No
 
--   **Issue 2: Codebase is Monolithic and Unmaintainable (P1)**
-    -   **Description:** The  and  files have grown to thousands of lines of code, making them extremely difficult to debug, maintain, and extend. This technical debt slows down all development.
-    -   **Attempted fixes:** None. This has been repeatedly postponed in favor of feature development.
+-   **Issue 2: Codebase is Largely Monolithic (P1)**
+    -   **Description:** Despite creating new directories (, ), the core logic for most features still resides in the monolithic  and  files. This technical debt slows down development and increases the risk of bugs.
+    -   **Attempted fixes:** The agent created the file structure and some placeholder files but did not migrate the bulk of the code.
     -   **Next debug checklist:**
-        1.  Create a  directory.
-        2.  Break down  into logical FastAPI APIRouters (e.g., , , , ).
-        3.  Create a  or  directory.
-        4.  Extract each major component/tab from  into its own file (e.g., , , ).
-    -   **Why fix this issue and what will be achieved with the fix?** Refactoring is essential for the long-term health and scalability of the project. It will make future development faster and less error-prone.
-    -   **Status:** NOT STARTED
+        1.  Systematically move endpoints from  into the respective files in .
+        2.  Systematically extract components from  and  into their own files under .
+        3.  Update the main  and  to import and use the new modular code.
+    -   **Why fix this issue and what will be achieved with the fix?** Refactoring is essential for the long-term health, scalability, and maintainability of the project.
+    -   **Status:** IN PROGRESS
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** both
     -   **Blocked on other issue:** No
 
 **In progress Task List**:
--   **Task 1: Overhaul Legal Research Capabilities (P0)**
-    -   **Where to resume:** The agent was in the process of creating a massive, pre-built legal knowledge database (). This work needs to be completed and integrated.
-    -   **What will be achieved with this?** This will fix the broken Law Library, provide a foundation for advanced legal research, and is the first step toward meeting the user's better than Westlaw requirement.
+-   **Task 1: Implement Enhanced Document Uploads (P0)**
+    -   **Where to resume:** Find the existing document upload component in  (likely within  or ).
+    -   **What will be achieved with this?** Fulfill the user's explicit request for folder uploads, drag-and-drop functionality, and multi-file selection to make the document analyzer more powerful and user-friendly. This will likely require a new frontend library like .
+    -   **Status:** NOT STARTED
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on something:** Blocked by **Issue 1**, as the frontend is currently unstable.
+
+-   **Task 2: Complete ADA Accommodations Feature (P1)**
+    -   **Where to resume:** The backend endpoints and data structure are in place. The frontend component ( in ) is created but needs the import bug fixed and functionality built out.
+    -   **What will be achieved with this?** Deliver the smartest ADA compliancy tool as requested by the user, including state-specific research and the ability to cross-reference case files for ADA violations.
     -   **Status:** IN PROGRESS
     -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on something:** Blocked by the completion of the  implementation.
+    -   **Blocked on something:** Blocked by **Issue 1**.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   **(P1) Deepen CourtListener Integration:** The backend has a placeholder for CourtListener, but it's not used. Build UI in the frontend to allow users to search the CourtListener API for opinions, judges, and dockets.
-    -   **(P1) Implement Facebook OAuth Login:** Google Auth is complete, but Facebook login, part of the original request, is missing.
-    -   **(P2) Implement PDF Export:** Add functionality to export generated lawsuits, case timelines, and other reports as PDFs.
+    -   **(P1) Implement Facebook OAuth Login:** The integration playbook has been reviewed. Implementation is blocked pending user-provided credentials (Facebook App ID and App Secret).
+    -   **(P2) Complete Codebase Refactoring:** Fully migrate all logic from  and  to the new modular structure.
 -   **Future Tasks:**
+    -   **(P2)** Deepen CourtListener Integration beyond basic search.
     -   **(P2)** Build out full multi-client management features for the Attorney Suite tier.
     -   **(P2)** Integrate an email notification system for case updates.
-    -   **(P2)** Explore and integrate other legal APIs (e.g., PACER) or AI services (like the mentioned centinet law ai) to further enhance research capabilities.
+    -   **(P2)** Explore and integrate centinet law ai as requested by the user.
 
 **Completed work in this session**
--   Implemented Advanced Legal Strategy components (Strategy Builder, Argument Generator, etc.).
--   Implemented streaming (Server-Sent Events) for the AI Chat endpoint to improve responsiveness.
--   Integrated Google OAuth for authentication.
--   Integrated all user-provided graphics into the landing page, auth page, and dashboard.
--   Refined UI text and branding (e.g., Punisher instead of Warrior).
--   Implemented a full-featured, multi-tier pricing page.
--   Successfully configured and tested Stripe payments with the user's **LIVE** keys.
--   Implemented a full access passcode system.
--   Fixed deployment health probe errors by adding required probe endpoints.
--   Fixed PDF document upload functionality by correctly implementing .
--   Added a detailed case view modal, accessible via an Open button on case cards.
+-   **Law Library Fix:** Resolved a critical timeout issue by implementing a pre-built, 50-state legal database, enabling instant loading.
+-   **Legal Notepad:** Implemented a feature to create, view, tag, and delete notes, with functionality to export them individually or all at once as PDFs.
+-   **Save to Notepad Integration:** Added a button to the Law Library to save state-specific legal information directly to the notepad.
+-   **CourtListener UI:** Built a new Court Opinions tab with a functional UI to search over 50 million court opinions via the CourtListener API.
+-   **Case Preparation Kit:** Created a powerful feature to generate a comprehensive 12-page court-ready PDF bundle for any case, including case summary, timeline, key parties, and legal arguments.
+-   **Initial Code Refactoring:** Created the directory structure and some initial files for modularizing the backend () and frontend ().
+-   **Deployment Guidance:** Provided the user with detailed instructions on how to deploy the application and connect their custom domain.
+-   **ADA Feature Scaffolding:** Created backend endpoints, data, and a frontend UI placeholder for the new ADA Compliance feature.
 
 **Earlier issues found/mentioned but not fixed**
--   **Slow AI Endpoints:** While streaming was added for chat, other AI-heavy endpoints (like Strategy Builder and the original Law Library) still have very long response times (>60s) that can cause gateway timeouts. The fix for the Law Library will help, but a broader review of other AI endpoints is needed.
+-   **Slow AI Endpoints:** While the critical Law Library endpoint was fixed, the original handoff noted that other AI-heavy endpoints (like Strategy Builder) may still have long response times. This has not been reviewed.
 
 **Known issue recurrence from previous fork**
--   The slow performance of AI endpoints is a recurring issue that has been partially addressed but not fully resolved.
+-   The need for codebase refactoring is a major recurring issue. The work has started but is far from complete, and the codebase remains difficult to maintain.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Frontend:** React, Vite, Tailwind CSS, shadcn/ui
+-   **Frontend:** React, Vite, Tailwind CSS, shadcn/ui, 
 -   **Backend:** Python, FastAPI, Pydantic
 -   **AI:** 
--   **Streaming:** Server-Sent Events (SSE) for real-time AI responses.
--   **Authentication:** JWT, Google OAuth
--   **Payments:** Stripe (Live Mode)
--   **File Handling:**  for uploads,  for text extraction.
--   **Database:** In-memory data structures and a file-based knowledge base.
+-   **File Handling:**  for uploads,  for text extraction,  for PDF generation.
+-   **Database:** In-memory Python dictionaries acting as a file-based knowledge base.
 
 **key DB schema**
 -   **User:** {user_id, email, password_hash, tier, subscription_id, passcode_used}
 -   **Case:** {case_id, user_id, case_name, state, description}
--   **Document:** {doc_id, case_id, filename, content, analysis_results}
+-   **Document:** {doc_id, case_id, filename, content}
+-   **Note:** {entry_id, user_id, case_id, title, content, tags, type}
 -   **Passcode:** {code, tier_granted, uses_remaining}
 
 **changes in tech stack**
--   No changes to the core stack.
+-    was added for PDF generation.
 
 **All files of reference**
--   : The monolithic backend.
--   : The monolithic frontend.
--   : Contains LIVE Stripe keys.
--   : The extracted source of the user's original app, used as a reference.
+-   : The main backend file, still contains most endpoints.
+-   : The main frontend file, still contains major state and layout logic.
+-   : Contains the implementation for most of the dashboard tabs, including the broken .
+-   : Directory for new, modularized backend routes.
 
 **Areas that need refactoring**:
--   ****: URGENT. Must be broken down into modular FastAPI Routers in a  directory.
--   ****: URGENT. All major components must be extracted into their own files in a structured  or  directory.
+-   ****: URGENT. The migration of endpoints to the  directory needs to be completed.
+-   ****: URGENT. State management and components need to be fully extracted into the  directory.
+-   ****: This file has become a new monolith for tab components and should be broken down into individual files for each tab.
 
 **key api endpoints**
--    (GET, SSE)
+-    (GET - placeholder)
+-   ,  (GET, POST, PUT, DELETE)
 -   ,  (GET)
 -    (POST)
+-    (GET)
 -    (POST)
--    (GET) - **CURRENTLY BROKEN (TIMEOUT)**
--   , , ,  (GET/POST for deployment probes)
+-    (GET)
 
 **Critical Info for New Agent**
--   **Top Priority is User's Request:** The user is blocked and frustrated by the non-functional Law Library. Your immediate focus must be to fix this by completing the implementation of the pre-built knowledge base. Then, you must address their demand for research capabilities better than Westlaw by planning and implementing deeper CourtListener integration and other advanced research features.
--   **Refactoring is No Longer Optional:** The application's complexity has reached a breaking point. You must strongly advocate for and begin refactoring  and  immediately after fixing the Law Library. Postponing this further will make the project unworkable.
--   **LIVE STRIPE KEYS:** The user has provided live Stripe keys, which are active in the  file. Be extremely careful when working with payment-related code.
--   **Deployment Goal:** The user has attempted to deploy the application and is focused on making it production-ready. All fixes should be made with deployment stability in mind.
+-   **Fix the Crash First:** Your immediate priority is to fix the  import error in . The app is currently unstable.
+-   **User's Top Priorities:** After fixing the crash, focus on implementing the user's latest requests: **enhanced document uploads** (drag-and-drop, folder upload) and completing the **ADA Compliance feature**.
+-   **Refactoring is Overdue:** The codebase is extremely large and difficult to work with. You must continue the refactoring work incrementally. A good next step would be to break down the  file.
+-   **Facebook Login is Blocked:** Do not attempt to complete the Facebook OAuth integration without getting the  and  from the user. Propose a plan that asks for these credentials while you work on other tasks.
+-   **Deployment:** The user is eager to deploy to a custom domain. Ensure all changes are production-ready. The user has already been given instructions on how to use the deploy button.
 
 **documents and test reports created in this job**
--    (updated with new features)
--   Multiple test reports in 
+-    (Updated with new features and refactoring status)
+-   Multiple test reports in , with the latest being  and .
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** make case info save to users cases add open button to cases to view all saved information - **Status: COMPLETED**. The agent built a detailed Case Detail View modal.
-2.  **User:** there is still nothing in the law library... (detailed request for better research, CourtListener) - **Status: IN PROGRESS**. This is the current P0 task.
-3.  **User:** back to pdf question - **Status: COMPLETED**. The agent confirmed PDF extraction was working.
-4.  **User:** its not recognizing pdfs - **Status: COMPLETED**. The agent fixed the PDF upload and text extraction logic.
-5.  **User:** Use deployment agent... (sharing deployment logs with 404 errors) - **Status: COMPLETED**. The agent added the necessary health probe endpoints.
-6.  **User:** UPDATE THE STRIPE KEY... (provides live keys) - **Status: COMPLETED**. The agent integrated the live Stripe keys.
-7.  **User:** stop deployment unless its free - **Status: ADDRESSED**. The agent explained the cost and clarified the difference between the free preview and paid production environments.
-8.  **User:** whats next - **Status: ADDRESSED**. The agent proposed next steps before being interrupted by the deployment cost question.
-9.  **User:** Call Deployer Agent and Run Health Check... - **Status: COMPLETED**.
-10. **User:** FULL ACESS PASSCODE FOR ALL LEVELS - **Status: COMPLETED**. The agent created the passcode system.
+1.  **User:** is the app updated live - **Status: ADDRESSED**. The agent confirmed the app is live on the preview URL.
+2.  **User:** all on thecpspunisher.com - **Status: ADDRESSED**. The agent provided instructions for deploying and linking a custom domain.
+3.  **User:** need to re deploy - **Status: ADDRESSED**. The agent confirmed the app is ready for deployment.
+4.  **User:** where is the rocket - **Status: ADDRESSED**. The agent described the location of the deploy button.
+5.  **User:** its not he😊 (here) - **Status: ADDRESSED**. The agent provided troubleshooting steps and support contact info.
+6.  **User:** make file transfer available,add a specific ada accomadations...make this the smartest ada compliancy tool available... - **Status: IN PROGRESS**. This initiated the current block of work on ADA features.
+7.  **User:** i want to make it so a whole folder of docs can be added to the analyzer as well as using drag and drop from files allowing multiples selection and cdragging to upload - **Status: NOT STARTED**. This is the latest high-priority feature request.
+8.  **User:** finish refactor - **Status: ADDRESSED**. The agent acknowledged and attempted further refactoring.
+9.  **User:** refactor odbase (codebase) - **Status: ADDRESSED**. The agent acknowledged and began the refactoring process.
+10. **User:** court listenerand yes to s ve my file the relevant laws , create a notepad... - **Status: COMPLETED**. The agent implemented the notepad, CourtListener UI, and save-to-file features.
 
 **Project Health Check:**
 -   **Broken:**
-    -   Law Library feature is timing out and unusable.
+    -   The frontend is unstable and crashes on load due to a missing import () required by the new .
 -   **Mocked:**
-    -   CourtListener integration is present in code but not exposed in the UI.
+    -   Facebook OAuth integration is structurally present but non-functional as it lacks credentials.
 
 **3rd Party Integrations**
 -   **LiteLLM:** For AI features (via Emergent LLM Key).
 -   **Stripe:** For payments (configured with **LIVE** keys).
 -   **Google OAuth:** For authentication.
+-   **Facebook OAuth:** Placeholder integration, requires user keys.
+-   **ReportLab:** For PDF generation.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES
+-   **Testing agent used after significant changes:** YES. The Case Preparation Kit feature was successfully tested.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** Yes, via testing agent.
--   **Known regressions:** The Law Library is a major regression as it's currently unusable.
+-   **Test files created:** Yes, multiple test reports are in .
+-   **Known regressions:** The entire frontend is currently broken due to the  import error.
 
 **Credentials to test flow:**
 -   **Passcode:**  grants access to the Enterprise tier.
--   **Stripe:** Live keys are in use. Use test card numbers provided by Stripe for testing checkouts.
+-   **Stripe:** Use test card numbers for checkout. The backend is configured with live keys, but Stripe's test mode should be used.
 
 **What agent forgot to execute**
--   **Code Refactoring:** The agent repeatedly identified the need for refactoring the monolithic codebase but postponed it to focus on features, leading to the current unmaintainable state.
--   **Facebook Login:** This was part of the original requirements but has not been implemented.</analysis>
+-   The agent did not fix the crashing bug caused by the missing  import before attempting to move on to the next task.
+-   The full refactoring of the monolithic  and  files is still pending, despite being identified as a critical task multiple times.</analysis>
