@@ -2375,6 +2375,724 @@ STATE_CPS_DATABASE = {
         "discovery": "MCR 3.922",
         "key_cases": ["In re Sanders (2007)", "In re Rood (2009)"],
         "constitution": "Michigan Constitution Art. I, §17 - Due process"
+    },
+    "AZ": {
+        "agency": "Arizona Department of Child Safety (DCS)",
+        "statutes": "Arizona Revised Statutes Title 8",
+        "timeframes": {
+            "Preliminary Protective Hearing": "5-7 days",
+            "Dependency Adjudication": "90 days",
+            "Disposition": "30 days after adjudication",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "A.R.S. §8-201 - Definitions",
+            "A.R.S. §8-821 - Taking child into custody",
+            "A.R.S. §8-533 - TPR grounds"
+        ],
+        "discovery": "Arizona Rules of Procedure for Juvenile Court",
+        "key_cases": ["Michael J. v. Arizona DES (2006)", "In re Maricopa County (2004)"],
+        "constitution": "Arizona Constitution Art. 2, §4 - Due process"
+    },
+    "CO": {
+        "agency": "Colorado Department of Human Services",
+        "statutes": "Colorado Children's Code (C.R.S. Title 19)",
+        "timeframes": {
+            "Temporary Custody Hearing": "72 hours",
+            "Adjudicatory Hearing": "90 days",
+            "Dispositional Hearing": "45 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "C.R.S. §19-1-103 - Definitions",
+            "C.R.S. §19-3-401 - Taking child into custody",
+            "C.R.S. §19-3-604 - TPR criteria"
+        ],
+        "discovery": "C.R.C.P. 26; §19-1-303",
+        "key_cases": ["People in Interest of A.M. (2020)", "In re D.I.S. (2009)"],
+        "constitution": "Colorado Constitution Art. II, §25 - Due process"
+    },
+    "NJ": {
+        "agency": "Division of Child Protection and Permanency (DCP&P)",
+        "statutes": "N.J.S.A. Title 9, Title 30",
+        "timeframes": {
+            "Order to Show Cause": "2 days",
+            "Fact-Finding": "120 days",
+            "Disposition": "60 days after fact-finding",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "N.J.S.A. 9:6-8.21 - Definitions",
+            "N.J.S.A. 9:6-8.28 - Temporary removal",
+            "N.J.S.A. 30:4C-15 - TPR"
+        ],
+        "discovery": "N.J. Court Rules 5:12",
+        "key_cases": ["In re Guardianship of J.C. (2006)", "DYFS v. A.W. (2005)"],
+        "constitution": "New Jersey Constitution Art. I, §1 - Due process"
+    },
+    "VA": {
+        "agency": "Virginia Department of Social Services",
+        "statutes": "Virginia Code Title 16.1",
+        "timeframes": {
+            "Preliminary Removal Hearing": "5 days",
+            "Adjudicatory Hearing": "30 days",
+            "Dispositional Hearing": "60 days after adjudication",
+            "Foster Care Review": "Every 6 months"
+        },
+        "key_statutes": [
+            "Va. Code §16.1-228 - Definitions",
+            "Va. Code §16.1-251 - Emergency removal",
+            "Va. Code §16.1-283 - TPR"
+        ],
+        "discovery": "Va. Code §16.1-264",
+        "key_cases": ["Roanoke DSS v. Burns (2005)", "Bristol DSS v. Welch (2008)"],
+        "constitution": "Virginia Constitution Art. I, §11 - Due process"
+    },
+    "WA": {
+        "agency": "Department of Children, Youth, and Families (DCYF)",
+        "statutes": "RCW Title 13.34",
+        "timeframes": {
+            "Shelter Care Hearing": "72 hours",
+            "Fact-Finding": "75 days",
+            "Disposition": "14 days after fact-finding",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "RCW 13.34.030 - Definitions",
+            "RCW 13.34.050 - Taking child into custody",
+            "RCW 13.34.180 - TPR"
+        ],
+        "discovery": "RCW 13.34.096",
+        "key_cases": ["In re Dependency of K.R. (2015)", "In re Welfare of Key (2009)"],
+        "constitution": "Washington Constitution Art. I, §3 - Due process"
+    },
+    "MA": {
+        "agency": "Department of Children and Families (DCF)",
+        "statutes": "M.G.L. Chapter 119",
+        "timeframes": {
+            "72-Hour Hearing": "Next court day after emergency",
+            "Trial on Merits": "90 days",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "M.G.L. c.119 §21 - Definitions",
+            "M.G.L. c.119 §24 - Emergency custody",
+            "M.G.L. c.210 §3 - TPR"
+        ],
+        "discovery": "Mass. R. Civ. P. 26-37",
+        "key_cases": ["Adoption of Hugo (2002)", "Care & Protection of Robert (2006)"],
+        "constitution": "Massachusetts Constitution Art. 12 - Due process"
+    },
+    "IN": {
+        "agency": "Indiana Department of Child Services (DCS)",
+        "statutes": "Indiana Code Title 31",
+        "timeframes": {
+            "Detention Hearing": "48 hours",
+            "Initial Hearing": "10 days",
+            "Fact-Finding": "60 days",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "IC 31-34-1 - CHINS definitions",
+            "IC 31-34-4 - Emergency custody",
+            "IC 31-35-2 - TPR"
+        ],
+        "discovery": "Indiana Trial Rule 26",
+        "key_cases": ["In re K.T.K. (2009)", "Matter of A.I. (2015)"],
+        "constitution": "Indiana Constitution Art. 1, §12 - Due process"
+    },
+    "TN": {
+        "agency": "Department of Children's Services (DCS)",
+        "statutes": "Tennessee Code Title 37",
+        "timeframes": {
+            "Preliminary Hearing": "3 days",
+            "Adjudicatory Hearing": "90 days",
+            "Disposition": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "T.C.A. §37-1-102 - Definitions",
+            "T.C.A. §37-1-114 - Taking into custody",
+            "T.C.A. §36-1-113 - TPR grounds"
+        ],
+        "discovery": "Tenn. R. Juv. P. 25",
+        "key_cases": ["In re Adoption of A.M.H. (2008)", "State v. B.J.W. (2012)"],
+        "constitution": "Tennessee Constitution Art. I, §8 - Due process"
+    },
+    "MO": {
+        "agency": "Missouri Children's Division",
+        "statutes": "Missouri Revised Statutes Chapter 211",
+        "timeframes": {
+            "Protective Custody Hearing": "3 days",
+            "Adjudication": "60 days",
+            "Disposition": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "R.S.Mo. §211.031 - Jurisdiction",
+            "R.S.Mo. §211.032 - Protective custody",
+            "R.S.Mo. §211.447 - TPR"
+        ],
+        "discovery": "Missouri Supreme Court Rule 124",
+        "key_cases": ["In Interest of K.A.W. (2010)", "In re D.L.W. (2007)"],
+        "constitution": "Missouri Constitution Art. I, §10 - Due process"
+    },
+    "MD": {
+        "agency": "Department of Human Services - Social Services",
+        "statutes": "Courts & Judicial Proceedings Article, Title 3",
+        "timeframes": {
+            "Shelter Care Hearing": "Next business day",
+            "Adjudication": "60 days",
+            "Disposition": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "Md. Code, Cts. & Jud. Proc. §3-801 - Definitions",
+            "Md. Code, Cts. & Jud. Proc. §3-815 - Emergency custody",
+            "Md. Code, Fam. Law §5-323 - TPR"
+        ],
+        "discovery": "Maryland Rule 11-105",
+        "key_cases": ["In re Adoption/Guardianship No. 3598 (2003)", "In re Priscilla B. (2006)"],
+        "constitution": "Maryland Constitution Declaration of Rights Art. 24 - Due process"
+    },
+    "WI": {
+        "agency": "Wisconsin Department of Children and Families",
+        "statutes": "Wisconsin Statutes Chapter 48",
+        "timeframes": {
+            "Temporary Physical Custody Hearing": "48 hours",
+            "Plea Hearing": "30 days",
+            "Fact-Finding": "30 days after plea",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "Wis. Stat. §48.02 - Definitions",
+            "Wis. Stat. §48.19 - Taking into custody",
+            "Wis. Stat. §48.415 - TPR grounds"
+        ],
+        "discovery": "Wis. Stat. §48.293",
+        "key_cases": ["In re Termination of B.E. (2007)", "Sheboygan County v. Julie A.B. (2002)"],
+        "constitution": "Wisconsin Constitution Art. I, §1 - Due process"
+    },
+    "MN": {
+        "agency": "Minnesota Department of Human Services",
+        "statutes": "Minnesota Statutes Chapter 260C",
+        "timeframes": {
+            "Emergency Hearing": "72 hours",
+            "Admit/Deny Hearing": "20 days",
+            "Trial": "60 days from petition",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "Minn. Stat. §260C.007 - Definitions",
+            "Minn. Stat. §260C.175 - Emergency custody",
+            "Minn. Stat. §260C.301 - TPR"
+        ],
+        "discovery": "Minn. R. Juv. Prot. P. 9",
+        "key_cases": ["In re Welfare of J.J.B. (2006)", "In re Child of P.T. (2009)"],
+        "constitution": "Minnesota Constitution Art. I, §7 - Due process"
+    },
+    "SC": {
+        "agency": "South Carolina Department of Social Services",
+        "statutes": "South Carolina Code Title 63",
+        "timeframes": {
+            "Probable Cause Hearing": "72 hours",
+            "Merits Hearing": "35 days",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "S.C. Code §63-7-20 - Definitions",
+            "S.C. Code §63-7-620 - Emergency removal",
+            "S.C. Code §63-7-2570 - TPR"
+        ],
+        "discovery": "S.C. Code §63-7-1990",
+        "key_cases": ["S.C. DSS v. Wilson (2005)", "In re Angela P. (2008)"],
+        "constitution": "South Carolina Constitution Art. I, §3 - Due process"
+    },
+    "AL": {
+        "agency": "Alabama Department of Human Resources",
+        "statutes": "Alabama Code Title 12, Chapter 15",
+        "timeframes": {
+            "Shelter Care Hearing": "72 hours",
+            "Adjudicatory Hearing": "45 days",
+            "Dispositional Hearing": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "Ala. Code §12-15-102 - Definitions",
+            "Ala. Code §12-15-304 - Emergency custody",
+            "Ala. Code §12-15-319 - TPR"
+        ],
+        "discovery": "Ala. R. Juv. P. 13",
+        "key_cases": ["Ex parte Beasley (2003)", "J.M. v. D.G.M. (2010)"],
+        "constitution": "Alabama Constitution Art. I, §6 - Due process"
+    },
+    "LA": {
+        "agency": "Louisiana Department of Children and Family Services",
+        "statutes": "Louisiana Children's Code",
+        "timeframes": {
+            "Continued Custody Hearing": "3 days",
+            "Adjudication": "60 days",
+            "Disposition": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "La. Ch.C. Art. 603 - Definitions",
+            "La. Ch.C. Art. 619 - Emergency custody",
+            "La. Ch.C. Art. 1015 - TPR grounds"
+        ],
+        "discovery": "La. Ch.C. Art. 653",
+        "key_cases": ["State in Interest of J.A. (2006)", "In re C.M.M. (2009)"],
+        "constitution": "Louisiana Constitution Art. I, §2 - Due process"
+    },
+    "KY": {
+        "agency": "Kentucky Cabinet for Health and Family Services",
+        "statutes": "Kentucky Revised Statutes Chapter 620",
+        "timeframes": {
+            "Temporary Removal Hearing": "72 hours",
+            "Adjudication": "45 days",
+            "Disposition": "30 days after adjudication",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "KRS 620.020 - Definitions",
+            "KRS 620.060 - Emergency custody",
+            "KRS 625.090 - TPR grounds"
+        ],
+        "discovery": "KRS 620.060",
+        "key_cases": ["Cabinet v. B.L. (2008)", "In re J.R.G. (2005)"],
+        "constitution": "Kentucky Constitution §2 - Due process"
+    },
+    "OR": {
+        "agency": "Oregon Department of Human Services",
+        "statutes": "Oregon Revised Statutes Chapter 419B",
+        "timeframes": {
+            "Shelter Hearing": "24 hours",
+            "Jurisdiction Hearing": "60 days",
+            "Disposition": "14 days after jurisdiction",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "ORS 419B.005 - Definitions",
+            "ORS 419B.150 - Protective custody",
+            "ORS 419B.504 - TPR grounds"
+        ],
+        "discovery": "ORS 419B.195",
+        "key_cases": ["State ex rel. DHS v. W.A. (2006)", "In re Z.C. (2010)"],
+        "constitution": "Oregon Constitution Art. I, §10 - Due process"
+    },
+    "OK": {
+        "agency": "Oklahoma Department of Human Services",
+        "statutes": "Oklahoma Statutes Title 10A",
+        "timeframes": {
+            "Show Cause Hearing": "5 days",
+            "Adjudication": "90 days",
+            "Disposition": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "10A O.S. §1-1-105 - Definitions",
+            "10A O.S. §1-4-201 - Emergency custody",
+            "10A O.S. §1-4-904 - TPR grounds"
+        ],
+        "discovery": "10A O.S. §1-4-503",
+        "key_cases": ["In re T.T.S. (2007)", "Matter of C.G. (2012)"],
+        "constitution": "Oklahoma Constitution Art. 2, §7 - Due process"
+    },
+    "CT": {
+        "agency": "Connecticut Department of Children and Families",
+        "statutes": "Connecticut General Statutes Chapter 815t",
+        "timeframes": {
+            "Preliminary Hearing": "10 days",
+            "Adjudicatory Hearing": "60 days",
+            "Disposition": "90 days from filing",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "C.G.S. §46b-120 - Definitions",
+            "C.G.S. §17a-101g - Emergency custody",
+            "C.G.S. §45a-717 - TPR"
+        ],
+        "discovery": "Conn. Practice Book §33a-6",
+        "key_cases": ["In re Joseph W. (2007)", "In re Roshawn R. (2009)"],
+        "constitution": "Connecticut Constitution Art. I, §9 - Due process"
+    },
+    "IA": {
+        "agency": "Iowa Department of Human Services",
+        "statutes": "Iowa Code Chapter 232",
+        "timeframes": {
+            "Removal Hearing": "48 hours",
+            "Adjudicatory Hearing": "60 days",
+            "Dispositional Hearing": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "Iowa Code §232.2 - Definitions",
+            "Iowa Code §232.78 - Emergency custody",
+            "Iowa Code §232.116 - TPR grounds"
+        ],
+        "discovery": "Iowa R. Juv. P. 8.3",
+        "key_cases": ["In re H.S. (2008)", "In re J.L.W. (2006)"],
+        "constitution": "Iowa Constitution Art. I, §9 - Due process"
+    },
+    "MS": {
+        "agency": "Mississippi Department of Child Protection Services",
+        "statutes": "Mississippi Code Title 43, Chapter 21",
+        "timeframes": {
+            "Shelter Hearing": "48 hours",
+            "Adjudicatory Hearing": "90 days",
+            "Disposition": "14 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "Miss. Code §43-21-105 - Definitions",
+            "Miss. Code §43-21-303 - Emergency custody",
+            "Miss. Code §93-15-103 - TPR grounds"
+        ],
+        "discovery": "Miss. R. Civ. P. 26",
+        "key_cases": ["In Interest of J.P.H. (2005)", "L.G. v. Miss. DHS (2010)"],
+        "constitution": "Mississippi Constitution Art. 3, §14 - Due process"
+    },
+    "AR": {
+        "agency": "Arkansas Division of Children and Family Services",
+        "statutes": "Arkansas Code Title 9, Chapter 27",
+        "timeframes": {
+            "Probable Cause Hearing": "72 hours",
+            "Adjudication": "60 days",
+            "Review Hearing": "Every 6 months",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "Ark. Code §9-27-303 - Definitions",
+            "Ark. Code §9-27-313 - Emergency custody",
+            "Ark. Code §9-27-341 - TPR grounds"
+        ],
+        "discovery": "Ark. Code §9-27-325",
+        "key_cases": ["Trout v. Ark. DHS (2008)", "Dinkins v. Ark. DHS (2006)"],
+        "constitution": "Arkansas Constitution Art. 2, §8 - Due process"
+    },
+    "UT": {
+        "agency": "Utah Division of Child and Family Services",
+        "statutes": "Utah Code Title 80",
+        "timeframes": {
+            "Shelter Hearing": "72 hours",
+            "Pretrial/Adjudication": "60 days",
+            "Disposition": "30 days after adjudication",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "Utah Code §80-1-102 - Definitions",
+            "Utah Code §80-3-301 - Emergency custody",
+            "Utah Code §80-4-301 - TPR grounds"
+        ],
+        "discovery": "Utah R. Juv. P. 45",
+        "key_cases": ["In re B.R. (2007)", "State in Interest of K.F. (2009)"],
+        "constitution": "Utah Constitution Art. I, §7 - Due process"
+    },
+    "NV": {
+        "agency": "Nevada Division of Child and Family Services",
+        "statutes": "Nevada Revised Statutes Chapter 432B",
+        "timeframes": {
+            "Protective Custody Hearing": "72 hours",
+            "Adjudicatory Hearing": "30 days",
+            "Dispositional Hearing": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "NRS 432B.010 - Definitions",
+            "NRS 432B.390 - Emergency custody",
+            "NRS 128.105 - TPR grounds"
+        ],
+        "discovery": "NRS 432B.280",
+        "key_cases": ["In re N.J. (2008)", "In re Parental Rights as to A.G. (2010)"],
+        "constitution": "Nevada Constitution Art. 1, §8 - Due process"
+    },
+    "KS": {
+        "agency": "Kansas Department for Children and Families",
+        "statutes": "Kansas Statutes Chapter 38",
+        "timeframes": {
+            "Temporary Custody Hearing": "72 hours",
+            "Adjudication": "60 days",
+            "Disposition": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "K.S.A. 38-2202 - Definitions",
+            "K.S.A. 38-2232 - Emergency custody",
+            "K.S.A. 38-2269 - TPR grounds"
+        ],
+        "discovery": "K.S.A. 38-2244",
+        "key_cases": ["In re K.R. (2008)", "In re S.D. (2011)"],
+        "constitution": "Kansas Constitution Bill of Rights §18 - Due process"
+    },
+    "NM": {
+        "agency": "New Mexico Children, Youth and Families Department",
+        "statutes": "NMSA 1978, Chapter 32A",
+        "timeframes": {
+            "Custody Hearing": "10 days",
+            "Adjudication": "60 days",
+            "Disposition": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "NMSA §32A-4-2 - Definitions",
+            "NMSA §32A-4-6 - Emergency custody",
+            "NMSA §32A-4-28 - TPR grounds"
+        ],
+        "discovery": "NMRA, Rule 10-122",
+        "key_cases": ["In re Pamela A.G. (2006)", "State ex rel. CYFD v. Patricia H. (2009)"],
+        "constitution": "New Mexico Constitution Art. II, §18 - Due process"
+    },
+    "NE": {
+        "agency": "Nebraska Department of Health and Human Services",
+        "statutes": "Nebraska Revised Statutes Chapter 43",
+        "timeframes": {
+            "Detention Hearing": "48 hours",
+            "Adjudication": "90 days",
+            "Disposition": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "Neb. Rev. Stat. §43-245 - Definitions",
+            "Neb. Rev. Stat. §43-248 - Emergency custody",
+            "Neb. Rev. Stat. §43-292 - TPR grounds"
+        ],
+        "discovery": "Neb. Rev. Stat. §43-273.02",
+        "key_cases": ["In re Interest of Samantha C. (2008)", "In re Interest of Mainor T. (2005)"],
+        "constitution": "Nebraska Constitution Art. I, §3 - Due process"
+    },
+    "WV": {
+        "agency": "West Virginia Department of Health and Human Resources",
+        "statutes": "West Virginia Code Chapter 49",
+        "timeframes": {
+            "Preliminary Hearing": "10 days",
+            "Adjudicatory Hearing": "60 days",
+            "Disposition": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "W. Va. Code §49-1-201 - Definitions",
+            "W. Va. Code §49-4-304 - Emergency custody",
+            "W. Va. Code §49-4-604 - TPR grounds"
+        ],
+        "discovery": "W. Va. Code §49-4-602",
+        "key_cases": ["In re Jonathan P. (2007)", "State v. Michael M. (2010)"],
+        "constitution": "West Virginia Constitution Art. III, §10 - Due process"
+    },
+    "ID": {
+        "agency": "Idaho Department of Health and Welfare",
+        "statutes": "Idaho Code Title 16, Chapter 16",
+        "timeframes": {
+            "Shelter Care Hearing": "48 hours",
+            "Adjudicatory Hearing": "30 days",
+            "Dispositional Hearing": "14 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "Idaho Code §16-1602 - Definitions",
+            "Idaho Code §16-1608 - Emergency custody",
+            "Idaho Code §16-2005 - TPR grounds"
+        ],
+        "discovery": "I.R.C.P. 26",
+        "key_cases": ["In re Doe (2008)", "Idaho DHS v. Doe (2011)"],
+        "constitution": "Idaho Constitution Art. I, §13 - Due process"
+    },
+    "HI": {
+        "agency": "Hawaii Department of Human Services",
+        "statutes": "Hawaii Revised Statutes Chapter 587A",
+        "timeframes": {
+            "Temporary Custody Hearing": "48 hours",
+            "Adjudication": "60 days",
+            "Disposition": "30 days after adjudication",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "HRS §587A-4 - Definitions",
+            "HRS §587A-8 - Emergency custody",
+            "HRS §571-61 - TPR grounds"
+        ],
+        "discovery": "HRS §587A-16",
+        "key_cases": ["In re Doe (2007)", "DHS v. Roe Family (2010)"],
+        "constitution": "Hawaii Constitution Art. I, §5 - Due process"
+    },
+    "NH": {
+        "agency": "New Hampshire Division for Children, Youth and Families",
+        "statutes": "RSA Chapter 169-C",
+        "timeframes": {
+            "Preliminary Hearing": "24 hours",
+            "Adjudicatory Hearing": "60 days",
+            "Dispositional Hearing": "30 days after adjudication",
+            "Review Hearing": "Every 12 months"
+        },
+        "key_statutes": [
+            "RSA 169-C:3 - Definitions",
+            "RSA 169-C:6 - Emergency custody",
+            "RSA 170-C:5 - TPR grounds"
+        ],
+        "discovery": "N.H. Super. Ct. R. 21",
+        "key_cases": ["In re Baby Boy Doe (2005)", "In re Brendan C.-H. (2009)"],
+        "constitution": "New Hampshire Constitution Part I, Art. 15 - Due process"
+    },
+    "ME": {
+        "agency": "Maine Department of Health and Human Services",
+        "statutes": "Maine Revised Statutes Title 22, Chapter 1071",
+        "timeframes": {
+            "Preliminary Hearing": "7 days",
+            "Summary Preliminary Hearing": "24 hours (emergency)",
+            "Jeopardy Hearing": "120 days",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "22 M.R.S. §4002 - Definitions",
+            "22 M.R.S. §4034 - Emergency custody",
+            "22 M.R.S. §4055 - TPR grounds"
+        ],
+        "discovery": "22 M.R.S. §4008",
+        "key_cases": ["In re Thomas H. (2006)", "In re Michael C. (2010)"],
+        "constitution": "Maine Constitution Art. I, §6-A - Due process"
+    },
+    "RI": {
+        "agency": "Rhode Island Department of Children, Youth and Families",
+        "statutes": "Rhode Island General Laws Title 40",
+        "timeframes": {
+            "Detention Hearing": "48 hours",
+            "Adjudication": "90 days",
+            "Disposition": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "R.I. Gen. Laws §40-11-2 - Definitions",
+            "R.I. Gen. Laws §40-11-5 - Emergency custody",
+            "R.I. Gen. Laws §15-7-7 - TPR grounds"
+        ],
+        "discovery": "R.I. Gen. Laws §40-11-12",
+        "key_cases": ["In re Destiny B. (2007)", "In re M.B. (2011)"],
+        "constitution": "Rhode Island Constitution Art. I, §2 - Due process"
+    },
+    "MT": {
+        "agency": "Montana Department of Public Health and Human Services",
+        "statutes": "Montana Code Title 41",
+        "timeframes": {
+            "Show Cause Hearing": "20 days",
+            "Adjudication": "90 days",
+            "Disposition": "20 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "MCA §41-3-102 - Definitions",
+            "MCA §41-3-301 - Emergency custody",
+            "MCA §41-3-609 - TPR grounds"
+        ],
+        "discovery": "MCA §41-3-205",
+        "key_cases": ["In re A.N. (2008)", "In re D.B. (2006)"],
+        "constitution": "Montana Constitution Art. II, §17 - Due process"
+    },
+    "DE": {
+        "agency": "Delaware Division of Family Services",
+        "statutes": "Delaware Code Title 13, Chapter 9",
+        "timeframes": {
+            "Preliminary Hearing": "24 hours",
+            "Adjudicatory Hearing": "30 days",
+            "Dispositional Hearing": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "13 Del. C. §901 - Definitions",
+            "13 Del. C. §903 - Emergency custody",
+            "13 Del. C. §1103 - TPR grounds"
+        ],
+        "discovery": "Del. Fam. Ct. R. Civ. P. 26",
+        "key_cases": ["In re T.W. (2007)", "DSCYF v. Doe (2010)"],
+        "constitution": "Delaware Constitution Art. I, §7 - Due process"
+    },
+    "SD": {
+        "agency": "South Dakota Department of Social Services",
+        "statutes": "South Dakota Codified Laws Title 26",
+        "timeframes": {
+            "Temporary Custody Hearing": "48 hours",
+            "Adjudicatory Hearing": "60 days",
+            "Dispositional Hearing": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "SDCL 26-8A-2 - Definitions",
+            "SDCL 26-7A-12 - Emergency custody",
+            "SDCL 26-8A-26 - TPR grounds"
+        ],
+        "discovery": "SDCL 15-6-26",
+        "key_cases": ["In re A.S. (2008)", "People v. J.H. (2011)"],
+        "constitution": "South Dakota Constitution Art. VI, §2 - Due process"
+    },
+    "ND": {
+        "agency": "North Dakota Department of Human Services",
+        "statutes": "North Dakota Century Code Chapter 27-20",
+        "timeframes": {
+            "Shelter Care Hearing": "96 hours",
+            "Adjudicatory Hearing": "60 days",
+            "Dispositional Hearing": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "N.D.C.C. §27-20.2-01 - Definitions",
+            "N.D.C.C. §27-20.2-06 - Emergency custody",
+            "N.D.C.C. §27-20.3-20 - TPR grounds"
+        ],
+        "discovery": "N.D.R.Ct. 8.3",
+        "key_cases": ["In Interest of J.Z. (2007)", "In Interest of K.L. (2010)"],
+        "constitution": "North Dakota Constitution Art. I, §12 - Due process"
+    },
+    "AK": {
+        "agency": "Alaska Office of Children's Services",
+        "statutes": "Alaska Statutes Title 47, Chapter 17",
+        "timeframes": {
+            "Probable Cause Hearing": "48 hours",
+            "Adjudication": "120 days",
+            "Disposition": "60 days after adjudication",
+            "Permanency Hearing": "12 months"
+        },
+        "key_statutes": [
+            "AS 47.17.290 - Definitions",
+            "AS 47.10.142 - Emergency custody",
+            "AS 25.23.180 - TPR grounds"
+        ],
+        "discovery": "Alaska R. Civ. P. 26",
+        "key_cases": ["In re J.L.F. (2008)", "In re S.A. (2006)"],
+        "constitution": "Alaska Constitution Art. I, §7 - Due process"
+    },
+    "VT": {
+        "agency": "Vermont Department for Children and Families",
+        "statutes": "Vermont Statutes Title 33, Chapter 53",
+        "timeframes": {
+            "Temporary Care Hearing": "72 hours",
+            "Merits Hearing": "60 days",
+            "Disposition": "35 days after merits",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "33 V.S.A. §5102 - Definitions",
+            "33 V.S.A. §5302 - Emergency custody",
+            "15A V.S.A. §3-504 - TPR grounds"
+        ],
+        "discovery": "V.R.F.P. 4.1(i)",
+        "key_cases": ["In re G.S. (2008)", "In re A.F. (2011)"],
+        "constitution": "Vermont Constitution Ch. I, Art. 10 - Due process"
+    },
+    "WY": {
+        "agency": "Wyoming Department of Family Services",
+        "statutes": "Wyoming Statutes Title 14",
+        "timeframes": {
+            "Shelter Care Hearing": "48 hours",
+            "Adjudicatory Hearing": "60 days",
+            "Dispositional Hearing": "30 days after adjudication",
+            "Review Hearing": "Every 6 months"
+        },
+        "key_statutes": [
+            "Wyo. Stat. §14-3-402 - Definitions",
+            "Wyo. Stat. §14-3-405 - Emergency custody",
+            "Wyo. Stat. §14-2-309 - TPR grounds"
+        ],
+        "discovery": "W.R.C.P. 26",
+        "key_cases": ["In re DJG (2007)", "In re K.M.J. (2010)"],
+        "constitution": "Wyoming Constitution Art. 1, §6 - Due process"
     }
 }
 
