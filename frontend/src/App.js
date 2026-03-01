@@ -1967,47 +1967,125 @@ function DocumentsTab({ selectedCase }) {
       {/* Upload Tab */}
       {activeSubTab === 'upload' && (
         <div className="space-y-6">
-          {/* Upload Zone */}
+          {/* Upload Zone - Drop Area */}
           <div
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${
+            className={`border-2 border-dashed rounded-xl p-10 text-center transition-all ${
               dragActive 
-                ? 'border-red-500 bg-red-500/10' 
+                ? 'border-red-500 bg-red-500/10 scale-[1.01]' 
                 : 'border-gray-600 hover:border-red-600/50'
-            } ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+            } ${batchUploading ? 'opacity-50 pointer-events-none' : ''}`}
+            data-testid="upload-dropzone"
           >
-            {uploading ? (
+            {batchUploading ? (
               <div className="space-y-4">
                 <Loader2 className="w-16 h-16 mx-auto text-red-500 animate-spin" />
-                <p className="text-lg font-semibold text-red-400">{uploadProgress}</p>
-                <p className="text-gray-400">AI is analyzing your document for violations and timeline events...</p>
+                <p className="text-lg font-semibold text-red-400">
+                  Uploading {uploadQueue.filter(q => q.status === 'done').length}/{uploadQueue.filter(q => q.status !== 'error' || q.result).length} files...
+                </p>
+                <p className="text-gray-400">AI is analyzing your documents for violations and timeline events...</p>
               </div>
             ) : (
               <>
-                <Upload className="w-16 h-16 mx-auto text-gray-500 mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Drop Your CPS Documents Here</h3>
-                <p className="text-gray-400 mb-4">
+                <Upload className="w-14 h-14 mx-auto text-gray-500 mb-3" />
+                <h3 className="text-xl font-semibold mb-2">Drop Files or Folders Here</h3>
+                <p className="text-gray-400 mb-2">
                   Upload petitions, safety plans, court orders, letters, or any CPS documents
                 </p>
-                <p className="text-sm text-gray-500 mb-4">
-                  Supported: PDF, TXT, PNG, JPG, DOC, DOCX (Max 10MB)
+                <p className="text-sm text-gray-500 mb-5">
+                  Drag & drop multiple files or entire folders &bull; PDF, TXT, PNG, JPG, DOC, DOCX &bull; Max 10MB each
                 </p>
-                <label className="btn-punisher cursor-pointer inline-block">
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept=".pdf,.txt,.png,.jpg,.jpeg,.doc,.docx"
-                    onChange={(e) => e.target.files[0] && handleFileUpload(e.target.files[0])}
-                    data-testid="file-upload-input"
-                  />
-                  <Upload className="w-5 h-5 inline mr-2" />
-                  Select File to Upload
-                </label>
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <label className="btn-punisher cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors" data-testid="select-files-btn">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      className="hidden"
+                      accept=".pdf,.txt,.png,.jpg,.jpeg,.doc,.docx"
+                      multiple
+                      onChange={(e) => {
+                        if (e.target.files.length > 0) handleBatchUpload(e.target.files);
+                        e.target.value = '';
+                      }}
+                      data-testid="file-upload-input"
+                    />
+                    <Upload className="w-4 h-4" />
+                    Select Files
+                  </label>
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold transition-colors border border-gray-600" data-testid="select-folder-btn">
+                    <input
+                      ref={folderInputRef}
+                      type="file"
+                      className="hidden"
+                      webkitdirectory=""
+                      directory=""
+                      multiple
+                      onChange={(e) => {
+                        if (e.target.files.length > 0) handleBatchUpload(e.target.files);
+                        e.target.value = '';
+                      }}
+                      data-testid="folder-upload-input"
+                    />
+                    <FileText className="w-4 h-4" />
+                    Upload Folder
+                  </label>
+                </div>
               </>
             )}
           </div>
+
+          {/* Upload Queue */}
+          {uploadQueue.length > 0 && (
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5" data-testid="upload-queue">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Upload className="w-5 h-5 text-red-500" />
+                  Upload Queue ({uploadQueue.filter(q => q.status === 'done').length}/{uploadQueue.length})
+                </h3>
+                {!batchUploading && (
+                  <button onClick={clearQueue} className="text-sm text-gray-400 hover:text-white px-3 py-1 rounded bg-gray-700 hover:bg-gray-600" data-testid="clear-queue-btn">
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {uploadQueue.map((item, idx) => (
+                  <div key={idx} className={`flex items-center gap-3 p-3 rounded-lg ${
+                    item.status === 'done' ? 'bg-green-900/20 border border-green-800/30' :
+                    item.status === 'error' ? 'bg-red-900/20 border border-red-800/30' :
+                    item.status === 'uploading' ? 'bg-blue-900/20 border border-blue-800/30' :
+                    'bg-gray-900/50 border border-gray-800'
+                  }`} data-testid={`queue-item-${idx}`}>
+                    <div className="flex-shrink-0">
+                      {item.status === 'uploading' && <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />}
+                      {item.status === 'done' && <CheckCircle2 className="w-5 h-5 text-green-400" />}
+                      {item.status === 'error' && <AlertTriangle className="w-5 h-5 text-red-400" />}
+                      {item.status === 'pending' && <Clock className="w-5 h-5 text-gray-500" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{item.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {formatFileSize(item.size)}
+                        {item.status === 'uploading' && ' — Analyzing with AI...'}
+                        {item.status === 'done' && ` — ${item.result?.analysis_result?.violations_created || 0} violations found`}
+                        {item.status === 'error' && ` — ${item.error}`}
+                      </p>
+                    </div>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      item.status === 'done' ? 'bg-green-600/20 text-green-400' :
+                      item.status === 'error' ? 'bg-red-600/20 text-red-400' :
+                      item.status === 'uploading' ? 'bg-blue-600/20 text-blue-400' :
+                      'bg-gray-600/20 text-gray-400'
+                    }`}>
+                      {item.status === 'uploading' ? 'Analyzing' : item.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* What AI Will Find */}
           <div className="bg-gradient-to-r from-red-900/30 to-gray-900 border border-red-800/50 rounded-xl p-6">
