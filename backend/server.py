@@ -3372,7 +3372,428 @@ async def get_advocates(state: Optional[str] = None):
     return {"advocates": advocates}
 
 
-# ============== STRIPE PAYMENT ENDPOINTS ==============
+# ============== LEGAL NOTEPAD ==============
+
+@app.post("/api/notepad")
+async def create_notepad_entry(entry: NotepadEntryCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new notepad entry - can be global or case-specific"""
+    entry_id = str(uuid.uuid4())
+    
+    notepad_entry = {
+        "_id": entry_id,
+        "user_id": current_user["user_id"],
+        "case_id": entry.case_id,  # None for global notes
+        "title": entry.title,
+        "content": entry.content,
+        "category": entry.category,
+        "state": entry.state,
+        "source_type": entry.source_type,
+        "source_reference": entry.source_reference,
+        "tags": entry.tags or [],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.notepad_entries.insert_one(notepad_entry)
+    notepad_entry["id"] = notepad_entry.pop("_id")
+    return notepad_entry
+
+@app.get("/api/notepad")
+async def list_notepad_entries(
+    case_id: Optional[str] = None,
+    category: Optional[str] = None,
+    global_only: bool = False,
+    current_user: dict = Depends(get_current_user)
+):
+    """List notepad entries - filter by case or get global notes"""
+    query = {"user_id": current_user["user_id"]}
+    
+    if global_only:
+        query["case_id"] = None
+    elif case_id:
+        query["case_id"] = case_id
+    
+    if category:
+        query["category"] = category
+    
+    entries = []
+    async for entry in db.notepad_entries.find(query).sort("created_at", -1):
+        entry["id"] = entry.pop("_id")
+        entries.append(entry)
+    
+    return {"entries": entries, "total": len(entries)}
+
+@app.get("/api/notepad/{entry_id}")
+async def get_notepad_entry(entry_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a specific notepad entry"""
+    entry = await db.notepad_entries.find_one({
+        "_id": entry_id,
+        "user_id": current_user["user_id"]
+    })
+    
+    if not entry:
+        raise HTTPException(status_code=404, detail="Note not found")
+    
+    entry["id"] = entry.pop("_id")
+    return entry
+
+@app.put("/api/notepad/{entry_id}")
+async def update_notepad_entry(
+    entry_id: str,
+    update: NotepadEntryUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a notepad entry"""
+    existing = await db.notepad_entries.find_one({
+        "_id": entry_id,
+        "user_id": current_user["user_id"]
+    })
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Note not found")
+    
+    update_data = {k: v for k, v in update.dict().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.notepad_entries.update_one(
+        {"_id": entry_id},
+        {"$set": update_data}
+    )
+    
+    updated = await db.notepad_entries.find_one({"_id": entry_id})
+    updated["id"] = updated.pop("_id")
+    return updated
+
+@app.delete("/api/notepad/{entry_id}")
+async def delete_notepad_entry(entry_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a notepad entry"""
+    result = await db.notepad_entries.delete_one({
+        "_id": entry_id,
+        "user_id": current_user["user_id"]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Note not found")
+    
+    return {"status": "deleted", "id": entry_id}
+
+@app.post("/api/notepad/save-from-library")
+async def save_from_law_library(
+    state_code: str = Body(...),
+    case_id: Optional[str] = Body(None),
+    title: Optional[str] = Body(None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Quick save state law info to notepad"""
+    state_code = state_code.upper()
+    state_name = STATES_INFO.get(state_code)
+    
+    if not state_name:
+        raise HTTPException(status_code=404, detail="State not found")
+    
+    state_data = STATE_CPS_DATABASE.get(state_code)
+    if state_data:
+        content = format_state_law_info(state_code, state_name, state_data)
+    else:
+        content = get_generic_state_info(state_code, state_name)
+    
+    entry_id = str(uuid.uuid4())
+    notepad_entry = {
+        "_id": entry_id,
+        "user_id": current_user["user_id"],
+        "case_id": case_id,
+        "title": title or f"{state_name} CPS Law Reference",
+        "content": content,
+        "category": "statute",
+        "state": state_code,
+        "source_type": "law_library",
+        "source_reference": f"/api/law-library/{state_code}",
+        "tags": ["cps_law", state_code.lower(), "state_statute"],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.notepad_entries.insert_one(notepad_entry)
+    notepad_entry["id"] = notepad_entry.pop("_id")
+    return notepad_entry
+
+@app.post("/api/notepad/save-from-courtlistener")
+async def save_from_courtlistener(
+    case_name: str = Body(...),
+    citation: str = Body(...),
+    court: str = Body(...),
+    date_filed: str = Body(...),
+    snippet: str = Body(...),
+    url: str = Body(...),
+    case_id: Optional[str] = Body(None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Save CourtListener case to notepad"""
+    entry_id = str(uuid.uuid4())
+    
+    content = f"""
+═══════════════════════════════════════════════════════════════════
+                    COURT OPINION REFERENCE
+═══════════════════════════════════════════════════════════════════
+
+📋 CASE NAME
+   {case_name}
+
+📚 CITATION
+   {citation}
+
+🏛️ COURT
+   {court}
+
+📅 DATE FILED
+   {date_filed}
+
+📝 RELEVANT EXCERPT
+   {snippet}
+
+🔗 FULL OPINION
+   {url}
+
+═══════════════════════════════════════════════════════════════════
+"""
+    
+    notepad_entry = {
+        "_id": entry_id,
+        "user_id": current_user["user_id"],
+        "case_id": case_id,
+        "title": case_name,
+        "content": content,
+        "category": "case_law",
+        "state": None,
+        "source_type": "courtlistener",
+        "source_reference": url,
+        "tags": ["case_law", "courtlistener", court.lower().replace(" ", "_")],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.notepad_entries.insert_one(notepad_entry)
+    notepad_entry["id"] = notepad_entry.pop("_id")
+    return notepad_entry
+
+
+# ============== PDF EXPORT ==============
+
+@app.get("/api/export/notepad/{entry_id}/pdf")
+async def export_notepad_to_pdf(entry_id: str, current_user: dict = Depends(get_current_user)):
+    """Export a notepad entry as PDF"""
+    from io import BytesIO
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.units import inch
+    from fastapi.responses import StreamingResponse
+    
+    entry = await db.notepad_entries.find_one({
+        "_id": entry_id,
+        "user_id": current_user["user_id"]
+    })
+    
+    if not entry:
+        raise HTTPException(status_code=404, detail="Note not found")
+    
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=18, spaceAfter=20)
+    body_style = ParagraphStyle('CustomBody', parent=styles['Normal'], fontSize=10, leading=14)
+    
+    story = []
+    story.append(Paragraph(f"THE CPS PUNISHER - Legal Notepad", title_style))
+    story.append(Paragraph(entry.get("title", "Untitled"), styles['Heading2']))
+    story.append(Spacer(1, 12))
+    
+    # Convert content - handle special characters
+    content = entry.get("content", "").replace("\n", "<br/>")
+    content = content.replace("═", "-").replace("📋", "*").replace("📚", "*")
+    content = content.replace("🏛️", "*").replace("📅", "*").replace("📝", "*")
+    content = content.replace("🔗", "*").replace("⏱️", "*").replace("📜", "*")
+    content = content.replace("⚖️", "*").replace("📖", "*").replace("📌", "*")
+    
+    story.append(Paragraph(content, body_style))
+    story.append(Spacer(1, 20))
+    story.append(Paragraph(f"Category: {entry.get('category', 'N/A')}", styles['Normal']))
+    story.append(Paragraph(f"Created: {entry.get('created_at', 'N/A')}", styles['Normal']))
+    
+    doc.build(story)
+    buffer.seek(0)
+    
+    filename = f"cps_punisher_note_{entry_id[:8]}.pdf"
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@app.get("/api/export/case/{case_id}/pdf")
+async def export_case_to_pdf(case_id: str, current_user: dict = Depends(get_current_user)):
+    """Export full case summary as PDF"""
+    from io import BytesIO
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.units import inch
+    from reportlab.lib import colors
+    from fastapi.responses import StreamingResponse
+    
+    # Get case
+    case = await db.cases.find_one({"_id": case_id, "user_id": current_user["user_id"]})
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+    
+    # Get related data
+    violations = []
+    async for v in db.violations.find({"case_id": case_id}):
+        violations.append(v)
+    
+    timeline = []
+    async for t in db.timeline_events.find({"case_id": case_id}).sort("event_date", 1):
+        timeline.append(t)
+    
+    documents = []
+    async for d in db.documents.find({"case_id": case_id}):
+        documents.append(d)
+    
+    notes = []
+    async for n in db.notepad_entries.find({"case_id": case_id, "user_id": current_user["user_id"]}):
+        notes.append(n)
+    
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=20, spaceAfter=20)
+    section_style = ParagraphStyle('Section', parent=styles['Heading2'], fontSize=14, spaceBefore=15, spaceAfter=10)
+    
+    story = []
+    
+    # Header
+    story.append(Paragraph("THE CPS PUNISHER", title_style))
+    story.append(Paragraph("CASE SUMMARY REPORT", styles['Heading2']))
+    story.append(Spacer(1, 20))
+    
+    # Case Info
+    story.append(Paragraph("CASE INFORMATION", section_style))
+    case_info = [
+        ["Case Title:", case.get("title", "N/A")],
+        ["State:", case.get("state", "N/A")],
+        ["County:", case.get("county", "N/A")],
+        ["Case Number:", case.get("case_number", "N/A")],
+        ["Status:", case.get("status", "active")],
+        ["Created:", case.get("created_at", "N/A")[:10] if case.get("created_at") else "N/A"]
+    ]
+    t = Table(case_info, colWidths=[2*inch, 4*inch])
+    t.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(t)
+    story.append(Spacer(1, 15))
+    
+    # Violations
+    if violations:
+        story.append(Paragraph(f"VIOLATIONS IDENTIFIED ({len(violations)})", section_style))
+        for v in violations:
+            story.append(Paragraph(f"• {v.get('violation_type', 'Unknown')}: {v.get('description', '')[:100]}...", styles['Normal']))
+        story.append(Spacer(1, 10))
+    
+    # Timeline
+    if timeline:
+        story.append(Paragraph(f"CASE TIMELINE ({len(timeline)} events)", section_style))
+        for t in timeline[:10]:  # Limit to 10
+            story.append(Paragraph(f"• {t.get('event_date', 'N/A')}: {t.get('title', 'Untitled')}", styles['Normal']))
+        story.append(Spacer(1, 10))
+    
+    # Notes
+    if notes:
+        story.append(Paragraph(f"LEGAL NOTES ({len(notes)})", section_style))
+        for n in notes[:5]:  # Limit to 5
+            story.append(Paragraph(f"• {n.get('title', 'Untitled')} ({n.get('category', 'general')})", styles['Normal']))
+    
+    # Footer
+    story.append(Spacer(1, 30))
+    story.append(Paragraph("Generated by THE CPS PUNISHER - AI-Powered Legal Defense Platform", styles['Italic']))
+    story.append(Paragraph("This document is for informational purposes only. Consult a licensed attorney.", styles['Italic']))
+    
+    doc.build(story)
+    buffer.seek(0)
+    
+    filename = f"cps_case_{case_id[:8]}_summary.pdf"
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@app.get("/api/export/notepad/all/pdf")
+async def export_all_notes_to_pdf(
+    case_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export all notepad entries as single PDF"""
+    from io import BytesIO
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+    from reportlab.lib.units import inch
+    from fastapi.responses import StreamingResponse
+    
+    query = {"user_id": current_user["user_id"]}
+    if case_id:
+        query["case_id"] = case_id
+    
+    entries = []
+    async for entry in db.notepad_entries.find(query).sort("created_at", -1):
+        entries.append(entry)
+    
+    if not entries:
+        raise HTTPException(status_code=404, detail="No notes found")
+    
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=20, spaceAfter=20)
+    
+    story = []
+    story.append(Paragraph("THE CPS PUNISHER - Legal Research Notebook", title_style))
+    story.append(Paragraph(f"Total Notes: {len(entries)}", styles['Normal']))
+    story.append(Spacer(1, 20))
+    
+    for i, entry in enumerate(entries):
+        if i > 0:
+            story.append(PageBreak())
+        
+        story.append(Paragraph(entry.get("title", "Untitled"), styles['Heading2']))
+        story.append(Paragraph(f"Category: {entry.get('category', 'general')} | Created: {entry.get('created_at', 'N/A')[:10]}", styles['Italic']))
+        story.append(Spacer(1, 10))
+        
+        content = entry.get("content", "").replace("\n", "<br/>")
+        content = content.replace("═", "-").replace("📋", "*").replace("📚", "*")
+        content = content.replace("🏛️", "*").replace("📅", "*").replace("📝", "*")
+        content = content.replace("🔗", "*").replace("⏱️", "*").replace("📜", "*")
+        content = content.replace("⚖️", "*").replace("📖", "*").replace("📌", "*")
+        
+        story.append(Paragraph(content, styles['Normal']))
+    
+    doc.build(story)
+    buffer.seek(0)
+    
+    filename = f"cps_punisher_all_notes.pdf"
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 class CheckoutRequest(BaseModel):
     tier: str
