@@ -2146,9 +2146,16 @@ async def search_court_opinions(
                 # Format results for frontend
                 formatted_results = []
                 for r in data.get("results", [])[:20]:
+                    # Handle citation - it can be a list of strings
+                    citation = r.get("citation", [])
+                    if isinstance(citation, list) and len(citation) > 0:
+                        citation_str = citation[0] if isinstance(citation[0], str) else str(citation[0])
+                    else:
+                        citation_str = str(citation) if citation else ""
+                    
                     formatted_results.append({
                         "caseName": r.get("caseName", "Unknown Case"),
-                        "citation": r.get("citation", [{}])[0].get("cite", "") if isinstance(r.get("citation"), list) else r.get("citation", ""),
+                        "citation": citation_str,
                         "court": r.get("court", r.get("court_id", "Unknown Court")),
                         "court_id": r.get("court_id", ""),
                         "dateFiled": r.get("dateFiled", "Unknown"),
