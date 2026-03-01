@@ -344,6 +344,7 @@ async def get_case_with_ownership(case_id: str, user_id: str):
 # ============== HEALTH & API INFO ENDPOINTS ==============
 
 @app.get("/api")
+@app.post("/api")
 async def api_root():
     """Root API endpoint for health probes"""
     return {
@@ -367,6 +368,17 @@ async def swagger_json_docs():
 async def api_swagger_json():
     """Return OpenAPI schema"""
     return app.openapi()
+
+# GraphQL probe endpoints (return info that this is a REST API)
+@app.post("/api/graphql")
+@app.post("/api/gql")
+async def graphql_not_supported():
+    """Return info that this is a REST API, not GraphQL"""
+    return {
+        "error": "GraphQL not supported",
+        "message": "This is a REST API. See /docs for available endpoints.",
+        "docs": "/docs"
+    }
 
 
 # ============== AUTH ENDPOINTS ==============
