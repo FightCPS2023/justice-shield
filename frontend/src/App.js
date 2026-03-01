@@ -347,13 +347,15 @@ function AuthPage({ onNavigate }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-red-950/30 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-black p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Shield className="w-16 h-16 mx-auto text-red-600 mb-4" />
-          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>
-            THE CPS PUNISHER
-          </h1>
+          <img 
+            src="/images/cracked-logo.jpg" 
+            alt="CPS Punisher" 
+            className="w-64 mx-auto mb-4"
+            style={{ filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.2))' }}
+          />
           <p className="text-gray-400 mt-2">
             {isLogin ? 'Sign in to continue your fight' : 'Create your account to fight back'}
           </p>
