@@ -359,10 +359,9 @@ async def api_user_root():
     return {"status": "ok", "endpoint": "user"}
 
 @app.get("/api-docs/swagger.json")
-async def swagger_json_redirect():
-    """Redirect to OpenAPI schema"""
-    from fastapi.responses import RedirectResponse
-    return RedirectResponse(url="/openapi.json")
+async def swagger_json_docs():
+    """Return OpenAPI schema for api-docs"""
+    return app.openapi()
 
 @app.get("/api/swagger.json")
 async def api_swagger_json():
