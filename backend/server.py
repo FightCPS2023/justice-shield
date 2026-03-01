@@ -45,16 +45,12 @@ EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
 STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY")
 COURTLISTENER_API_KEY = os.environ.get("COURTLISTENER_API_KEY", "")
 
-# Stripe pricing tiers
-STRIPE_PRICE_IDS = {
-    "essential_monthly": "price_1SZChVLer5ye2GBih8C2Cn8U",
-    "essential_annual": "price_1SZDqXLer5ye2GBi27cH4jsS",
-    "professional_monthly": "price_1SZDlfLer5ye2GBidSCef53l",
-    "professional_annual": "price_1SZDwnLer5ye2GBiqEl9SAba",
-    "attorney_monthly": "price_1SZDnkLer5ye2GBisGCQtncE",
-    "attorney_annual": "price_1SZDsSLer5ye2GBieHTotLLO",
-    "enterprise_monthly": "price_1SZDpeLer5ye2GBi9gT16zyW",
-    "enterprise_annual": "price_1SZDueLer5ye2GBiRifVwAeC",
+# Stripe pricing tiers - Using amount-based checkout (more flexible)
+TIER_PRICING = {
+    "essential": {"monthly": 49.00, "annual": 490.00, "name": "Essential"},
+    "professional": {"monthly": 99.00, "annual": 990.00, "name": "Professional"},
+    "attorney": {"monthly": 299.00, "annual": 2990.00, "name": "Attorney Suite"},
+    "enterprise": {"monthly": 999.00, "annual": 9990.00, "name": "Enterprise"},
 }
 
 TIER_FEATURES = {
