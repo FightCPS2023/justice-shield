@@ -2521,6 +2521,7 @@ function LawLibraryTab() {
   const [selectedState, setSelectedState] = useState('');
   const [stateInfo, setStateInfo] = useState('');
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const states = [
     { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' },
@@ -2560,6 +2561,19 @@ function LawLibraryTab() {
       toast.error('Failed to load state information');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveToNotepad = async () => {
+    if (!selectedState) return;
+    setSaving(true);
+    try {
+      await api.post('/api/notepad/save-from-library', { state_code: selectedState });
+      toast.success(`${states.find(s => s.code === selectedState)?.name} CPS Law saved to your Legal Notepad!`);
+    } catch (error) {
+      toast.error('Failed to save to notepad');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -2606,14 +2620,25 @@ function LawLibraryTab() {
 
       {stateInfo && !loading && (
         <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
             <h2 className="text-2xl font-bold text-red-500" style={{ fontFamily: 'Oswald, sans-serif' }}>
               {states.find(s => s.code === selectedState)?.name} CPS Law Guide
             </h2>
-            <span className="px-3 py-1 bg-green-600/20 border border-green-500 text-green-400 text-xs rounded-full flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" />
-              Instant Access
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="px-3 py-1 bg-green-600/20 border border-green-500 text-green-400 text-xs rounded-full flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                Instant Access
+              </span>
+              <button
+                onClick={saveToNotepad}
+                disabled={saving}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2 text-sm font-semibold transition-all disabled:opacity-50"
+                data-testid="save-to-notepad-btn"
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                Save to Notepad
+              </button>
+            </div>
           </div>
           <div className="prose prose-invert max-w-none bg-black/30 rounded-lg p-6 border border-gray-700/50">
             <pre className="whitespace-pre-wrap text-sm text-gray-300 font-mono leading-relaxed">{stateInfo}</pre>
