@@ -976,10 +976,10 @@ function CaseDetailModal({ caseData, onClose, api }) {
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="p-6 border-b border-gray-700 flex items-center justify-between bg-gradient-to-r from-red-900/30 to-gray-900">
+    <div className="fixed inset-0 bg-black/90 flex items-start justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-5xl my-8 flex flex-col">
+        {/* Header - sticky */}
+        <div className="sticky top-0 p-6 border-b border-gray-700 flex items-center justify-between bg-gradient-to-r from-red-900/30 to-gray-900 rounded-t-xl z-10">
           <div className="flex items-center gap-4">
             <img src="/images/shield-logo.png" alt="Logo" className="w-10 h-12" />
             <div>
