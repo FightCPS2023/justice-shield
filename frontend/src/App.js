@@ -182,12 +182,12 @@ function LandingPage({ onNavigate }) {
           <img 
             src="/images/hero-logo.jpg" 
             alt="The CPS Punisher" 
-            className="w-full h-full object-cover opacity-60"
+            className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
         </div>
         
-        <div className="relative z-10 container mx-auto px-4 text-center max-w-5xl py-20">
+        <div className="relative z-10 container mx-auto px-4 text-center max-w-5xl py-20 mt-48">
           {/* Badges */}
           <div className="flex items-center justify-center gap-4 mb-8 flex-wrap">
             <span className="px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm">
@@ -203,20 +203,6 @@ function LandingPage({ onNavigate }) {
               100% Confidential
             </span>
           </div>
-
-          {/* Chrome Logo */}
-          <div className="mb-8">
-            <img 
-              src="/images/chrome-logo.jpg" 
-              alt="CPS Punisher Logo" 
-              className="w-80 md:w-96 mx-auto"
-              style={{ filter: 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.3))' }}
-            />
-          </div>
-
-          <p className="text-xl md:text-2xl text-red-400 mb-4 uppercase tracking-wide font-bold">
-            The Legal Educator They Didn't Want You To Find!
-          </p>
           
           <p className="text-lg text-gray-300 mb-12 max-w-3xl mx-auto">
             AI-powered case analysis, violation detection, and defense strategy generation. 
