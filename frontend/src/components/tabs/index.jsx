@@ -14,18 +14,9 @@ import {
   CreditCard, Star, BarChart3, TrendingUp, Activity, Lightbulb, 
   PenTool, UserCheck, Phone, Mail, MapPin, Building, Newspaper
 } from 'lucide-react';
-// useAuth is imported from the main App.js where AuthContext is defined
-// This import will be resolved when the refactored App.js is active
-const useAuth = () => {
-  const React = require('react');
-  const AuthContext = React.useContext(require('../../App.refactored').default?.AuthContext);
-  // Fallback: get from window or direct import
-  return window.__AUTH_CONTEXT__ || { api: { get: () => {}, post: () => {}, put: () => {}, delete: () => {} }, user: null };
-};
-
-// Alternative: Import from App.js directly for now
-import { useAuth as useAuthFromApp } from '../../App';
-const useAuthHook = typeof useAuthFromApp === 'function' ? useAuthFromApp : useAuth;
+// Import useAuth from the main App
+// Note: After full migration, this will import from AuthContext
+import { useAuth } from '../../App';
 
 function OverviewTab({ cases, setActiveTab }) {
   const quickActions = [
