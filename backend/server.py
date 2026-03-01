@@ -840,10 +840,26 @@ async def upload_document(
     if file_ext == '.txt':
         extracted_text = content.decode('utf-8', errors='ignore')
     elif file_ext == '.pdf':
-        # For PDF, we'll use AI to extract/describe content
-        import base64
-        # Store raw content and let AI analyze
-        extracted_text = f"[PDF Document: {file.filename}]\n\nNote: PDF content requires AI extraction. Running analysis..."
+        # Extract text from PDF using pypdf
+        try:
+            from pypdf import PdfReader
+            import io
+            
+            pdf_reader = PdfReader(io.BytesIO(content))
+            pdf_text_parts = []
+            
+            for page_num, page in enumerate(pdf_reader.pages, 1):
+                page_text = page.extract_text()
+                if page_text:
+                    pdf_text_parts.append(f"--- Page {page_num} ---\n{page_text}")
+            
+            if pdf_text_parts:
+                extracted_text = f"[PDF Document: {file.filename}]\n\n" + "\n\n".join(pdf_text_parts)
+            else:
+                # PDF might be scanned/image-based
+                extracted_text = f"[PDF Document: {file.filename}]\n\nNote: This PDF appears to be image-based or has no extractable text. AI analysis will attempt to process it."
+        except Exception as e:
+            extracted_text = f"[PDF Document: {file.filename}]\n\nPDF text extraction failed: {str(e)}. AI analysis will attempt to process it."
     elif file_ext in {'.png', '.jpg', '.jpeg'}:
         # For images, we'll use AI vision to extract text
         import base64
