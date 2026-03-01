@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="5" failures="10" skipped="0" tests="69" time="711.440" timestamp="2026-03-01T01:32:11.127105+00:00" hostname="agent-env-45ad5ee9-a319-4ceb-bf29-e25863725503"><testcase classname="tests.test_advanced_legal_strategy.TestAuthAndCases" name="test_login_works" time="0.458" /><testcase classname="tests.test_advanced_legal_strategy.TestAuthAndCases" name="test_signup_returns_400_for_existing_email" time="0.523" /><testcase classname="tests.test_advanced_legal_strategy.TestAuthAndCases" name="test_get_cases" time="0.125" /><testcase classname="tests.test_advanced_legal_strategy.TestPrecedentFinder" name="test_precedent_finder_search_basic" time="38.687" /><testcase classname="tests.test_advanced_legal_strategy.TestPrecedentFinder" name="test_precedent_finder_with_state" time="39.823" /><testcase classname="tests.test_advanced_legal_strategy.TestPrecedentFinder" name="test_precedent_finder_returns_case_law_data" time="42.306" /><testcase classname="tests.test_advanced_legal_strategy.TestPrecedentFinder" name="test_precedent_finder_unauthorized" time="0.184" /><testcase classname="tests.test_advanced_legal_strategy.TestStrategyBuilder" name="test_strategy_builder_requires_auth" time="0.121" /><testcase classname="tests.test_advanced_legal_strategy.TestStrategyBuilder" name="test_strategy_builder_requires_case_id" time="0.106" /><testcase classname="tests.test_advanced_legal_strategy.TestStrategyBuilder" name="test_strategy_builder_build" time="60.104"><failure message="AssertionError: Strategy build failed: The preview environment is not responding. It may be starting up.&#10;  &#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code">tests/test_advanced_legal_strategy.py:190: in test_strategy_builder_build
+    assert response.status_code == 200, f"Strategy build failed: {response.text}"
+E   AssertionError: Strategy build failed: The preview environment is not responding. It may be starting up.
+E     
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</failure></testcase><testcase classname="tests.test_advanced_legal_strategy.TestStrategyBuilder" name="test_strategy_builder_saved_endpoint" time="60.220"><failure message="assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code">tests/test_advanced_legal_strategy.py:212: in test_strategy_builder_saved_endpoint
+    assert response.status_code == 200
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</failure></testcase><testcase classname="tests.test_advanced_legal_strategy.TestArgumentGenerator" name="test_argument_generator_requires_auth" time="60.251"><failure message="assert 502 == 401&#10; +  where 502 = &lt;Response [502]&gt;.status_code">tests/test_advanced_legal_strategy.py:230: in test_argument_generator_requires_auth
+    assert response.status_code == 401
+E   assert 502 == 401
+E    +  where 502 = &lt;Response [502]&gt;.status_code</failure></testcase><testcase classname="tests.test_advanced_legal_strategy.TestArgumentGenerator" name="test_argument_generator_generate" time="35.487" /><testcase classname="tests.test_advanced_legal_strategy.TestArgumentGenerator" name="test_argument_generator_saved_endpoint" time="0.386" /><testcase classname="tests.test_advanced_legal_strategy.TestArgumentGenerator" name="test_argument_generator_different_types" time="117.395" /><testcase classname="tests.test_advanced_legal_strategy.TestEvidenceMapper" name="test_evidence_mapper_requires_auth" time="0.270" /><testcase classname="tests.test_advanced_legal_strategy.TestEvidenceMapper" name="test_evidence_mapper_map" time="37.660" /><testcase classname="tests.test_advanced_legal_strategy.TestEvidenceMapper" name="test_evidence_mapper_without_violation_type" time="52.117" /><testcase classname="tests.test_advanced_legal_strategy.TestExistingFeatures" name="test_case_crud" time="0.544" /><testcase classname="tests.test_advanced_legal_strategy.TestExistingFeatures" name="test_ai_chat" time="11.458" /><testcase classname="tests.test_cps_punisher.TestHealthCheck" name="test_health_endpoint" time="0.578" /><testcase classname="tests.test_cps_punisher.TestAuthentication" name="test_signup_new_user" time="0.627" /><testcase classname="tests.test_cps_punisher.TestAuthentication" name="test_signup_duplicate_email" time="0.324" /><testcase classname="tests.test_cps_punisher.TestAuthentication" name="test_login_success" time="0.508" /><testcase classname="tests.test_cps_punisher.TestAuthentication" name="test_login_invalid_credentials" time="0.460" /><testcase classname="tests.test_cps_punisher.TestAuthentication" name="test_get_current_user" time="0.123" /><testcase classname="tests.test_cps_punisher.TestCaseCRUD" name="test_create_case" time="0.107" /><testcase classname="tests.test_cps_punisher.TestCaseCRUD" name="test_get_case_list" time="0.224" /><testcase classname="tests.test_cps_punisher.TestCaseCRUD" name="test_get_specific_case" time="0.106" /><testcase classname="tests.test_cps_punisher.TestCaseCRUD" name="test_update_case" time="22.414" /><testcase classname="tests.test_cps_punisher.TestViolations" name="test_create_violation" time="0.122" /><testcase classname="tests.test_cps_punisher.TestViolations" name="test_list_violations" time="0.122" /><testcase classname="tests.test_cps_punisher.TestViolations" name="test_get_violation_types" time="0.102" /><testcase classname="tests.test_cps_punisher.TestTimeline" name="test_create_timeline_event" time="0.149" /><testcase classname="tests.test_cps_punisher.TestTimeline" name="test_list_timeline_events" time="0.116" /><testcase classname="tests.test_cps_punisher.TestDocuments" name="test_create_document" time="0.113" /><testcase classname="tests.test_cps_punisher.TestDocuments" name="test_list_documents" time="0.124" /><testcase classname="tests.test_cps_punisher.TestCalendar" name="test_create_calendar_event" time="0.114" /><testcase classname="tests.test_cps_punisher.TestCalendar" name="test_list_calendar_events" time="0.111" /><testcase classname="tests.test_cps_punisher.TestLawLibrary" name="test_get_all_states" time="0.138" /><testcase classname="tests.test_cps_punisher.TestAIChat" name="test_ai_chat_simple_question" time="25.551" /><testcase classname="tests.test_cps_punisher.TestCleanup" name="test_delete_calendar_event" time="0.255" /><testcase classname="tests.test_cps_punisher.TestCleanup" name="test_delete_document" time="0.126" /><testcase classname="tests.test_cps_punisher.TestCleanup" name="test_delete_violation" time="0.121" /><testcase classname="tests.test_cps_punisher.TestCleanup" name="test_delete_case" time="0.231" /><testcase classname="tests.test_document_upload_analysis.TestDocumentUploadAndAnalysis" name="test_01_upload_text_document_with_auto_analyze" time="53.948" /><testcase classname="tests.test_document_upload_analysis.TestDocumentUploadAndAnalysis" name="test_02_get_document_analysis" time="0.149" /><testcase classname="tests.test_document_upload_analysis.TestDocumentUploadAndAnalysis" name="test_03_verify_violations_auto_created" time="0.054" /><testcase classname="tests.test_document_upload_analysis.TestDocumentUploadAndAnalysis" name="test_04_verify_timeline_events_auto_created" time="0.099" /><testcase classname="tests.test_document_upload_analysis.TestDocumentUploadAndAnalysis" name="test_05_document_reanalysis" time="44.165" /><testcase classname="tests.test_document_upload_analysis.TestDocumentUploadAndAnalysis" name="test_06_upload_document_invalid_file_type" time="0.173" /><testcase classname="tests.test_document_upload_analysis.TestDocumentUploadAndAnalysis" name="test_07_upload_document_without_case_id" time="0.134" /><testcase classname="tests.test_document_upload_analysis.TestDocumentUploadAndAnalysis" name="test_08_upload_document_without_analyze" time="0.107" /><testcase classname="tests.test_document_upload_analysis.TestDocumentUploadAndAnalysis" name="test_09_list_documents_for_case" time="0.067" /><testcase classname="tests.test_document_upload_analysis.TestDocumentUploadAndAnalysis" name="test_10_get_analysis_nonexistent_document" time="0.126" /><testcase classname="tests.test_document_upload_analysis.TestDocumentUploadValidation" name="test_upload_without_auth" time="0.621" /><testcase classname="tests.test_document_upload_analysis.TestDocumentUploadValidation" name="test_upload_to_other_users_case" time="0.158" /><testcase classname="tests.test_streaming_oauth.TestExistingAuth" name="test_login_success" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?">tests/test_streaming_oauth.py:25: in test_login_success
+    response = requests.post(
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</failure></testcase><testcase classname="tests.test_streaming_oauth.TestExistingAuth" name="test_login_invalid_credentials" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?">tests/test_streaming_oauth.py:39: in test_login_invalid_credentials
+    response = requests.post(
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</failure></testcase><testcase classname="tests.test_streaming_oauth.TestExistingAuth" name="test_signup_new_user" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/auth/signup': No scheme supplied. Perhaps you meant https:///api/auth/signup?">tests/test_streaming_oauth.py:50: in test_signup_new_user
+    response = requests.post(
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/signup': No scheme supplied. Perhaps you meant https:///api/auth/signup?</failure></testcase><testcase classname="tests.test_streaming_oauth.TestExistingAuth" name="test_protected_endpoint_without_token" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/cases': No scheme supplied. Perhaps you meant https:///api/cases?">tests/test_streaming_oauth.py:67: in test_protected_endpoint_without_token
+    response = requests.get(f"{BASE_URL}/api/cases")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:73: in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/cases': No scheme supplied. Perhaps you meant https:///api/cases?</failure></testcase><testcase classname="tests.test_streaming_oauth.TestGoogleOAuthSession" name="test_google_session_missing_session_id" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/auth/google/session': No scheme supplied. Perhaps you meant https:///api/auth/google/session?">tests/test_streaming_oauth.py:77: in test_google_session_missing_session_id
+    response = requests.post(
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/google/session': No scheme supplied. Perhaps you meant https:///api/auth/google/session?</failure></testcase><testcase classname="tests.test_streaming_oauth.TestGoogleOAuthSession" name="test_google_session_invalid_session_id" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/auth/google/session': No scheme supplied. Perhaps you meant https:///api/auth/google/session?">tests/test_streaming_oauth.py:87: in test_google_session_invalid_session_id
+    response = requests.post(
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/google/session': No scheme supplied. Perhaps you meant https:///api/auth/google/session?</failure></testcase><testcase classname="tests.test_streaming_oauth.TestGoogleOAuthSession" name="test_google_logout_endpoint_exists" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/auth/google/logout': No scheme supplied. Perhaps you meant https:///api/auth/google/logout?">tests/test_streaming_oauth.py:97: in test_google_logout_endpoint_exists
+    response = requests.post(f"{BASE_URL}/api/auth/google/logout")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/google/logout': No scheme supplied. Perhaps you meant https:///api/auth/google/logout?</failure></testcase><testcase classname="tests.test_streaming_oauth.TestAIChatStreaming" name="test_streaming_endpoint_requires_auth" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/test_streaming_oauth.py:110: in setup
+    response = requests.post(
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_streaming_oauth.TestAIChatStreaming" name="test_streaming_response_format" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/test_streaming_oauth.py:110: in setup
+    response = requests.post(
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_streaming_oauth.TestAIChatStreaming" name="test_streaming_with_case_context" time="0.001"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/test_streaming_oauth.py:110: in setup
+    response = requests.post(
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_streaming_oauth.TestAIChatStreaming" name="test_non_streaming_chat_still_works" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/test_streaming_oauth.py:110: in setup
+    response = requests.post(
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_streaming_oauth.TestStreamingEdgeCases" name="test_streaming_with_session_id" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/test_streaming_oauth.py:222: in setup
+    response = requests.post(
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase></testsuite></testsuites>
