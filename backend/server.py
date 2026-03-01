@@ -44,6 +44,7 @@ DB_NAME = os.environ.get("DB_NAME", "cps_punisher")
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
 STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY")
 COURTLISTENER_API_KEY = os.environ.get("COURTLISTENER_API_KEY", "")
+FULL_ACCESS_PASSCODE = os.environ.get("FULL_ACCESS_PASSCODE", "PUNISHER2024")
 
 # Stripe pricing tiers - Using amount-based checkout (more flexible)
 TIER_PRICING = {
