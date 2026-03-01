@@ -2107,19 +2107,27 @@ Be thorough and cite sources."""
 
 @app.get("/api/courtlistener/search")
 async def search_court_opinions(
-    query: str,
-    state: Optional[str] = None,
-    court_type: Optional[str] = None,
+    q: str = Query(..., description="Search query"),
+    court: Optional[str] = None,
+    filed_after: Optional[str] = None,
+    filed_before: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     """Search CourtListener for case law"""
     try:
         params = {
-            "q": query,
+            "q": q,
             "type": "o",
             "order_by": "score desc",
             "format": "json"
         }
+        
+        if court:
+            params["court"] = court
+        if filed_after:
+            params["filed_after"] = filed_after
+        if filed_before:
+            params["filed_before"] = filed_before
         
         headers = {"Accept": "application/json"}
         if COURTLISTENER_API_KEY:
@@ -2135,15 +2143,30 @@ async def search_court_opinions(
             
             if response.status_code == 200:
                 data = response.json()
+                # Format results for frontend
+                formatted_results = []
+                for r in data.get("results", [])[:20]:
+                    formatted_results.append({
+                        "caseName": r.get("caseName", "Unknown Case"),
+                        "citation": r.get("citation", [{}])[0].get("cite", "") if isinstance(r.get("citation"), list) else r.get("citation", ""),
+                        "court": r.get("court", r.get("court_id", "Unknown Court")),
+                        "court_id": r.get("court_id", ""),
+                        "dateFiled": r.get("dateFiled", "Unknown"),
+                        "docketNumber": r.get("docketNumber", ""),
+                        "snippet": r.get("syllabus", "") or r.get("posture", "") or f"Case: {r.get('caseName', '')}",
+                        "absolute_url": f"https://www.courtlistener.com{r.get('absolute_url', '')}",
+                        "judge": r.get("judge", ""),
+                        "citeCount": r.get("citeCount", 0)
+                    })
                 return {
                     "count": data.get("count", 0),
-                    "results": data.get("results", [])[:20],
-                    "query": query
+                    "results": formatted_results,
+                    "query": q
                 }
             else:
-                return {"error": f"CourtListener API returned {response.status_code}", "results": []}
+                return {"error": f"CourtListener API returned {response.status_code}", "results": [], "count": 0}
     except Exception as e:
-        return {"error": str(e), "results": []}
+        return {"error": str(e), "results": [], "count": 0}
 
 @app.get("/api/courtlistener/judges")
 async def search_judges(
