@@ -1431,6 +1431,111 @@ Be thorough, cite relevant statutes and case law when applicable, and always pri
     
     return {"response": response, "session_id": session_id}
 
+
+@app.post("/api/ai/chat/stream")
+async def ai_chat_stream(message_data: ChatMessage, current_user: dict = Depends(get_current_user)):
+    """AI-powered legal chat assistant with streaming response (SSE)"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    import asyncio
+    
+    session_id = message_data.session_id or str(uuid.uuid4())
+    
+    # Get case context if provided
+    case_context = ""
+    if message_data.case_id:
+        case = await db.cases.find_one({"_id": message_data.case_id, "user_id": current_user["user_id"]})
+        if case:
+            violations = []
+            async for v in db.violations.find({"case_id": message_data.case_id}):
+                violations.append(v.get("violation_type", ""))
+            
+            case_context = f"""
+
+Case Context:
+- State: {case.get('state', 'Unknown')}
+- County: {case.get('county', 'N/A')}
+- Title: {case.get('title', 'N/A')}
+- Case Number: {case.get('case_number', 'N/A')}
+- Identified Violations: {', '.join(violations) if violations else 'None documented yet'}
+- Caseworker: {case.get('caseworker_name', 'Unknown')}
+- Judge: {case.get('judge_name', 'Unknown')}"""
+
+    context_prompts = {
+        "general": "Answer questions about CPS cases, parental rights, and defense strategies.",
+        "defense": "Focus on defense strategies, legal arguments, and case law that supports the parent's position.",
+        "research": "Provide detailed legal research including statute citations, case law, and procedural requirements.",
+        "document": "Help draft legal documents, motions, and letters with proper legal formatting."
+    }
+    
+    context_instruction = context_prompts.get(message_data.context_type, context_prompts["general"])
+    
+    system_message = f"""You are THE CPS PUNISHER - an expert AI legal assistant specializing in Child Protective Services (CPS) cases and family law defense.
+
+{context_instruction}
+
+You have comprehensive knowledge of all 50 states' CPS statutes, federal laws (ASFA, CAPTA, ICWA), constitutional rights, and case law precedents.
+
+IMPORTANT: You provide legal EDUCATION, not legal advice. Always recommend consulting a licensed attorney.{case_context}"""
+
+    async def generate_stream():
+        full_response = ""
+        try:
+            chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=session_id,
+                system_message=system_message
+            ).with_model("openai", "gpt-5.2")
+            
+            # Use streaming if available, otherwise send chunks
+            user_message = UserMessage(text=message_data.message)
+            response = await chat.send_message(user_message)
+            full_response = response
+            
+            # Stream the response in chunks for better UX
+            chunk_size = 50
+            for i in range(0, len(response), chunk_size):
+                chunk = response[i:i+chunk_size]
+                yield f"data: {json.dumps({'chunk': chunk, 'done': False})}\n\n"
+                await asyncio.sleep(0.02)  # Small delay for smooth streaming effect
+            
+            yield f"data: {json.dumps({'chunk': '', 'done': True, 'session_id': session_id})}\n\n"
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
+            return
+        
+        # Store messages after streaming completes
+        timestamp = datetime.now(timezone.utc).isoformat()
+        await db.chat_messages.insert_one({
+            "user_id": current_user["user_id"],
+            "session_id": session_id,
+            "case_id": message_data.case_id,
+            "role": "user",
+            "content": message_data.message,
+            "context_type": message_data.context_type,
+            "created_at": timestamp
+        })
+        await db.chat_messages.insert_one({
+            "user_id": current_user["user_id"],
+            "session_id": session_id,
+            "case_id": message_data.case_id,
+            "role": "assistant",
+            "content": full_response,
+            "context_type": message_data.context_type,
+            "created_at": timestamp
+        })
+    
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
+
+
 @app.post("/api/ai/analyze-document")
 async def ai_analyze_document(request: AIAnalysisRequest, current_user: dict = Depends(get_current_user)):
     """AI-powered document analysis"""
