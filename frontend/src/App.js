@@ -2,11 +2,11 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Toaster, toast } from 'sonner';
 import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
-  MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut,
+  MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut, LogIn,
   Home, Settings, Star, Check, ChevronDown, Play, Lock, CheckCircle2,
   Loader2, Upload, Clock, Eye, Download, Plus, Trash2, Edit2, Send,
   CreditCard, Crown, Building2, Zap, Mic, Radio, Volume2, Copy, Key,
-  MapPin
+  MapPin, Coins, BarChart3, User, ChevronRight
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
@@ -176,6 +176,26 @@ function App() {
 function LandingPage({ onNavigate }) {
   return (
     <div className="min-h-screen bg-black">
+      {/* Top Navigation Bar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-gray-800/50">
+        <div className="container mx-auto px-4 flex items-center justify-between h-16">
+          <div className="flex items-center gap-3">
+            <img src="/images/shield-logo.png" alt="CPS Punisher" className="w-8 h-9" />
+            <span className="text-lg font-bold tracking-wider" style={{ fontFamily: 'Oswald, sans-serif' }}>THE CPS PUNISHER</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => onNavigate('auth')}
+              className="px-5 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors flex items-center gap-2"
+              data-testid="landing-sign-in-btn"
+            >
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </button>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background with hero image */}
@@ -500,8 +520,8 @@ function Dashboard({ onNavigate }) {
     { id: 'rights', icon: Shield, label: 'Know Your Rights', minTier: 'free' },
     { id: 'forum', icon: Users, label: 'Community', minTier: 'free' },
     { id: 'advocates', icon: Users, label: 'Find Advocates', minTier: 'free' },
-    { id: 'chat', icon: MessageSquare, label: 'AI Assistant', minTier: 'essential', highlight: true },
-    { id: 'documents', icon: FileText, label: 'Documents', minTier: 'essential', highlight: true },
+    { id: 'chat', icon: MessageSquare, label: 'AI Assistant', minTier: 'free', highlight: true },
+    { id: 'documents', icon: FileText, label: 'Documents', minTier: 'free', highlight: true },
     { id: 'incidents', icon: AlertTriangle, label: 'Incident Analyzer', minTier: 'essential' },
     { id: 'notepad', icon: FileText, label: 'Legal Notepad', minTier: 'essential', highlight: true },
     { id: 'courtfilings', icon: Gavel, label: 'Court Filings', minTier: 'essential' },
@@ -550,7 +570,7 @@ function Dashboard({ onNavigate }) {
                 key={item.id}
                 onClick={() => {
                   if (isLocked) {
-                    toast.error(`This feature requires the ${item.minTier.charAt(0).toUpperCase() + item.minTier.slice(1)} plan or higher.`);
+                    toast.error(`This feature requires the ${item.minTier.charAt(0).toUpperCase() + item.minTier.slice(1)} plan or credits. Upgrade or buy credits.`);
                     setActiveTab('pricing');
                     setSidebarOpen(false);
                   } else {
@@ -582,10 +602,18 @@ function Dashboard({ onNavigate }) {
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800 space-y-1">
+          <button
+            onClick={() => { setActiveTab('settings'); setSidebarOpen(false); }}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${activeTab === 'settings' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
+            data-testid="nav-settings"
+          >
+            <Settings className="w-5 h-5" />
+            Settings
+          </button>
           <button
             onClick={logout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-red-500"
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-red-500"
             data-testid="logout-btn"
           >
             <LogOut className="w-5 h-5" />
@@ -647,6 +675,7 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'forum' && <ForumTab />}
           {activeTab === 'advocates' && <AdvocatesTab />}
           {activeTab === 'pricing' && <PricingTab />}
+          {activeTab === 'settings' && <SettingsTab />}
         </div>
       </main>
 
@@ -663,12 +692,53 @@ function Dashboard({ onNavigate }) {
 
 // Overview Tab
 function OverviewTab({ cases, setActiveTab }) {
+  const { api, user } = useAuth();
+  const [tierStatus, setTierStatus] = useState(null);
+  const [creditBalance, setCreditBalance] = useState(null);
+
+  useEffect(() => {
+    const loadStatus = async () => {
+      try {
+        const [ts, cb] = await Promise.all([
+          api.get('/api/auth/tier-status'),
+          api.get('/api/credits/balance')
+        ]);
+        setTierStatus(ts);
+        setCreditBalance(cb);
+      } catch (e) { console.error(e); }
+    };
+    loadStatus();
+  }, []);
+
+  const tierColors = { free: 'text-gray-400', essential: 'text-blue-400', professional: 'text-purple-400', attorney: 'text-amber-400', enterprise: 'text-red-400' };
+  const tierBg = { free: 'bg-gray-600/20', essential: 'bg-blue-600/20', professional: 'bg-purple-600/20', attorney: 'bg-amber-600/20', enterprise: 'bg-red-600/20' };
+
   const quickActions = [
     { icon: Plus, label: 'New Case', action: () => setActiveTab('cases'), color: 'bg-red-600' },
     { icon: MessageSquare, label: 'AI Chat', action: () => setActiveTab('chat'), color: 'bg-purple-600' },
     { icon: Search, label: 'Research', action: () => setActiveTab('research'), color: 'bg-blue-600' },
     { icon: BookOpen, label: 'Law Library', action: () => setActiveTab('library'), color: 'bg-green-600' },
   ];
+
+  const usageBar = (used, total, label) => {
+    const isUnlimited = total === -1;
+    const pct = isUnlimited ? 0 : Math.min((used / total) * 100, 100);
+    const remaining = isUnlimited ? 'Unlimited' : `${Math.max(total - used, 0)} remaining`;
+    const barColor = pct > 90 ? 'bg-red-500' : pct > 70 ? 'bg-yellow-500' : 'bg-green-500';
+    return (
+      <div className="space-y-1.5">
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-400">{label}</span>
+          <span className="text-gray-300">{isUnlimited ? 'Unlimited' : `${used}/${total}`}</span>
+        </div>
+        <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          {!isUnlimited && <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${pct}%` }} />}
+          {isUnlimited && <div className="h-full bg-green-500/30 rounded-full w-full" />}
+        </div>
+        <p className="text-xs text-gray-500">{remaining}</p>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6 animate-fadeIn" data-testid="overview-tab">
@@ -682,6 +752,50 @@ function OverviewTab({ cases, setActiveTab }) {
           <p className="text-gray-400">Continue your fight for your family</p>
         </div>
       </div>
+
+      {/* Tier & Usage Dashboard */}
+      {tierStatus && (
+        <div className="grid md:grid-cols-3 gap-4" data-testid="usage-dashboard">
+          {/* Current Plan Card */}
+          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm text-gray-400 font-medium">Current Plan</h3>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${tierBg[tierStatus.tier]} ${tierColors[tierStatus.tier]}`}>
+                {tierStatus.tier.toUpperCase()}
+              </span>
+            </div>
+            <p className={`text-2xl font-bold mb-3 ${tierColors[tierStatus.tier]}`}>
+              {tierStatus.tier === 'free' ? 'Free' : tierStatus.tier.charAt(0).toUpperCase() + tierStatus.tier.slice(1)}
+            </p>
+            <button onClick={() => setActiveTab('pricing')} className="text-sm text-red-400 hover:text-red-300 flex items-center gap-1" data-testid="upgrade-plan-btn">
+              <Zap className="w-3.5 h-3.5" /> Upgrade Plan <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Usage Stats Card */}
+          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5 space-y-4">
+            <h3 className="text-sm text-gray-400 font-medium">Monthly Usage</h3>
+            {usageBar(tierStatus.usage.ai_credits_used, tierStatus.limits.ai_credits, 'AI Credits')}
+            {usageBar(tierStatus.usage.docs_uploaded_this_month, tierStatus.limits.docs_per_month, 'Doc Uploads')}
+            {usageBar(tierStatus.usage.cases_created, tierStatus.limits.cases_max, 'Cases')}
+          </div>
+
+          {/* Credits Card */}
+          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5">
+            <h3 className="text-sm text-gray-400 font-medium mb-3">Purchased Credits</h3>
+            <div className="flex items-center gap-3 mb-4">
+              <Coins className="w-8 h-8 text-amber-400" />
+              <p className="text-3xl font-bold text-amber-400" data-testid="credits-balance">
+                {creditBalance?.purchased_credits ?? 0}
+              </p>
+            </div>
+            <p className="text-xs text-gray-500 mb-3">Use credits for any feature — no tier required</p>
+            <button onClick={() => setActiveTab('pricing')} className="w-full py-2 bg-amber-600 hover:bg-amber-700 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2" data-testid="buy-credits-btn">
+              <Coins className="w-4 h-4" /> Buy Credits
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -705,7 +819,7 @@ function OverviewTab({ cases, setActiveTab }) {
         </div>
         <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
           <h3 className="text-gray-400 text-sm mb-2">AI Sessions</h3>
-          <p className="text-4xl font-bold text-purple-500">∞</p>
+          <p className="text-4xl font-bold text-purple-500">{tierStatus ? (tierStatus.limits.ai_credits === -1 ? '∞' : `${tierStatus.usage.ai_credits_used}/${tierStatus.limits.ai_credits}`) : '...'}</p>
         </div>
         <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
           <h3 className="text-gray-400 text-sm mb-2">States Covered</h3>
@@ -3231,8 +3345,9 @@ function PricingTab() {
         <h3 className="text-xl font-bold mb-2">Free Plan Includes:</h3>
         <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-400">
           <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> 1 Case</span>
-          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> 5 Doc Uploads/Month</span>
-          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> 10 AI Credits</span>
+          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> 1 Doc Upload/Month</span>
+          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> 5 AI Questions</span>
+          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> AI Chat Access</span>
           <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> Violation & Timeline Tracking</span>
           <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> Evidence & Visitation Logs</span>
           <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> Know Your Rights Guide</span>
@@ -3308,6 +3423,53 @@ function PricingTab() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Credit Purchase Section */}
+      <div className="bg-gradient-to-br from-amber-900/20 to-gray-900/50 border border-amber-700/30 rounded-xl p-8" data-testid="credit-purchase-section">
+        <div className="text-center mb-6">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Coins className="w-6 h-6 text-amber-400" />
+            <h2 className="text-2xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Buy AI Credits</h2>
+          </div>
+          <p className="text-gray-400">Use credits for any feature without upgrading your plan</p>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {[
+            { id: 'credits_10', credits: 10, price: 4.99, label: '10 Credits' },
+            { id: 'credits_50', credits: 50, price: 19.99, label: '50 Credits', popular: true },
+            { id: 'credits_100', credits: 100, price: 34.99, label: '100 Credits' },
+            { id: 'credits_250', credits: 250, price: 74.99, label: '250 Credits' },
+          ].map((pkg) => (
+            <div key={pkg.id} className={`relative bg-gray-800/80 border rounded-xl p-5 text-center ${pkg.popular ? 'border-amber-500 border-2' : 'border-gray-700'}`}>
+              {pkg.popular && (
+                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-amber-600 rounded-full text-xs font-bold">
+                  BEST VALUE
+                </div>
+              )}
+              <Coins className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+              <p className="text-2xl font-bold mb-1">{pkg.credits}</p>
+              <p className="text-sm text-gray-400 mb-3">Credits</p>
+              <p className="text-xl font-bold text-amber-400 mb-3">${pkg.price}</p>
+              <p className="text-xs text-gray-500 mb-3">${(pkg.price / pkg.credits).toFixed(2)}/credit</p>
+              <button
+                onClick={async () => {
+                  try {
+                    const data = await api.post('/api/credits/purchase', { package_id: pkg.id, origin_url: window.location.origin });
+                    if (data.url) window.location.href = data.url;
+                  } catch (e) { toast.error(e.message); }
+                }}
+                className="w-full py-2 bg-amber-600 hover:bg-amber-700 rounded-lg font-semibold transition-colors text-sm"
+                data-testid={`buy-${pkg.id}`}
+              >
+                Buy Now
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="text-center">
+          <p className="text-sm text-gray-500">Credits never expire &bull; Use for any premium feature &bull; No subscription required</p>
+        </div>
       </div>
 
       {/* Passcode Redemption */}
@@ -3400,6 +3562,122 @@ function PasscodeRedemption() {
     </div>
   );
 }
+
+// Settings Tab
+function SettingsTab() {
+  const { user, api } = useAuth();
+  const [tierStatus, setTierStatus] = useState(null);
+  const [creditBalance, setCreditBalance] = useState(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [ts, cb] = await Promise.all([
+          api.get('/api/auth/tier-status'),
+          api.get('/api/credits/balance')
+        ]);
+        setTierStatus(ts);
+        setCreditBalance(cb);
+      } catch (e) { console.error(e); }
+    };
+    loadData();
+  }, []);
+
+  const tierColors = { free: 'text-gray-400', essential: 'text-blue-400', professional: 'text-purple-400', attorney: 'text-amber-400', enterprise: 'text-red-400' };
+
+  return (
+    <div className="space-y-6 max-w-3xl mx-auto animate-fadeIn" data-testid="settings-tab">
+      <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Settings</h1>
+
+      {/* Account Info */}
+      <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-4">
+        <h2 className="text-xl font-semibold flex items-center gap-2"><User className="w-5 h-5 text-red-500" /> Account</h2>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm text-gray-400">Email</label>
+            <p className="text-white font-medium" data-testid="settings-email">{user?.email}</p>
+          </div>
+          <div>
+            <label className="text-sm text-gray-400">Name</label>
+            <p className="text-white font-medium">{user?.name || 'Not set'}</p>
+          </div>
+          <div>
+            <label className="text-sm text-gray-400">Current Plan</label>
+            <p className={`font-bold ${tierColors[user?.tier] || 'text-gray-400'}`} data-testid="settings-tier">
+              {(user?.tier || 'free').toUpperCase()}
+            </p>
+          </div>
+          <div>
+            <label className="text-sm text-gray-400">Member Since</label>
+            <p className="text-white font-medium">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Usage & Credits */}
+      {tierStatus && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-4">
+          <h2 className="text-xl font-semibold flex items-center gap-2"><BarChart3 className="w-5 h-5 text-blue-500" /> Usage This Month</h2>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div className="bg-gray-900 rounded-lg p-4 text-center">
+              <p className="text-sm text-gray-400 mb-1">AI Credits</p>
+              <p className="text-2xl font-bold">{tierStatus.usage.ai_credits_used} <span className="text-sm text-gray-500">/ {tierStatus.limits.ai_credits === -1 ? '∞' : tierStatus.limits.ai_credits}</span></p>
+            </div>
+            <div className="bg-gray-900 rounded-lg p-4 text-center">
+              <p className="text-sm text-gray-400 mb-1">Doc Uploads</p>
+              <p className="text-2xl font-bold">{tierStatus.usage.docs_uploaded_this_month} <span className="text-sm text-gray-500">/ {tierStatus.limits.docs_per_month === -1 ? '∞' : tierStatus.limits.docs_per_month}</span></p>
+            </div>
+            <div className="bg-gray-900 rounded-lg p-4 text-center">
+              <p className="text-sm text-gray-400 mb-1">Purchased Credits</p>
+              <p className="text-2xl font-bold text-amber-400">{creditBalance?.purchased_credits ?? 0}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* App Info */}
+      <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-4">
+        <h2 className="text-xl font-semibold flex items-center gap-2"><Shield className="w-5 h-5 text-red-500" /> About THE CPS PUNISHER</h2>
+        <div className="space-y-3 text-sm text-gray-400">
+          <p><span className="text-gray-300 font-medium">Version:</span> 4.0.0</p>
+          <p><span className="text-gray-300 font-medium">Purpose:</span> AI-powered CPS case defense platform with legal research, document analysis, violation tracking, and court preparation tools.</p>
+          <p><span className="text-gray-300 font-medium">Coverage:</span> All 50 US states with state-specific CPS laws, ADA compliance, and case law.</p>
+          <p><span className="text-gray-300 font-medium">AI Features:</span> Chat assistant, document analysis, strategy builder, argument generator, evidence mapper, precedent finder, and more.</p>
+          <p><span className="text-gray-300 font-medium">Credit System:</span> Buy credits to access premium features without upgrading your plan. Credits never expire.</p>
+        </div>
+      </div>
+
+      {/* Feature Credit Costs */}
+      <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-4">
+        <h2 className="text-xl font-semibold flex items-center gap-2"><Coins className="w-5 h-5 text-amber-400" /> Credit Costs Per Feature</h2>
+        <div className="grid sm:grid-cols-2 gap-2 text-sm">
+          {[
+            ['AI Chat Question', 1], ['Document Upload & Analysis', 2], ['Document Generation', 3],
+            ['Defense Strategy', 3], ['Incident Analyzer', 2], ['Expert Legal AI', 5],
+            ['Strategy Builder', 5], ['Argument Generator', 5], ['Evidence Mapper', 3],
+            ['Precedent Finder', 3], ['ADA Compliance', 3], ['Case Law Analysis', 3],
+            ['Law Library', 1], ['Judge Research', 2], ['Legal Research', 3],
+            ['Section 1983', 10], ['CourtListener', 3], ['Case Prep Kit', 10],
+            ['Podcast Creator', 5], ['Criminal Case', 3],
+          ].map(([name, cost]) => (
+            <div key={name} className="flex justify-between py-1.5 px-3 bg-gray-900/50 rounded">
+              <span className="text-gray-300">{name}</span>
+              <span className="text-amber-400 font-medium">{cost} credits</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Legal Disclaimer */}
+      <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-xl p-4">
+        <p className="text-sm text-yellow-200/80">
+          <strong>Legal Notice:</strong> This platform provides legal EDUCATION and INFORMATION, not legal advice. We are not attorneys. Always consult with a licensed attorney for your specific case.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 
 // Evidence Tab
 function EvidenceTab({ selectedCase }) {

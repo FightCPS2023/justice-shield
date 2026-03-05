@@ -71,11 +71,43 @@ TIER_LEVELS = {
 }
 
 TIER_FEATURES = {
-    "free": {"docs_per_month": 5, "ai_credits": 10, "cases_max": 1},
+    "free": {"docs_per_month": 1, "ai_credits": 5, "cases_max": 1},
     "essential": {"docs_per_month": 25, "ai_credits": 100, "cases_max": -1},
     "professional": {"docs_per_month": -1, "ai_credits": 500, "cases_max": -1},
     "attorney": {"docs_per_month": -1, "ai_credits": 2000, "cases_max": -1},
     "enterprise": {"docs_per_month": -1, "ai_credits": -1, "cases_max": -1},
+}
+
+# Credit packages for a la carte purchases
+CREDIT_PACKAGES = [
+    {"id": "credits_10", "credits": 10, "price": 4.99, "label": "10 Credits", "popular": False},
+    {"id": "credits_50", "credits": 50, "price": 19.99, "label": "50 Credits", "popular": True},
+    {"id": "credits_100", "credits": 100, "price": 34.99, "label": "100 Credits", "popular": False},
+    {"id": "credits_250", "credits": 250, "price": 74.99, "label": "250 Credits", "popular": False},
+]
+
+# Credit cost to use features above your tier (or when tier credits exhausted)
+FEATURE_CREDIT_COSTS = {
+    "ai_chat": 1,
+    "doc_upload": 2,
+    "doc_generate": 3,
+    "defense_strategy": 3,
+    "incident_analyzer": 2,
+    "expert_ai": 5,
+    "strategy_builder": 5,
+    "argument_generator": 5,
+    "evidence_mapper": 3,
+    "precedent_finder": 3,
+    "ada_compliance": 3,
+    "case_law": 3,
+    "law_library": 1,
+    "judge_research": 2,
+    "legal_research": 3,
+    "section_1983": 10,
+    "courtlistener": 3,
+    "case_prep_kit": 10,
+    "podcast": 5,
+    "criminal_case": 3,
 }
 
 # JWT Configuration
@@ -388,29 +420,43 @@ def check_tier_access(user_tier: str, required_tier: str) -> bool:
     return TIER_LEVELS.get(user_tier, 0) >= TIER_LEVELS.get(required_tier, 0)
 
 
-def require_tier(min_tier: str):
-    """FastAPI dependency factory: returns a dependency that enforces minimum tier"""
+def require_tier(min_tier: str, feature_key: str = ""):
+    """FastAPI dependency factory: enforces minimum tier OR allows credit bypass"""
     async def _check(current_user: dict = Depends(get_current_user)):
         user_tier = await get_user_tier(current_user["user_id"])
-        if not check_tier_access(user_tier, min_tier):
-            tier_name = min_tier.replace("_", " ").title()
-            raise HTTPException(
-                status_code=403,
-                detail=f"This feature requires the {tier_name} plan or higher. Please upgrade your subscription."
-            )
         current_user["tier"] = user_tier
-        return current_user
+
+        if check_tier_access(user_tier, min_tier):
+            return current_user
+
+        # Try credit bypass
+        credit_cost = FEATURE_CREDIT_COSTS.get(feature_key, 0)
+        if credit_cost > 0:
+            user = await db.users.find_one({"_id": current_user["user_id"]}, {"purchased_credits": 1})
+            purchased = user.get("purchased_credits", 0) if user else 0
+            if purchased >= credit_cost:
+                await spend_purchased_credits(current_user["user_id"], credit_cost, feature_key)
+                current_user["credits_spent"] = credit_cost
+                return current_user
+
+        tier_name = min_tier.replace("_", " ").title()
+        credit_msg = f" or {credit_cost} credits" if credit_cost > 0 else ""
+        raise HTTPException(
+            status_code=403,
+            detail=f"This feature requires the {tier_name} plan{credit_msg}. Upgrade or purchase credits."
+        )
     return _check
 
 
 async def check_ai_credits(user_id: str, user_tier: str) -> bool:
-    """Check if user has remaining AI credits for the month"""
+    """Check if user has remaining AI credits (tier + purchased)"""
     tier_limits = TIER_FEATURES.get(user_tier, TIER_FEATURES["free"])
     max_credits = tier_limits["ai_credits"]
     if max_credits == -1:
         return True
-    user = await db.users.find_one({"_id": user_id}, {"ai_credits_used": 1, "credits_reset_at": 1})
+    user = await db.users.find_one({"_id": user_id}, {"ai_credits_used": 1, "credits_reset_at": 1, "purchased_credits": 1})
     credits_used = user.get("ai_credits_used", 0)
+    purchased = user.get("purchased_credits", 0)
     # Reset credits monthly
     reset_at = user.get("credits_reset_at")
     if reset_at:
@@ -418,16 +464,56 @@ async def check_ai_credits(user_id: str, user_tier: str) -> bool:
         if datetime.now(timezone.utc) - reset_date > timedelta(days=30):
             await db.users.update_one({"_id": user_id}, {"$set": {"ai_credits_used": 0, "credits_reset_at": datetime.now(timezone.utc).isoformat()}})
             return True
-    return credits_used < max_credits
+    # Tier credits available
+    if credits_used < max_credits:
+        return True
+    # Purchased credits available
+    if purchased > 0:
+        return True
+    return False
 
 
 async def increment_ai_credits(user_id: str):
-    """Increment AI credits used counter"""
+    """Increment AI credits used counter, fallback to purchased credits"""
+    user = await db.users.find_one({"_id": user_id}, {"ai_credits_used": 1, "tier": 1, "purchased_credits": 1})
+    user_tier = user.get("tier", "free") if user else "free"
+    tier_limits = TIER_FEATURES.get(user_tier, TIER_FEATURES["free"])
+    max_credits = tier_limits["ai_credits"]
+    credits_used = user.get("ai_credits_used", 0) if user else 0
+
+    if max_credits == -1 or credits_used < max_credits:
+        # Use tier credits
+        await db.users.update_one(
+            {"_id": user_id},
+            {"$inc": {"ai_credits_used": 1}, "$setOnInsert": {"credits_reset_at": datetime.now(timezone.utc).isoformat()}},
+            upsert=False
+        )
+    else:
+        # Use purchased credits
+        await db.users.update_one(
+            {"_id": user_id},
+            {"$inc": {"purchased_credits": -1}}
+        )
+
+
+async def spend_purchased_credits(user_id: str, amount: int, feature: str) -> bool:
+    """Spend purchased credits for a feature. Returns True if successful."""
+    user = await db.users.find_one({"_id": user_id}, {"purchased_credits": 1})
+    purchased = user.get("purchased_credits", 0) if user else 0
+    if purchased < amount:
+        return False
     await db.users.update_one(
         {"_id": user_id},
-        {"$inc": {"ai_credits_used": 1}, "$setOnInsert": {"credits_reset_at": datetime.now(timezone.utc).isoformat()}},
-        upsert=False
+        {"$inc": {"purchased_credits": -amount}}
     )
+    await db.credit_transactions.insert_one({
+        "_id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "feature": feature,
+        "credits_spent": amount,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    return True
 
 
 async def check_doc_upload_limit(user_id: str, user_tier: str) -> bool:
@@ -645,6 +731,120 @@ async def redeem_passcode(request: PasscodeRequest, current_user: dict = Depends
         "message": "Full access granted! You now have Enterprise tier access to all features.",
         "new_tier": "enterprise"
     }
+
+
+# ============== CREDIT SYSTEM ==============
+
+@app.get("/api/credits/packages")
+async def get_credit_packages():
+    """Get available credit packages for purchase"""
+    return {"packages": CREDIT_PACKAGES, "feature_costs": FEATURE_CREDIT_COSTS}
+
+
+@app.get("/api/credits/balance")
+async def get_credit_balance(current_user: dict = Depends(get_current_user)):
+    """Get user's credit balance and usage"""
+    user = await db.users.find_one({"_id": current_user["user_id"]}, {"purchased_credits": 1, "ai_credits_used": 1, "tier": 1})
+    user_tier = user.get("tier", "free") if user else "free"
+    tier_limits = TIER_FEATURES.get(user_tier, TIER_FEATURES["free"])
+
+    return {
+        "purchased_credits": user.get("purchased_credits", 0) if user else 0,
+        "tier_credits_used": user.get("ai_credits_used", 0) if user else 0,
+        "tier_credits_total": tier_limits["ai_credits"],
+        "tier": user_tier
+    }
+
+
+class CreditPurchaseRequest(BaseModel):
+    package_id: str
+    origin_url: str
+
+
+@app.post("/api/credits/purchase")
+async def purchase_credits(request: CreditPurchaseRequest, http_request: Request, current_user: dict = Depends(get_current_user)):
+    """Create Stripe checkout session for credit purchase"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
+
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+
+    package = next((p for p in CREDIT_PACKAGES if p["id"] == request.package_id), None)
+    if not package:
+        raise HTTPException(status_code=400, detail="Invalid credit package")
+
+    success_url = f"{request.origin_url}/credits-success?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{request.origin_url}/pricing"
+
+    host_url = str(http_request.base_url)
+    webhook_url = f"{host_url}api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+
+    checkout_request = CheckoutSessionRequest(
+        amount=package["price"],
+        currency="usd",
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            "user_id": current_user["user_id"],
+            "type": "credit_purchase",
+            "package_id": package["id"],
+            "credits": str(package["credits"])
+        }
+    )
+
+    session = await stripe_checkout.create_checkout_session(checkout_request)
+
+    await db.payment_transactions.insert_one({
+        "_id": str(uuid.uuid4()),
+        "session_id": session.session_id,
+        "user_id": current_user["user_id"],
+        "type": "credit_purchase",
+        "package_id": package["id"],
+        "credits": package["credits"],
+        "amount": package["price"],
+        "currency": "usd",
+        "payment_status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    return {"url": session.url, "session_id": session.session_id}
+
+
+@app.get("/api/credits/verify/{session_id}")
+async def verify_credit_purchase(session_id: str, http_request: Request, current_user: dict = Depends(get_current_user)):
+    """Verify credit purchase and add credits to user account"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout
+
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+
+    transaction = await db.payment_transactions.find_one({"session_id": session_id, "type": "credit_purchase"})
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    if transaction.get("payment_status") == "paid":
+        return {"status": "complete", "credits_added": transaction.get("credits", 0)}
+
+    host_url = str(http_request.base_url)
+    webhook_url = f"{host_url}api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+
+    status = await stripe_checkout.get_checkout_status(session_id)
+
+    if status.payment_status == "paid":
+        credits_to_add = transaction.get("credits", 0)
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {"$set": {"payment_status": "paid", "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        await db.users.update_one(
+            {"_id": current_user["user_id"]},
+            {"$inc": {"purchased_credits": credits_to_add}}
+        )
+        return {"status": "complete", "credits_added": credits_to_add}
+
+    return {"status": status.status, "payment_status": status.payment_status}
 
 
 # ============== GOOGLE OAUTH ENDPOINTS ==============
@@ -1580,7 +1780,7 @@ async def list_court_filings(case_id: str, current_user: dict = Depends(get_curr
 # ============== CRIMINAL CASE COMPONENT ==============
 
 @app.post("/api/criminal-case")
-async def create_criminal_case(criminal_data: CriminalCaseCreate, current_user: dict = Depends(require_tier("attorney"))):
+async def create_criminal_case(criminal_data: CriminalCaseCreate, current_user: dict = Depends(require_tier("attorney", feature_key="criminal_case"))):
     """Add criminal case linked to CPS case"""
     await get_case_with_ownership(criminal_data.case_id, current_user["user_id"])
     
@@ -1618,7 +1818,7 @@ async def get_criminal_case(case_id: str, current_user: dict = Depends(get_curre
 # ============== JUDGE RESEARCH ==============
 
 @app.post("/api/judge-research")
-async def create_judge_research(judge_data: JudgeResearchCreate, current_user: dict = Depends(require_tier("professional"))):
+async def create_judge_research(judge_data: JudgeResearchCreate, current_user: dict = Depends(require_tier("professional", feature_key="judge_research"))):
     """Add judge research"""
     await get_case_with_ownership(judge_data.case_id, current_user["user_id"])
     
@@ -1711,13 +1911,16 @@ async def delete_calendar_event(event_id: str, current_user: dict = Depends(get_
 # ============== AI ENDPOINTS ==============
 
 @app.post("/api/ai/chat")
-async def ai_chat(message_data: ChatMessage, current_user: dict = Depends(require_tier("essential"))):
-    """AI-powered legal chat assistant - requires Essential tier"""
+async def ai_chat(message_data: ChatMessage, current_user: dict = Depends(get_current_user)):
+    """AI-powered legal chat assistant - available to all tiers with credit limits"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
 
-    # Check AI credits
-    if not await check_ai_credits(current_user["user_id"], current_user["tier"]):
-        raise HTTPException(status_code=403, detail="AI credits exhausted for this month. Please upgrade your plan for more credits.")
+    user_tier = await get_user_tier(current_user["user_id"])
+    current_user["tier"] = user_tier
+
+    # Check AI credits (tier + purchased)
+    if not await check_ai_credits(current_user["user_id"], user_tier):
+        raise HTTPException(status_code=403, detail="AI credits exhausted for this month. Purchase more credits or upgrade your plan.")
     await increment_ai_credits(current_user["user_id"])
     
     session_id = message_data.session_id or str(uuid.uuid4())
@@ -1807,8 +2010,8 @@ Be thorough, cite relevant statutes and case law when applicable, and always pri
 
 
 @app.post("/api/ai/chat/stream")
-async def ai_chat_stream(message_data: ChatMessage, current_user: dict = Depends(require_tier("essential"))):
-    """AI-powered legal chat assistant with streaming response (SSE)"""
+async def ai_chat_stream(message_data: ChatMessage, current_user: dict = Depends(get_current_user)):
+    """AI-powered legal chat assistant with streaming response (SSE) - all tiers"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     import asyncio
     
@@ -1911,8 +2114,8 @@ IMPORTANT: You provide legal EDUCATION, not legal advice. Always recommend consu
 
 
 @app.post("/api/ai/analyze-document")
-async def ai_analyze_document(request: AIAnalysisRequest, current_user: dict = Depends(require_tier("essential"))):
-    """AI-powered document analysis - requires Essential tier"""
+async def ai_analyze_document(request: AIAnalysisRequest, current_user: dict = Depends(get_current_user)):
+    """AI-powered document analysis - available to all tiers with credit limits"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
     case = await get_case_with_ownership(request.case_id, current_user["user_id"])
@@ -1981,7 +2184,7 @@ Note: This is legal education, not legal advice. Recommend consulting an attorne
     }
 
 @app.post("/api/ai/generate-document")
-async def ai_generate_document(request: DocumentGeneratorRequest, current_user: dict = Depends(require_tier("essential"))):
+async def ai_generate_document(request: DocumentGeneratorRequest, current_user: dict = Depends(require_tier("essential", feature_key="doc_generate"))):
     """AI-powered legal document generator - requires Essential tier"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
@@ -2109,7 +2312,7 @@ Generate the complete document now:"""
     }
 
 @app.post("/api/ai/defense-strategy")
-async def ai_defense_strategy(case_id: str, current_user: dict = Depends(require_tier("essential"))):
+async def ai_defense_strategy(case_id: str, current_user: dict = Depends(require_tier("essential", feature_key="defense_strategy"))):
     """Generate comprehensive defense strategy - requires Essential tier"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
@@ -2190,7 +2393,7 @@ Be specific and actionable. Include statute citations and case law references.""
     }
 
 @app.post("/api/ai/legal-research")
-async def ai_legal_research(request: LegalResearchRequest, current_user: dict = Depends(require_tier("professional"))):
+async def ai_legal_research(request: LegalResearchRequest, current_user: dict = Depends(require_tier("professional", feature_key="legal_research"))):
     """AI-powered legal research - requires Professional tier"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
@@ -3322,7 +3525,7 @@ async def get_all_states():
     return {"states": sorted(states, key=lambda x: x["name"])}
 
 @app.get("/api/law-library/{state_code}")
-async def get_state_law_info(state_code: str, current_user: dict = Depends(require_tier("professional"))):
+async def get_state_law_info(state_code: str, current_user: dict = Depends(require_tier("professional", feature_key="law_library"))):
     """Get comprehensive CPS law information for a state - INSTANT LOADING from pre-built database"""
     state_code = state_code.upper()
     state_name = STATES_INFO.get(state_code)
@@ -3548,7 +3751,7 @@ async def get_advocates(state: Optional[str] = None):
 # ============== LEGAL NOTEPAD ==============
 
 @app.post("/api/notepad")
-async def create_notepad_entry(entry: NotepadEntryCreate, current_user: dict = Depends(require_tier("essential"))):
+async def create_notepad_entry(entry: NotepadEntryCreate, current_user: dict = Depends(require_tier("essential", feature_key="ai_chat"))):
     """Create a new notepad entry - can be global or case-specific"""
     entry_id = str(uuid.uuid4())
     
@@ -3974,7 +4177,7 @@ async def export_case_to_pdf(case_id: str, current_user: dict = Depends(get_curr
 # ============== CASE PREPARATION KIT ==============
 
 @app.get("/api/export/case/{case_id}/preparation-kit")
-async def export_case_preparation_kit(case_id: str, current_user: dict = Depends(require_tier("attorney"))):
+async def export_case_preparation_kit(case_id: str, current_user: dict = Depends(require_tier("attorney", feature_key="case_prep_kit"))):
     """
     Generate comprehensive Court Preparation Kit PDF
     Includes: Case info, violations, timeline, evidence, documents, notes, strategies
@@ -6061,7 +6264,7 @@ async def deep_case_law_search(
 # ============== ADA ACCOMMODATIONS & COMPLIANCE ==============
 
 @app.get("/api/ada/federal-law")
-async def get_ada_federal_law(current_user: dict = Depends(require_tier("professional"))):
+async def get_ada_federal_law(current_user: dict = Depends(require_tier("professional", feature_key="ada_compliance"))):
     """Get federal ADA law framework"""
     return {
         "federal_law": ADA_FEDERAL_LAW,
@@ -6070,7 +6273,7 @@ async def get_ada_federal_law(current_user: dict = Depends(require_tier("profess
     }
 
 @app.get("/api/ada/case-law")
-async def get_ada_case_law(current_user: dict = Depends(require_tier("professional"))):
+async def get_ada_case_law(current_user: dict = Depends(require_tier("professional", feature_key="ada_compliance"))):
     """Get ADA case law relevant to CPS cases"""
     return {
         "supreme_court": ADA_CASE_LAW["supreme_court"],
@@ -6079,7 +6282,7 @@ async def get_ada_case_law(current_user: dict = Depends(require_tier("profession
     }
 
 @app.get("/api/ada/false-claims-act")
-async def get_false_claims_act(state: Optional[str] = None, current_user: dict = Depends(require_tier("professional"))):
+async def get_false_claims_act(state: Optional[str] = None, current_user: dict = Depends(require_tier("professional", feature_key="ada_compliance"))):
     """Get False Claims Act information for federal and state level"""
     result = {
         "federal": FALSE_CLAIMS_ACT["federal"]
@@ -6096,12 +6299,12 @@ async def get_false_claims_act(state: Optional[str] = None, current_user: dict =
     return result
 
 @app.get("/api/ada/civil-guardian")
-async def get_civil_guardian_requirements(current_user: dict = Depends(require_tier("professional"))):
+async def get_civil_guardian_requirements(current_user: dict = Depends(require_tier("professional", feature_key="ada_compliance"))):
     """Get civil guardian/GAL ADA requirements"""
     return CIVIL_GUARDIAN_ADA
 
 @app.get("/api/ada/state/{state_code}")
-async def get_state_ada_info(state_code: str, current_user: dict = Depends(require_tier("professional"))):
+async def get_state_ada_info(state_code: str, current_user: dict = Depends(require_tier("professional", feature_key="ada_compliance"))):
     """Get state-specific ADA + CPS information"""
     state_code = state_code.upper()
     state_data = STATE_ADA_CPS_DATABASE.get(state_code)
@@ -6124,7 +6327,7 @@ async def get_state_ada_info(state_code: str, current_user: dict = Depends(requi
     }
 
 @app.get("/api/ada/violations")
-async def get_common_ada_violations(current_user: dict = Depends(require_tier("professional"))):
+async def get_common_ada_violations(current_user: dict = Depends(require_tier("professional", feature_key="ada_compliance"))):
     """Get common ADA violations in CPS cases"""
     return {
         "violations": COMMON_ADA_VIOLATIONS,
@@ -6132,7 +6335,7 @@ async def get_common_ada_violations(current_user: dict = Depends(require_tier("p
     }
 
 @app.post("/api/ada/analyze-case/{case_id}")
-async def analyze_case_ada_compliance(case_id: str, current_user: dict = Depends(require_tier("professional"))):
+async def analyze_case_ada_compliance(case_id: str, current_user: dict = Depends(require_tier("professional", feature_key="ada_compliance"))):
     """Analyze a case for ADA compliance violations"""
     # Get case data
     case = await db.cases.find_one({"_id": case_id, "user_id": current_user["user_id"]})
