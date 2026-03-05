@@ -61,12 +61,21 @@ TIER_PRICING = {
     "enterprise": {"monthly": 999.00, "annual": 9990.00, "name": "Enterprise"},
 }
 
+# Tier hierarchy: higher index = more access
+TIER_LEVELS = {
+    "free": 0,
+    "essential": 1,
+    "professional": 2,
+    "attorney": 3,
+    "enterprise": 4,
+}
+
 TIER_FEATURES = {
-    "free": {"docs_per_month": 5, "ai_credits": 10, "case_law_searches": 10},
-    "essential": {"docs_per_month": 25, "ai_credits": 100, "case_law_searches": 100},
-    "professional": {"docs_per_month": -1, "ai_credits": 500, "case_law_searches": -1},
-    "attorney": {"docs_per_month": -1, "ai_credits": 2000, "case_law_searches": -1},
-    "enterprise": {"docs_per_month": -1, "ai_credits": -1, "case_law_searches": -1},
+    "free": {"docs_per_month": 5, "ai_credits": 10, "cases_max": 1},
+    "essential": {"docs_per_month": 25, "ai_credits": 100, "cases_max": -1},
+    "professional": {"docs_per_month": -1, "ai_credits": 500, "cases_max": -1},
+    "attorney": {"docs_per_month": -1, "ai_credits": 2000, "cases_max": -1},
+    "enterprise": {"docs_per_month": -1, "ai_credits": -1, "cases_max": -1},
 }
 
 # JWT Configuration
@@ -366,7 +375,85 @@ async def get_case_with_ownership(case_id: str, user_id: str):
     return case
 
 
-# ============== HEALTH & API INFO ENDPOINTS ==============
+# ============== TIER ENFORCEMENT ==============
+
+async def get_user_tier(user_id: str) -> str:
+    """Get the user's current tier from DB"""
+    user = await db.users.find_one({"_id": user_id}, {"tier": 1})
+    return user.get("tier", "free") if user else "free"
+
+
+def check_tier_access(user_tier: str, required_tier: str) -> bool:
+    """Check if user's tier meets the minimum required tier"""
+    return TIER_LEVELS.get(user_tier, 0) >= TIER_LEVELS.get(required_tier, 0)
+
+
+def require_tier(min_tier: str):
+    """FastAPI dependency factory: returns a dependency that enforces minimum tier"""
+    async def _check(current_user: dict = Depends(get_current_user)):
+        user_tier = await get_user_tier(current_user["user_id"])
+        if not check_tier_access(user_tier, min_tier):
+            tier_name = min_tier.replace("_", " ").title()
+            raise HTTPException(
+                status_code=403,
+                detail=f"This feature requires the {tier_name} plan or higher. Please upgrade your subscription."
+            )
+        current_user["tier"] = user_tier
+        return current_user
+    return _check
+
+
+async def check_ai_credits(user_id: str, user_tier: str) -> bool:
+    """Check if user has remaining AI credits for the month"""
+    tier_limits = TIER_FEATURES.get(user_tier, TIER_FEATURES["free"])
+    max_credits = tier_limits["ai_credits"]
+    if max_credits == -1:
+        return True
+    user = await db.users.find_one({"_id": user_id}, {"ai_credits_used": 1, "credits_reset_at": 1})
+    credits_used = user.get("ai_credits_used", 0)
+    # Reset credits monthly
+    reset_at = user.get("credits_reset_at")
+    if reset_at:
+        reset_date = datetime.fromisoformat(reset_at) if isinstance(reset_at, str) else reset_at
+        if datetime.now(timezone.utc) - reset_date > timedelta(days=30):
+            await db.users.update_one({"_id": user_id}, {"$set": {"ai_credits_used": 0, "credits_reset_at": datetime.now(timezone.utc).isoformat()}})
+            return True
+    return credits_used < max_credits
+
+
+async def increment_ai_credits(user_id: str):
+    """Increment AI credits used counter"""
+    await db.users.update_one(
+        {"_id": user_id},
+        {"$inc": {"ai_credits_used": 1}, "$setOnInsert": {"credits_reset_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=False
+    )
+
+
+async def check_doc_upload_limit(user_id: str, user_tier: str) -> bool:
+    """Check if user has remaining document uploads for the month"""
+    tier_limits = TIER_FEATURES.get(user_tier, TIER_FEATURES["free"])
+    max_docs = tier_limits["docs_per_month"]
+    if max_docs == -1:
+        return True
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+    count = await db.documents.count_documents({
+        "user_id": user_id,
+        "source": "upload",
+        "created_at": {"$gte": month_start}
+    })
+    return count < max_docs
+
+
+async def check_case_limit(user_id: str, user_tier: str) -> bool:
+    """Check if user has remaining case slots"""
+    tier_limits = TIER_FEATURES.get(user_tier, TIER_FEATURES["free"])
+    max_cases = tier_limits["cases_max"]
+    if max_cases == -1:
+        return True
+    count = await db.cases.count_documents({"user_id": user_id})
+    return count < max_cases
 
 @app.get("/api")
 @app.post("/api")
@@ -481,6 +568,41 @@ async def update_profile(update_data: dict, current_user: dict = Depends(get_cur
         {"$set": update_doc}
     )
     return {"message": "Profile updated"}
+
+
+@app.get("/api/auth/tier-status")
+async def get_tier_status(current_user: dict = Depends(get_current_user)):
+    """Get user's tier info, usage, and limits"""
+    user = await db.users.find_one({"_id": current_user["user_id"]}, {"password_hash": 0})
+    user_tier = user.get("tier", "free") if user else "free"
+    tier_limits = TIER_FEATURES.get(user_tier, TIER_FEATURES["free"])
+
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+
+    docs_this_month = await db.documents.count_documents({
+        "user_id": current_user["user_id"],
+        "source": "upload",
+        "created_at": {"$gte": month_start}
+    })
+    case_count = await db.cases.count_documents({"user_id": current_user["user_id"]})
+    ai_used = user.get("ai_credits_used", 0) if user else 0
+
+    return {
+        "tier": user_tier,
+        "tier_level": TIER_LEVELS.get(user_tier, 0),
+        "limits": tier_limits,
+        "usage": {
+            "docs_uploaded_this_month": docs_this_month,
+            "ai_credits_used": ai_used,
+            "cases_created": case_count,
+        },
+        "remaining": {
+            "docs": tier_limits["docs_per_month"] - docs_this_month if tier_limits["docs_per_month"] != -1 else -1,
+            "ai_credits": tier_limits["ai_credits"] - ai_used if tier_limits["ai_credits"] != -1 else -1,
+            "cases": tier_limits["cases_max"] - case_count if tier_limits["cases_max"] != -1 else -1,
+        }
+    }
 
 
 # ============== FULL ACCESS PASSCODE ==============
@@ -648,6 +770,10 @@ async def google_logout(request: Request):
 @app.post("/api/cases")
 async def create_case(case_data: CaseCreate, current_user: dict = Depends(get_current_user)):
     """Create a new CPS case"""
+    # Enforce case limit
+    user_tier = await get_user_tier(current_user["user_id"])
+    if not await check_case_limit(current_user["user_id"], user_tier):
+        raise HTTPException(status_code=403, detail="Case limit reached for your plan. Please upgrade to create more cases.")
     case_id = str(uuid.uuid4())
     case_doc = {
         "_id": case_id,
@@ -842,7 +968,12 @@ async def upload_document(
     Returns: Document record with extracted text and optional AI analysis
     """
     from emergentintegrations.llm.chat import LlmChat, UserMessage
-    
+
+    # Enforce document upload limit
+    user_tier = await get_user_tier(current_user["user_id"])
+    if not await check_doc_upload_limit(current_user["user_id"], user_tier):
+        raise HTTPException(status_code=403, detail="Document upload limit reached for your plan. Please upgrade to upload more documents.")
+
     # Verify case ownership
     case = await get_case_with_ownership(case_id, current_user["user_id"])
     
@@ -1449,7 +1580,7 @@ async def list_court_filings(case_id: str, current_user: dict = Depends(get_curr
 # ============== CRIMINAL CASE COMPONENT ==============
 
 @app.post("/api/criminal-case")
-async def create_criminal_case(criminal_data: CriminalCaseCreate, current_user: dict = Depends(get_current_user)):
+async def create_criminal_case(criminal_data: CriminalCaseCreate, current_user: dict = Depends(require_tier("attorney"))):
     """Add criminal case linked to CPS case"""
     await get_case_with_ownership(criminal_data.case_id, current_user["user_id"])
     
@@ -1487,7 +1618,7 @@ async def get_criminal_case(case_id: str, current_user: dict = Depends(get_curre
 # ============== JUDGE RESEARCH ==============
 
 @app.post("/api/judge-research")
-async def create_judge_research(judge_data: JudgeResearchCreate, current_user: dict = Depends(get_current_user)):
+async def create_judge_research(judge_data: JudgeResearchCreate, current_user: dict = Depends(require_tier("professional"))):
     """Add judge research"""
     await get_case_with_ownership(judge_data.case_id, current_user["user_id"])
     
@@ -1580,9 +1711,14 @@ async def delete_calendar_event(event_id: str, current_user: dict = Depends(get_
 # ============== AI ENDPOINTS ==============
 
 @app.post("/api/ai/chat")
-async def ai_chat(message_data: ChatMessage, current_user: dict = Depends(get_current_user)):
-    """AI-powered legal chat assistant"""
+async def ai_chat(message_data: ChatMessage, current_user: dict = Depends(require_tier("essential"))):
+    """AI-powered legal chat assistant - requires Essential tier"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+    # Check AI credits
+    if not await check_ai_credits(current_user["user_id"], current_user["tier"]):
+        raise HTTPException(status_code=403, detail="AI credits exhausted for this month. Please upgrade your plan for more credits.")
+    await increment_ai_credits(current_user["user_id"])
     
     session_id = message_data.session_id or str(uuid.uuid4())
     
@@ -1671,7 +1807,7 @@ Be thorough, cite relevant statutes and case law when applicable, and always pri
 
 
 @app.post("/api/ai/chat/stream")
-async def ai_chat_stream(message_data: ChatMessage, current_user: dict = Depends(get_current_user)):
+async def ai_chat_stream(message_data: ChatMessage, current_user: dict = Depends(require_tier("essential"))):
     """AI-powered legal chat assistant with streaming response (SSE)"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     import asyncio
@@ -1775,8 +1911,8 @@ IMPORTANT: You provide legal EDUCATION, not legal advice. Always recommend consu
 
 
 @app.post("/api/ai/analyze-document")
-async def ai_analyze_document(request: AIAnalysisRequest, current_user: dict = Depends(get_current_user)):
-    """AI-powered document analysis"""
+async def ai_analyze_document(request: AIAnalysisRequest, current_user: dict = Depends(require_tier("essential"))):
+    """AI-powered document analysis - requires Essential tier"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
     case = await get_case_with_ownership(request.case_id, current_user["user_id"])
@@ -1845,8 +1981,8 @@ Note: This is legal education, not legal advice. Recommend consulting an attorne
     }
 
 @app.post("/api/ai/generate-document")
-async def ai_generate_document(request: DocumentGeneratorRequest, current_user: dict = Depends(get_current_user)):
-    """AI-powered legal document generator - Full Featured"""
+async def ai_generate_document(request: DocumentGeneratorRequest, current_user: dict = Depends(require_tier("essential"))):
+    """AI-powered legal document generator - requires Essential tier"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
     case = await get_case_with_ownership(request.case_id, current_user["user_id"])
@@ -1973,8 +2109,8 @@ Generate the complete document now:"""
     }
 
 @app.post("/api/ai/defense-strategy")
-async def ai_defense_strategy(case_id: str, current_user: dict = Depends(get_current_user)):
-    """Generate comprehensive defense strategy based on case analysis"""
+async def ai_defense_strategy(case_id: str, current_user: dict = Depends(require_tier("essential"))):
+    """Generate comprehensive defense strategy - requires Essential tier"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
     # Get full case summary
@@ -2054,8 +2190,8 @@ Be specific and actionable. Include statute citations and case law references.""
     }
 
 @app.post("/api/ai/legal-research")
-async def ai_legal_research(request: LegalResearchRequest, current_user: dict = Depends(get_current_user)):
-    """AI-powered legal research"""
+async def ai_legal_research(request: LegalResearchRequest, current_user: dict = Depends(require_tier("professional"))):
+    """AI-powered legal research - requires Professional tier"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
     system_message = """You are THE CPS PUNISHER legal research AI with comprehensive knowledge of:
@@ -2118,7 +2254,7 @@ async def search_court_opinions(
     court: Optional[str] = None,
     filed_after: Optional[str] = None,
     filed_before: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_tier("attorney"))
 ):
     """Search CourtListener for case law"""
     try:
@@ -2185,7 +2321,7 @@ async def search_court_opinions(
 @app.get("/api/courtlistener/judges")
 async def search_judges(
     name: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_tier("attorney"))
 ):
     """Search CourtListener judge database"""
     try:
@@ -3186,7 +3322,7 @@ async def get_all_states():
     return {"states": sorted(states, key=lambda x: x["name"])}
 
 @app.get("/api/law-library/{state_code}")
-async def get_state_law_info(state_code: str, current_user: dict = Depends(get_current_user)):
+async def get_state_law_info(state_code: str, current_user: dict = Depends(require_tier("professional"))):
     """Get comprehensive CPS law information for a state - INSTANT LOADING from pre-built database"""
     state_code = state_code.upper()
     state_name = STATES_INFO.get(state_code)
@@ -3412,7 +3548,7 @@ async def get_advocates(state: Optional[str] = None):
 # ============== LEGAL NOTEPAD ==============
 
 @app.post("/api/notepad")
-async def create_notepad_entry(entry: NotepadEntryCreate, current_user: dict = Depends(get_current_user)):
+async def create_notepad_entry(entry: NotepadEntryCreate, current_user: dict = Depends(require_tier("essential"))):
     """Create a new notepad entry - can be global or case-specific"""
     entry_id = str(uuid.uuid4())
     
@@ -3838,7 +3974,7 @@ async def export_case_to_pdf(case_id: str, current_user: dict = Depends(get_curr
 # ============== CASE PREPARATION KIT ==============
 
 @app.get("/api/export/case/{case_id}/preparation-kit")
-async def export_case_preparation_kit(case_id: str, current_user: dict = Depends(get_current_user)):
+async def export_case_preparation_kit(case_id: str, current_user: dict = Depends(require_tier("attorney"))):
     """
     Generate comprehensive Court Preparation Kit PDF
     Includes: Case info, violations, timeline, evidence, documents, notes, strategies
@@ -5182,7 +5318,7 @@ async def generate_section_1983_complaint(
     relief_sought: list = Body(default=[]),
     include_monell: bool = Body(default=True),
     include_conspiracy: bool = Body(default=False),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_tier("attorney"))
 ):
     """
     Generate a comprehensive Section 1983 Civil Rights Complaint.
@@ -5413,7 +5549,7 @@ async def generate_podcast_script(
     episode_type: str = Body(default="educational"),
     duration_minutes: int = Body(default=15),
     include_case_details: bool = Body(default=False),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_tier("attorney"))
 ):
     """
     Generate a podcast script about CPS defense, legal rights, or case analysis.
@@ -5589,7 +5725,7 @@ async def analyze_case_law(
     case_id: str = Body(...),
     focus_areas: list = Body(default=["fourth_amendment", "due_process"]),
     jurisdiction: str = Body(default="federal"),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_tier("professional"))
 ):
     """
     Deep AI analysis of relevant case law for your specific situation.
@@ -5772,7 +5908,7 @@ async def expert_legal_analysis(
     case_id: str = Body(...),
     question: str = Body(...),
     analysis_type: str = Body(default="comprehensive"),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_tier("professional"))
 ):
     """
     Get expert-level legal analysis on any CPS question.
@@ -5860,7 +5996,7 @@ async def deep_case_law_search(
     court_type: str = Body(default="all"),
     date_range: str = Body(default="all"),
     case_type: str = Body(default="cps"),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_tier("attorney"))
 ):
     """
     Deep search of CourtListener database with CPS-focused filtering.
@@ -5925,7 +6061,7 @@ async def deep_case_law_search(
 # ============== ADA ACCOMMODATIONS & COMPLIANCE ==============
 
 @app.get("/api/ada/federal-law")
-async def get_ada_federal_law(current_user: dict = Depends(get_current_user)):
+async def get_ada_federal_law(current_user: dict = Depends(require_tier("professional"))):
     """Get federal ADA law framework"""
     return {
         "federal_law": ADA_FEDERAL_LAW,
@@ -5934,7 +6070,7 @@ async def get_ada_federal_law(current_user: dict = Depends(get_current_user)):
     }
 
 @app.get("/api/ada/case-law")
-async def get_ada_case_law(current_user: dict = Depends(get_current_user)):
+async def get_ada_case_law(current_user: dict = Depends(require_tier("professional"))):
     """Get ADA case law relevant to CPS cases"""
     return {
         "supreme_court": ADA_CASE_LAW["supreme_court"],
@@ -5943,7 +6079,7 @@ async def get_ada_case_law(current_user: dict = Depends(get_current_user)):
     }
 
 @app.get("/api/ada/false-claims-act")
-async def get_false_claims_act(state: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+async def get_false_claims_act(state: Optional[str] = None, current_user: dict = Depends(require_tier("professional"))):
     """Get False Claims Act information for federal and state level"""
     result = {
         "federal": FALSE_CLAIMS_ACT["federal"]
@@ -5960,12 +6096,12 @@ async def get_false_claims_act(state: Optional[str] = None, current_user: dict =
     return result
 
 @app.get("/api/ada/civil-guardian")
-async def get_civil_guardian_requirements(current_user: dict = Depends(get_current_user)):
+async def get_civil_guardian_requirements(current_user: dict = Depends(require_tier("professional"))):
     """Get civil guardian/GAL ADA requirements"""
     return CIVIL_GUARDIAN_ADA
 
 @app.get("/api/ada/state/{state_code}")
-async def get_state_ada_info(state_code: str, current_user: dict = Depends(get_current_user)):
+async def get_state_ada_info(state_code: str, current_user: dict = Depends(require_tier("professional"))):
     """Get state-specific ADA + CPS information"""
     state_code = state_code.upper()
     state_data = STATE_ADA_CPS_DATABASE.get(state_code)
@@ -5988,7 +6124,7 @@ async def get_state_ada_info(state_code: str, current_user: dict = Depends(get_c
     }
 
 @app.get("/api/ada/violations")
-async def get_common_ada_violations(current_user: dict = Depends(get_current_user)):
+async def get_common_ada_violations(current_user: dict = Depends(require_tier("professional"))):
     """Get common ADA violations in CPS cases"""
     return {
         "violations": COMMON_ADA_VIOLATIONS,
@@ -5996,7 +6132,7 @@ async def get_common_ada_violations(current_user: dict = Depends(get_current_use
     }
 
 @app.post("/api/ada/analyze-case/{case_id}")
-async def analyze_case_ada_compliance(case_id: str, current_user: dict = Depends(get_current_user)):
+async def analyze_case_ada_compliance(case_id: str, current_user: dict = Depends(require_tier("professional"))):
     """Analyze a case for ADA compliance violations"""
     # Get case data
     case = await db.cases.find_one({"_id": case_id, "user_id": current_user["user_id"]})
@@ -6084,7 +6220,7 @@ async def search_ada_resources(
     query: str,
     category: Optional[str] = None,
     state: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_tier("professional"))
 ):
     """Search ADA resources - case law, regulations, state laws"""
     results = {
@@ -6137,7 +6273,7 @@ async def generate_ada_complaint(
     case_id: str = Body(...),
     violation_type: str = Body(...),
     description: str = Body(...),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_tier("professional"))
 ):
     """Generate an ADA complaint document"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
@@ -6231,7 +6367,7 @@ class StrategyBuildRequest(BaseModel):
 @app.post("/api/strategy-builder/build")
 async def build_legal_strategy(
     request: StrategyBuildRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_tier("professional"))
 ):
     """
     LEGAL STRATEGY BUILDER - Builds comprehensive defense strategy
@@ -6410,7 +6546,7 @@ Provide actionable, specific guidance. This is NOT generic advice - this is a ta
 @app.post("/api/argument-generator/generate")
 async def generate_legal_arguments(
     request: LegalArgumentRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_tier("professional"))
 ):
     """
     ARGUMENT GENERATOR - Generates specific legal arguments from evidence and violations
@@ -6538,7 +6674,7 @@ Generate arguments that are:
 @app.post("/api/evidence-mapper/map")
 async def map_evidence_to_precedents(
     request: EvidenceMapping,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_tier("professional"))
 ):
     """
     EVIDENCE ARGUMENT MAPPER - Maps evidence to legal precedents and arguments
@@ -6658,7 +6794,7 @@ Provide a comprehensive mapping that includes:
 @app.post("/api/precedent-finder/search")
 async def find_legal_precedents(
     request: PrecedentSearchRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_tier("professional"))
 ):
     """
     LEGAL PRECEDENT FINDER - Finds relevant case law for specific violations

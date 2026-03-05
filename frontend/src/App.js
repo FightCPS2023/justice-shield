@@ -482,43 +482,47 @@ function Dashboard({ onNavigate }) {
     }
   };
 
+  // Tier hierarchy: free=0, essential=1, professional=2, attorney=3, enterprise=4
+  const TIER_LEVELS = { free: 0, essential: 1, professional: 2, attorney: 3, enterprise: 4 };
+  const userTierLevel = TIER_LEVELS[user?.tier] || 0;
+
   const menuItems = [
-    { id: 'overview', icon: Home, label: 'Overview' },
-    { id: 'cases', icon: FileText, label: 'My Cases' },
-    { id: 'chat', icon: MessageSquare, label: 'AI Assistant' },
-    { id: 'expert', icon: Brain, label: 'Expert Legal AI' },
-    { id: 'strategybuilder', icon: Shield, label: 'Strategy Builder', highlight: true },
-    { id: 'argumentgen', icon: Scale, label: 'Argument Generator', highlight: true },
-    { id: 'evidencemapper', icon: Eye, label: 'Evidence Mapper', highlight: true },
-    { id: 'precedentfinder', icon: Search, label: 'Precedent Finder', highlight: true },
-    { id: 'section1983', icon: Gavel, label: 'Section 1983 Lawsuit' },
-    { id: 'incidents', icon: AlertTriangle, label: 'Incident Analyzer' },
-    { id: 'legaldb', icon: BookOpen, label: 'Legal Knowledge Base' },
-    { id: 'rights', icon: Shield, label: 'Know Your Rights' },
-    { id: 'ada', icon: Scale, label: 'ADA Compliance', highlight: true },
-    { id: 'podcast', icon: Mic, label: 'Podcast Creator' },
-    { id: 'caselaw', icon: BookOpen, label: 'Case Law Analysis' },
-    { id: 'violations', icon: AlertTriangle, label: 'Violations' },
-    { id: 'documents', icon: FileText, label: 'Documents' },
-    { id: 'timeline', icon: Clock, label: 'Timeline' },
-    { id: 'evidence', icon: Eye, label: 'Evidence' },
-    { id: 'evidencelist', icon: CheckCircle2, label: 'Evidence Checklist' },
-    { id: 'visitation', icon: Users, label: 'Visitation Log' },
-    { id: 'courthearings', icon: Calendar, label: 'Court Hearings' },
-    { id: 'communications', icon: MessageSquare, label: 'Communications' },
-    { id: 'courtfilings', icon: Gavel, label: 'Court Filings' },
-    { id: 'judgewatch', icon: Scale, label: 'Judge Watch' },
-    { id: 'strategy', icon: Shield, label: 'Defense Strategy' },
-    { id: 'criminal', icon: AlertTriangle, label: 'Criminal Case' },
-    { id: 'services', icon: Users, label: 'Services' },
-    { id: 'calendar', icon: Calendar, label: 'Calendar' },
-    { id: 'research', icon: Search, label: 'Legal Research' },
-    { id: 'library', icon: BookOpen, label: 'Law Library' },
-    { id: 'courtlistener', icon: Scale, label: 'Court Opinions', highlight: true },
-    { id: 'notepad', icon: FileText, label: 'Legal Notepad', highlight: true },
-    { id: 'forum', icon: Users, label: 'Community' },
-    { id: 'advocates', icon: Users, label: 'Find Advocates' },
-    { id: 'pricing', icon: CreditCard, label: 'Upgrade Plan' },
+    { id: 'overview', icon: Home, label: 'Overview', minTier: 'free' },
+    { id: 'cases', icon: FileText, label: 'My Cases', minTier: 'free' },
+    { id: 'violations', icon: AlertTriangle, label: 'Violations', minTier: 'free' },
+    { id: 'timeline', icon: Clock, label: 'Timeline', minTier: 'free' },
+    { id: 'evidence', icon: Eye, label: 'Evidence', minTier: 'free' },
+    { id: 'evidencelist', icon: CheckCircle2, label: 'Evidence Checklist', minTier: 'free' },
+    { id: 'visitation', icon: Users, label: 'Visitation Log', minTier: 'free' },
+    { id: 'courthearings', icon: Calendar, label: 'Court Hearings', minTier: 'free' },
+    { id: 'communications', icon: MessageSquare, label: 'Communications', minTier: 'free' },
+    { id: 'calendar', icon: Calendar, label: 'Calendar', minTier: 'free' },
+    { id: 'rights', icon: Shield, label: 'Know Your Rights', minTier: 'free' },
+    { id: 'forum', icon: Users, label: 'Community', minTier: 'free' },
+    { id: 'advocates', icon: Users, label: 'Find Advocates', minTier: 'free' },
+    { id: 'chat', icon: MessageSquare, label: 'AI Assistant', minTier: 'essential', highlight: true },
+    { id: 'documents', icon: FileText, label: 'Documents', minTier: 'essential', highlight: true },
+    { id: 'incidents', icon: AlertTriangle, label: 'Incident Analyzer', minTier: 'essential' },
+    { id: 'notepad', icon: FileText, label: 'Legal Notepad', minTier: 'essential', highlight: true },
+    { id: 'courtfilings', icon: Gavel, label: 'Court Filings', minTier: 'essential' },
+    { id: 'services', icon: Users, label: 'Services', minTier: 'essential' },
+    { id: 'strategy', icon: Shield, label: 'Defense Strategy', minTier: 'essential' },
+    { id: 'expert', icon: Brain, label: 'Expert Legal AI', minTier: 'professional', highlight: true },
+    { id: 'strategybuilder', icon: Shield, label: 'Strategy Builder', minTier: 'professional', highlight: true },
+    { id: 'argumentgen', icon: Scale, label: 'Argument Generator', minTier: 'professional', highlight: true },
+    { id: 'evidencemapper', icon: Eye, label: 'Evidence Mapper', minTier: 'professional', highlight: true },
+    { id: 'precedentfinder', icon: Search, label: 'Precedent Finder', minTier: 'professional', highlight: true },
+    { id: 'ada', icon: Scale, label: 'ADA Compliance', minTier: 'professional', highlight: true },
+    { id: 'caselaw', icon: BookOpen, label: 'Case Law Analysis', minTier: 'professional', highlight: true },
+    { id: 'judgewatch', icon: Scale, label: 'Judge Watch', minTier: 'professional' },
+    { id: 'legaldb', icon: BookOpen, label: 'Legal Knowledge Base', minTier: 'professional' },
+    { id: 'research', icon: Search, label: 'Legal Research', minTier: 'professional' },
+    { id: 'library', icon: BookOpen, label: 'Law Library', minTier: 'professional' },
+    { id: 'section1983', icon: Gavel, label: 'Section 1983 Lawsuit', minTier: 'attorney', highlight: true },
+    { id: 'courtlistener', icon: Scale, label: 'Court Opinions', minTier: 'attorney', highlight: true },
+    { id: 'podcast', icon: Mic, label: 'Podcast Creator', minTier: 'attorney' },
+    { id: 'criminal', icon: AlertTriangle, label: 'Criminal Case', minTier: 'attorney' },
+    { id: 'pricing', icon: CreditCard, label: 'Upgrade Plan', minTier: 'free' },
   ];
 
   return (
@@ -536,24 +540,46 @@ function Dashboard({ onNavigate }) {
         </div>
 
         <nav className="p-4 space-y-1 max-h-[calc(100vh-180px)] overflow-y-auto">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                activeTab === item.id 
-                  ? 'bg-red-600/20 text-red-500 border border-red-600/30' 
-                  : item.highlight 
-                    ? 'text-purple-400 hover:bg-purple-900/30 hover:text-purple-300 border border-purple-800/30'
-                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-              }`}
-              data-testid={`nav-${item.id}`}
-            >
-              <item.icon className={`w-5 h-5 ${item.highlight ? 'text-purple-400' : ''}`} />
-              {item.label}
-              {item.highlight && <span className="text-xs bg-purple-600/30 text-purple-300 px-2 py-0.5 rounded-full ml-auto">NEW</span>}
-            </button>
-          ))}
+          {menuItems.map((item) => {
+            const itemTierLevel = TIER_LEVELS[item.minTier] || 0;
+            const isLocked = itemTierLevel > userTierLevel;
+            const tierLabel = item.minTier === 'essential' ? 'ESS' : item.minTier === 'professional' ? 'PRO' : item.minTier === 'attorney' ? 'ATT' : null;
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  if (isLocked) {
+                    toast.error(`This feature requires the ${item.minTier.charAt(0).toUpperCase() + item.minTier.slice(1)} plan or higher.`);
+                    setActiveTab('pricing');
+                    setSidebarOpen(false);
+                  } else {
+                    setActiveTab(item.id);
+                    setSidebarOpen(false);
+                  }
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  isLocked 
+                    ? 'text-gray-600 hover:bg-gray-800/50 cursor-not-allowed opacity-60'
+                    : activeTab === item.id 
+                      ? 'bg-red-600/20 text-red-500 border border-red-600/30' 
+                      : item.highlight 
+                        ? 'text-purple-400 hover:bg-purple-900/30 hover:text-purple-300 border border-purple-800/30'
+                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                }`}
+                data-testid={`nav-${item.id}`}
+              >
+                {isLocked ? <Lock className="w-4 h-4 text-gray-600 flex-shrink-0" /> : <item.icon className={`w-5 h-5 flex-shrink-0 ${item.highlight && !isLocked ? 'text-purple-400' : ''}`} />}
+                <span className="truncate">{item.label}</span>
+                {isLocked && tierLabel && (
+                  <span className="text-[10px] bg-gray-700 text-gray-400 px-1.5 py-0.5 rounded ml-auto flex-shrink-0">{tierLabel}</span>
+                )}
+                {!isLocked && item.highlight && (
+                  <span className="text-xs bg-purple-600/30 text-purple-300 px-2 py-0.5 rounded-full ml-auto flex-shrink-0">NEW</span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800">
@@ -3082,20 +3108,23 @@ function PricingTab() {
       annual: 490,
       description: 'For parents starting their CPS defense',
       features: [
-        '25 document uploads/month',
+        'Unlimited Cases',
+        '25 Document Uploads/month',
+        '100 AI Credits/month',
         'AI Document Analysis',
-        'Violation Detection (26 types)',
-        'Timeline Builder',
-        'Basic Defense Strategies',
-        'Motion Templates',
-        'Know Your Rights Guide',
-        'Community Forum Access',
+        'AI Chat Assistant',
+        'Motion & Document Generation',
+        'Defense Strategy Generator',
+        'Incident Analyzer',
+        'Legal Notepad with PDF Export',
+        'Court Filings Tracker',
+        'Services Tracker',
         'Email Support'
       ],
       notIncluded: [
-        'Expert Legal AI',
-        'Section 1983 Generator',
-        'Case Law Research'
+        'Strategy Builder',
+        'ADA Compliance',
+        'Section 1983 Generator'
       ]
     },
     {
@@ -3108,20 +3137,20 @@ function PricingTab() {
       popular: true,
       description: 'Complete CPS defense toolkit',
       features: [
-        'UNLIMITED Document Uploads',
         'Everything in Essential, plus:',
+        'UNLIMITED Document Uploads',
+        '500 AI Credits/month',
         'Expert Legal AI Assistant',
-        'Advanced AI Analysis',
-        'AI Document Generation',
         'Strategy Builder',
         'Argument Generator',
         'Evidence Mapper',
         'Precedent Finder',
-        'Case Law Research (50M+ cases)',
+        'ADA Compliance Center (50 States)',
+        'Case Law Analysis',
         'Law Library (50 States)',
         'Judge Research Tools',
-        'Court Filing Tracker',
-        '7-Day Free Trial',
+        'Legal Research Engine',
+        'Multi-file & Folder Upload',
         'Priority Email Support'
       ]
     },
@@ -3135,17 +3164,16 @@ function PricingTab() {
       description: 'Professional tools for family law attorneys',
       features: [
         'Everything in Professional, plus:',
-        '500 AI Credits/Month',
+        '2,000 AI Credits/month',
         'Section 1983 Lawsuit Generator',
-        'Federal Civil Rights Tools',
-        'Multi-Client Case Management',
+        'CourtListener Integration (50M+ Opinions)',
+        'Court Preparation Kit (PDF)',
         'Podcast Script Creator',
-        'White-Label Reports',
-        'Court Document Export (PDF)',
-        'CourtListener Deep Integration',
+        'Criminal Case Tools',
         'Qualified Immunity Analysis',
-        'Priority Phone Support',
-        'Dedicated Account Manager'
+        'Federal Civil Rights Tools',
+        'Court Document Export (PDF)',
+        'Priority Phone Support'
       ]
     },
     {
@@ -3159,14 +3187,11 @@ function PricingTab() {
       features: [
         'Everything in Attorney, plus:',
         'UNLIMITED AI Credits',
-        'Unlimited Team Members',
-        'Custom Branding & White-Label',
-        'API Access for Integration',
-        'Custom AI Training',
+        'Multi-Client Case Management',
         'Bulk Case Import',
         'Advanced Analytics Dashboard',
-        'SSO/SAML Integration',
-        'Dedicated Server Instance',
+        'API Access for Integration',
+        'Custom AI Training',
         '24/7 Priority Support',
         'Quarterly Strategy Sessions'
       ]
@@ -3205,9 +3230,11 @@ function PricingTab() {
       <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 text-center">
         <h3 className="text-xl font-bold mb-2">Free Plan Includes:</h3>
         <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-400">
+          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> 1 Case</span>
           <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> 5 Doc Uploads/Month</span>
           <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> 10 AI Credits</span>
-          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> Basic Case Management</span>
+          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> Violation & Timeline Tracking</span>
+          <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> Evidence & Visitation Logs</span>
           <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> Know Your Rights Guide</span>
           <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" /> Community Forum</span>
         </div>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="12" failures="0" skipped="0" tests="12" time="60.322" timestamp="2026-03-05T17:34:39.217312+00:00" hostname="agent-env-f7f5f5ef-b7a9-4407-b3e0-00758e653057"><testcase classname="backend.tests.test_tier_enforcement.TestTierEnforcementFreeUser" name="test_01_free_user_tier_status" time="60.171"><error message="failed on setup with &quot;AssertionError: Signup failed: The preview environment is not responding. It may be starting up.&#10;  &#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_tier_enforcement.py:36: in free_user
+    assert response.status_code == 200, f"Signup failed: {response.text}"
+E   AssertionError: Signup failed: The preview environment is not responding. It may be starting up.
+E     
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_tier_enforcement.TestTierEnforcementFreeUser" name="test_02_free_user_can_access_cases" time="0.000"><error message="failed on setup with &quot;AssertionError: Signup failed: The preview environment is not responding. It may be starting up.&#10;  &#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_tier_enforcement.py:36: in free_user
+    assert response.status_code == 200, f"Signup failed: {response.text}"
+E   AssertionError: Signup failed: The preview environment is not responding. It may be starting up.
+E     
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_tier_enforcement.TestTierEnforcementFreeUser" name="test_03_free_user_can_access_rights_guide" time="0.000"><error message="failed on setup with &quot;AssertionError: Signup failed: The preview environment is not responding. It may be starting up.&#10;  &#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_tier_enforcement.py:36: in free_user
+    assert response.status_code == 200, f"Signup failed: {response.text}"
+E   AssertionError: Signup failed: The preview environment is not responding. It may be starting up.
+E     
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_tier_enforcement.TestTierEnforcementFreeUser" name="test_04_free_user_can_access_evidence_checklist" time="0.000"><error message="failed on setup with &quot;AssertionError: Signup failed: The preview environment is not responding. It may be starting up.&#10;  &#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_tier_enforcement.py:36: in free_user
+    assert response.status_code == 200, f"Signup failed: {response.text}"
+E   AssertionError: Signup failed: The preview environment is not responding. It may be starting up.
+E     
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_tier_enforcement.TestTierEnforcementFreeUser" name="test_05_free_user_blocked_from_ai_chat_essential" time="0.000"><error message="failed on setup with &quot;AssertionError: Signup failed: The preview environment is not responding. It may be starting up.&#10;  &#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_tier_enforcement.py:36: in free_user
+    assert response.status_code == 200, f"Signup failed: {response.text}"
+E   AssertionError: Signup failed: The preview environment is not responding. It may be starting up.
+E     
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_tier_enforcement.TestTierEnforcementFreeUser" name="test_06_free_user_blocked_from_ada_federal_law_professional" time="0.000"><error message="failed on setup with &quot;AssertionError: Signup failed: The preview environment is not responding. It may be starting up.&#10;  &#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_tier_enforcement.py:36: in free_user
+    assert response.status_code == 200, f"Signup failed: {response.text}"
+E   AssertionError: Signup failed: The preview environment is not responding. It may be starting up.
+E     
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_tier_enforcement.TestTierEnforcementFreeUser" name="test_07_free_user_blocked_from_strategy_builder_professional" time="0.000"><error message="failed on setup with &quot;AssertionError: Signup failed: The preview environment is not responding. It may be starting up.&#10;  &#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_tier_enforcement.py:36: in free_user
+    assert response.status_code == 200, f"Signup failed: {response.text}"
+E   AssertionError: Signup failed: The preview environment is not responding. It may be starting up.
+E     
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_tier_enforcement.TestTierEnforcementFreeUser" name="test_08_free_user_blocked_from_courtlistener_attorney" time="0.000"><error message="failed on setup with &quot;AssertionError: Signup failed: The preview environment is not responding. It may be starting up.&#10;  &#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_tier_enforcement.py:36: in free_user
+    assert response.status_code == 200, f"Signup failed: {response.text}"
+E   AssertionError: Signup failed: The preview environment is not responding. It may be starting up.
+E     
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_tier_enforcement.TestTierEnforcementFreeUser" name="test_09_free_user_blocked_from_section_1983_attorney" time="0.000"><error message="failed on setup with &quot;AssertionError: Signup failed: The preview environment is not responding. It may be starting up.&#10;  &#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_tier_enforcement.py:36: in free_user
+    assert response.status_code == 200, f"Signup failed: {response.text}"
+E   AssertionError: Signup failed: The preview environment is not responding. It may be starting up.
+E     
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_tier_enforcement.TestTierEnforcementFreeUser" name="test_10_free_user_can_create_one_case" time="0.000"><error message="failed on setup with &quot;AssertionError: Signup failed: The preview environment is not responding. It may be starting up.&#10;  &#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_tier_enforcement.py:36: in free_user
+    assert response.status_code == 200, f"Signup failed: {response.text}"
+E   AssertionError: Signup failed: The preview environment is not responding. It may be starting up.
+E     
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_tier_enforcement.TestTierEnforcementFreeUser" name="test_11_free_user_blocked_from_second_case" time="0.000"><error message="failed on setup with &quot;AssertionError: Signup failed: The preview environment is not responding. It may be starting up.&#10;  &#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_tier_enforcement.py:36: in free_user
+    assert response.status_code == 200, f"Signup failed: {response.text}"
+E   AssertionError: Signup failed: The preview environment is not responding. It may be starting up.
+E     
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_tier_enforcement.TestTierEnforcementFreeUser" name="test_99_cleanup_free_user_data" time="0.000"><error message="failed on setup with &quot;AssertionError: Signup failed: The preview environment is not responding. It may be starting up.&#10;  &#10;assert 502 == 200&#10; +  where 502 = &lt;Response [502]&gt;.status_code&quot;">backend/tests/test_tier_enforcement.py:36: in free_user
+    assert response.status_code == 200, f"Signup failed: {response.text}"
+E   AssertionError: Signup failed: The preview environment is not responding. It may be starting up.
+E     
+E   assert 502 == 200
+E    +  where 502 = &lt;Response [502]&gt;.status_code</error></testcase></testsuite></testsuites>
