@@ -2706,6 +2706,165 @@ Use all available case data. The document should be ready to print and file."""
     }
 
 
+# ============== FORENSIC DOCUMENT ANALYSIS ENGINE ==============
+
+class ForensicAnalysisRequest(BaseModel):
+    document_id: Optional[str] = None
+    case_id: Optional[str] = None
+    document_text: Optional[str] = None
+
+
+@app.post("/api/ai/forensic-analysis")
+async def forensic_document_analysis(request: ForensicAnalysisRequest, current_user: dict = Depends(get_current_user)):
+    """Legal forensic document analyzer — 7-point comprehensive analysis for MOUs, stipulations, void ab initio, trafficking indicators, and structural issues"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+    user_tier = await get_user_tier(current_user["user_id"])
+    if not await check_ai_credits(current_user["user_id"], user_tier):
+        has_purchased = await spend_purchased_credits(current_user["user_id"], FEATURE_CREDIT_COSTS.get("doc_upload", 2), "forensic_analysis")
+        if not has_purchased:
+            raise HTTPException(status_code=403, detail="AI credits exhausted. Purchase more credits or upgrade.")
+    else:
+        await increment_ai_credits(current_user["user_id"])
+
+    # Get document text
+    doc_text = request.document_text or ""
+    doc_title = "Uploaded Document"
+
+    if request.document_id:
+        doc = await db.documents.find_one({"_id": request.document_id})
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document not found")
+        doc_text = doc.get("extracted_text", "") or doc.get("content", "")
+        doc_title = doc.get("title", "Unknown Document")
+
+    if request.case_id and not doc_text:
+        # Pull all documents from the case for batch analysis
+        docs = []
+        async for d in db.documents.find({"case_id": request.case_id}).limit(20):
+            text = d.get("extracted_text", "") or d.get("content", "")
+            if text:
+                docs.append(f"--- DOCUMENT: {d.get('title', 'Unknown')} ---\n{text[:5000]}")
+        doc_text = "\n\n".join(docs)
+        doc_title = f"Case Bundle ({len(docs)} documents)"
+
+    if not doc_text:
+        raise HTTPException(status_code=400, detail="No document text available for analysis")
+
+    system_message = """You are THE CPS PUNISHER's Legal Forensic Document Analyst — the most advanced AI system for analyzing government records, child welfare documents, and federal investigations.
+
+You specialize in identifying hidden agreements, jurisdictional defects, constitutional violations, and trafficking indicators within CPS and government documents.
+
+ANALYSIS FRAMEWORK — You MUST perform ALL 7 sections in order:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: MEMORANDUMS OF UNDERSTANDING (MOUs) & INTERAGENCY AGREEMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Search for ANY references to:
+- Memorandum of Understanding / Agreement
+- Interagency Agreement / Protocol
+- Multidisciplinary Team Agreement
+- Cross-Reporting Agreement / Information Sharing Agreement
+- Task Force Agreement / Joint Investigation Protocol
+- Human Trafficking Task Force agreements
+Also identify FUNCTIONALLY EQUIVALENT agreements even if not titled as MOU.
+Check for involvement of: CPS, DCFS/DCF, DFS, DSS, CYS, juvenile courts, GAL programs, foster care agencies, missing/runaway youth task forces, NCMEC, human trafficking task forces.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: STIPULATIONS & CONTRACTUAL TERMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Identify: stipulations, contractual obligations, agency agreements, consent agreements, settlement agreements, compliance agreements, investigative cooperation agreements.
+Determine if the document establishes: authority delegation, investigative jurisdiction, reporting obligations, financial or operational relationships.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: VOID AB INITIO ISSUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Check for: lack of jurisdiction, lack of authority to contract, absence of required signatures, lack of statutory authority, failure of consideration, fraud or misrepresentation, conflict with federal/state law, unconstitutional delegation of authority, due process violations, agreements executed by unauthorized persons.
+EXPLAIN why each defect could invalidate the agreement from the beginning.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4: CHILD WELFARE / TRAFFICKING INDICATORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Identify references to: foster care, group homes, wards of the state, dependency/juvenile court, runaway/missing children, CSEC, human trafficking, NCMEC CyberTipline, child abuse investigations, multidisciplinary child abuse teams.
+Determine if the document suggests: coordination between trafficking investigations and child welfare agencies, child placement systems intersecting with trafficking investigations, reporting pipelines between federal agencies and CPS.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 5: STRUCTURAL LEGAL ISSUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Evaluate: jurisdictional defects, improper delegation of authority, violations of federal reporting statutes, due process concerns, procedural irregularities, investigative conflicts of interest.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 6: LEGAL EVIDENCE MATRIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+For EACH finding, produce:
+- Document ID / Reference
+- Page/Section reference
+- Relevant quote (exact text)
+- Type of finding
+- Classification: A (Direct operational agreement), B (Indirect reference), C (Administrative reference only), D (Irrelevant to child welfare or trafficking)
+Then state:
+- What the document PROVES
+- What the document does NOT prove
+- Whether it supports a claim of interagency coordination
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 7: FINAL ASSESSMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+State whether the document set contains:
+- Operational MOUs between trafficking investigations and child welfare systems
+- Agreements affecting jurisdiction or investigative authority
+- Defects that could render agreements void ab initio
+Provide overall risk assessment and recommended legal actions.
+
+FORMAT: Use clear section headers, numbered findings, and structured formatting. Be thorough and cite specific text from the documents."""
+
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"forensic-{uuid.uuid4()}",
+        system_message=system_message
+    ).with_model("openai", "gpt-5.2")
+
+    prompt = f"""DOCUMENT FOR FORENSIC ANALYSIS:
+Title: {doc_title}
+
+DOCUMENT TEXT:
+{doc_text[:15000]}
+
+Perform the COMPLETE 7-section forensic analysis on this document. Be thorough and cite specific text."""
+
+    response = await chat.send_message(UserMessage(text=prompt))
+
+    # Store the forensic analysis
+    analysis_record = {
+        "_id": str(uuid.uuid4()),
+        "user_id": current_user["user_id"],
+        "document_id": request.document_id,
+        "case_id": request.case_id,
+        "document_title": doc_title,
+        "analysis": response,
+        "analysis_type": "forensic_7point",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.forensic_analyses.insert_one(analysis_record)
+
+    return {
+        "id": analysis_record["_id"],
+        "document_title": doc_title,
+        "analysis": response,
+        "analysis_type": "forensic_7point",
+        "created_at": analysis_record["created_at"]
+    }
+
+
+@app.get("/api/ai/forensic-analysis/{case_id}")
+async def get_forensic_analyses(case_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all forensic analyses for a case"""
+    analyses = []
+    async for a in db.forensic_analyses.find({"case_id": case_id, "user_id": current_user["user_id"]}, {"_id": 0}).sort("created_at", -1):
+        analyses.append(a)
+    return {"analyses": analyses}
+
+
 # ============== COURTLISTENER INTEGRATION ==============
 
 @app.get("/api/courtlistener/search")

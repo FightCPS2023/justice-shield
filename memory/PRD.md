@@ -81,6 +81,22 @@ Credits allow access to any feature without upgrading tier. Never expire.
 - CourtListener (50M+ opinions)
 - Court Preparation Kit (PDF)
 - Podcast Creator, Criminal Case Tools
+- **Legal Forensic Document Analyzer** (7-point analysis)
+
+### Legal Forensic Document Analyzer (NEW - Mar 2026)
+- Location: Documents tab > Forensic Analyzer sub-tab
+- Backend endpoint: `/api/ai/forensic-analysis`
+- 7-point comprehensive analysis framework:
+  1. MOUs & Interagency Agreements
+  2. Stipulations & Contractual Terms
+  3. Void Ab Initio Issues
+  4. Child Welfare / Trafficking Indicators
+  5. Structural Legal Issues
+  6. Legal Evidence Matrix
+  7. Final Assessment
+- Modes: Single Document or Entire Case
+- Features: Copy to clipboard, Download as text file
+- Status: **IMPLEMENTED** (AI calls blocked due to budget limit)
 
 ### UI Features
 - Landing page Sign In button (top right corner)
@@ -95,23 +111,32 @@ Credits allow access to any feature without upgrading tier. Never expire.
 - Cases: /api/cases (limited by tier)
 - Documents: /api/documents/upload (limited by tier)
 - AI: /api/ai/chat (all tiers), /api/ai/expert-analysis (professional)
+- **Forensic: /api/ai/forensic-analysis (all tiers, uses AI credits)**
 - ADA: /api/ada/* (professional)
 - Section 1983: /api/section-1983/* (attorney)
 - CourtListener: /api/courtlistener/* (attorney)
 
 ## Pending Tasks
 
-### P1 - Codebase Refactoring
-- Break server.py (~7100 lines) into modular route files
-- Break App.js (~8900 lines) into modular components
+### P0 - Immediate
+- **Add balance to Emergent LLM key** - Budget exceeded, blocking all AI features
+
+### P1 - Codebase Refactoring (Technical Debt)
+- Break server.py (~7500 lines) into modular route files in `/backend/routes/`
+- Break App.js (~9500 lines) into modular components in `/frontend/src/components/features/`
+- This is urgent for maintainability
 
 ### P2 - Future Features
 - Facebook OAuth (needs user's App ID & Secret)
 - Deeper CourtListener integration
 - Multi-client case management (Enterprise)
 - Email notifications
-- "Centinet law AI" exploration
+- Streaming responses for slow AI endpoints
 
 ## Credentials
-- Passcode: PUNISHER2024 (Enterprise)
+- Passcode: PUNISHER2024 (Enterprise access)
 - Stripe: Live keys configured
+- Test user: forensic_test@test.com / test123
+
+## Known Issues
+- Emergent LLM key budget exceeded - need to add balance via Profile > Universal Key > Add Balance

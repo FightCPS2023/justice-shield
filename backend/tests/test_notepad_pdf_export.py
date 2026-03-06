@@ -14,7 +14,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cps-punisher-preview.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://case-warrior.preview.emergentagent.com')
 TEST_EMAIL = "lawtest@test.com"
 TEST_PASSWORD = "Test123!"
 
