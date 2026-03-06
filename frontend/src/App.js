@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { Toaster, toast } from 'sonner';
 import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
@@ -51,38 +51,45 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState('landing');
   const [processingOAuth, setProcessingOAuth] = useState(false);
+  const hasProcessedOAuth = useRef(false);
 
-  useEffect(() => {
-    // Check for OAuth callback with session_id in URL hash or query params
+  // CRITICAL: Check for OAuth session_id synchronously during render (not in useEffect)
+  // This prevents race conditions with auth checks
+  const getSessionIdFromUrl = () => {
     const hash = window.location.hash;
     const search = window.location.search;
     
-    // Try hash first (e.g., #session_id=xxx)
-    let sessionId = null;
     if (hash && hash.includes('session_id=')) {
-      sessionId = hash.split('session_id=')[1]?.split('&')[0];
-      console.log('Found session_id in hash:', sessionId?.substring(0, 20) + '...');
+      return hash.split('session_id=')[1]?.split('&')[0];
     }
-    // Also check query params (e.g., ?session_id=xxx)
-    if (!sessionId && search && search.includes('session_id=')) {
-      sessionId = search.split('session_id=')[1]?.split('&')[0];
-      console.log('Found session_id in query:', sessionId?.substring(0, 20) + '...');
+    if (search && search.includes('session_id=')) {
+      return search.split('session_id=')[1]?.split('&')[0];
     }
+    return null;
+  };
+
+  useEffect(() => {
+    const sessionId = getSessionIdFromUrl();
     
-    if (sessionId) {
+    // If we have a session_id from OAuth callback and haven't processed it yet
+    if (sessionId && !hasProcessedOAuth.current) {
+      hasProcessedOAuth.current = true; // Mark as processed immediately to prevent re-runs
+      console.log('Processing OAuth session_id:', sessionId?.substring(0, 20) + '...');
       setProcessingOAuth(true);
       processGoogleAuth(sessionId);
       return;
     }
 
-    // Normal auth check
-    const token = localStorage.getItem('cps_token');
-    const userData = localStorage.getItem('cps_user');
-    if (token && userData) {
-      setUser(JSON.parse(userData));
-      setCurrentView('dashboard');
+    // Normal auth check - only if no OAuth callback in progress
+    if (!sessionId) {
+      const token = localStorage.getItem('cps_token');
+      const userData = localStorage.getItem('cps_user');
+      if (token && userData) {
+        setUser(JSON.parse(userData));
+        setCurrentView('dashboard');
+      }
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const processGoogleAuth = async (sessionId) => {
@@ -369,7 +376,7 @@ function AuthPage({ onNavigate }) {
 
   // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
   const handleGoogleLogin = () => {
-    const redirectUrl = window.location.origin + '/auth/callback';
+    const redirectUrl = window.location.origin; // Redirect to root, session_id will be in hash
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
