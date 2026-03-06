@@ -18,7 +18,7 @@ COURTLISTENER_API_KEY = os.environ.get("COURTLISTENER_API_KEY", "")
 FULL_ACCESS_PASSCODE = os.environ.get("FULL_ACCESS_PASSCODE", "PUNISHER2024")
 
 # JWT Configuration
-SECRET_KEY = os.environ.get("SECRET_KEY", "cps-punisher-secret-key-2024-secure-random-string")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 30
 

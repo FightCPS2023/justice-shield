@@ -135,7 +135,7 @@ FEATURE_CREDIT_COSTS = {
 }
 
 # JWT Configuration
-SECRET_KEY = os.environ.get("SECRET_KEY", "cps-punisher-secret-key-2024-secure-random-string")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 30
 
@@ -567,6 +567,12 @@ async def check_case_limit(user_id: str, user_tier: str) -> bool:
         return True
     count = await db.cases.count_documents({"user_id": user_id})
     return count < max_cases
+
+@app.get("/health")
+async def kubernetes_health_probe():
+    """Health check endpoint for Kubernetes liveness/readiness probes"""
+    return {"status": "healthy"}
+
 
 @app.get("/api")
 @app.post("/api")
