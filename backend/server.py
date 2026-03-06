@@ -746,7 +746,7 @@ async def get_tier_status(current_user: dict = Depends(get_current_user)):
 
 
 # ============== FULL ACCESS PASSCODES ==============
-# 20 unique passcodes for enterprise access
+# 20 unique passcodes for enterprise access (reusable until deactivated)
 VALID_PASSCODES = [
     "PUNISHER2024",      # Original passcode
     "CPS-WARRIOR-001",
@@ -778,16 +778,12 @@ async def redeem_passcode(request: PasscodeRequest, current_user: dict = Depends
     """
     Redeem a passcode for full enterprise access to all features.
     This grants the user enterprise tier permanently.
+    Passcodes are reusable by multiple users.
     """
     # Check if passcode is valid (case-insensitive)
     passcode_upper = request.passcode.upper().strip()
     if passcode_upper not in [p.upper() for p in VALID_PASSCODES]:
         raise HTTPException(status_code=400, detail="Invalid passcode")
-    
-    # Check if this specific passcode has already been used
-    existing_redemption = await db.passcode_redemptions.find_one({"passcode_hash": passcode_upper})
-    if existing_redemption:
-        raise HTTPException(status_code=400, detail="This passcode has already been redeemed")
     
     # Upgrade user to enterprise tier
     await db.users.update_one(
@@ -800,12 +796,12 @@ async def redeem_passcode(request: PasscodeRequest, current_user: dict = Depends
         }}
     )
     
-    # Log the redemption (store hash of passcode to prevent reuse)
+    # Log the redemption (for tracking purposes)
     await db.passcode_redemptions.insert_one({
         "_id": str(uuid.uuid4()),
         "user_id": current_user["user_id"],
         "email": current_user.get("email"),
-        "passcode_hash": passcode_upper,
+        "passcode_used": passcode_upper,
         "tier_granted": "enterprise",
         "redeemed_at": datetime.now(timezone.utc).isoformat()
     })
