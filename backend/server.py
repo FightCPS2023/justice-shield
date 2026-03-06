@@ -894,6 +894,7 @@ async def process_google_session(request: Request):
         raise HTTPException(status_code=400, detail=f"Invalid JSON body: {str(e)}")
     
     session_id = data.get("session_id")
+    print(f"Google OAuth: Received session_id: {session_id[:50] if session_id else 'None'}...")
     
     if not session_id:
         raise HTTPException(status_code=400, detail="session_id is required")
@@ -901,15 +902,19 @@ async def process_google_session(request: Request):
     # Exchange session_id for user data from Emergent Auth
     async with httpx.AsyncClient(timeout=30.0) as client:
         try:
+            auth_url = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
+            print(f"Google OAuth: Calling {auth_url}")
             response = await client.get(
-                "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+                auth_url,
                 headers={"X-Session-ID": session_id}
             )
+            print(f"Google OAuth: Response status={response.status_code}")
             if response.status_code != 200:
                 print(f"Google OAuth: Emergent auth returned {response.status_code}: {response.text}")
                 raise HTTPException(status_code=401, detail=f"Invalid session - auth service returned {response.status_code}")
             
             auth_data = response.json()
+            print(f"Google OAuth: Got auth_data with email={auth_data.get('email')}")
         except httpx.TimeoutException:
             raise HTTPException(status_code=504, detail="Auth service timeout")
         except HTTPException:
