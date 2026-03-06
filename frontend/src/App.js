@@ -9,17 +9,27 @@ import {
   MapPin, Coins, BarChart3, User, ChevronRight
 } from 'lucide-react';
 
-// Use relative URLs in production (same domain), env var for preview/dev
+// Determine API URL at runtime
+// On custom domains (production), use relative URLs
+// On preview/localhost, use the env variable
 const getApiUrl = () => {
-  // If on a custom domain (not preview), use relative URLs
-  if (typeof window !== 'undefined' && 
-      !window.location.hostname.includes('preview.emergentagent.com') &&
-      !window.location.hostname.includes('localhost')) {
-    return ''; // Relative URLs - same domain
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    // If NOT on preview or localhost, use relative URLs (production custom domain)
+    if (!hostname.includes('preview.emergentagent.com') && 
+        !hostname.includes('localhost') &&
+        hostname !== '127.0.0.1') {
+      console.log('Using relative API URLs for custom domain:', hostname);
+      return ''; // Relative URLs - API on same domain
+    }
   }
+  // For preview/dev, use env variable
   return process.env.REACT_APP_BACKEND_URL || '';
 };
+
+// Call immediately to set API_URL
 const API_URL = getApiUrl();
+console.log('API_URL configured as:', API_URL || '(relative)');
 
 // Auth Context
 const AuthContext = createContext(null);
