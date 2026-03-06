@@ -9,7 +9,17 @@ import {
   MapPin, Coins, BarChart3, User, ChevronRight
 } from 'lucide-react';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL || '';
+// Use relative URLs in production (same domain), env var for preview/dev
+const getApiUrl = () => {
+  // If on a custom domain (not preview), use relative URLs
+  if (typeof window !== 'undefined' && 
+      !window.location.hostname.includes('preview.emergentagent.com') &&
+      !window.location.hostname.includes('localhost')) {
+    return ''; // Relative URLs - same domain
+  }
+  return process.env.REACT_APP_BACKEND_URL || '';
+};
+const API_URL = getApiUrl();
 
 // Auth Context
 const AuthContext = createContext(null);
