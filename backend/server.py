@@ -745,7 +745,30 @@ async def get_tier_status(current_user: dict = Depends(get_current_user)):
     }
 
 
-# ============== FULL ACCESS PASSCODE ==============
+# ============== FULL ACCESS PASSCODES ==============
+# 20 unique passcodes for enterprise access
+VALID_PASSCODES = [
+    "PUNISHER2024",      # Original passcode
+    "CPS-WARRIOR-001",
+    "CPS-WARRIOR-002", 
+    "CPS-WARRIOR-003",
+    "CPS-WARRIOR-004",
+    "CPS-WARRIOR-005",
+    "FAMILY-DEFENDER-01",
+    "FAMILY-DEFENDER-02",
+    "FAMILY-DEFENDER-03",
+    "FAMILY-DEFENDER-04",
+    "FAMILY-DEFENDER-05",
+    "LEGAL-SHIELD-001",
+    "LEGAL-SHIELD-002",
+    "LEGAL-SHIELD-003",
+    "LEGAL-SHIELD-004",
+    "LEGAL-SHIELD-005",
+    "JUSTICE-KEY-2024-A",
+    "JUSTICE-KEY-2024-B",
+    "JUSTICE-KEY-2024-C",
+    "JUSTICE-KEY-2024-D",
+]
 
 class PasscodeRequest(BaseModel):
     passcode: str
@@ -756,8 +779,15 @@ async def redeem_passcode(request: PasscodeRequest, current_user: dict = Depends
     Redeem a passcode for full enterprise access to all features.
     This grants the user enterprise tier permanently.
     """
-    if request.passcode != FULL_ACCESS_PASSCODE:
+    # Check if passcode is valid (case-insensitive)
+    passcode_upper = request.passcode.upper().strip()
+    if passcode_upper not in [p.upper() for p in VALID_PASSCODES]:
         raise HTTPException(status_code=400, detail="Invalid passcode")
+    
+    # Check if this specific passcode has already been used
+    existing_redemption = await db.passcode_redemptions.find_one({"passcode_hash": passcode_upper})
+    if existing_redemption:
+        raise HTTPException(status_code=400, detail="This passcode has already been redeemed")
     
     # Upgrade user to enterprise tier
     await db.users.update_one(
@@ -770,12 +800,12 @@ async def redeem_passcode(request: PasscodeRequest, current_user: dict = Depends
         }}
     )
     
-    # Log the redemption
+    # Log the redemption (store hash of passcode to prevent reuse)
     await db.passcode_redemptions.insert_one({
         "_id": str(uuid.uuid4()),
         "user_id": current_user["user_id"],
         "email": current_user.get("email"),
-        "passcode_used": "***REDACTED***",
+        "passcode_hash": passcode_upper,
         "tier_granted": "enterprise",
         "redeemed_at": datetime.now(timezone.utc).isoformat()
     })
