@@ -486,21 +486,27 @@ function Dashboard({ onNavigate }) {
   const [selectedCase, setSelectedCase] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [prefetchedData, setPrefetchedData] = useState({});
 
   useEffect(() => {
-    loadCases();
+    // Pre-fetch critical data in parallel on mount
+    const prefetch = async () => {
+      try {
+        const [casesData, tierData, creditsData] = await Promise.all([
+          api.get('/api/cases').catch(() => ({ cases: [] })),
+          api.get('/api/auth/tier-status').catch(() => null),
+          api.get('/api/credits/balance').catch(() => null),
+        ]);
+        setCases(casesData.cases || []);
+        setPrefetchedData({ tierStatus: tierData, creditBalance: creditsData });
+      } catch (error) {
+        console.error('Prefetch error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    prefetch();
   }, []);
-
-  const loadCases = async () => {
-    try {
-      const data = await api.get('/api/cases');
-      setCases(data.cases || []);
-    } catch (error) {
-      console.error('Failed to load cases:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Tier hierarchy: free=0, essential=1, professional=2, attorney=3, enterprise=4
   const TIER_LEVELS = { free: 0, essential: 1, professional: 2, attorney: 3, enterprise: 4 };
@@ -522,6 +528,7 @@ function Dashboard({ onNavigate }) {
     { id: 'advocates', icon: Users, label: 'Find Advocates', minTier: 'free' },
     { id: 'chat', icon: MessageSquare, label: 'AI Assistant', minTier: 'free', highlight: true },
     { id: 'documents', icon: FileText, label: 'Documents', minTier: 'free', highlight: true },
+    { id: 'smartdoc', icon: Zap, label: 'Smart Doc Generator', minTier: 'free', highlight: true },
     { id: 'incidents', icon: AlertTriangle, label: 'Incident Analyzer', minTier: 'essential' },
     { id: 'notepad', icon: FileText, label: 'Legal Notepad', minTier: 'essential', highlight: true },
     { id: 'courtfilings', icon: Gavel, label: 'Court Filings', minTier: 'essential' },
@@ -639,7 +646,7 @@ function Dashboard({ onNavigate }) {
       {/* Main content */}
       <main className="flex-1 lg:ml-64 pt-16 lg:pt-0">
         <div className="p-6">
-          {activeTab === 'overview' && <OverviewTab cases={cases} setActiveTab={setActiveTab} />}
+          {activeTab === 'overview' && <OverviewTab cases={cases} setActiveTab={setActiveTab} prefetchedData={prefetchedData} />}
           {activeTab === 'cases' && <CasesTab cases={cases} setCases={setCases} selectedCase={selectedCase} setSelectedCase={setSelectedCase} />}
           {activeTab === 'chat' && <ChatTab selectedCase={selectedCase} />}
           {activeTab === 'expert' && <ExpertLegalAITab selectedCase={selectedCase} />}
@@ -654,6 +661,7 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'caselaw' && <CaseLawAnalysisTab selectedCase={selectedCase} />}
           {activeTab === 'violations' && <ViolationsTab selectedCase={selectedCase} />}
           {activeTab === 'documents' && <DocumentsTab selectedCase={selectedCase} />}
+          {activeTab === 'smartdoc' && <SmartDocTab selectedCase={selectedCase} />}
           {activeTab === 'timeline' && <TimelineTab selectedCase={selectedCase} />}
           {activeTab === 'evidence' && <EvidenceTab selectedCase={selectedCase} />}
           {activeTab === 'evidencelist' && <EvidenceChecklistTab selectedCase={selectedCase} />}
@@ -691,23 +699,25 @@ function Dashboard({ onNavigate }) {
 }
 
 // Overview Tab
-function OverviewTab({ cases, setActiveTab }) {
+function OverviewTab({ cases, setActiveTab, prefetchedData = {} }) {
   const { api, user } = useAuth();
-  const [tierStatus, setTierStatus] = useState(null);
-  const [creditBalance, setCreditBalance] = useState(null);
+  const [tierStatus, setTierStatus] = useState(prefetchedData.tierStatus || null);
+  const [creditBalance, setCreditBalance] = useState(prefetchedData.creditBalance || null);
 
   useEffect(() => {
-    const loadStatus = async () => {
-      try {
-        const [ts, cb] = await Promise.all([
-          api.get('/api/auth/tier-status'),
-          api.get('/api/credits/balance')
-        ]);
-        setTierStatus(ts);
-        setCreditBalance(cb);
-      } catch (e) { console.error(e); }
-    };
-    loadStatus();
+    if (!tierStatus || !creditBalance) {
+      const loadStatus = async () => {
+        try {
+          const [ts, cb] = await Promise.all([
+            tierStatus ? Promise.resolve(tierStatus) : api.get('/api/auth/tier-status'),
+            creditBalance ? Promise.resolve(creditBalance) : api.get('/api/credits/balance')
+          ]);
+          setTierStatus(ts);
+          setCreditBalance(cb);
+        } catch (e) { console.error(e); }
+      };
+      loadStatus();
+    }
   }, []);
 
   const tierColors = { free: 'text-gray-400', essential: 'text-blue-400', professional: 'text-purple-400', attorney: 'text-amber-400', enterprise: 'text-red-400' };
@@ -2773,97 +2783,178 @@ function TimelineTab({ selectedCase }) {
   );
 }
 
-// Legal Research Tab
+// Legal Research Tab — Cetient-Style Smart Research Engine
 function ResearchTab() {
   const { api } = useAuth();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState('');
   const [loading, setLoading] = useState(false);
   const [state, setState] = useState('');
+  const [researchType, setResearchType] = useState('comprehensive');
+  const [searchTime, setSearchTime] = useState(null);
 
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!query.trim()) return;
     
     setLoading(true);
+    setResults('');
+    setSearchTime(null);
+    const startTime = Date.now();
     try {
-      const response = await api.post('/api/ai/legal-research', {
+      const response = await api.post('/api/ai/smart-research', {
         query,
-        state: state || null
+        state: state || null,
+        research_type: researchType
       });
-      setResults(response.research_results);
+      setResults(response.results);
+      setSearchTime(((Date.now() - startTime) / 1000).toFixed(1));
     } catch (error) {
-      toast.error('Research failed');
+      toast.error(error.message || 'Research failed');
     } finally {
       setLoading(false);
     }
   };
 
   const states = [
-    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+    'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
+    'MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC',
+    'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'
+  ];
+
+  const researchTypes = [
+    { id: 'comprehensive', label: 'Full Research Brief', icon: BookOpen, desc: 'Statutes, case law, strategies, deadlines' },
+    { id: 'case_law', label: 'Case Law Search', icon: Scale, desc: 'Find relevant court decisions & precedents' },
+    { id: 'statutes', label: 'Statute Finder', icon: FileText, desc: 'Find all applicable statutes & regulations' },
+    { id: 'defense_strategy', label: 'Defense Strategy', icon: Shield, desc: 'Build a complete defense plan' },
+  ];
+
+  const quickSearches = [
+    "What are my rights when CPS comes to my door without a warrant?",
+    "Emergency removal timeframes and due process requirements",
+    "How to challenge a CPS safety plan in court",
+    "4th Amendment violations during CPS home investigations",
+    "Grounds for motion to dismiss CPS dependency petition",
+    "ADA accommodations CPS must provide for disabled parents",
+    "False allegations defense strategies in CPS cases",
+    "Parental rights termination timeline and appeals process",
   ];
 
   return (
     <div className="space-y-6 animate-fadeIn" data-testid="research-tab">
       <div>
-        <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Legal Research</h1>
-        <p className="text-gray-400">AI-powered search of statutes, case law, and CPS policies</p>
+        <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
+          <Search className="w-8 h-8 text-red-500" />
+          Smart Legal Research
+        </h1>
+        <p className="text-gray-400 mt-1">AI-powered research engine — ask any legal question in plain English</p>
       </div>
 
-      <form onSubmit={handleSearch} className="space-y-4">
-        <div className="flex gap-4">
-          <select
-            value={state}
-            onChange={(e) => setState(e.target.value)}
-            className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
-          >
-            <option value="">All States</option>
-            {states.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search statutes, case law, CPS policies..."
-            className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600"
-            data-testid="research-input"
-          />
-          <button type="submit" disabled={loading} className="btn-punisher px-8" data-testid="research-btn">
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
-          </button>
-        </div>
-      </form>
-
-      {/* Quick searches */}
-      <div className="flex flex-wrap gap-2">
-        {[
-          "Emergency removal timeframes",
-          "Discovery rights in CPS",
-          "Parental rights termination grounds",
-          "4th Amendment CPS violations"
-        ].map((q, i) => (
+      {/* Research Type Selector */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="research-type-selector">
+        {researchTypes.map((rt) => (
           <button
-            key={i}
-            onClick={() => setQuery(q)}
-            className="px-3 py-1 bg-gray-700/50 hover:bg-gray-700 rounded-full text-sm"
+            key={rt.id}
+            onClick={() => setResearchType(rt.id)}
+            className={`p-4 rounded-xl border text-left transition-all ${
+              researchType === rt.id
+                ? 'border-red-500 bg-red-600/10'
+                : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
+            }`}
+            data-testid={`research-type-${rt.id}`}
           >
-            {q}
+            <rt.icon className={`w-5 h-5 mb-2 ${researchType === rt.id ? 'text-red-500' : 'text-gray-500'}`} />
+            <p className="font-semibold text-sm">{rt.label}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{rt.desc}</p>
           </button>
         ))}
       </div>
 
+      {/* Search Form */}
+      <form onSubmit={handleSearch} className="space-y-3">
+        <div className="flex gap-3">
+          <select
+            value={state}
+            onChange={(e) => setState(e.target.value)}
+            className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm w-32"
+            data-testid="research-state-select"
+          >
+            <option value="">All States</option>
+            {states.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Ask any CPS legal question in plain English..."
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 pr-12 focus:outline-none focus:border-red-600 text-base"
+              data-testid="research-input"
+            />
+            {query && (
+              <button type="button" onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <button type="submit" disabled={loading || !query.trim()} className="btn-punisher px-6 flex items-center gap-2 disabled:opacity-50" data-testid="research-btn">
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+            Research
+          </button>
+        </div>
+      </form>
+
+      {/* Quick Searches */}
+      <div>
+        <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Quick searches</p>
+        <div className="flex flex-wrap gap-2">
+          {quickSearches.map((q, i) => (
+            <button
+              key={i}
+              onClick={() => { setQuery(q); }}
+              className="px-3 py-1.5 bg-gray-800/80 hover:bg-gray-700 border border-gray-700/50 rounded-lg text-xs text-gray-300 hover:text-white transition-colors"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-8 text-center">
+          <Loader2 className="w-10 h-10 text-red-500 animate-spin mx-auto mb-3" />
+          <p className="text-lg font-semibold">Researching legal databases...</p>
+          <p className="text-sm text-gray-400 mt-1">Searching statutes, case law, and CPS policies across all jurisdictions</p>
+        </div>
+      )}
+
       {/* Results */}
-      {results && (
-        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-          <h2 className="text-xl font-semibold mb-4">Research Results</h2>
-          <div className="prose prose-invert max-w-none">
-            <pre className="whitespace-pre-wrap text-sm text-gray-300">{results}</pre>
+      {results && !loading && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden" data-testid="research-results">
+          <div className="px-6 py-4 border-b border-gray-700 flex items-center justify-between bg-gray-900/50">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-500" /> Research Complete
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {researchType === 'comprehensive' ? 'Full Research Brief' : researchType === 'case_law' ? 'Case Law Results' : researchType === 'statutes' ? 'Statute Analysis' : 'Defense Strategy'}
+                {state && ` — ${state} Jurisdiction`}
+                {searchTime && ` — ${searchTime}s`}
+              </p>
+            </div>
+            <button
+              onClick={() => { navigator.clipboard.writeText(results); toast.success('Copied to clipboard'); }}
+              className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center gap-1.5"
+              data-testid="copy-results-btn"
+            >
+              <Copy className="w-4 h-4" /> Copy
+            </button>
+          </div>
+          <div className="p-6">
+            <div className="prose prose-invert max-w-none">
+              <pre className="whitespace-pre-wrap text-sm text-gray-300 leading-relaxed font-sans">{results}</pre>
+            </div>
           </div>
         </div>
       )}
@@ -3674,6 +3765,183 @@ function SettingsTab() {
           <strong>Legal Notice:</strong> This platform provides legal EDUCATION and INFORMATION, not legal advice. We are not attorneys. Always consult with a licensed attorney for your specific case.
         </p>
       </div>
+    </div>
+  );
+}
+
+
+// Smart Document Generator Tab — Cetient-Style
+function SmartDocTab({ selectedCase }) {
+  const { api } = useAuth();
+  const [prompt, setPrompt] = useState('');
+  const [state, setState] = useState(selectedCase?.state || '');
+  const [document, setDocument] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [genTime, setGenTime] = useState(null);
+
+  useEffect(() => {
+    if (selectedCase?.state) setState(selectedCase.state);
+  }, [selectedCase]);
+
+  const handleGenerate = async () => {
+    if (!prompt.trim()) return;
+    setLoading(true);
+    setDocument('');
+    setGenTime(null);
+    const startTime = Date.now();
+    try {
+      const response = await api.post('/api/ai/smart-document', {
+        prompt,
+        case_id: selectedCase?.id || null,
+        state: state || null
+      });
+      setDocument(response.document);
+      setGenTime(((Date.now() - startTime) / 1000).toFixed(1));
+    } catch (error) {
+      toast.error(error.message || 'Document generation failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const states = [
+    'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
+    'MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC',
+    'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'
+  ];
+
+  const templates = [
+    { label: 'Motion to Dismiss', prompt: 'Draft a Motion to Dismiss the CPS dependency petition for lack of evidence and failure to meet the statutory burden of proof' },
+    { label: 'Motion for Discovery', prompt: 'Draft a Motion for Discovery demanding all CPS investigation records, communications, notes, and reports related to this case' },
+    { label: 'Due Process Hearing Request', prompt: 'Draft a Request for Due Process Hearing challenging the removal of children without proper court authorization' },
+    { label: 'Demand Letter to CPS', prompt: 'Draft a formal Demand Letter to CPS demanding immediate return of children and cessation of unlawful investigation practices' },
+    { label: 'ADA Accommodation Request', prompt: 'Draft a formal ADA Accommodation Request to the CPS agency and court requiring reasonable accommodations for a parent with a disability' },
+    { label: 'Section 1983 Complaint', prompt: 'Draft a Section 1983 Civil Rights Complaint against CPS caseworkers for violation of constitutional rights including 4th and 14th Amendment violations' },
+    { label: 'Objection to Case Plan', prompt: 'Draft a Written Objection to the CPS Case Plan as being unreasonable, unnecessary, and not tailored to the actual circumstances of the family' },
+    { label: 'Emergency Motion', prompt: 'Draft an Emergency Motion requesting immediate judicial review of CPS emergency removal of children' },
+  ];
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="smartdoc-tab">
+      <div>
+        <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
+          <Zap className="w-8 h-8 text-amber-500" />
+          Smart Document Generator
+        </h1>
+        <p className="text-gray-400 mt-1">
+          Describe what you need in plain English — get a complete, court-ready legal document with citations
+          {selectedCase && <span className="text-red-400 font-medium"> — Auto-linked to: {selectedCase.title}</span>}
+        </p>
+      </div>
+
+      {/* Template Quick Buttons */}
+      <div>
+        <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider">One-Click Templates</p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+          {templates.map((t, i) => (
+            <button
+              key={i}
+              onClick={() => setPrompt(t.prompt)}
+              className="px-4 py-3 bg-gray-800/80 hover:bg-gray-700 border border-gray-700/50 rounded-xl text-sm text-left transition-colors"
+              data-testid={`template-${i}`}
+            >
+              <FileText className="w-4 h-4 text-amber-500 mb-1" />
+              <span className="font-medium">{t.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Input Area */}
+      <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5 space-y-4">
+        <textarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="Describe the document you need in plain English... e.g., 'Write a motion to dismiss the CPS case because they violated my 4th Amendment rights during the home investigation'"
+          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 min-h-[120px] focus:outline-none focus:border-red-600 text-base resize-y"
+          data-testid="smartdoc-input"
+        />
+        <div className="flex items-center gap-3">
+          <select
+            value={state}
+            onChange={(e) => setState(e.target.value)}
+            className="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-sm"
+            data-testid="smartdoc-state"
+          >
+            <option value="">Select State</option>
+            {states.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+          {selectedCase && (
+            <span className="text-xs text-gray-500 bg-gray-900 px-3 py-2 rounded-lg flex items-center gap-1">
+              <FileText className="w-3.5 h-3.5" /> Case: {selectedCase.title}
+            </span>
+          )}
+          <div className="flex-1" />
+          <button
+            onClick={handleGenerate}
+            disabled={loading || !prompt.trim()}
+            className="btn-punisher px-6 py-2.5 flex items-center gap-2 disabled:opacity-50"
+            data-testid="smartdoc-generate-btn"
+          >
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
+            Generate Document
+          </button>
+        </div>
+      </div>
+
+      {/* Loading */}
+      {loading && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-8 text-center">
+          <Loader2 className="w-10 h-10 text-amber-500 animate-spin mx-auto mb-3" />
+          <p className="text-lg font-semibold">Generating your legal document...</p>
+          <p className="text-sm text-gray-400 mt-1">Pulling case data, statutes, and precedents for your jurisdiction</p>
+        </div>
+      )}
+
+      {/* Generated Document */}
+      {document && !loading && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden" data-testid="smartdoc-result">
+          <div className="px-6 py-4 border-b border-gray-700 flex items-center justify-between bg-gray-900/50">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-500" /> Document Generated
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {state && `${state} Jurisdiction — `}Court-ready with citations
+                {genTime && ` — ${genTime}s`}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { navigator.clipboard.writeText(document); toast.success('Document copied'); }}
+                className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center gap-1.5"
+                data-testid="copy-doc-btn"
+              >
+                <Copy className="w-4 h-4" /> Copy
+              </button>
+              <button
+                onClick={() => {
+                  const blob = new Blob([document], { type: 'text/plain' });
+                  const url = URL.createObjectURL(blob);
+                  const a = window.document.createElement('a');
+                  a.href = url;
+                  a.download = 'legal-document.txt';
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success('Document downloaded');
+                }}
+                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 rounded-lg text-sm flex items-center gap-1.5"
+                data-testid="download-doc-btn"
+              >
+                <Download className="w-4 h-4" /> Download
+              </button>
+            </div>
+          </div>
+          <div className="p-6">
+            <pre className="whitespace-pre-wrap text-sm text-gray-300 leading-relaxed font-sans">{document}</pre>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

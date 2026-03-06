@@ -53,6 +53,30 @@ STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY")
 COURTLISTENER_API_KEY = os.environ.get("COURTLISTENER_API_KEY", "")
 FULL_ACCESS_PASSCODE = os.environ.get("FULL_ACCESS_PASSCODE", "PUNISHER2024")
 
+# ============== IN-MEMORY CACHE ==============
+import time as _time
+
+class SimpleCache:
+    """Fast in-memory cache with TTL for static/semi-static data"""
+    def __init__(self):
+        self._store = {}
+
+    def get(self, key):
+        if key in self._store:
+            val, exp = self._store[key]
+            if _time.time() < exp:
+                return val
+            del self._store[key]
+        return None
+
+    def set(self, key, value, ttl=3600):
+        self._store[key] = (value, _time.time() + ttl)
+
+    def clear(self):
+        self._store.clear()
+
+_cache = SimpleCache()
+
 # Stripe pricing tiers - Using amount-based checkout (more flexible)
 TIER_PRICING = {
     "essential": {"monthly": 49.00, "annual": 490.00, "name": "Essential"},
@@ -165,9 +189,12 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="The CPS Punisher API",
     description="AI-powered Child Protective Services case defense platform - Full Feature Set",
-    version="3.0.0",
+    version="4.0.0",
     lifespan=lifespan
 )
+
+from starlette.middleware.gzip import GZipMiddleware
+app.add_middleware(GZipMiddleware, minimum_size=500)
 
 app.add_middleware(
     CORSMiddleware,
@@ -2449,6 +2476,236 @@ Be thorough and cite sources."""
     }
 
 
+# ============== CETIENT-STYLE SMART RESEARCH & DOCUMENT ENGINE ==============
+
+class SmartResearchRequest(BaseModel):
+    query: str
+    state: Optional[str] = None
+    research_type: str = "comprehensive"  # comprehensive, case_law, statutes, defense_strategy
+    case_id: Optional[str] = None
+
+
+@app.post("/api/ai/smart-research")
+async def smart_legal_research(request: SmartResearchRequest, current_user: dict = Depends(get_current_user)):
+    """Cetient-style AI research: natural language query -> structured legal research with citations"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+    user_tier = await get_user_tier(current_user["user_id"])
+    if not await check_ai_credits(current_user["user_id"], user_tier):
+        has_purchased = await spend_purchased_credits(current_user["user_id"], FEATURE_CREDIT_COSTS.get("legal_research", 3), "smart_research")
+        if not has_purchased:
+            raise HTTPException(status_code=403, detail="AI credits exhausted. Purchase more credits or upgrade.")
+    else:
+        await increment_ai_credits(current_user["user_id"])
+
+    # Build context from case if provided
+    case_context = ""
+    if request.case_id:
+        case = await db.cases.find_one({"_id": request.case_id, "user_id": current_user["user_id"]})
+        if case:
+            violations = []
+            async for v in db.violations.find({"case_id": request.case_id}).limit(10):
+                violations.append(f"- {v.get('violation_type','')}: {v.get('description','')}")
+            case_context = f"""
+Case Context:
+- State: {case.get('state', 'N/A')}
+- Description: {case.get('description', 'N/A')}
+- Violations Found: {chr(10).join(violations) if violations else 'None documented'}
+"""
+
+    # Pull relevant pre-built legal knowledge for speed
+    state_law_context = ""
+    if request.state:
+        state_data = STATE_CPS_DATABASE.get(request.state.upper(), {})
+        if state_data:
+            state_law_context = f"""
+Pre-loaded State Law ({request.state}):
+- Agency: {state_data.get('agency', 'N/A')}
+- Statutes: {state_data.get('statutes', 'N/A')}
+- Key Statutes: {', '.join(state_data.get('key_statutes', [])[:5])}
+"""
+
+    # Get relevant Supreme Court cases from knowledge base
+    relevant_data = get_relevant_case_law(request.query)
+    relevant_cases = relevant_data.get("relevant_cases", []) if isinstance(relevant_data, dict) else []
+    cases_context = ""
+    if relevant_cases:
+        cases_context = "\nRelevant Precedents from Database:\n" + "\n".join(
+            [f"- {c.get('citation','')}: {c.get('holding','')}" for c in relevant_cases[:5]]
+        )
+
+    research_type_instructions = {
+        "comprehensive": "Provide a COMPLETE legal research brief with: (1) Key Statutes & Citations, (2) Relevant Case Law with Holdings, (3) Constitutional Arguments, (4) CPS Policy Analysis, (5) Defense Strategies, (6) Procedural Requirements & Deadlines, (7) Recommended Next Steps.",
+        "case_law": "Focus on finding the MOST RELEVANT case law precedents. For each case provide: Case Name, Citation, Court, Year, Key Holding, and How It Applies to the query. Include at least 8-10 cases.",
+        "statutes": "Focus on finding ALL relevant statutes and regulations. For each: Full Citation, Key Provisions, Effective Date, and Application to the query.",
+        "defense_strategy": "Build a COMPREHENSIVE defense strategy including: Legal Arguments, Supporting Case Law, Counter-Arguments to CPS, Evidence Needed, Motions to File, and Step-by-Step Action Plan."
+    }
+
+    system_message = f"""You are THE CPS PUNISHER — the most advanced AI legal research engine for CPS defense, modeled after Cetient AI.
+
+You have instant access to:
+- All 50 states' child welfare statutes and CPS codes
+- 50M+ court opinions via CourtListener
+- Federal child welfare laws (CAPTA, ASFA, ICWA, Title IV-E)
+- Constitutional law (1st, 4th, 5th, 14th Amendments)
+- Section 1983 civil rights case law
+- ADA compliance requirements for CPS
+- Black's Law Dictionary definitions
+{state_law_context}{cases_context}{case_context}
+
+CRITICAL INSTRUCTIONS:
+- ALWAYS cite specific statutes with section numbers
+- ALWAYS cite case law with full case name, court, and year
+- Structure output with clear headers and sections
+- Make it court-ready and professionally formatted
+- Include both federal and state-specific citations
+- Flag any time-sensitive deadlines or procedural requirements"""
+
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"smart-research-{uuid.uuid4()}",
+        system_message=system_message
+    ).with_model("openai", "gpt-5.2")
+
+    instruction = research_type_instructions.get(request.research_type, research_type_instructions["comprehensive"])
+    state_note = f"\n\nJurisdiction: {request.state}" if request.state else "\n\nProvide federal law and note where state-specific research is needed."
+
+    prompt = f"""RESEARCH QUERY: {request.query}
+{state_note}
+
+{instruction}
+
+Format your response as a structured legal research brief with numbered sections, citations, and clear actionable recommendations."""
+
+    response = await chat.send_message(UserMessage(text=prompt))
+
+    return {
+        "query": request.query,
+        "state": request.state,
+        "research_type": request.research_type,
+        "results": response,
+        "sources_used": ["State CPS Database", "Federal Law", "Case Law Database", "Constitutional Law"],
+    }
+
+
+class SmartDocGenRequest(BaseModel):
+    prompt: str
+    case_id: Optional[str] = None
+    state: Optional[str] = None
+    document_type: Optional[str] = None  # optional hint
+
+
+@app.post("/api/ai/smart-document")
+async def smart_document_generator(request: SmartDocGenRequest, current_user: dict = Depends(get_current_user)):
+    """Cetient-style: natural language prompt -> complete court-ready legal document with citations"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+    user_tier = await get_user_tier(current_user["user_id"])
+    if not await check_ai_credits(current_user["user_id"], user_tier):
+        has_purchased = await spend_purchased_credits(current_user["user_id"], FEATURE_CREDIT_COSTS.get("doc_generate", 3), "smart_document")
+        if not has_purchased:
+            raise HTTPException(status_code=403, detail="AI credits exhausted. Purchase more credits or upgrade.")
+    else:
+        await increment_ai_credits(current_user["user_id"])
+
+    # Pull case context
+    case_context = ""
+    case_state = request.state or ""
+    if request.case_id:
+        case = await db.cases.find_one({"_id": request.case_id, "user_id": current_user["user_id"]})
+        if case:
+            case_state = case.get("state", request.state or "")
+            violations = []
+            async for v in db.violations.find({"case_id": request.case_id}).limit(15):
+                violations.append(f"- {v.get('violation_type','')}: {v.get('description','')}")
+            timeline = []
+            async for e in db.timeline_events.find({"case_id": request.case_id}).sort("date", 1).limit(20):
+                timeline.append(f"- {e.get('date','N/A')}: {e.get('title','')}")
+            evidence = []
+            async for ev in db.evidence.find({"case_id": request.case_id}).limit(10):
+                evidence.append(f"- {ev.get('title','')}: {ev.get('description','')}")
+
+            user = await db.users.find_one({"_id": current_user["user_id"]})
+            case_context = f"""
+CASE DETAILS (auto-pulled):
+- Case Title: {case.get('title', '[CASE TITLE]')}
+- State: {case_state}
+- County: {case.get('county', '[COUNTY]')}
+- Case Number: {case.get('case_number', '[CASE NUMBER]')}
+- Court: {case.get('court_name', '[COURT NAME]')}
+- Judge: {case.get('judge_name', '[JUDGE NAME]')}
+- Caseworker: {case.get('caseworker_name', '[CASEWORKER]')}
+- Parent/Respondent: {user.get('name', '[PARENT NAME]') if user else '[PARENT NAME]'}
+- Children: {', '.join(case.get('children_names', [])) or '[CHILD NAME(S)]'}
+- Description: {case.get('description', 'N/A')}
+
+DOCUMENTED VIOLATIONS ({len(violations)}):
+{chr(10).join(violations) if violations else 'None yet'}
+
+TIMELINE ({len(timeline)} events):
+{chr(10).join(timeline) if timeline else 'None yet'}
+
+EVIDENCE ({len(evidence)} items):
+{chr(10).join(evidence) if evidence else 'None yet'}
+"""
+
+    # State law context
+    state_law = ""
+    if case_state:
+        sdata = STATE_CPS_DATABASE.get(case_state.upper(), {})
+        if sdata:
+            state_law = f"\nState Law ({case_state}): Agency={sdata.get('agency','')}, Statutes={sdata.get('statutes','')}"
+
+    system_message = f"""You are THE CPS PUNISHER — the most powerful AI legal document generator for CPS defense, inspired by Cetient AI.
+
+You generate COMPLETE, COURT-READY legal documents instantly from natural language descriptions.
+
+{case_context}{state_law}
+
+DOCUMENT GENERATION RULES:
+1. Use proper legal formatting: caption, header, numbered paragraphs, signature block
+2. Cite SPECIFIC statutes with section numbers for the jurisdiction
+3. Cite relevant case law with full citations (case name, court, year)
+4. Include all procedural elements required by the court
+5. Incorporate case facts, violations, and evidence automatically
+6. Use proper legal terminology and professional language
+7. Include certificate of service, verification, and prayer for relief where appropriate
+8. Fill in all case details from the provided context
+9. Mark anything that needs user input as [FILL IN]
+10. Make it ready to file — not a draft, a FINAL document"""
+
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"smart-doc-{uuid.uuid4()}",
+        system_message=system_message
+    ).with_model("openai", "gpt-5.2")
+
+    doc_hint = f"\nDocument type hint: {request.document_type}" if request.document_type else ""
+    state_hint = f"\nJurisdiction: {case_state}" if case_state else ""
+
+    prompt = f"""GENERATE THIS DOCUMENT: {request.prompt}{doc_hint}{state_hint}
+
+Create a COMPLETE, court-ready legal document. Include:
+- Full legal caption and header
+- All numbered paragraphs with factual allegations and legal arguments
+- Specific statute citations for the jurisdiction
+- Relevant case law citations
+- Prayer for relief / requested orders
+- Signature block and certificate of service
+- Any required attachments list
+
+Use all available case data. The document should be ready to print and file."""
+
+    response = await chat.send_message(UserMessage(text=prompt))
+
+    return {
+        "prompt": request.prompt,
+        "document": response,
+        "state": case_state,
+        "case_id": request.case_id,
+    }
+
+
 # ============== COURTLISTENER INTEGRATION ==============
 
 @app.get("/api/courtlistener/search")
@@ -3526,35 +3783,30 @@ async def get_all_states():
 
 @app.get("/api/law-library/{state_code}")
 async def get_state_law_info(state_code: str, current_user: dict = Depends(require_tier("professional", feature_key="law_library"))):
-    """Get comprehensive CPS law information for a state - INSTANT LOADING from pre-built database"""
+    """Get comprehensive CPS law information for a state - INSTANT LOADING from cache/pre-built database"""
     state_code = state_code.upper()
+
+    # Check cache first
+    cache_key = f"law_library_{state_code}"
+    cached = _cache.get(cache_key)
+    if cached:
+        return cached
+
     state_name = STATES_INFO.get(state_code)
     if not state_name:
         raise HTTPException(status_code=404, detail="State not found")
     
-    # Use pre-built database for instant response
     state_data = STATE_CPS_DATABASE.get(state_code)
     
     if state_data:
-        # Format the pre-built data into readable format
         formatted_info = format_state_law_info(state_code, state_name, state_data)
-        return {
-            "state_code": state_code,
-            "state_name": state_name,
-            "law_info": formatted_info,
-            "federal_law": FEDERAL_CPS_LAW,
-            "source": "pre_built_database"
-        }
+        result = {"state_code": state_code, "state_name": state_name, "law_info": formatted_info, "federal_law": FEDERAL_CPS_LAW, "source": "pre_built_database"}
     else:
-        # Return generic template with federal law for states not yet in database
         generic_info = get_generic_state_info(state_code, state_name)
-        return {
-            "state_code": state_code,
-            "state_name": state_name,
-            "law_info": generic_info,
-            "federal_law": FEDERAL_CPS_LAW,
-            "source": "generic_template"
-        }
+        result = {"state_code": state_code, "state_name": state_name, "law_info": generic_info, "federal_law": FEDERAL_CPS_LAW, "source": "generic_template"}
+
+    _cache.set(cache_key, result, ttl=7200)
+    return result
 
 def format_state_law_info(state_code: str, state_name: str, data: dict) -> str:
     """Format pre-built state data into readable format"""
@@ -5462,7 +5714,7 @@ async def health_check():
         "status": "healthy",
         "service": "CPS Punisher API",
         "version": "4.0.0",
-        "features": "150+ Components | Section 1983 | Podcast Creator | Deep Legal AI",
+        "features": "Smart Research Engine | Smart Doc Generator | AI Defense | 50-State Coverage",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
