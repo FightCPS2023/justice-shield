@@ -53,15 +53,26 @@ function App() {
   const [processingOAuth, setProcessingOAuth] = useState(false);
 
   useEffect(() => {
-    // Check for OAuth callback with session_id in URL hash
+    // Check for OAuth callback with session_id in URL hash or query params
     const hash = window.location.hash;
+    const search = window.location.search;
+    
+    // Try hash first (e.g., #session_id=xxx)
+    let sessionId = null;
     if (hash && hash.includes('session_id=')) {
+      sessionId = hash.split('session_id=')[1]?.split('&')[0];
+      console.log('Found session_id in hash:', sessionId?.substring(0, 20) + '...');
+    }
+    // Also check query params (e.g., ?session_id=xxx)
+    if (!sessionId && search && search.includes('session_id=')) {
+      sessionId = search.split('session_id=')[1]?.split('&')[0];
+      console.log('Found session_id in query:', sessionId?.substring(0, 20) + '...');
+    }
+    
+    if (sessionId) {
       setProcessingOAuth(true);
-      const sessionId = hash.split('session_id=')[1]?.split('&')[0];
-      if (sessionId) {
-        processGoogleAuth(sessionId);
-        return;
-      }
+      processGoogleAuth(sessionId);
+      return;
     }
 
     // Normal auth check
@@ -75,6 +86,7 @@ function App() {
   }, []);
 
   const processGoogleAuth = async (sessionId) => {
+    console.log('Processing Google OAuth with session ID:', sessionId?.substring(0, 20) + '...');
     try {
       const response = await fetch(`${API_URL}/api/auth/google/session`, {
         method: 'POST',
@@ -83,11 +95,14 @@ function App() {
         credentials: 'include'
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        throw new Error('Google authentication failed');
+        console.error('Google auth API error:', response.status, data);
+        throw new Error(data.detail || 'Google authentication failed');
       }
 
-      const data = await response.json();
+      console.log('Google OAuth successful for:', data.email);
       localStorage.setItem('cps_token', data.access_token);
       localStorage.setItem('cps_user', JSON.stringify(data));
       setUser(data);
@@ -98,7 +113,7 @@ function App() {
       toast.success(`Welcome, ${data.name}! Signed in with Google.`);
     } catch (error) {
       console.error('Google auth error:', error);
-      toast.error('Google sign-in failed. Please try again.');
+      toast.error(error.message || 'Google sign-in failed. Please try again.');
       setCurrentView('auth');
     } finally {
       setProcessingOAuth(false);

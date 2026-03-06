@@ -888,24 +888,34 @@ async def process_google_session(request: Request):
     Process Google OAuth session_id from Emergent Auth
     REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
     """
-    data = await request.json()
+    try:
+        data = await request.json()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON body: {str(e)}")
+    
     session_id = data.get("session_id")
     
     if not session_id:
         raise HTTPException(status_code=400, detail="session_id is required")
     
     # Exchange session_id for user data from Emergent Auth
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         try:
             response = await client.get(
                 "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
                 headers={"X-Session-ID": session_id}
             )
             if response.status_code != 200:
-                raise HTTPException(status_code=401, detail="Invalid session")
+                print(f"Google OAuth: Emergent auth returned {response.status_code}: {response.text}")
+                raise HTTPException(status_code=401, detail=f"Invalid session - auth service returned {response.status_code}")
             
             auth_data = response.json()
+        except httpx.TimeoutException:
+            raise HTTPException(status_code=504, detail="Auth service timeout")
+        except HTTPException:
+            raise
         except Exception as e:
+            print(f"Google OAuth error: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Auth service error: {str(e)}")
     
     email = auth_data.get("email")
@@ -914,13 +924,15 @@ async def process_google_session(request: Request):
     session_token = auth_data.get("session_token")
     
     if not email or not session_token:
-        raise HTTPException(status_code=400, detail="Invalid auth response")
+        print(f"Google OAuth: Missing email or session_token in auth response: {auth_data}")
+        raise HTTPException(status_code=400, detail="Invalid auth response - missing email or session_token")
     
     # Check if user exists, if not create
     existing_user = await db.users.find_one({"email": email})
     
     if existing_user:
         user_id = existing_user["_id"]
+        user_tier = existing_user.get("tier", "free")
         # Update user info if needed
         await db.users.update_one(
             {"_id": user_id},
@@ -933,6 +945,7 @@ async def process_google_session(request: Request):
     else:
         # Create new user
         user_id = str(uuid.uuid4())
+        user_tier = "free"
         await db.users.insert_one({
             "_id": user_id,
             "email": email,
@@ -966,7 +979,7 @@ async def process_google_session(request: Request):
         "email": email,
         "name": name,
         "picture": picture,
-        "tier": "free"
+        "tier": user_tier
     }
     
     from fastapi.responses import JSONResponse
