@@ -197,40 +197,33 @@ from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
-# Custom CORS middleware that ALWAYS adds headers
+# Custom CORS middleware - Safari/WebKit compatible
 class CustomCORSMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
+        # Get the origin from request (Safari needs exact origin, not *)
+        origin = request.headers.get("origin", "*")
+        
         # Handle preflight OPTIONS requests
         if request.method == "OPTIONS":
             response = Response(status_code=200)
-            response.headers["Access-Control-Allow-Origin"] = "*"
+            response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-            response.headers["Access-Control-Allow-Headers"] = "*"
+            # Safari doesn't like wildcard (*) for headers - be explicit
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control"
             response.headers["Access-Control-Max-Age"] = "86400"
             return response
         
         # Process normal requests
         response = await call_next(request)
-        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-        response.headers["Access-Control-Allow-Headers"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control"
         return response
 
-# Add custom CORS middleware FIRST (will be executed for all requests)
+# Add custom CORS middleware FIRST
 app.add_middleware(CustomCORSMiddleware)
 
 app.add_middleware(GZipMiddleware, minimum_size=500)
-
-# Also keep the standard CORS middleware as backup
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-    max_age=86400,
-)
 
 
 # ============== MODELS ==============
