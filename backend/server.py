@@ -194,34 +194,29 @@ app = FastAPI(
 )
 
 from starlette.middleware.gzip import GZipMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
-# Custom CORS middleware - Safari/WebKit compatible
-class CustomCORSMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-        # Get the origin from request (Safari needs exact origin, not *)
-        origin = request.headers.get("origin", "*")
-        
-        # Handle preflight OPTIONS requests
-        if request.method == "OPTIONS":
-            response = Response(status_code=200)
-            response.headers["Access-Control-Allow-Origin"] = origin
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-            # Safari doesn't like wildcard (*) for headers - be explicit
-            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control"
-            response.headers["Access-Control-Max-Age"] = "86400"
-            return response
-        
-        # Process normal requests
-        response = await call_next(request)
+# CORS middleware using decorator (more reliable than class-based)
+@app.middleware("http")
+async def cors_middleware(request, call_next):
+    # Get origin from request
+    origin = request.headers.get("origin", "*")
+    
+    # Handle preflight OPTIONS requests
+    if request.method == "OPTIONS":
+        response = Response(status_code=200)
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, X-Session-ID"
+        response.headers["Access-Control-Max-Age"] = "86400"
         return response
-
-# Add custom CORS middleware FIRST
-app.add_middleware(CustomCORSMiddleware)
+    
+    # Process normal requests and add CORS headers
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = origin
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, X-Session-ID"
+    return response
 
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
