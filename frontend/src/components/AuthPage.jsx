@@ -28,7 +28,7 @@ function AuthPage({ onNavigate }) {
   };
 
   const handleGoogleLogin = () => {
-    const redirectUrl = window.location.origin + '/auth/callback';
+    const redirectUrl = window.location.origin;
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
