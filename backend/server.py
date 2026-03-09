@@ -2540,6 +2540,45 @@ Be thorough, cite relevant statutes and case law when applicable, and always pri
     return {"response": response, "session_id": session_id}
 
 
+# Help Bot endpoint - guides users through the app
+class HelpBotMessage(BaseModel):
+    message: str
+    context: Optional[str] = None
+
+@app.post("/api/ai/help-bot")
+async def help_bot_chat(message_data: HelpBotMessage, current_user: dict = Depends(get_current_user)):
+    """Help Bot - guides users through the app, explains features, makes recommendations"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    # Get user tier and check credits
+    user = await db.users.find_one({"_id": current_user["user_id"]})
+    user_tier = user.get("tier", "free") if user else "free"
+    
+    # Check AI credits (uses 1 credit per message)
+    can_use = await check_ai_credits(current_user["user_id"], user_tier)
+    if not can_use:
+        raise HTTPException(status_code=403, detail="No AI credits available. Please upgrade or purchase credits.")
+    
+    # Deduct credit
+    await increment_ai_credits(current_user["user_id"])
+    
+    system_prompt = message_data.context or """You are the Help Bot for THE CPS PUNISHER app. 
+Help users navigate the app, explain features, and make recommendations.
+Be concise, helpful, and supportive. Users are often stressed dealing with CPS cases."""
+    
+    session_id = f"helpbot_{current_user['user_id']}"
+    
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=session_id,
+        system_message=system_prompt
+    ).with_model("openai", "gpt-5.2")
+    
+    response = await chat.send_message(UserMessage(text=message_data.message))
+    
+    return {"response": response}
+
+
 @app.post("/api/ai/chat/stream")
 async def ai_chat_stream(message_data: ChatMessage, current_user: dict = Depends(get_current_user)):
     """AI-powered legal chat assistant with streaming response (SSE) - all tiers"""
