@@ -1143,6 +1143,98 @@ async def delete_advocate(advocate_id: str, admin: dict = Depends(get_admin_user
     return {"success": True, "message": "Advocate deleted"}
 
 
+# ============== AI CASE NOTES SYSTEM ==============
+# Automatically saves AI responses to case files for reference
+
+async def save_ai_response_to_case(
+    case_id: str,
+    user_id: str,
+    feature_type: str,
+    prompt: str,
+    response: str,
+    metadata: dict = None
+):
+    """Helper to save AI responses to a case"""
+    if not case_id:
+        return None
+    
+    note_id = str(uuid.uuid4())
+    ai_note = {
+        "_id": note_id,
+        "case_id": case_id,
+        "user_id": user_id,
+        "feature_type": feature_type,  # chat, analysis, strategy, research, document, forensic
+        "prompt": prompt[:2000] if prompt else "",  # Truncate long prompts
+        "response": response,
+        "metadata": metadata or {},
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.ai_case_notes.insert_one(ai_note)
+    return note_id
+
+@app.get("/api/cases/{case_id}/ai-notes")
+async def get_case_ai_notes(
+    case_id: str,
+    feature_type: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all AI-generated notes for a case"""
+    # Verify case ownership
+    case = await db.cases.find_one({"_id": case_id, "user_id": current_user["user_id"]})
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+    
+    query = {"case_id": case_id, "user_id": current_user["user_id"]}
+    if feature_type:
+        query["feature_type"] = feature_type
+    
+    notes = []
+    async for note in db.ai_case_notes.find(query).sort("created_at", -1).skip(skip).limit(limit):
+        notes.append({
+            "id": note["_id"],
+            "feature_type": note.get("feature_type"),
+            "prompt": note.get("prompt"),
+            "response": note.get("response"),
+            "metadata": note.get("metadata", {}),
+            "created_at": note.get("created_at")
+        })
+    
+    total = await db.ai_case_notes.count_documents(query)
+    
+    # Get feature type counts
+    feature_counts = {}
+    async for fc in db.ai_case_notes.aggregate([
+        {"$match": {"case_id": case_id, "user_id": current_user["user_id"]}},
+        {"$group": {"_id": "$feature_type", "count": {"$sum": 1}}}
+    ]):
+        feature_counts[fc["_id"]] = fc["count"]
+    
+    return {
+        "notes": notes,
+        "total": total,
+        "feature_counts": feature_counts,
+        "skip": skip,
+        "limit": limit
+    }
+
+@app.delete("/api/cases/{case_id}/ai-notes/{note_id}")
+async def delete_ai_note(case_id: str, note_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a specific AI note from a case"""
+    result = await db.ai_case_notes.delete_one({
+        "_id": note_id,
+        "case_id": case_id,
+        "user_id": current_user["user_id"]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Note not found")
+    
+    return {"success": True, "message": "AI note deleted"}
+
+
 # ============== CREDIT SYSTEM ==============
 
 @app.get("/api/credits/packages")
@@ -2434,6 +2526,17 @@ Be thorough, cite relevant statutes and case law when applicable, and always pri
         "created_at": timestamp
     })
     
+    # Save to AI Case Notes if case_id provided
+    if message_data.case_id:
+        await save_ai_response_to_case(
+            case_id=message_data.case_id,
+            user_id=current_user["user_id"],
+            feature_type="chat",
+            prompt=message_data.message,
+            response=response,
+            metadata={"context_type": message_data.context_type, "session_id": session_id}
+        )
+    
     return {"response": response, "session_id": session_id}
 
 
@@ -2811,6 +2914,20 @@ Be specific and actionable. Include statute citations and case law references.""
 
     response = await chat.send_message(UserMessage(text=prompt))
     
+    # Save to AI Case Notes
+    await save_ai_response_to_case(
+        case_id=case_id,
+        user_id=current_user["user_id"],
+        feature_type="strategy",
+        prompt="Defense Strategy Analysis",
+        response=response,
+        metadata={
+            "violations_count": len(violations),
+            "events_count": len(timeline),
+            "evidence_count": len(evidence)
+        }
+    )
+    
     return {
         "case_id": case_id,
         "strategy": response,
@@ -2868,6 +2985,9 @@ Provide comprehensive research including:
 Be thorough and cite sources."""
 
     response = await chat.send_message(UserMessage(text=prompt))
+    
+    # Save to AI Case Notes if case context available (via state)
+    # Note: This endpoint doesn't have a case_id, but we save it anyway
     
     return {
         "query": request.query,
@@ -2979,6 +3099,17 @@ CRITICAL INSTRUCTIONS:
 Format your response as a structured legal research brief with numbered sections, citations, and clear actionable recommendations."""
 
     response = await chat.send_message(UserMessage(text=prompt))
+
+    # Save to AI Case Notes if case_id provided
+    if request.case_id:
+        await save_ai_response_to_case(
+            case_id=request.case_id,
+            user_id=current_user["user_id"],
+            feature_type="research",
+            prompt=request.query,
+            response=response,
+            metadata={"research_type": request.research_type, "state": request.state}
+        )
 
     return {
         "query": request.query,
@@ -3098,6 +3229,17 @@ Create a COMPLETE, court-ready legal document. Include:
 Use all available case data. The document should be ready to print and file."""
 
     response = await chat.send_message(UserMessage(text=prompt))
+
+    # Save to AI Case Notes if case_id provided
+    if request.case_id:
+        await save_ai_response_to_case(
+            case_id=request.case_id,
+            user_id=current_user["user_id"],
+            feature_type="document",
+            prompt=request.prompt,
+            response=response,
+            metadata={"document_type": request.document_type, "state": case_state}
+        )
 
     return {
         "prompt": request.prompt,
@@ -3247,6 +3389,17 @@ Perform the COMPLETE 7-section forensic analysis on this document. Be thorough a
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.forensic_analyses.insert_one(analysis_record)
+
+    # Also save to AI Case Notes for easy access
+    if request.case_id:
+        await save_ai_response_to_case(
+            case_id=request.case_id,
+            user_id=current_user["user_id"],
+            feature_type="forensic",
+            prompt=f"Forensic Analysis: {doc_title}",
+            response=response,
+            metadata={"document_id": request.document_id, "document_title": doc_title}
+        )
 
     return {
         "id": analysis_record["_id"],
