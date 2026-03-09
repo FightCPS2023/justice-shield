@@ -818,7 +818,7 @@ async def redeem_passcode(request: PasscodeRequest, current_user: dict = Depends
 ADMIN_EMAILS = [
     "admin@thecpspunisher.com",
     "owner@thecpspunisher.com",
-    "forensic_test@test.com",  # Test admin
+    "cpsvhuntingjustice@gmail.com",  # Primary admin
 ]
 
 async def get_admin_user(current_user: dict = Depends(get_current_user)):
