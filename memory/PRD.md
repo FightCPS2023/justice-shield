@@ -21,122 +21,96 @@ Build the most powerful, interactive legal application for CPS cases - "unstoppa
 | Attorney | $299/mo | Unlimited | 2,000 | Unlimited |
 | Enterprise | $999/mo | Unlimited | Unlimited | Unlimited |
 
-### Credit System (A La Carte)
-- 10 credits: $4.99
-- 50 credits: $19.99 (BEST VALUE)
-- 100 credits: $34.99
-- 250 credits: $74.99
-
-Credits allow access to any feature without upgrading tier. Never expire.
-
-### Feature Credit Costs
-- AI Chat: 1 | Document Upload: 2 | Document Generation: 3
-- Defense Strategy: 3 | Incident Analyzer: 2 | Expert Legal AI: 5
-- Strategy Builder: 5 | Argument Generator: 5 | Evidence Mapper: 3
-- Precedent Finder: 3 | ADA Compliance: 3 | Case Law: 3
-- Law Library: 1 | Judge Research: 2 | Legal Research: 3
-- Section 1983: 10 | CourtListener: 3 | Case Prep Kit: 10
-- Podcast: 5 | Criminal Case: 3
-
-### Enforcement
-- Backend: `require_tier(min_tier, feature_key)` with credit bypass
-- Frontend: Lock icons + tier badges; click redirects to pricing
-- Credit system: purchased credits bypass tier gates
-- Limits: `check_case_limit()`, `check_doc_upload_limit()`, `check_ai_credits()` with purchased credit fallback
-
 ## Completed Features
 
 ### Core Platform
 - JWT auth + Google OAuth
 - Case management with tier-based limits
 - Stripe payments (live) - subscriptions + credit purchases
-- Passcode system (PUNISHER2024 = Enterprise)
 - Full tier enforcement (backend 403s + frontend lock UI)
 - Credit purchase system (4 packages via Stripe checkout)
 
-### Free Tier Features
-- AI Chat (5 questions/month)
-- 1 Document upload with AI analysis
-- 1 Case
-- Violation & Timeline tracking
-- Evidence & Visitation Logs
-- Court Hearings, Communications, Calendar
-- Know Your Rights, Community Forum, Find Advocates
+### 20 Reusable Passcodes (Enterprise Access)
+All passcodes grant Enterprise tier and are reusable until admin deactivates:
+- PUNISHER2024, CPS-WARRIOR-001 through 005
+- FAMILY-DEFENDER-01 through 05
+- LEGAL-SHIELD-001 through 005
+- JUSTICE-KEY-2024-A through D
 
-### Essential Tier (+)
-- AI Document Analysis & Generation
-- Defense Strategy, Incident Analyzer
-- Legal Notepad with PDF Export
-- Court Filings, Services tracking
+### Advocate System (NEW - Mar 2026)
+- **Public Application Form:** Name, email, phone, website, photo, bio, experience, specialties, state, city, organization, certifications, languages
+- **Advocate Directory:** Searchable by state, shows approved advocates only
+- **Admin Approval:** Advocates require admin approval before visible
+- **API Endpoints:**
+  - POST /api/advocates/apply (public)
+  - GET /api/advocates (public, approved only)
+  - GET /api/advocates/{id} (public, approved only)
+  - GET /api/admin/advocates (admin)
+  - POST /api/admin/advocates/update-status (admin)
 
-### Professional Tier (+)
-- Expert Legal AI, Strategy Builder
-- Argument Generator, Evidence Mapper, Precedent Finder
-- ADA Compliance (50 States), Case Law Analysis
-- Law Library (50 States), Judge Watch
-- Legal Research, Multi-file & Folder Upload
+### Admin Board (NEW - Mar 2026)
+- **Dashboard:** Total users, cases, documents, redemptions, advocates stats, tier breakdown
+- **User Management:** View all users, change tiers
+- **Advocate Management:** View/approve/reject advocate applications
+- **Passcode Management:** View all passcodes, enable/disable, redemption counts
+- **Redemption History:** Track who redeemed what passcode and when
+- **Admin Access:** Controlled by ADMIN_EMAILS list in server.py
+- **Current Admin Emails:** admin@thecpspunisher.com, owner@thecpspunisher.com
 
-### Attorney Tier (+)
-- Section 1983 Lawsuit Generator
-- CourtListener (50M+ opinions)
-- Court Preparation Kit (PDF)
-- Podcast Creator, Criminal Case Tools
-- **Legal Forensic Document Analyzer** (7-point analysis)
+### Legal Forensic Document Analyzer
+- 7-point analysis framework
+- Located in Documents tab > Forensic Analyzer
+- Single document or entire case modes
 
-### Legal Forensic Document Analyzer (NEW - Mar 2026)
-- Location: Documents tab > Forensic Analyzer sub-tab
-- Backend endpoint: `/api/ai/forensic-analysis`
-- 7-point comprehensive analysis framework:
-  1. MOUs & Interagency Agreements
-  2. Stipulations & Contractual Terms
-  3. Void Ab Initio Issues
-  4. Child Welfare / Trafficking Indicators
-  5. Structural Legal Issues
-  6. Legal Evidence Matrix
-  7. Final Assessment
-- Modes: Single Document or Entire Case
-- Features: Copy to clipboard, Download as text file
-- Status: **IMPLEMENTED** (AI calls blocked due to budget limit)
-
-### UI Features
-- Landing page Sign In button (top right corner)
-- Usage Dashboard on Overview (tier, credits, usage bars)
-- Settings tab (account info, usage stats, app info, credit costs)
-- Credit Purchase section on Pricing page
-- Sidebar lock icons + tier badges (ESS/PRO/ATT)
+### All Other Features
+- AI Chat, Document Analysis, Document Generation
+- Defense Strategy, Incident Analyzer, Expert Legal AI
+- Strategy Builder, Argument Generator, Evidence Mapper
+- ADA Compliance (50 states), Case Law Analysis
+- Law Library (50 states), Judge Watch, Legal Research
+- Section 1983 Lawsuit Generator, CourtListener
+- Court Preparation Kit, Podcast Creator
 
 ## Key API Endpoints
-- Auth: /api/auth/signup, /api/auth/login, /api/auth/tier-status
-- Credits: /api/credits/packages, /api/credits/balance, /api/credits/purchase, /api/credits/verify/{session_id}
-- Cases: /api/cases (limited by tier)
-- Documents: /api/documents/upload (limited by tier)
-- AI: /api/ai/chat (all tiers), /api/ai/expert-analysis (professional)
-- **Forensic: /api/ai/forensic-analysis (all tiers, uses AI credits)**
-- ADA: /api/ada/* (professional)
-- Section 1983: /api/section-1983/* (attorney)
-- CourtListener: /api/courtlistener/* (attorney)
+
+### Admin (Protected - requires admin email)
+- GET /api/admin/stats - Dashboard statistics
+- GET /api/admin/users - All users with pagination
+- POST /api/admin/users/update-tier - Change user tier
+- GET /api/admin/advocates - All advocate applications
+- POST /api/admin/advocates/update-status - Approve/reject
+- GET /api/admin/passcodes - All passcodes with status
+- POST /api/admin/passcodes/toggle - Enable/disable passcode
+- GET /api/admin/redemptions - Redemption history
+
+### Public
+- POST /api/advocates/apply - Submit advocate application
+- GET /api/advocates - List approved advocates
+
+## Known Issues
+
+### Production CORS Issue (BLOCKING)
+- Frontend: https://www.thecpspunisher.com
+- Backend: https://case-analyzer-15.emergent.host
+- Issue: CORS headers not being returned in production despite code having proper middleware
+- Resolution: Contact Emergent support - deployment infrastructure issue
+- Preview environment works correctly
 
 ## Pending Tasks
 
-### P0 - Immediate
-- **Add balance to Emergent LLM key** - Budget exceeded, blocking all AI features
+### P0 - Resolve Production CORS
+- Contact Emergent support about CORS headers not being returned
+- Code is correct, deployment isn't picking up changes
 
-### P1 - Codebase Refactoring (Technical Debt)
-- Break server.py (~7500 lines) into modular route files in `/backend/routes/`
-- Break App.js (~9500 lines) into modular components in `/frontend/src/components/features/`
-- This is urgent for maintainability
+### P1 - To Add Admin Emails
+- Add your email to ADMIN_EMAILS list in server.py line ~818 to get admin access
 
 ### P2 - Future Features
-- Facebook OAuth (needs user's App ID & Secret)
+- Facebook OAuth (needs credentials)
 - Deeper CourtListener integration
-- Multi-client case management (Enterprise)
+- Multi-client management for Enterprise
 - Email notifications
-- Streaming responses for slow AI endpoints
 
 ## Credentials
-- Passcode: PUNISHER2024 (Enterprise access)
-- Stripe: Live keys configured
-- Test user: forensic_test@test.com / test123
-
-## Known Issues
-- Emergent LLM key budget exceeded - need to add balance via Profile > Universal Key > Add Balance
+- Passcodes: See list above (20 codes)
+- Admin: admin@thecpspunisher.com, owner@thecpspunisher.com

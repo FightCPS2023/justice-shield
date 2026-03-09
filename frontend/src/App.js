@@ -509,18 +509,21 @@ function Dashboard({ onNavigate }) {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [prefetchedData, setPrefetchedData] = useState({});
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // Pre-fetch critical data in parallel on mount
     const prefetch = async () => {
       try {
-        const [casesData, tierData, creditsData] = await Promise.all([
+        const [casesData, tierData, creditsData, adminCheck] = await Promise.all([
           api.get('/api/cases').catch(() => ({ cases: [] })),
           api.get('/api/auth/tier-status').catch(() => null),
           api.get('/api/credits/balance').catch(() => null),
+          api.get('/api/admin/stats').catch(() => null),
         ]);
         setCases(casesData.cases || []);
         setPrefetchedData({ tierStatus: tierData, creditBalance: creditsData });
+        setIsAdmin(adminCheck !== null && !adminCheck.detail);
       } catch (error) {
         console.error('Prefetch error:', error);
       } finally {
@@ -573,6 +576,11 @@ function Dashboard({ onNavigate }) {
     { id: 'criminal', icon: AlertTriangle, label: 'Criminal Case', minTier: 'attorney' },
     { id: 'pricing', icon: CreditCard, label: 'Upgrade Plan', minTier: 'free' },
   ];
+
+  // Add Admin tab if user is admin
+  if (isAdmin) {
+    menuItems.push({ id: 'admin', icon: Settings, label: 'Admin Board', minTier: 'free', isAdmin: true });
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 flex">
@@ -706,6 +714,7 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'advocates' && <AdvocatesTab />}
           {activeTab === 'pricing' && <PricingTab />}
           {activeTab === 'settings' && <SettingsTab />}
+          {activeTab === 'admin' && isAdmin && <AdminBoardTab />}
         </div>
       </main>
 
@@ -3998,6 +4007,355 @@ function SettingsTab() {
   );
 }
 
+// Admin Board Tab
+function AdminBoardTab() {
+  const { api } = useAuth();
+  const [activeSection, setActiveSection] = useState('dashboard');
+  const [stats, setStats] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [advocates, setAdvocates] = useState([]);
+  const [passcodes, setPasscodes] = useState([]);
+  const [redemptions, setRedemptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, [activeSection]);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      if (activeSection === 'dashboard') {
+        const data = await api.get('/api/admin/stats');
+        setStats(data);
+      } else if (activeSection === 'users') {
+        const data = await api.get('/api/admin/users');
+        setUsers(data.users || []);
+      } else if (activeSection === 'advocates') {
+        const data = await api.get('/api/admin/advocates');
+        setAdvocates(data.advocates || []);
+      } else if (activeSection === 'passcodes') {
+        const data = await api.get('/api/admin/passcodes');
+        setPasscodes(data.passcodes || []);
+      } else if (activeSection === 'redemptions') {
+        const data = await api.get('/api/admin/redemptions');
+        setRedemptions(data.redemptions || []);
+      }
+    } catch (error) {
+      toast.error('Failed to load admin data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const togglePasscode = async (code, active) => {
+    setActionLoading(true);
+    try {
+      await api.post('/api/admin/passcodes/toggle', { passcode: code, active });
+      toast.success(`Passcode ${active ? 'activated' : 'deactivated'}`);
+      loadData();
+    } catch (error) {
+      toast.error('Failed to update passcode');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const updateUserTier = async (userId, tier) => {
+    setActionLoading(true);
+    try {
+      await api.post('/api/admin/users/update-tier', { user_id: userId, tier });
+      toast.success('User tier updated');
+      loadData();
+    } catch (error) {
+      toast.error('Failed to update user tier');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const updateAdvocateStatus = async (advocateId, status) => {
+    setActionLoading(true);
+    try {
+      await api.post('/api/admin/advocates/update-status', { advocate_id: advocateId, status });
+      toast.success(`Advocate ${status}`);
+      loadData();
+    } catch (error) {
+      toast.error('Failed to update advocate status');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const sections = [
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'users', label: 'Users', icon: Users },
+    { id: 'advocates', label: 'Advocates', icon: Users },
+    { id: 'passcodes', label: 'Passcodes', icon: Key },
+    { id: 'redemptions', label: 'Redemptions', icon: CheckCircle2 },
+  ];
+
+  return (
+    <div className="space-y-6 animate-fadeIn" data-testid="admin-board-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-red-500" style={{ fontFamily: 'Oswald, sans-serif' }}>Admin Board</h1>
+          <p className="text-gray-400">Manage users, advocates, and passcodes</p>
+        </div>
+      </div>
+
+      {/* Section Tabs */}
+      <div className="flex flex-wrap gap-2 border-b border-gray-700 pb-4">
+        {sections.map(section => (
+          <button
+            key={section.id}
+            onClick={() => setActiveSection(section.id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              activeSection === section.id 
+                ? 'bg-red-600 text-white' 
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+            }`}
+          >
+            <section.icon className="w-4 h-4" />
+            {section.label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
+      ) : (
+        <>
+          {/* Dashboard */}
+          {activeSection === 'dashboard' && stats && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 text-center">
+                <p className="text-4xl font-bold text-white">{stats.total_users}</p>
+                <p className="text-gray-400">Total Users</p>
+              </div>
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 text-center">
+                <p className="text-4xl font-bold text-blue-400">{stats.total_cases}</p>
+                <p className="text-gray-400">Total Cases</p>
+              </div>
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 text-center">
+                <p className="text-4xl font-bold text-purple-400">{stats.total_documents}</p>
+                <p className="text-gray-400">Documents</p>
+              </div>
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 text-center">
+                <p className="text-4xl font-bold text-amber-400">{stats.total_redemptions}</p>
+                <p className="text-gray-400">Passcode Redemptions</p>
+              </div>
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 text-center">
+                <p className="text-4xl font-bold text-green-400">{stats.approved_advocates}</p>
+                <p className="text-gray-400">Approved Advocates</p>
+              </div>
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 text-center">
+                <p className="text-4xl font-bold text-yellow-400">{stats.pending_advocates}</p>
+                <p className="text-gray-400">Pending Advocates</p>
+              </div>
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 col-span-2">
+                <p className="text-lg font-semibold mb-3">Tier Breakdown</p>
+                <div className="grid grid-cols-5 gap-2">
+                  {['free', 'essential', 'professional', 'attorney', 'enterprise'].map(tier => (
+                    <div key={tier} className="text-center">
+                      <p className="text-2xl font-bold">{stats.tier_breakdown[tier] || 0}</p>
+                      <p className="text-xs text-gray-400 capitalize">{tier}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Users */}
+          {activeSection === 'users' && (
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-800">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Email</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Name</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Tier</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Joined</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700">
+                  {users.map(user => (
+                    <tr key={user.id} className="hover:bg-gray-800/50">
+                      <td className="px-4 py-3 text-sm">{user.email}</td>
+                      <td className="px-4 py-3 text-sm">{user.name || '-'}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <select
+                          value={user.tier}
+                          onChange={(e) => updateUserTier(user.id, e.target.value)}
+                          disabled={actionLoading}
+                          className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm"
+                        >
+                          <option value="free">Free</option>
+                          <option value="essential">Essential</option>
+                          <option value="professional">Professional</option>
+                          <option value="attorney">Attorney</option>
+                          <option value="enterprise">Enterprise</option>
+                        </select>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-400">
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {user.is_admin && <span className="px-2 py-1 bg-red-900/50 text-red-400 rounded text-xs">Admin</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Advocates */}
+          {activeSection === 'advocates' && (
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <button onClick={() => loadData()} className="px-3 py-1 bg-gray-700 rounded text-sm hover:bg-gray-600">All</button>
+              </div>
+              <div className="bg-gray-800/30 border border-gray-700 rounded-xl overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-800">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Email</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">State</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Experience</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Status</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {advocates.map(adv => (
+                      <tr key={adv.id} className="hover:bg-gray-800/50">
+                        <td className="px-4 py-3 text-sm">{adv.name}</td>
+                        <td className="px-4 py-3 text-sm text-gray-400">{adv.email}</td>
+                        <td className="px-4 py-3 text-sm">{adv.state}</td>
+                        <td className="px-4 py-3 text-sm">{adv.experience_years} yrs</td>
+                        <td className="px-4 py-3 text-sm">
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            adv.status === 'approved' ? 'bg-green-900/50 text-green-400' :
+                            adv.status === 'rejected' ? 'bg-red-900/50 text-red-400' :
+                            'bg-yellow-900/50 text-yellow-400'
+                          }`}>
+                            {adv.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm space-x-2">
+                          {adv.status !== 'approved' && (
+                            <button
+                              onClick={() => updateAdvocateStatus(adv.id, 'approved')}
+                              disabled={actionLoading}
+                              className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 disabled:opacity-50"
+                            >
+                              Approve
+                            </button>
+                          )}
+                          {adv.status !== 'rejected' && (
+                            <button
+                              onClick={() => updateAdvocateStatus(adv.id, 'rejected')}
+                              disabled={actionLoading}
+                              className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 disabled:opacity-50"
+                            >
+                              Reject
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {advocates.length === 0 && (
+                  <div className="text-center py-8 text-gray-400">No advocate applications yet</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Passcodes */}
+          {activeSection === 'passcodes' && (
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-800">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Passcode</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Redemptions</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Status</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700">
+                  {passcodes.map(pc => (
+                    <tr key={pc.code} className="hover:bg-gray-800/50">
+                      <td className="px-4 py-3 text-sm font-mono">{pc.code}</td>
+                      <td className="px-4 py-3 text-sm">{pc.redemptions}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <span className={`px-2 py-1 rounded text-xs ${pc.active ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
+                          {pc.active ? 'Active' : 'Disabled'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <button
+                          onClick={() => togglePasscode(pc.code, !pc.active)}
+                          disabled={actionLoading}
+                          className={`px-3 py-1 rounded text-xs disabled:opacity-50 ${
+                            pc.active 
+                              ? 'bg-red-600 text-white hover:bg-red-700' 
+                              : 'bg-green-600 text-white hover:bg-green-700'
+                          }`}
+                        >
+                          {pc.active ? 'Disable' : 'Enable'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Redemptions */}
+          {activeSection === 'redemptions' && (
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-800">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Email</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Passcode</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Tier Granted</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700">
+                  {redemptions.map(r => (
+                    <tr key={r.id} className="hover:bg-gray-800/50">
+                      <td className="px-4 py-3 text-sm">{r.email}</td>
+                      <td className="px-4 py-3 text-sm font-mono">{r.passcode}</td>
+                      <td className="px-4 py-3 text-sm capitalize">{r.tier_granted}</td>
+                      <td className="px-4 py-3 text-sm text-gray-400">
+                        {r.redeemed_at ? new Date(r.redeemed_at).toLocaleString() : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {redemptions.length === 0 && (
+                <div className="text-center py-8 text-gray-400">No redemptions yet</div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 
 // Smart Document Generator Tab — Cetient-Style
 function SmartDocTab({ selectedCase }) {
@@ -5806,6 +6164,24 @@ function AdvocatesTab() {
   const [advocates, setAdvocates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stateFilter, setStateFilter] = useState('');
+  const [showApplyForm, setShowApplyForm] = useState(false);
+  const [selectedAdvocate, setSelectedAdvocate] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    website: '',
+    photo_url: '',
+    bio: '',
+    experience_years: '',
+    specialties: [],
+    state: '',
+    city: '',
+    organization: '',
+    certifications: '',
+    languages: 'English'
+  });
 
   const states = [
     'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
@@ -5813,6 +6189,12 @@ function AdvocatesTab() {
     'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
     'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
     'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+  ];
+
+  const specialtyOptions = [
+    'CPS Defense', 'Family Law', 'Parental Rights', 'Child Welfare',
+    'Dependency Cases', 'Termination of Parental Rights', 'Foster Care',
+    'ADA Accommodations', 'Civil Rights', 'Appeals', 'Mediation'
   ];
 
   useEffect(() => {
@@ -5832,22 +6214,317 @@ function AdvocatesTab() {
     }
   };
 
+  const handleSubmitApplication = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const applicationData = {
+        ...formData,
+        experience_years: parseInt(formData.experience_years) || 0,
+        certifications: formData.certifications.split(',').map(c => c.trim()).filter(c => c),
+        languages: formData.languages.split(',').map(l => l.trim()).filter(l => l)
+      };
+      await api.post('/api/advocates/apply', applicationData);
+      toast.success('Application submitted! We will review it and get back to you soon.');
+      setShowApplyForm(false);
+      setFormData({
+        name: '', email: '', phone: '', website: '', photo_url: '', bio: '',
+        experience_years: '', specialties: [], state: '', city: '', organization: '',
+        certifications: '', languages: 'English'
+      });
+    } catch (error) {
+      toast.error(error.message || 'Failed to submit application');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const toggleSpecialty = (specialty) => {
+    setFormData(prev => ({
+      ...prev,
+      specialties: prev.specialties.includes(specialty)
+        ? prev.specialties.filter(s => s !== specialty)
+        : [...prev.specialties, specialty]
+    }));
+  };
+
   return (
     <div className="space-y-6 animate-fadeIn" data-testid="advocates-tab">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Find Advocates</h1>
           <p className="text-gray-400">Connect with family advocates and attorneys in your state</p>
         </div>
-        <select
-          value={stateFilter}
-          onChange={(e) => setStateFilter(e.target.value)}
-          className="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
-        >
-          <option value="">All States</option>
-          {states.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
+        <div className="flex gap-3">
+          <select
+            value={stateFilter}
+            onChange={(e) => setStateFilter(e.target.value)}
+            className="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+          >
+            <option value="">All States</option>
+            {states.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <button
+            onClick={() => setShowApplyForm(true)}
+            className="px-4 py-2 bg-gradient-to-r from-red-600 to-purple-600 rounded-lg font-medium hover:opacity-90 transition-opacity"
+            data-testid="become-advocate-btn"
+          >
+            Become an Advocate
+          </button>
+        </div>
       </div>
+
+      {/* Apply Form Modal */}
+      {showApplyForm && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-700 flex justify-between items-center sticky top-0 bg-gray-900">
+              <h2 className="text-xl font-bold">Become an Advocate</h2>
+              <button onClick={() => setShowApplyForm(false)} className="text-gray-400 hover:text-white">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <form onSubmit={handleSubmitApplication} className="p-6 space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="John Smith"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Email *</label>
+                  <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="advocate@email.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Phone</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Website</label>
+                  <input
+                    type="url"
+                    value={formData.website}
+                    onChange={(e) => setFormData({...formData, website: e.target.value})}
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="https://yourwebsite.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">State *</label>
+                  <select
+                    required
+                    value={formData.state}
+                    onChange={(e) => setFormData({...formData, state: e.target.value})}
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2"
+                  >
+                    <option value="">Select State</option>
+                    {states.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">City</label>
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => setFormData({...formData, city: e.target.value})}
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="Los Angeles"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Organization</label>
+                  <input
+                    type="text"
+                    value={formData.organization}
+                    onChange={(e) => setFormData({...formData, organization: e.target.value})}
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="Law Firm or Organization"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Years of Experience *</label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    value={formData.experience_years}
+                    onChange={(e) => setFormData({...formData, experience_years: e.target.value})}
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="5"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Photo URL</label>
+                <input
+                  type="url"
+                  value={formData.photo_url}
+                  onChange={(e) => setFormData({...formData, photo_url: e.target.value})}
+                  className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2"
+                  placeholder="https://example.com/your-photo.jpg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Specialties *</label>
+                <div className="flex flex-wrap gap-2">
+                  {specialtyOptions.map(specialty => (
+                    <button
+                      key={specialty}
+                      type="button"
+                      onClick={() => toggleSpecialty(specialty)}
+                      className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                        formData.specialties.includes(specialty)
+                          ? 'bg-red-600 text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      {specialty}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Bio / Background *</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={formData.bio}
+                  onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                  className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2"
+                  placeholder="Tell us about your background, experience, and how you help families..."
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Certifications (comma-separated)</label>
+                  <input
+                    type="text"
+                    value={formData.certifications}
+                    onChange={(e) => setFormData({...formData, certifications: e.target.value})}
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="Bar License, Mediation Cert"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Languages (comma-separated)</label>
+                  <input
+                    type="text"
+                    value={formData.languages}
+                    onChange={(e) => setFormData({...formData, languages: e.target.value})}
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2"
+                    placeholder="English, Spanish"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowApplyForm(false)}
+                  className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting || formData.specialties.length === 0}
+                  className="px-6 py-2 bg-gradient-to-r from-red-600 to-purple-600 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit Application'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Advocate Detail Modal */}
+      {selectedAdvocate && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-lg">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-start gap-4">
+                  {selectedAdvocate.photo_url ? (
+                    <img src={selectedAdvocate.photo_url} alt={selectedAdvocate.name} className="w-16 h-16 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-purple-600 rounded-full flex items-center justify-center">
+                      <Users className="w-8 h-8" />
+                    </div>
+                  )}
+                  <div>
+                    <h2 className="text-xl font-bold">{selectedAdvocate.name}</h2>
+                    <p className="text-gray-400">{selectedAdvocate.organization}</p>
+                    <p className="text-sm text-gray-500">{selectedAdvocate.city}, {selectedAdvocate.state}</p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedAdvocate(null)} className="text-gray-400 hover:text-white">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Experience</p>
+                  <p>{selectedAdvocate.experience_years} years</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Specialties</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedAdvocate.specialties?.map(s => (
+                      <span key={s} className="px-2 py-1 bg-red-900/30 text-red-400 rounded text-sm">{s}</span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">About</p>
+                  <p className="text-gray-300">{selectedAdvocate.bio}</p>
+                </div>
+                {selectedAdvocate.phone && (
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Contact</p>
+                    <p className="text-blue-400">{selectedAdvocate.phone}</p>
+                  </div>
+                )}
+                {selectedAdvocate.website && (
+                  <a href={selectedAdvocate.website} target="_blank" rel="noopener noreferrer" className="inline-block text-blue-400 hover:underline">
+                    Visit Website →
+                  </a>
+                )}
+                {selectedAdvocate.languages?.length > 0 && (
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Languages</p>
+                    <p>{selectedAdvocate.languages.join(', ')}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" /></div>
@@ -5855,24 +6532,44 @@ function AdvocatesTab() {
         <div className="text-center py-12 bg-gray-800/30 rounded-xl">
           <Users className="w-12 h-12 mx-auto text-gray-600 mb-4" />
           <p className="text-gray-400 mb-2">No advocates listed yet for {stateFilter || 'any state'}</p>
-          <p className="text-sm text-gray-500">Check back soon as we grow our directory</p>
+          <p className="text-sm text-gray-500 mb-4">Check back soon as we grow our directory</p>
+          <button
+            onClick={() => setShowApplyForm(true)}
+            className="px-4 py-2 bg-gradient-to-r from-red-600 to-purple-600 rounded-lg font-medium hover:opacity-90"
+          >
+            Be the First - Apply Now
+          </button>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {advocates.map(advocate => (
-            <div key={advocate.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+            <div 
+              key={advocate.id} 
+              className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 hover:border-red-500/50 transition-colors cursor-pointer"
+              onClick={() => setSelectedAdvocate(advocate)}
+            >
               <div className="flex items-start gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-purple-600 rounded-full flex items-center justify-center">
-                  <Users className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">{advocate.name}</h3>
-                  <p className="text-sm text-gray-400">{advocate.type}</p>
-                  <p className="text-xs text-gray-500">{advocate.state}</p>
+                {advocate.photo_url ? (
+                  <img src={advocate.photo_url} alt={advocate.name} className="w-12 h-12 rounded-full object-cover" />
+                ) : (
+                  <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-purple-600 rounded-full flex items-center justify-center">
+                    <Users className="w-6 h-6" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold truncate">{advocate.name}</h3>
+                  <p className="text-sm text-gray-400 truncate">{advocate.organization || advocate.city}</p>
+                  <p className="text-xs text-gray-500">{advocate.state} • {advocate.experience_years} yrs exp</p>
                 </div>
               </div>
-              {advocate.description && <p className="text-gray-400 text-sm mt-3">{advocate.description}</p>}
-              {advocate.contact && <p className="text-blue-400 text-sm mt-2">{advocate.contact}</p>}
+              <div className="flex flex-wrap gap-1 mt-3">
+                {advocate.specialties?.slice(0, 3).map(s => (
+                  <span key={s} className="px-2 py-0.5 bg-gray-700 text-gray-300 rounded text-xs">{s}</span>
+                ))}
+                {advocate.specialties?.length > 3 && (
+                  <span className="px-2 py-0.5 bg-gray-700 text-gray-400 rounded text-xs">+{advocate.specialties.length - 3}</span>
+                )}
+              </div>
             </div>
           ))}
         </div>
