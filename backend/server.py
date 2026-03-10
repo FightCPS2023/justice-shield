@@ -1673,6 +1673,72 @@ async def delete_document(doc_id: str, current_user: dict = Depends(get_current_
 UPLOAD_DIR = "/tmp/cps_uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# Maximum file size for Whisper transcription (25MB)
+WHISPER_MAX_SIZE = 25 * 1024 * 1024
+
+async def transcribe_audio_video(content: bytes, filename: str, file_ext: str, file_size: int) -> str:
+    """
+    Transcribe audio/video files using OpenAI Whisper.
+    Returns transcription text or None if transcription fails.
+    """
+    if not EMERGENT_LLM_KEY:
+        print(f"Transcription skipped for {filename}: No API key available")
+        return None
+    
+    # Check file size limit for Whisper (25MB)
+    if file_size > WHISPER_MAX_SIZE:
+        print(f"Transcription skipped for {filename}: File too large ({file_size // (1024*1024)}MB > 25MB limit)")
+        return None
+    
+    # Supported formats for Whisper
+    whisper_formats = {'.mp3', '.mp4', '.mpeg', '.mpga', '.m4a', '.wav', '.webm'}
+    
+    # Map some extensions to supported formats
+    ext_mapping = {
+        '.mov': '.mp4',  # MOV is essentially MP4
+        '.aac': '.m4a',
+        '.ogg': '.webm',
+    }
+    
+    actual_ext = ext_mapping.get(file_ext, file_ext)
+    if actual_ext not in whisper_formats:
+        print(f"Transcription skipped for {filename}: Format {file_ext} not supported by Whisper")
+        return None
+    
+    try:
+        from emergentintegrations.llm.openai import OpenAISpeechToText
+        import io
+        
+        print(f"Starting transcription for {filename} ({file_size // 1024}KB)...")
+        
+        stt = OpenAISpeechToText(api_key=EMERGENT_LLM_KEY)
+        
+        # Create a file-like object from the content
+        audio_file = io.BytesIO(content)
+        audio_file.name = filename  # Set filename for the API
+        
+        # Transcribe with verbose_json to get better results
+        response = await stt.transcribe(
+            file=audio_file,
+            model="whisper-1",
+            response_format="verbose_json",
+            language="en",  # Default to English for legal proceedings
+            prompt="This is a recording related to a CPS (Child Protective Services) case. It may include conversations with caseworkers, attorneys, court proceedings, or family discussions."
+        )
+        
+        transcription_text = response.text if hasattr(response, 'text') else str(response)
+        
+        if transcription_text and transcription_text.strip():
+            print(f"Transcription successful for {filename}: {len(transcription_text)} characters")
+            return transcription_text.strip()
+        else:
+            print(f"Transcription returned empty for {filename}")
+            return None
+            
+    except Exception as e:
+        print(f"Transcription error for {filename}: {str(e)}")
+        return None
+
 @app.post("/api/documents/upload")
 async def upload_document(
     file: UploadFile = File(...),
@@ -1804,10 +1870,20 @@ async def upload_document(
         extracted_text = f"[Image: {file.filename}]\n\nImage uploaded for visual evidence. AI analysis can describe the contents."
     elif file_ext in audio_extensions:
         file_category = "audio"
-        extracted_text = f"[Audio Recording: {file.filename}]\n\nAudio file uploaded. Duration: {file_size // 1024}KB. This can be used as evidence of conversations, meetings, or incidents."
+        # Attempt to transcribe audio using OpenAI Whisper
+        transcription_text = await transcribe_audio_video(content, file.filename, file_ext, file_size)
+        if transcription_text:
+            extracted_text = f"[Audio Recording: {file.filename}] (Transcribed)\n\n{transcription_text}"
+        else:
+            extracted_text = f"[Audio Recording: {file.filename}]\n\nAudio file uploaded ({file_size // 1024}KB). Transcription was not available. This can be used as evidence of conversations, meetings, or incidents."
     elif file_ext in video_extensions:
         file_category = "video"
-        extracted_text = f"[Video Recording: {file.filename}]\n\nVideo file uploaded. Size: {file_size // (1024*1024)}MB. This can be used as visual evidence of incidents, visits, or conditions."
+        # Attempt to transcribe video audio track using OpenAI Whisper
+        transcription_text = await transcribe_audio_video(content, file.filename, file_ext, file_size)
+        if transcription_text:
+            extracted_text = f"[Video Recording: {file.filename}] (Audio Transcribed)\n\n{transcription_text}"
+        else:
+            extracted_text = f"[Video Recording: {file.filename}]\n\nVideo file uploaded ({file_size // (1024*1024)}MB). Audio transcription was not available. This can be used as visual evidence of incidents, visits, or conditions."
     elif file_ext in {'.doc', '.docx', '.rtf'}:
         file_category = "document"
         extracted_text = f"[Word Document: {file.filename}]\n\nDocument uploaded. For best text extraction, consider converting to PDF."
