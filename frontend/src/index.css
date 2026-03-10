@@ -100,3 +100,70 @@
 .btn-outline-punisher {
   @apply border-2 border-red-600 text-red-500 hover:bg-red-600 hover:text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300;
 }
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  /* Better touch targets */
+  button, a, input, select, textarea {
+    min-height: 44px;
+  }
+  
+  /* Prevent text size adjustment */
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* Mobile form inputs */
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+  }
+  
+  /* Mobile buttons */
+  .btn-punisher, .btn-outline-punisher {
+    @apply py-4 px-4 text-base;
+    width: 100%;
+  }
+  
+  /* Mobile cards */
+  .card-hover {
+    transform: none !important;
+  }
+  
+  /* Mobile modal */
+  .mobile-modal {
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Safe area padding for notched phones */
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* Touch-friendly hover states */
+@media (hover: none) {
+  .card-hover:hover {
+    transform: none;
+  }
+  
+  button:hover, a:hover {
+    opacity: 0.9;
+  }
+}
+
+/* PWA standalone mode styles */
+@media (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+  }
+}

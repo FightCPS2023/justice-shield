@@ -17,27 +17,55 @@ const AuthContext = createContext(null);
 
 export const useAuth = () => useContext(AuthContext);
 
-// API Helper
+// API Helper with mobile-friendly token handling
 const api = {
+  getToken() {
+    try {
+      return localStorage.getItem('cps_token');
+    } catch (e) {
+      console.error('localStorage access error:', e);
+      return null;
+    }
+  },
+  
   async request(endpoint, options = {}) {
-    const token = localStorage.getItem('cps_token');
+    const token = this.getToken();
     const headers = {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     };
     
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
-    
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Request failed' }));
-      throw new Error(error.detail || 'Request failed');
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        ...options,
+        headers,
+        credentials: 'include',
+      });
+      
+      if (response.status === 401) {
+        // Token expired or invalid - clear auth and redirect to login
+        try {
+          localStorage.removeItem('cps_token');
+          localStorage.removeItem('cps_user');
+        } catch (e) {
+          console.error('Failed to clear auth:', e);
+        }
+        throw new Error('Session expired. Please log in again.');
+      }
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Request failed' }));
+        throw new Error(error.detail || 'Request failed');
+      }
+      
+      return response.json();
+    } catch (error) {
+      if (error.message === 'Failed to fetch') {
+        throw new Error('Network error. Please check your connection.');
+      }
+      throw error;
     }
-    
-    return response.json();
   },
   
   get: (endpoint) => api.request(endpoint),
@@ -583,14 +611,23 @@ function Dashboard({ onNavigate }) {
   return (
     <div className="min-h-screen bg-gray-900 flex">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-black border-r border-gray-800 transform transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-black border-r border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} data-testid="sidebar">
         <div className="p-4 border-b border-gray-800">
-          <div className="flex items-center gap-3">
-            <img src="/images/shield-logo.png" alt="Logo" className="w-10 h-12 object-contain" />
-            <div>
-              <h1 className="font-bold text-white" style={{ fontFamily: 'Oswald, sans-serif' }}>CPS PUNISHER</h1>
-              <p className="text-xs text-gray-500">{user?.email}</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img src="/images/shield-logo.png" alt="Logo" className="w-10 h-12 object-contain" />
+              <div>
+                <h1 className="font-bold text-white" style={{ fontFamily: 'Oswald, sans-serif' }}>CPS PUNISHER</h1>
+                <p className="text-xs text-gray-500 truncate max-w-[120px]">{user?.email}</p>
+              </div>
             </div>
+            <button 
+              onClick={() => setSidebarOpen(false)} 
+              className="lg:hidden p-2 hover:bg-gray-800 rounded-lg"
+              data-testid="close-sidebar-btn"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
@@ -668,9 +705,14 @@ function Dashboard({ onNavigate }) {
       </aside>
 
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-black border-b border-gray-800 p-4">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-black border-b border-gray-800 p-4 safe-area-top">
         <div className="flex items-center justify-between">
-          <button onClick={() => setSidebarOpen(true)} className="p-2">
+          <button 
+            onClick={() => setSidebarOpen(true)} 
+            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+            data-testid="mobile-menu-btn"
+          >
             <Menu className="w-6 h-6" />
           </button>
           <div className="flex items-center gap-2">
@@ -730,10 +772,10 @@ function Dashboard({ onNavigate }) {
       {/* Help Bot - Floating Assistant */}
       <HelpBot />
 
-      {/* Overlay for mobile */}
+      {/* Overlay for mobile sidebar */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/70 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}

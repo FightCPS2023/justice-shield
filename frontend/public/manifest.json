@@ -1,0 +1,26 @@
+{
+  "short_name": "CPS Punisher",
+  "name": "THE CPS PUNISHER - Family Defense Platform",
+  "description": "AI-Powered Child Protective Services Case Defense Platform. Fight for your family with intelligent legal analysis.",
+  "icons": [
+    {
+      "src": "images/shield-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/shield-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#dc2626",
+  "background_color": "#111827",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["legal", "productivity", "utilities"]
+}
