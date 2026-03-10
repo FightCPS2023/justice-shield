@@ -1684,7 +1684,7 @@ async def upload_document(
 ):
     """
     Upload a document file and optionally run AI analysis.
-    Supports: PDF, TXT, images (PNG, JPG, JPEG)
+    Supports: PDF, TXT, images, audio, video files
     Returns: Document record with extracted text and optional AI analysis
     """
     from emergentintegrations.llm.chat import LlmChat, UserMessage
@@ -1697,52 +1697,122 @@ async def upload_document(
     # Verify case ownership
     case = await get_case_with_ownership(case_id, current_user["user_id"])
     
-    # Validate file type
-    allowed_extensions = {'.pdf', '.txt', '.png', '.jpg', '.jpeg', '.doc', '.docx'}
+    # Validate file type - expanded to include audio/video
+    allowed_extensions = {
+        # Documents
+        '.pdf', '.txt', '.doc', '.docx', '.rtf',
+        # Images
+        '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.heic',
+        # Audio
+        '.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.wma',
+        # Video
+        '.mp4', '.mov', '.avi', '.mkv', '.wmv', '.webm', '.m4v'
+    }
     file_ext = os.path.splitext(file.filename)[1].lower()
     if file_ext not in allowed_extensions:
-        raise HTTPException(status_code=400, detail=f"File type {file_ext} not supported. Allowed: {', '.join(allowed_extensions)}")
+        raise HTTPException(status_code=400, detail=f"File type {file_ext} not supported. Allowed: PDF, TXT, DOC, images, audio (MP3, WAV, etc), video (MP4, MOV, etc)")
     
     # Read file content
     content = await file.read()
     file_size = len(content)
     
-    if file_size > 10 * 1024 * 1024:  # 10MB limit
-        raise HTTPException(status_code=400, detail="File too large. Maximum 10MB.")
+    # Larger limit for video/audio files (50MB)
+    max_size = 50 * 1024 * 1024 if file_ext in {'.mp4', '.mov', '.avi', '.mkv', '.wmv', '.webm', '.m4v', '.mp3', '.wav', '.m4a'} else 10 * 1024 * 1024
+    if file_size > max_size:
+        raise HTTPException(status_code=400, detail=f"File too large. Maximum {max_size // (1024*1024)}MB for this file type.")
+    
+    # Determine file category
+    image_extensions = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.heic'}
+    audio_extensions = {'.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.wma'}
+    video_extensions = {'.mp4', '.mov', '.avi', '.mkv', '.wmv', '.webm', '.m4v'}
     
     # Extract text based on file type
     extracted_text = ""
+    file_category = "document"
     
     if file_ext == '.txt':
         extracted_text = content.decode('utf-8', errors='ignore')
+        file_category = "document"
     elif file_ext == '.pdf':
-        # Extract text from PDF using pypdf
+        file_category = "document"
+        # Extract text from PDF using pypdf, with OCR fallback for scanned documents
         try:
             from pypdf import PdfReader
             import io
             
             pdf_reader = PdfReader(io.BytesIO(content))
             pdf_text_parts = []
+            pages_with_no_text = []
             
+            # First pass: try standard text extraction
             for page_num, page in enumerate(pdf_reader.pages, 1):
-                page_text = page.extract_text()
-                if page_text:
-                    pdf_text_parts.append(f"--- Page {page_num} ---\n{page_text}")
+                try:
+                    page_text = page.extract_text()
+                    if page_text and page_text.strip() and len(page_text.strip()) > 20:
+                        pdf_text_parts.append(f"--- Page {page_num} ---\n{page_text}")
+                    else:
+                        pages_with_no_text.append(page_num)
+                except Exception as page_err:
+                    pages_with_no_text.append(page_num)
             
-            if pdf_text_parts:
+            # If many pages have no text, try OCR extraction
+            if len(pages_with_no_text) > len(pdf_reader.pages) * 0.5 or (len(pdf_text_parts) == 0 and len(pdf_reader.pages) > 0):
+                try:
+                    from pdf2image import convert_from_bytes
+                    import pytesseract
+                    
+                    print(f"Attempting OCR for scanned PDF: {file.filename}")
+                    images = convert_from_bytes(content, dpi=200, fmt='png')
+                    ocr_text_parts = []
+                    
+                    for page_num, image in enumerate(images, 1):
+                        try:
+                            ocr_text = pytesseract.image_to_string(image)
+                            if ocr_text and ocr_text.strip():
+                                ocr_text_parts.append(f"--- Page {page_num} (OCR) ---\n{ocr_text.strip()}")
+                        except Exception as ocr_page_err:
+                            print(f"OCR failed for page {page_num}: {str(ocr_page_err)}")
+                    
+                    if ocr_text_parts:
+                        extracted_text = f"[PDF Document: {file.filename}] (Text extracted via OCR)\n\n" + "\n\n".join(ocr_text_parts)
+                    elif pdf_text_parts:
+                        # Some text was extracted, use what we have
+                        extracted_text = f"[PDF Document: {file.filename}]\n\n" + "\n\n".join(pdf_text_parts)
+                    else:
+                        extracted_text = f"[PDF Document: {file.filename}]\n\nNote: This PDF appears to be image-based with no readable text. OCR extraction was attempted but found no content. The document has been saved for manual review."
+                except ImportError as ie:
+                    print(f"OCR libraries not available: {str(ie)}")
+                    if pdf_text_parts:
+                        extracted_text = f"[PDF Document: {file.filename}]\n\n" + "\n\n".join(pdf_text_parts)
+                    else:
+                        extracted_text = f"[PDF Document: {file.filename}]\n\nNote: This PDF appears to be scanned/image-based. OCR is not available. The document has been saved for reference."
+                except Exception as ocr_err:
+                    print(f"OCR extraction failed for {file.filename}: {str(ocr_err)}")
+                    if pdf_text_parts:
+                        extracted_text = f"[PDF Document: {file.filename}]\n\n" + "\n\n".join(pdf_text_parts)
+                    else:
+                        extracted_text = f"[PDF Document: {file.filename}]\n\nNote: PDF text extraction encountered issues. The document has been saved for reference."
+            elif pdf_text_parts:
                 extracted_text = f"[PDF Document: {file.filename}]\n\n" + "\n\n".join(pdf_text_parts)
             else:
-                # PDF might be scanned/image-based
-                extracted_text = f"[PDF Document: {file.filename}]\n\nNote: This PDF appears to be image-based or has no extractable text. AI analysis will attempt to process it."
+                extracted_text = f"[PDF Document: {file.filename}]\n\nNote: This PDF has no extractable text content. The document has been saved for reference."
         except Exception as e:
-            extracted_text = f"[PDF Document: {file.filename}]\n\nPDF text extraction failed: {str(e)}. AI analysis will attempt to process it."
-    elif file_ext in {'.png', '.jpg', '.jpeg'}:
-        # For images, we'll use AI vision to extract text
-        import base64
-        image_b64 = base64.b64encode(content).decode('utf-8')
-        extracted_text = f"[Image Document: {file.filename}]\n\nImage uploaded for AI OCR analysis."
+            print(f"PDF extraction error for {file.filename}: {str(e)}")
+            extracted_text = f"[PDF Document: {file.filename}]\n\nPDF uploaded successfully. Text extraction encountered an issue but the file is saved."
+    elif file_ext in image_extensions:
+        file_category = "image"
+        extracted_text = f"[Image: {file.filename}]\n\nImage uploaded for visual evidence. AI analysis can describe the contents."
+    elif file_ext in audio_extensions:
+        file_category = "audio"
+        extracted_text = f"[Audio Recording: {file.filename}]\n\nAudio file uploaded. Duration: {file_size // 1024}KB. This can be used as evidence of conversations, meetings, or incidents."
+    elif file_ext in video_extensions:
+        file_category = "video"
+        extracted_text = f"[Video Recording: {file.filename}]\n\nVideo file uploaded. Size: {file_size // (1024*1024)}MB. This can be used as visual evidence of incidents, visits, or conditions."
+    elif file_ext in {'.doc', '.docx', '.rtf'}:
+        file_category = "document"
+        extracted_text = f"[Word Document: {file.filename}]\n\nDocument uploaded. For best text extraction, consider converting to PDF."
     else:
-        extracted_text = f"[Document: {file.filename}]\n\nDocument uploaded. Content extraction pending."
+        extracted_text = f"[File: {file.filename}]\n\nFile uploaded successfully."
     
     # Save file
     file_id = str(uuid.uuid4())
@@ -1761,6 +1831,7 @@ async def upload_document(
         "file_path": file_path,
         "file_size": file_size,
         "file_type": file_ext,
+        "file_category": file_category,  # document, image, audio, video
         "doc_type": doc_type,
         "content": extracted_text,
         "source": "upload",
@@ -1772,9 +1843,10 @@ async def upload_document(
     
     await db.documents.insert_one(doc)
     
-    # Run AI analysis if requested
+    # Run AI analysis if requested (skip for large video/audio files)
     analysis_result = None
-    if auto_analyze and EMERGENT_LLM_KEY:
+    skip_analysis = file_category in ['video', 'audio'] and file_size > 5 * 1024 * 1024
+    if auto_analyze and EMERGENT_LLM_KEY and not skip_analysis:
         try:
             analysis_result = await analyze_uploaded_document(
                 doc_id, case_id, case, extracted_text, file.filename, current_user["user_id"]

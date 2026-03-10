@@ -1,116 +1,135 @@
 # THE CPS PUNISHER - Product Requirements Document
 
-## Original Problem Statement
-Build the most powerful, interactive legal application for CPS cases - "unstoppable defender of the family." AI-powered legal tools, document analysis, violation tracking, court preparation.
+## Overview
+A powerful legal application designed to help families defend themselves against CPS (Child Protective Services). The platform provides AI-powered case analysis, document management, legal research, and defense strategy generation.
 
-## Tech Stack
-- Frontend: React, Tailwind CSS, shadcn/ui, lucide-react
-- Backend: Python, FastAPI, Motor (async MongoDB)
-- AI: LiteLLM via Emergent integrations
-- Payments: Stripe (live keys)
-- Auth: JWT + Google OAuth
-- Database: MongoDB
+## Core Features (Implemented)
 
-## Tier Structure (Enforced Backend + Frontend)
+### Authentication & User Management
+- JWT-based authentication with secure password hashing
+- Google OAuth integration (Emergent-managed)
+- 4-tier subscription system: Free, Essential, Professional, Attorney
+- Passcode-based Enterprise tier access (20 reusable codes)
+- Admin user management capabilities
 
-| Tier | Price | Docs/mo | AI Credits | Cases |
-|------|-------|---------|------------|-------|
-| Free | $0 | 1 | 5 | 1 |
-| Essential | $49/mo | 25 | 100 | Unlimited |
-| Professional | $99/mo | Unlimited | 500 | Unlimited |
-| Attorney | $299/mo | Unlimited | 2,000 | Unlimited |
-| Enterprise | $999/mo | Unlimited | Unlimited | Unlimited |
+### Case Management
+- Create and manage multiple CPS cases
+- Track case details: caseworker, attorney, judge, court info
+- Document organization per case
+- Violation tracking and timeline management
 
-## Completed Features
+### Document Management (Updated 2026-03-10)
+- **PDF Upload with OCR**: Standard text extraction + automatic OCR fallback for scanned documents
+- Audio file upload support (MP3, WAV, etc.)
+- Video file upload support (MP4, MOV, etc.)
+- AI-powered document analysis
+- Automatic violation and timeline extraction
 
-### Core Platform
-- JWT auth + Google OAuth
-- Case management with tier-based limits
-- Stripe payments (live) - subscriptions + credit purchases
-- Full tier enforcement (backend 403s + frontend lock UI)
-- Credit purchase system (4 packages via Stripe checkout)
+### AI-Powered Features
+- Smart Legal Research Engine
+- Smart Document Generator
+- Legal Forensic Document Analyzer
+- Defense Strategy Generator
+- Incident Analyzer
+- Case Law Research
+- 50-State Law Library
+- Judge Research
+- Section 1983 Analysis
+- Criminal Case Defense Prep
 
-### 20 Reusable Passcodes (Enterprise Access)
-All passcodes grant Enterprise tier and are reusable until admin deactivates:
-- PUNISHER2024, CPS-WARRIOR-001 through 005
-- FAMILY-DEFENDER-01 through 05
-- LEGAL-SHIELD-001 through 005
-- JUSTICE-KEY-2024-A through D
+### AI Case Notes (Implemented)
+- Automatic saving of all AI-generated responses
+- Organized by case and feature
+- Searchable and reviewable history
 
-### Advocate System (NEW - Mar 2026)
-- **Public Application Form:** Name, email, phone, website, photo, bio, experience, specialties, state, city, organization, certifications, languages
-- **Advocate Directory:** Searchable by state, shows approved advocates only
-- **Admin Approval:** Advocates require admin approval before visible
-- **API Endpoints:**
-  - POST /api/advocates/apply (public)
-  - GET /api/advocates (public, approved only)
-  - GET /api/advocates/{id} (public, approved only)
-  - GET /api/admin/advocates (admin)
-  - POST /api/admin/advocates/update-status (admin)
+### Help Bot (Implemented)
+- In-app AI assistant for navigation
+- Feature explanations and guidance
+- Floating chat interface
 
-### Admin Board (NEW - Mar 2026)
-- **Dashboard:** Total users, cases, documents, redemptions, advocates stats, tier breakdown
-- **User Management:** View all users, change tiers
-- **Advocate Management:** View/approve/reject advocate applications
-- **Passcode Management:** View all passcodes, enable/disable, redemption counts
-- **Redemption History:** Track who redeemed what passcode and when
-- **Admin Access:** Controlled by ADMIN_EMAILS list in server.py
-- **Current Admin Emails:** admin@thecpspunisher.com, owner@thecpspunisher.com
+### Advocate System (Implemented)
+- Public advocate directory
+- Application form for new advocates
+- Admin approval workflow
+- Profile management (photo, bio, specialties)
 
-### Legal Forensic Document Analyzer
-- 7-point analysis framework
-- Located in Documents tab > Forensic Analyzer
-- Single document or entire case modes
+### Admin Dashboard (Implemented)
+- User management (view, upgrade tiers)
+- Advocate approval/rejection
+- Passcode management
+- System statistics
 
-### All Other Features
-- AI Chat, Document Analysis, Document Generation
-- Defense Strategy, Incident Analyzer, Expert Legal AI
-- Strategy Builder, Argument Generator, Evidence Mapper
-- ADA Compliance (50 states), Case Law Analysis
-- Law Library (50 states), Judge Watch, Legal Research
-- Section 1983 Lawsuit Generator, CourtListener
-- Court Preparation Kit, Podcast Creator
+### Legal Notepad (Implemented)
+- Rich text note-taking
+- Case association
+- PDF export (single and bulk)
 
-## Key API Endpoints
+### Payments (Implemented)
+- Stripe integration for subscriptions
+- Pay-as-you-go credit system
+- Credit packages for additional features
 
-### Admin (Protected - requires admin email)
-- GET /api/admin/stats - Dashboard statistics
-- GET /api/admin/users - All users with pagination
-- POST /api/admin/users/update-tier - Change user tier
-- GET /api/admin/advocates - All advocate applications
-- POST /api/admin/advocates/update-status - Approve/reject
-- GET /api/admin/passcodes - All passcodes with status
-- POST /api/admin/passcodes/toggle - Enable/disable passcode
-- GET /api/admin/redemptions - Redemption history
+## Technical Stack
+- **Frontend**: React, Vite, Tailwind CSS, shadcn/ui, lucide-react
+- **Backend**: Python, FastAPI, Pydantic
+- **Database**: MongoDB
+- **AI**: LiteLLM with Emergent LLM Key
+- **PDF Processing**: pypdf, pytesseract, pdf2image, ReportLab
+- **OCR**: Tesseract OCR with Poppler
 
-### Public
-- POST /api/advocates/apply - Submit advocate application
-- GET /api/advocates - List approved advocates
+## Recent Changes
+
+### 2026-03-10
+- **FIXED**: PDF text extraction with OCR fallback for scanned documents
+- Added `pytesseract`, `pdf2image` dependencies
+- Installed `tesseract-ocr`, `poppler-utils` system packages
+- Text-based PDFs: Extracted via pypdf
+- Scanned PDFs: Automatically detected and OCR processed
+
+### Previous Session
+- Implemented Admin Dashboard
+- Implemented Advocate Directory and Application System
+- Implemented AI Case Notes auto-saving
+- Implemented Help Bot
+- Added audio/video file upload support
+- Fixed production CORS issues
+- Modified passcodes to be reusable
 
 ## Known Issues
+- Production CORS issue - RESOLVED (user confirmed)
+- Monolithic codebase needs refactoring (server.py, App.js)
 
-### Production CORS Issue (BLOCKING)
-- Frontend: https://www.thecpspunisher.com
-- Backend: https://case-analyzer-15.emergent.host
-- Issue: CORS headers not being returned in production despite code having proper middleware
-- Resolution: Contact Emergent support - deployment infrastructure issue
-- Preview environment works correctly
+## Upcoming Tasks (Priority Order)
+1. **P0**: Full E2E test of production environment
+2. **P1**: Codebase refactoring - split server.py into routes/
+3. **P1**: Codebase refactoring - split App.js into components/
+4. **P2**: Audio/video transcription and analysis
+5. **P2**: Deepen CourtListener integration
+6. **P2**: Multi-client Attorney Suite
+7. **P2**: Email notification system
+8. **P2**: Streaming responses for slow AI endpoints
 
-## Pending Tasks
+## File Structure
+```
+/app
+├── backend/
+│   ├── routes/         # (To be populated during refactoring)
+│   ├── server.py       # Main backend (monolithic - needs refactoring)
+│   ├── legal_knowledge.py
+│   ├── requirements.txt
+│   └── .env
+└── frontend/
+    ├── public/
+    └── src/
+        ├── components/
+        │   ├── features/ # (To be populated during refactoring)
+        │   └── ui/       # shadcn components
+        ├── App.js        # Main frontend (monolithic - needs refactoring)
+        ├── index.js
+    ├── package.json
+    └── .env
+```
 
-### P0 - Resolve Production CORS
-- Contact Emergent support about CORS headers not being returned
-- Code is correct, deployment isn't picking up changes
-
-### P1 - To Add Admin Emails
-- Add your email to ADMIN_EMAILS list in server.py line ~818 to get admin access
-
-### P2 - Future Features
-- Facebook OAuth (needs credentials)
-- Deeper CourtListener integration
-- Multi-client management for Enterprise
-- Email notifications
-
-## Credentials
-- Passcodes: See list above (20 codes)
-- Admin: admin@thecpspunisher.com, owner@thecpspunisher.com
+## Test Credentials
+- **Test User**: pdftest@test.com / Test123! (Attorney tier)
+- **Enterprise Passcodes**: PUNISHER2024, CPS-WARRIOR-001, etc. (20 reusable codes)

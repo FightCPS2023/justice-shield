@@ -1833,8 +1833,24 @@ function DocumentsTab({ selectedCase }) {
   const fileInputRef = React.useRef(null);
   const folderInputRef = React.useRef(null);
 
-  const ALLOWED_EXTENSIONS = ['.pdf', '.txt', '.png', '.jpg', '.jpeg', '.doc', '.docx'];
-  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  const ALLOWED_EXTENSIONS = ['.pdf', '.txt', '.png', '.jpg', '.jpeg', '.doc', '.docx', '.rtf', '.gif', '.webp', '.heic', '.mp3', '.wav', '.m4a', '.aac', '.ogg', '.mp4', '.mov', '.avi', '.mkv', '.webm'];
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;  // 10MB for documents/images
+  const MAX_MEDIA_SIZE = 50 * 1024 * 1024; // 50MB for audio/video
+
+  // Helper to get icon for file type
+  const getFileIcon = (fileType, category) => {
+    const ext = fileType?.toLowerCase();
+    if (category === 'audio' || ['.mp3', '.wav', '.m4a', '.aac', '.ogg'].includes(ext)) {
+      return <Volume2 className="w-8 h-8 text-purple-500" />;
+    }
+    if (category === 'video' || ['.mp4', '.mov', '.avi', '.mkv', '.webm'].includes(ext)) {
+      return <Play className="w-8 h-8 text-red-500" />;
+    }
+    if (category === 'image' || ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.heic'].includes(ext)) {
+      return <Eye className="w-8 h-8 text-green-500" />;
+    }
+    return <FileText className="w-8 h-8 text-blue-500" />;
+  };
 
   const documentTypes = [
     { id: 'motion_to_dismiss', name: 'Motion to Dismiss' },
@@ -1871,7 +1887,13 @@ function DocumentsTab({ selectedCase }) {
   const validateFile = (file) => {
     const ext = '.' + file.name.split('.').pop().toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(ext)) return `Unsupported type: ${ext}`;
-    if (file.size > MAX_FILE_SIZE) return 'File too large (max 10MB)';
+    
+    // Different size limits for media files
+    const mediaExtensions = ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.mp4', '.mov', '.avi', '.mkv', '.webm'];
+    const maxSize = mediaExtensions.includes(ext) ? MAX_MEDIA_SIZE : MAX_FILE_SIZE;
+    const maxSizeMB = maxSize / (1024 * 1024);
+    
+    if (file.size > maxSize) return `File too large (max ${maxSizeMB}MB)`;
     return null;
   };
 
@@ -2182,7 +2204,7 @@ function DocumentsTab({ selectedCase }) {
                   Upload petitions, safety plans, court orders, letters, or any CPS documents
                 </p>
                 <p className="text-sm text-gray-500 mb-5">
-                  Drag & drop multiple files or entire folders &bull; PDF, TXT, PNG, JPG, DOC, DOCX &bull; Max 10MB each
+                  Drag & drop files or folders • Documents (PDF, DOC, TXT) • Images (JPG, PNG) • Audio (MP3, WAV) • Video (MP4, MOV) • Max 50MB
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-3">
                   <label className="btn-punisher cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors" data-testid="select-files-btn">
@@ -2190,7 +2212,7 @@ function DocumentsTab({ selectedCase }) {
                       ref={fileInputRef}
                       type="file"
                       className="hidden"
-                      accept=".pdf,.txt,.png,.jpg,.jpeg,.doc,.docx"
+                      accept=".pdf,.txt,.png,.jpg,.jpeg,.doc,.docx,.rtf,.gif,.webp,.heic,.mp3,.wav,.m4a,.aac,.ogg,.mp4,.mov,.avi,.mkv,.webm"
                       multiple
                       onChange={(e) => {
                         if (e.target.files.length > 0) handleBatchUpload(e.target.files);
@@ -2318,11 +2340,14 @@ function DocumentsTab({ selectedCase }) {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <FileText className="w-8 h-8 text-blue-500" />
+                        {getFileIcon(doc.file_type, doc.file_category)}
                         <div>
                           <h4 className="font-semibold">{doc.title}</h4>
                           <p className="text-sm text-gray-400">
                             {doc.filename} • {new Date(doc.created_at).toLocaleDateString()}
+                            {doc.file_category && doc.file_category !== 'document' && (
+                              <span className="ml-2 px-2 py-0.5 bg-gray-700 rounded text-xs capitalize">{doc.file_category}</span>
+                            )}
                           </p>
                         </div>
                       </div>
