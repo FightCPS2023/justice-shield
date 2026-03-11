@@ -1522,7 +1522,7 @@ async def create_case(case_data: CaseCreate, current_user: dict = Depends(get_cu
 async def list_cases(current_user: dict = Depends(get_current_user)):
     """List all cases for the current user"""
     cases = []
-    async for case in db.cases.find({"user_id": current_user["user_id"]}):
+    async for case in db.cases.find({"user_id": current_user["user_id"]}).sort("created_at", -1).limit(100):
         case["id"] = case.pop("_id")
         del case["user_id"]
         
@@ -1584,24 +1584,24 @@ async def get_case_summary(case_id: str, current_user: dict = Depends(get_curren
     """Get comprehensive case summary for AI analysis"""
     case = await get_case_with_ownership(case_id, current_user["user_id"])
     
-    # Gather all case data
+    # Gather all case data with limits for performance
     violations = []
-    async for v in db.violations.find({"case_id": case_id}):
+    async for v in db.violations.find({"case_id": case_id}).limit(500):
         v["id"] = v.pop("_id")
         violations.append(v)
     
     timeline = []
-    async for e in db.timeline_events.find({"case_id": case_id}).sort("date", 1):
+    async for e in db.timeline_events.find({"case_id": case_id}).sort("date", 1).limit(500):
         e["id"] = e.pop("_id")
         timeline.append(e)
     
     evidence = []
-    async for e in db.evidence_items.find({"case_id": case_id}):
+    async for e in db.evidence_items.find({"case_id": case_id}).limit(500):
         e["id"] = e.pop("_id")
         evidence.append(e)
     
     strategies = []
-    async for s in db.strategies.find({"case_id": case_id}):
+    async for s in db.strategies.find({"case_id": case_id}).limit(200):
         s["id"] = s.pop("_id")
         strategies.append(s)
     
@@ -1652,7 +1652,7 @@ async def list_documents(case_id: str, current_user: dict = Depends(get_current_
     await get_case_with_ownership(case_id, current_user["user_id"])
     
     docs = []
-    async for doc in db.documents.find({"case_id": case_id}).sort("created_at", -1):
+    async for doc in db.documents.find({"case_id": case_id}).sort("created_at", -1).limit(200):
         doc["id"] = doc.pop("_id")
         docs.append(doc)
     return {"documents": docs}
