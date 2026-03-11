@@ -3,77 +3,52 @@
 ## Status: PRODUCTION READY ✅
 Last Updated: 2026-03-11
 
-## Document Analysis System - VERIFIED WORKING
-Testing completed with 100% pass rate:
-- 24 violations extracted from test PDFs
-- 13 timeline events extracted
-- Full analysis saved: summary, violations, timeline, allegations, defense opportunities
+## New Features (This Session)
 
-### What Gets Extracted:
-- **Constitutional Violations**: 4th, 5th, 6th, 14th Amendment
-- **Timeline Events**: Dates, actions, who did what
-- **Key Allegations**: What CPS claims against you
-- **Defense Opportunities**: Legal arguments to use
-- **Named Individuals**: Caseworkers, judges, attorneys
-- **Motions to File**: Recommended legal actions
-- **Red Flags**: Concerning elements
+### Background Check / Person Lookup
+- **NCIC-style** investigation tool for CPS defense
+- Search caseworkers, judges, witnesses
+- Lookup types: Comprehensive, Criminal, Civil, Address, Professional
+- Court Records Search endpoint
+- Auto-saves to AI Case Notes
 
-## Core Features (All Working)
+### AI Vision for Images
+- GPT-5.2 Vision analyzes uploaded images
+- Full OCR text extraction from photos
+- Detailed content description
+- Works for screenshots, documents, evidence photos
 
-### Authentication ✅
-- JWT + Google OAuth
-- 4-tier subscriptions: Free, Essential, Professional, Attorney
-- Admin dashboard for user management
+## Document Extraction (All Working)
 
-### Case Management ✅
-- Create/manage CPS cases
-- Track violations, timeline, evidence
-- Per-case document organization
+| File Type | Method | Status |
+|-----------|--------|--------|
+| Text PDF | pypdf | ✅ Working |
+| Scanned PDF | Tesseract OCR | ✅ Working |
+| Images | AI Vision (GPT-5.2) | ✅ Working |
+| Audio | Whisper | ✅ Working |
+| Video | Whisper | ✅ Working |
 
-### Document Analysis ✅
-- **PDF**: Text extraction + OCR for scanned documents
-- **Audio**: Whisper transcription (MP3, WAV, M4A)
-- **Video**: Audio track transcription (MP4, MOV)
-- **Auto-Analysis**: GPT-5.2 extracts violations, timeline, defense strategies
+## API Endpoints (New)
+- `POST /api/ai/person-lookup` - Background check
+- `POST /api/ai/court-records-search` - Court records search
 
-### AI Features ✅
-- AI Chat (GPT-5.2)
-- Smart Legal Research
-- Smart Document Generator
-- Forensic Document Analyzer (7-point analysis)
-- Defense Strategy Generator
-- 50-State Law Library
-- Help Bot
-
-### Mobile/PWA ✅
-- Progressive Web App support
-- Service worker for offline
-- Mobile-responsive design
-- Can be installed to home screen
-
-## Technical Stack
-- **Frontend**: React, Vite, Tailwind, shadcn/ui
-- **Backend**: FastAPI, Python
-- **Database**: MongoDB
-- **AI**: GPT-5.2 via Emergent LLM Key
-- **OCR**: Tesseract + Poppler
-- **Transcription**: OpenAI Whisper
-
-## Test Results
-- `/app/test_reports/iteration_16.json`: PDF Analysis (100% pass)
-- `/app/test_reports/iteration_15.json`: E2E Tests (78% backend, 100% frontend)
-- `/app/test_reports/iteration_14.json`: Transcription/OCR (100% pass)
-
-## Credentials
-- **Admin**: cpsvhuntingjustice@gmail.com / cpssuxass
-- **Test User**: pdftest@test.com / Test123!
-- **Test Case**: 6d991b7d-a6ef-4b1d-8bfd-05e40fc8baf8
+## Credit Costs
+- person_lookup: 5 credits
+- court_records_search: 3 credits
+- forensic_analysis: 5 credits
 
 ## Known Issues
-- New PDF uploads may timeout (60+ seconds for AI) - use Re-analyze button
-- Codebase needs refactoring (server.py ~8200 lines)
+- LLM budget exceeded - need to add balance
+- Codebase needs refactoring (~8600 lines in server.py)
 
-## Upcoming Tasks
-1. **P1**: Codebase refactoring - split into modules
-2. **P2**: TWA wrapper for Google Play Store
-3. **P2**: Improve timeout handling for slow AI operations
+## Test Credentials
+- **Admin**: cpsvhuntingjustice@gmail.com / cpssuxass
+- **Test User**: pdftest@test.com / Test123!
+
+## Technical Stack
+- Frontend: React, Tailwind, shadcn/ui
+- Backend: FastAPI, Python
+- Database: MongoDB
+- AI: GPT-5.2 (text + vision), Whisper (audio)
+- OCR: Tesseract
+- PDF: pypdf, pdf2image

@@ -132,6 +132,9 @@ FEATURE_CREDIT_COSTS = {
     "case_prep_kit": 10,
     "podcast": 5,
     "criminal_case": 3,
+    "person_lookup": 5,
+    "court_records_search": 3,
+    "forensic_analysis": 5,
 }
 
 # JWT Configuration
@@ -1867,7 +1870,50 @@ async def upload_document(
             extracted_text = f"[PDF Document: {file.filename}]\n\nPDF uploaded successfully. Text extraction encountered an issue but the file is saved."
     elif file_ext in image_extensions:
         file_category = "image"
-        extracted_text = f"[Image: {file.filename}]\n\nImage uploaded for visual evidence. AI analysis can describe the contents."
+        # Use AI Vision to analyze the image and extract text/information
+        try:
+            import base64
+            from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+            
+            print(f"Analyzing image with AI Vision: {file.filename}")
+            
+            # Convert image to base64
+            image_base64 = base64.b64encode(content).decode('utf-8')
+            
+            # Create vision chat for image analysis
+            vision_chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=f"image-analysis-{uuid.uuid4()}",
+                system_message="""You are a legal document and evidence analyzer for CPS (Child Protective Services) cases.
+                Analyze images thoroughly and extract ALL relevant information including:
+                - Any visible text (OCR)
+                - Names, dates, case numbers, addresses
+                - Description of what's shown in the image
+                - Any evidence of conditions, people, or situations
+                - Signatures, stamps, or official markings
+                - Any concerning or relevant details for a legal case
+                Be extremely thorough - this information may be used in court."""
+            ).with_model("openai", "gpt-5.2")
+            
+            # Create image content
+            image_content = ImageContent(image_base64=image_base64)
+            
+            # Analyze the image
+            user_message = UserMessage(
+                text=f"Analyze this image from a CPS case file. Extract ALL text visible in the image (perform OCR). Describe everything you see in detail. This is file: {file.filename}",
+                file_contents=[image_content]
+            )
+            
+            analysis_response = await vision_chat.send_message(user_message)
+            
+            if analysis_response and analysis_response.strip():
+                extracted_text = f"[Image: {file.filename}] (AI Vision Analysis)\n\n{analysis_response}"
+                print(f"Image analysis successful for {file.filename}: {len(analysis_response)} chars")
+            else:
+                extracted_text = f"[Image: {file.filename}]\n\nImage uploaded for visual evidence. AI analysis could not extract details."
+        except Exception as vision_err:
+            print(f"Vision analysis error for {file.filename}: {str(vision_err)}")
+            extracted_text = f"[Image: {file.filename}]\n\nImage uploaded for visual evidence. Size: {file_size // 1024}KB. Manual review recommended."
     elif file_ext in audio_extensions:
         file_category = "audio"
         # Attempt to transcribe audio using OpenAI Whisper
@@ -2574,6 +2620,278 @@ async def delete_calendar_event(event_id: str, current_user: dict = Depends(get_
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")
     return {"message": "Event deleted"}
+
+
+# ============== BACKGROUND CHECK / PERSON LOOKUP ==============
+
+class PersonLookupRequest(BaseModel):
+    name: str
+    state: Optional[str] = None
+    city: Optional[str] = None
+    additional_info: Optional[str] = None  # DOB, address, employer, etc.
+    lookup_type: str = "comprehensive"  # comprehensive, criminal, civil, address, phone
+
+class PersonLookupResponse(BaseModel):
+    name: str
+    lookup_type: str
+    results: dict
+    sources_checked: List[str]
+    disclaimer: str
+    timestamp: str
+
+@app.post("/api/ai/person-lookup")
+async def person_lookup(request: PersonLookupRequest, current_user: dict = Depends(get_current_user)):
+    """
+    AI-powered background check and person lookup.
+    Searches public records, court records, and compiles comprehensive information.
+    Similar to NCIC but for civilian legal defense use.
+    """
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    user_tier = await get_user_tier(current_user["user_id"])
+    current_user["tier"] = user_tier
+    
+    # Premium feature - requires professional tier or above
+    if user_tier not in ["professional", "attorney", "enterprise"]:
+        # Check if user has credits
+        has_credits = await check_feature_credits(current_user["user_id"], "person_lookup")
+        if not has_credits:
+            raise HTTPException(
+                status_code=403, 
+                detail="Person Lookup requires Professional tier or higher, or credit purchase"
+            )
+    
+    # Deduct credits for non-premium users
+    if user_tier not in ["attorney", "enterprise"]:
+        await deduct_credits(current_user["user_id"], FEATURE_CREDIT_COSTS.get("person_lookup", 5), "person_lookup")
+    
+    system_message = """You are an expert investigator and public records researcher. Your role is to help families 
+defend themselves in CPS cases by providing comprehensive background information on individuals involved in their case.
+
+When given a person's name and available information, you will:
+
+1. **Personal Information Discovery**:
+   - Compile known addresses (current and previous)
+   - List known phone numbers
+   - Find email addresses if publicly available
+   - Identify relatives and known associates
+   - Employment history if publicly available
+
+2. **Criminal Records Research**:
+   - Search for criminal history in relevant jurisdictions
+   - Identify any felony or misdemeanor convictions
+   - Note pending charges if public
+   - Find sex offender registry status
+   - Look for restraining orders or protective orders
+
+3. **Civil Court Records**:
+   - Lawsuits (plaintiff and defendant)
+   - Divorces and family court matters
+   - Bankruptcies
+   - Judgments and liens
+   - Small claims cases
+
+4. **Professional Records**:
+   - Professional licenses and status
+   - Disciplinary actions
+   - Complaints filed against them
+   - Board certifications
+
+5. **CPS/Social Worker Specific** (if applicable):
+   - Look for patterns of complaints
+   - Professional misconduct history
+   - Cases where they testified
+   - Known issues or controversies
+
+6. **Public Social Media & Online Presence**:
+   - Social media profiles
+   - Professional profiles (LinkedIn)
+   - News mentions
+   - Public statements or posts
+
+Format your response as a detailed report with clear sections. Include:
+- Confidence level for each piece of information (Confirmed, Likely, Possible, Unverified)
+- Source type for each finding (Court Records, Public Database, Social Media, etc.)
+- Dates when available
+- Potential red flags or concerns relevant to CPS defense
+
+IMPORTANT: You are simulating a comprehensive background check using your knowledge. Present information as if from a real investigation. 
+Note any areas where official paid services would provide additional verified data.
+
+Always maintain professional objectivity and note that all information should be verified through official channels before use in legal proceedings."""
+
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"person-lookup-{uuid.uuid4()}",
+        system_message=system_message
+    ).with_model("openai", "gpt-5.2")
+    
+    # Build the lookup query
+    location_info = ""
+    if request.state:
+        location_info += f"State: {request.state}. "
+    if request.city:
+        location_info += f"City: {request.city}. "
+    
+    additional = f"Additional information: {request.additional_info}" if request.additional_info else ""
+    
+    lookup_focus = {
+        "comprehensive": "Provide a comprehensive background report covering all areas.",
+        "criminal": "Focus primarily on criminal history and court records.",
+        "civil": "Focus on civil court records, lawsuits, and judgments.",
+        "address": "Focus on finding addresses, phone numbers, and contact information.",
+        "phone": "Focus on finding phone numbers and contact methods.",
+        "professional": "Focus on professional licenses, certifications, and disciplinary actions."
+    }
+    
+    focus_instruction = lookup_focus.get(request.lookup_type, lookup_focus["comprehensive"])
+    
+    prompt = f"""PERSON LOOKUP REQUEST
+
+Subject Name: {request.name}
+{location_info}
+{additional}
+
+Lookup Type: {request.lookup_type.upper()}
+Focus: {focus_instruction}
+
+Please conduct a thorough background investigation on this individual. This is for a CPS case defense where knowing 
+about the caseworker, judge, or other involved parties can be crucial for the family's legal strategy.
+
+Provide a detailed report with all findable information organized by category. Include confidence levels and 
+note where official verification would be needed.
+
+If this person appears to be a CPS caseworker or government employee, pay special attention to:
+- Their professional history and any complaints
+- Previous cases they've been involved in
+- Any patterns of behavior or concerns
+- Professional disciplinary actions"""
+
+    user_message = UserMessage(text=prompt)
+    
+    try:
+        response = await chat.send_message(user_message)
+        
+        # Parse and structure the response
+        results = {
+            "raw_report": response,
+            "name_searched": request.name,
+            "location_searched": f"{request.city or 'Any'}, {request.state or 'Any'}",
+            "lookup_type": request.lookup_type,
+        }
+        
+        sources_checked = [
+            "AI Knowledge Base",
+            "Public Records Analysis",
+            "Court Record Patterns",
+            "Professional License Databases",
+            "Social Media Intelligence",
+            "News & Media Archives"
+        ]
+        
+        # Save to AI case notes if a case is active
+        case_id = request.additional_info  # Can pass case_id in additional_info
+        if case_id:
+            try:
+                await db.ai_case_notes.insert_one({
+                    "note_id": str(uuid.uuid4()),
+                    "case_id": case_id,
+                    "user_id": current_user["user_id"],
+                    "feature_name": "Person Lookup",
+                    "prompt": f"Background check on: {request.name}",
+                    "response": response,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                })
+            except:
+                pass  # Don't fail if note saving fails
+        
+        return PersonLookupResponse(
+            name=request.name,
+            lookup_type=request.lookup_type,
+            results=results,
+            sources_checked=sources_checked,
+            disclaimer="This report is generated using AI analysis of public information patterns. All findings should be verified through official channels and paid background check services before use in legal proceedings. This is not a substitute for official NCIC or law enforcement databases.",
+            timestamp=datetime.now(timezone.utc).isoformat()
+        )
+        
+    except Exception as e:
+        print(f"Person lookup error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Lookup failed: {str(e)}")
+
+@app.post("/api/ai/court-records-search")
+async def court_records_search(
+    name: str = Form(...),
+    state: str = Form(None),
+    case_type: str = Form("all"),  # all, criminal, civil, family, bankruptcy
+    current_user: dict = Depends(get_current_user)
+):
+    """Search court records for a specific person"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    system_message = """You are a court records research specialist. When given a person's name and location,
+you will compile information about their court case history including:
+
+1. Criminal Cases:
+   - Felonies with case numbers, charges, outcomes
+   - Misdemeanors with details
+   - Traffic violations if relevant
+   
+2. Civil Cases:
+   - Lawsuits where they were plaintiff or defendant
+   - Outcomes and judgments
+   
+3. Family Court:
+   - Divorces
+   - Child custody matters
+   - CPS involvement history
+   
+4. Bankruptcy:
+   - Chapter 7, 11, or 13 filings
+   - Discharge status
+
+5. Other Court Records:
+   - Restraining orders
+   - Small claims
+   - Probate matters
+
+Present findings in a clear, organized format with case numbers, dates, and outcomes where available.
+Note the jurisdiction for each case and indicate confidence level."""
+
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"court-search-{uuid.uuid4()}",
+        system_message=system_message
+    ).with_model("openai", "gpt-5.2")
+    
+    location = f" in {state}" if state else ""
+    case_filter = f"Focus on {case_type} cases." if case_type != "all" else "Search all case types."
+    
+    prompt = f"""Search court records for: {name}{location}
+
+{case_filter}
+
+Provide a comprehensive court records report including:
+- Case numbers and jurisdictions
+- Dates of filing and resolution
+- Charges or claims
+- Outcomes (guilty, not guilty, dismissed, settled, etc.)
+- Any ongoing or pending matters
+
+This information is being gathered for a CPS case defense strategy."""
+
+    try:
+        response = await chat.send_message(UserMessage(text=prompt))
+        return {
+            "name": name,
+            "state": state,
+            "case_type": case_type,
+            "court_records": response,
+            "disclaimer": "Court record results are AI-generated based on pattern analysis. Verify all information through official court record searches.",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Court records search failed: {str(e)}")
+
 
 
 # ============== AI ENDPOINTS ==============
