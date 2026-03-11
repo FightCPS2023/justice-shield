@@ -29,7 +29,7 @@ const api = {
     }
   },
   
-  async request(endpoint, options = {}) {
+  async request(endpoint, options = {}, retryCount = 0) {
     const token = this.getToken();
     const headers = {
       'Content-Type': 'application/json',
@@ -37,12 +37,18 @@ const api = {
       ...options.headers,
     };
     
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+    
     try {
       const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers,
-        credentials: 'include',
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
       
       if (response.status === 401) {
         // Token expired or invalid - clear auth and redirect to login
@@ -57,13 +63,26 @@ const api = {
       
       if (!response.ok) {
         const error = await response.json().catch(() => ({ detail: 'Request failed' }));
-        throw new Error(error.detail || 'Request failed');
+        throw new Error(error.detail || `Request failed (${response.status})`);
       }
       
       return response.json();
     } catch (error) {
-      if (error.message === 'Failed to fetch') {
-        throw new Error('Network error. Please check your connection.');
+      clearTimeout(timeoutId);
+      
+      // Retry logic for network errors (max 2 retries)
+      if (retryCount < 2 && (error.name === 'AbortError' || error.message === 'Failed to fetch' || error.message.includes('NetworkError'))) {
+        console.log(`Retrying request (attempt ${retryCount + 2})...`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))); // Exponential backoff
+        return this.request(endpoint, options, retryCount + 1);
+      }
+      
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. Please check your connection and try again.');
+      }
+      if (error.message === 'Failed to fetch' || error.message.includes('NetworkError') || error.message.includes('network')) {
+        console.error('Network error details:', error);
+        throw new Error('Connection error. Please check your internet and try again.');
       }
       throw error;
     }
