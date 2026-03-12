@@ -95,11 +95,84 @@ TIER_LEVELS = {
 }
 
 TIER_FEATURES = {
-    "free": {"docs_per_month": 1, "ai_credits": 5, "cases_max": 1},
-    "essential": {"docs_per_month": 25, "ai_credits": 100, "cases_max": -1},
-    "professional": {"docs_per_month": -1, "ai_credits": 500, "cases_max": -1},
-    "attorney": {"docs_per_month": -1, "ai_credits": 2000, "cases_max": -1},
-    "enterprise": {"docs_per_month": -1, "ai_credits": -1, "cases_max": -1},
+    "free": {
+        "docs_per_month": 1, 
+        "ai_credits": 5, 
+        "cases_max": 1,
+        "features": [
+            "1 Active Case",
+            "5 AI Credits",
+            "1 Document Upload/Month",
+            "Basic AI Chat",
+            "Law Library Access (Limited)"
+        ]
+    },
+    "essential": {
+        "docs_per_month": 25, 
+        "ai_credits": 100, 
+        "cases_max": -1,
+        "features": [
+            "Unlimited Cases",
+            "100 AI Credits/Month",
+            "25 Document Uploads/Month",
+            "AI Chat & Defense Strategy",
+            "Smart Document Generator",
+            "Legal Notepad",
+            "50-State Law Library",
+            "Document Analysis (Basic)"
+        ]
+    },
+    "professional": {
+        "docs_per_month": -1, 
+        "ai_credits": 500, 
+        "cases_max": -1,
+        "features": [
+            "Everything in Essential +",
+            "500 AI Credits/Month",
+            "Unlimited Document Uploads",
+            "Smart Legal Research Engine",
+            "Background Check / Person Lookup",
+            "Court Records Search",
+            "Judge Research & Watch",
+            "ADA Accommodations Tool",
+            "Advanced Document Analysis",
+            "Fraud & Perjury Detection",
+            "Constitutional Violation Finder",
+            "Section 1983 Research"
+        ]
+    },
+    "attorney": {
+        "docs_per_month": -1, 
+        "ai_credits": 2000, 
+        "cases_max": -1,
+        "features": [
+            "Everything in Professional +",
+            "2000 AI Credits/Month",
+            "Case Preparation Kit (PDF Export)",
+            "Criminal Case Defense Prep",
+            "Multi-Client Management",
+            "Priority AI Processing",
+            "Expert Witness Finder",
+            "Section 1983 Lawsuit Builder",
+            "Federal Court Filing Guide",
+            "API Access (Coming Soon)"
+        ]
+    },
+    "enterprise": {
+        "docs_per_month": -1, 
+        "ai_credits": -1, 
+        "cases_max": -1,
+        "features": [
+            "Everything in Attorney +",
+            "Unlimited AI Credits",
+            "White-Label Options",
+            "Dedicated Support",
+            "Custom Integrations",
+            "Team Management",
+            "Analytics Dashboard",
+            "Training & Onboarding"
+        ]
+    },
 }
 
 # Credit packages for a la carte purchases

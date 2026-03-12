@@ -422,55 +422,298 @@ VIOLATION_ANALYSIS = {
 
 SECTION_1983 = {
     "statute": "42 U.S.C. § 1983",
+    "full_text": """Every person who, under color of any statute, ordinance, regulation, custom, or usage, 
+of any State or Territory or the District of Columbia, subjects, or causes to be subjected, any citizen 
+of the United States or other person within the jurisdiction thereof to the deprivation of any rights, 
+privileges, or immunities secured by the Constitution and laws, shall be liable to the party injured in 
+an action at law, suit in equity, or other proper proceeding for redress.""",
+    
     "elements": [
-        "Action under color of state law",
-        "Deprivation of federal constitutional or statutory right",
-        "By a 'person' (individual or local government)",
-        "Resulting in damages"
+        "1. Action UNDER COLOR OF STATE LAW - CPS workers act under state authority",
+        "2. DEPRIVATION of federal constitutional or statutory right",
+        "3. By a 'PERSON' (individual caseworker, supervisor, or local government)",
+        "4. Resulting in actual DAMAGES to the plaintiff"
     ],
-    "defendants": {
-        "individual_capacity": {
-            "description": "Sue caseworker personally for damages",
-            "advantages": ["Can recover compensatory and punitive damages", "No sovereign immunity"],
-            "disadvantages": ["Must overcome qualified immunity", "Personal assets limited"]
-        },
-        "official_capacity": {
-            "description": "Sue for injunctive/declaratory relief only",
-            "note": "Equivalent to suit against agency; no damages against individual"
-        },
-        "monell_liability": {
-            "description": "Sue local government/agency directly",
-            "requirements": [
-                "Constitutional violation occurred",
-                "Violation caused by official policy or custom",
-                "Policy was 'moving force' behind violation"
+    
+    "constitutional_violations_commonly_claimed": {
+        "fourth_amendment": {
+            "name": "Fourth Amendment - Unreasonable Search & Seizure",
+            "violations": [
+                "Warrantless home entry without consent or exigent circumstances",
+                "Warrantless removal of children (seizure)",
+                "Strip searches or medical exams without consent/warrant",
+                "Coerced or deceptive consent to entry",
+                "Remaining in home after consent withdrawn"
             ],
-            "authority": "Monell v. Dept. of Social Services, 436 U.S. 658 (1978)"
+            "key_cases": [
+                "Calabretta v. Floyd, 189 F.3d 808 (9th Cir. 1999) - Warrantless entry violated 4th Amendment",
+                "Wallis v. Spencer, 202 F.3d 1126 (9th Cir. 2000) - Strip searches of children unconstitutional",
+                "Gates v. Texas Dept. of Protective Services, 537 F.3d 404 (5th Cir. 2008)",
+                "Camara v. Municipal Court, 387 U.S. 523 (1967) - Home is constitutionally protected"
+            ]
+        },
+        "fourteenth_amendment_substantive": {
+            "name": "Fourteenth Amendment - Substantive Due Process",
+            "violations": [
+                "Interference with fundamental right to family integrity",
+                "Removal without imminent danger",
+                "False allegations to justify removal",
+                "Fabrication of evidence",
+                "Shock-the-conscience conduct"
+            ],
+            "key_cases": [
+                "Troxel v. Granville, 530 U.S. 57 (2000) - Parents have fundamental liberty interest",
+                "Stanley v. Illinois, 405 U.S. 645 (1972) - Fundamental right to parent",
+                "Duchesne v. Sugarman, 566 F.2d 817 (2d Cir. 1977) - Wrongful removal violates due process"
+            ]
+        },
+        "fourteenth_amendment_procedural": {
+            "name": "Fourteenth Amendment - Procedural Due Process",
+            "violations": [
+                "Removal without pre-deprivation hearing",
+                "Inadequate notice of allegations",
+                "No opportunity to respond before removal",
+                "Ex parte orders without justification",
+                "Denial of meaningful hearing"
+            ],
+            "key_cases": [
+                "Santosky v. Kramer, 455 U.S. 745 (1982) - Clear and convincing evidence required for TPR",
+                "Lassiter v. Dept. of Social Services, 452 U.S. 18 (1981) - Right to counsel may be required",
+                "Mathews v. Eldridge, 424 U.S. 319 (1976) - Three-factor test for procedural due process"
+            ]
+        },
+        "first_amendment": {
+            "name": "First Amendment - Religion & Expression",
+            "violations": [
+                "Removal based on religious practices",
+                "Discrimination against homeschooling",
+                "Retaliation for exercising free speech",
+                "Religious bias in placement decisions"
+            ],
+            "key_cases": [
+                "Wisconsin v. Yoder, 406 U.S. 205 (1972) - Religious liberty in education"
+            ]
         }
     },
-    "damages": {
-        "compensatory": "Actual damages suffered (emotional distress, lost wages, medical expenses)",
-        "punitive": "Available against individuals acting with reckless disregard for rights",
-        "nominal": "$1 when violation proven but no actual damages",
-        "attorney_fees": "Prevailing plaintiff entitled to reasonable fees under 42 U.S.C. § 1988"
+    
+    "defendants": {
+        "individual_capacity": {
+            "description": "Sue the caseworker, supervisor, or official PERSONALLY for damages",
+            "what_you_can_recover": ["Compensatory damages", "Punitive damages", "Attorney fees"],
+            "advantages": [
+                "Can recover compensatory damages (emotional distress, lost income)",
+                "Can recover PUNITIVE damages if conduct was malicious/reckless",
+                "No Eleventh Amendment immunity"
+            ],
+            "challenges": ["Must overcome QUALIFIED IMMUNITY defense"],
+            "strategy": "Name the specific caseworker, their supervisor, and any officials who approved the actions"
+        },
+        "official_capacity": {
+            "description": "Equivalent to suing the government agency",
+            "what_you_can_recover": ["Injunctive relief (stop the conduct)", "Declaratory relief"],
+            "limitations": "NO monetary damages against individuals in official capacity",
+            "when_to_use": "When seeking court order to return children or stop ongoing violations"
+        },
+        "monell_liability": {
+            "description": "Sue the COUNTY or LOCAL AGENCY directly (not the state)",
+            "requirements": [
+                "A constitutional violation occurred",
+                "Violation was caused by an OFFICIAL POLICY or CUSTOM",
+                "The policy was the 'MOVING FORCE' behind the violation"
+            ],
+            "policies_that_count": [
+                "Written policies that violate rights",
+                "Widespread practices even if unwritten",
+                "Failure to train when need is obvious",
+                "Deliberate indifference to constitutional violations"
+            ],
+            "authority": "Monell v. Dept. of Social Services, 436 U.S. 658 (1978)",
+            "note": "States and state agencies have Eleventh Amendment immunity - sue COUNTIES instead"
+        }
     },
+    
+    "damages_recoverable": {
+        "compensatory": {
+            "description": "Actual damages suffered",
+            "categories": [
+                "Emotional distress and mental anguish",
+                "Damage to parent-child relationship",
+                "Lost wages (time off work for hearings, etc.)",
+                "Medical/therapy expenses",
+                "Reputation damage",
+                "Humiliation and embarrassment"
+            ],
+            "note": "Emotional distress alone can support substantial damages in family separation cases"
+        },
+        "punitive": {
+            "description": "Punishment for especially egregious conduct",
+            "requirements": "Defendant acted with reckless or callous indifference to rights, or with evil motive",
+            "available_against": "Individual defendants only (not government entities)"
+        },
+        "nominal": {
+            "description": "$1 when violation proven but no actual damages",
+            "importance": "Establishes the violation occurred and entitles you to attorney fees"
+        },
+        "attorney_fees": {
+            "statute": "42 U.S.C. § 1988",
+            "rule": "Prevailing plaintiff is entitled to reasonable attorney fees",
+            "note": "This makes contingency representation possible for civil rights cases"
+        }
+    },
+    
     "qualified_immunity": {
-        "test": [
-            "Did defendant violate a constitutional right?",
-            "Was the right 'clearly established' at the time?"
+        "what_it_is": "A defense that shields government officials from liability unless they violated 'clearly established' law",
+        "two_prong_test": [
+            "PRONG 1: Did the defendant violate a constitutional right?",
+            "PRONG 2: Was the right 'CLEARLY ESTABLISHED' at the time of the conduct?"
         ],
         "clearly_established_means": [
-            "Existing precedent with similar facts",
-            "Obvious case under established principles",
-            "Reasonable official would know conduct unconstitutional"
+            "Existing court precedent with SIMILAR facts (not identical)",
+            "The violation was so obvious that any reasonable official would know",
+            "No need for a case with exact same facts - just 'fair warning'"
         ],
-        "cases_defeating_immunity_for_cps": [
-            "Calabretta v. Floyd - warrantless home entry",
-            "Wallis v. Spencer - strip searches",
-            "Duchesne v. Sugarman - wrongful removal",
-            "Devereaux v. Abbey - fabricated evidence"
+        "how_to_defeat_qualified_immunity": [
+            "Cite cases from YOUR circuit with similar facts",
+            "Argue the violation was obvious under general constitutional principles",
+            "Show pattern of similar misconduct (no good faith defense)",
+            "Demonstrate intentional violation of known rights",
+            "Use Supreme Court cases establishing the underlying right"
+        ],
+        "cases_where_qualified_immunity_defeated_for_cps": [
+            {
+                "case": "Calabretta v. Floyd, 189 F.3d 808 (9th Cir. 1999)",
+                "facts": "CPS and police entered home without warrant based on anonymous tip",
+                "holding": "Qualified immunity DENIED - clearly established that warrantless entry requires warrant, consent, or exigent circumstances"
+            },
+            {
+                "case": "Wallis v. Spencer, 202 F.3d 1126 (9th Cir. 2000)",
+                "facts": "Children strip-searched and subjected to intrusive exams without warrant",
+                "holding": "Qualified immunity DENIED - clearly established that strip searches of children require warrant"
+            },
+            {
+                "case": "Duchesne v. Sugarman, 566 F.2d 817 (2d Cir. 1977)",
+                "facts": "Children removed without emergency circumstances",
+                "holding": "Clearly established that removal requires imminent danger or court order"
+            },
+            {
+                "case": "Devereaux v. Abbey, 263 F.3d 1070 (9th Cir. 2001)",
+                "facts": "Caseworker fabricated evidence in abuse investigation",
+                "holding": "Qualified immunity DENIED - deliberately fabricating evidence violates clearly established due process rights"
+            },
+            {
+                "case": "Rogers v. County of San Joaquin, 487 F.3d 1288 (9th Cir. 2007)",
+                "facts": "Caseworkers provided false information to obtain removal order",
+                "holding": "Qualified immunity may be denied for knowingly false statements"
+            }
+        ],
+        "recent_developments_2024_2025": [
+            {
+                "case": "Bambach v. Moegle (6th Cir. Feb. 2024)",
+                "holding": "CPS workers received qualified immunity for temporarily retaining children after initial consent",
+                "lesson": "Document the EXACT moment consent is withdrawn"
+            },
+            {
+                "note": "Supreme Court petition filed 2025 questioning qualified immunity for CPS workers",
+                "status": "Circuit split exists on how to apply qualified immunity in CPS cases"
+            },
+            {
+                "trend": "Courts increasingly scrutinizing CPS claims of qualified immunity",
+                "strategy": "Build strong record of clearly established violations in your circuit"
+            }
         ]
-    }
+    },
+    
+    "rooker_feldman_doctrine": {
+        "what_it_is": "Federal courts cannot review state court judgments - your Section 1983 case may be dismissed if it looks like you're appealing a state court decision",
+        "how_to_avoid_dismissal": [
+            "Challenge the CONDUCT of caseworkers, not the state court's DECISION",
+            "File BEFORE the state case is final if possible",
+            "Focus on constitutional violations that occurred INDEPENDENT of court proceedings",
+            "Sue for actions taken OUTSIDE of court (investigations, interviews, removals)",
+            "Seek damages for the PROCESS used, not the outcome"
+        ],
+        "safe_claims": [
+            "Warrantless entry (happened before any court involvement)",
+            "Coerced statements (conduct of investigation)",
+            "Fabricated evidence (even if used in court, the fabrication is the wrong)",
+            "Failure to investigate exculpatory evidence"
+        ],
+        "risky_claims": [
+            "The state court got it wrong",
+            "Challenging the custody decision itself",
+            "Seeking return of children through federal court"
+        ]
+    },
+    
+    "statute_of_limitations": {
+        "general_rule": "Borrows from state personal injury statute - typically 2-3 years",
+        "when_it_starts": "When plaintiff knew or should have known of the violation",
+        "tolling_for_minors": "Clock may not start until child reaches 18",
+        "continuing_violation": "Each day of wrongful separation may be new violation",
+        "important": "Check YOUR state's personal injury statute of limitations"
+    },
+    
+    "filing_strategy": {
+        "where_to_file": "Federal district court (preferred) or state court",
+        "why_federal": [
+            "Federal judges more familiar with constitutional issues",
+            "Federal Rules of Civil Procedure often more favorable",
+            "Jury pools may be more diverse"
+        ],
+        "complaint_requirements": [
+            "Identify all defendants by name and position",
+            "State claims under 42 U.S.C. § 1983",
+            "Identify specific constitutional rights violated",
+            "Allege facts showing defendants acted under color of state law",
+            "Allege facts showing how each defendant was personally involved",
+            "Request specific relief (damages, injunction, attorney fees)"
+        ],
+        "discovery_opportunities": [
+            "Subpoena CPS records and internal communications",
+            "Depose caseworkers under oath",
+            "Request training records (for Monell claims)",
+            "Request complaint history of caseworker",
+            "Request policies and procedures"
+        ]
+    },
+    
+    "practical_steps_to_file_section_1983": [
+        {
+            "step": 1,
+            "action": "DOCUMENT EVERYTHING",
+            "details": "Keep detailed records of all interactions with CPS, including dates, times, names, and what was said"
+        },
+        {
+            "step": 2,
+            "action": "IDENTIFY THE VIOLATIONS",
+            "details": "Use this guide to identify which constitutional rights were violated"
+        },
+        {
+            "step": 3,
+            "action": "IDENTIFY THE DEFENDANTS",
+            "details": "Name specific caseworkers, supervisors, and the county/agency"
+        },
+        {
+            "step": 4,
+            "action": "RESEARCH YOUR CIRCUIT'S CASE LAW",
+            "details": "Find cases in your federal circuit with similar facts where qualified immunity was denied"
+        },
+        {
+            "step": 5,
+            "action": "CONSULT A CIVIL RIGHTS ATTORNEY",
+            "details": "Section 1983 cases are complex - find an attorney experienced in civil rights litigation"
+        },
+        {
+            "step": 6,
+            "action": "FILE COMPLAINT IN FEDERAL COURT",
+            "details": "Ensure complaint is detailed enough to survive motion to dismiss"
+        },
+        {
+            "step": 7,
+            "action": "PREPARE FOR QUALIFIED IMMUNITY MOTION",
+            "details": "Defendants will almost always raise this - be ready with case law"
+        }
+    ]
 }
 
 # ============================================================================
