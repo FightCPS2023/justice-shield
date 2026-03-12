@@ -406,10 +406,36 @@ function AuthPage({ onNavigate }) {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const [retryCount, setRetryCount] = useState(0);
+  const [connectionStatus, setConnectionStatus] = useState('checking');
   const { login, signup } = useAuth();
+
+  // Test connection on mount
+  useEffect(() => {
+    const testConnection = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/health`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (response.ok) {
+          setConnectionStatus('connected');
+        } else {
+          setConnectionStatus('error');
+        }
+      } catch (e) {
+        console.error('Connection test failed:', e);
+        setConnectionStatus('error');
+      }
+    };
+    testConnection();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (connectionStatus === 'error') {
+      setErrorMessage('Cannot connect to server. Please check your internet connection and try again.');
+      return;
+    }
     setLoading(true);
     setErrorMessage('');
     try {
@@ -422,17 +448,31 @@ function AuthPage({ onNavigate }) {
     } catch (error) {
       const msg = error.message || 'An error occurred';
       setErrorMessage(msg);
-      if (msg.includes('network') || msg.includes('connection') || msg.includes('timeout')) {
+      if (msg.includes('network') || msg.includes('connection') || msg.includes('timeout') || msg.includes('fetch')) {
         setRetryCount(prev => prev + 1);
+        setConnectionStatus('error');
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRetry = () => {
+  const handleRetry = async () => {
     setErrorMessage('');
-    handleSubmit(new Event('submit'));
+    setConnectionStatus('checking');
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/health`);
+      if (response.ok) {
+        setConnectionStatus('connected');
+        handleSubmit(new Event('submit'));
+      } else {
+        setConnectionStatus('error');
+        setErrorMessage('Still cannot connect. Please try again in a moment.');
+      }
+    } catch (e) {
+      setConnectionStatus('error');
+      setErrorMessage('Connection failed. Please check your internet.');
+    }
   };
 
   // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
@@ -454,6 +494,24 @@ function AuthPage({ onNavigate }) {
           <p className="text-gray-400 mt-2">
             {isLogin ? 'Sign in to continue your fight' : 'Create your account to fight back'}
           </p>
+          {/* Connection Status Indicator */}
+          <div className="mt-2 flex items-center justify-center gap-2 text-sm">
+            {connectionStatus === 'checking' && (
+              <span className="text-yellow-500 flex items-center gap-1">
+                <Loader2 className="w-3 h-3 animate-spin" /> Connecting...
+              </span>
+            )}
+            {connectionStatus === 'connected' && (
+              <span className="text-green-500 flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" /> Connected
+              </span>
+            )}
+            {connectionStatus === 'error' && (
+              <span className="text-red-500 flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3" /> Connection Issue
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Google Sign In Button */}
