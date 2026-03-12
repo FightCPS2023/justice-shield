@@ -404,22 +404,35 @@ function AuthPage({ onNavigate }) {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [errorMessage, setErrorMessage] = useState('');
+  const [retryCount, setRetryCount] = useState(0);
   const { login, signup } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage('');
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
       } else {
         await signup(formData.name, formData.email, formData.password);
       }
+      setRetryCount(0);
     } catch (error) {
-      // Error handled in context
+      const msg = error.message || 'An error occurred';
+      setErrorMessage(msg);
+      if (msg.includes('network') || msg.includes('connection') || msg.includes('timeout')) {
+        setRetryCount(prev => prev + 1);
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRetry = () => {
+    setErrorMessage('');
+    handleSubmit(new Event('submit'));
   };
 
   // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
@@ -509,6 +522,22 @@ function AuthPage({ onNavigate }) {
               data-testid="password-input"
             />
           </div>
+
+          {/* Error message with retry */}
+          {errorMessage && (
+            <div className="bg-red-900/30 border border-red-800 rounded-lg p-4">
+              <p className="text-red-400 text-sm mb-2">{errorMessage}</p>
+              {(errorMessage.includes('network') || errorMessage.includes('connection') || errorMessage.includes('timeout')) && (
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="text-sm bg-red-600 hover:bg-red-700 px-3 py-1 rounded flex items-center gap-1"
+                >
+                  <RefreshCw className="w-4 h-4" /> Try Again
+                </button>
+              )}
+            </div>
+          )}
 
           <button
             type="submit"
