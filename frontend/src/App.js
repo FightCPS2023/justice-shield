@@ -571,7 +571,10 @@ function Dashboard({ onNavigate }) {
         ]);
         setCases(casesData.cases || []);
         setPrefetchedData({ tierStatus: tierData, creditBalance: creditsData });
-        setIsAdmin(adminCheck !== null && !adminCheck.detail);
+        // Admin check: if we got stats back (has total_users), user is admin
+        const isAdminUser = adminCheck && typeof adminCheck.total_users === 'number';
+        setIsAdmin(isAdminUser);
+        console.log('Admin check result:', isAdminUser, adminCheck);
       } catch (error) {
         console.error('Prefetch error:', error);
       } finally {

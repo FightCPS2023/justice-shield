@@ -1995,80 +1995,238 @@ async def upload_document(
 
 async def analyze_uploaded_document(doc_id: str, case_id: str, case: dict, content: str, filename: str, user_id: str):
     """
-    Comprehensive AI analysis of uploaded document.
-    Extracts violations, timeline events, and provides defense recommendations.
+    THE CPS PUNISHER - ULTIMATE Document Analysis Engine
+    The most comprehensive AI legal analyst for Child Protective Services cases.
+    Detects fraud, perjury, constitutional violations, procedural errors, and more.
     """
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
     state = case.get("state", "Unknown")
     
-    system_message = f"""You are THE CPS PUNISHER - an expert AI legal analyst specializing in Child Protective Services cases.
+    system_message = f"""You are THE CPS PUNISHER LEGAL AI - the most advanced and aggressive AI legal analyst 
+ever created for Child Protective Services defense. You are a virtual team of:
+- A constitutional law expert
+- A family law attorney 
+- A forensic document analyst
+- A fraud investigator
+- A civil rights advocate
 
-You are analyzing a document uploaded by a parent fighting CPS in {state}.
+You are analyzing a document for a family fighting CPS in {state}.
 
-Your job is to:
-1. THOROUGHLY analyze this document for ANY and ALL potential violations
-2. Extract EVERY date, event, and action mentioned
-3. Identify defense opportunities and weaknesses in CPS's case
-4. Provide actionable recommendations
+YOUR MISSION: TEAR THIS DOCUMENT APART. Find EVERY issue, EVERY violation, EVERY lie, EVERY procedural error.
+Families are being destroyed by corrupt and incompetent CPS systems. Your analysis could save children from 
+wrongful removal or reunite a family.
 
-Be AGGRESSIVE in identifying violations - if there's even a possibility of a violation, flag it.
-CPS agencies routinely violate constitutional rights and procedures. Help this parent fight back.
+## WHAT YOU MUST DETECT AND FLAG:
 
-IMPORTANT: Respond in valid JSON format with the following structure:
+### FRAUD & PERJURY
+- False statements of fact
+- Misrepresentation of evidence
+- Fabricated allegations
+- Doctored or altered documents
+- Statements contradicted by evidence
+- Exaggerations presented as fact
+- Omission of exculpatory evidence
+- Cherry-picked facts that mislead
+
+### CONSTITUTIONAL VIOLATIONS
+- **4th Amendment**: Warrantless entry, illegal search, seizure without probable cause, coerced consent
+- **5th Amendment**: Self-incrimination, statements obtained through deception, Miranda-like issues
+- **6th Amendment**: Denied right to counsel, no notification of hearing rights
+- **14th Amendment**: Due process violations, equal protection issues, liberty interest violations
+- **1st Amendment**: Religious discrimination, freedom of expression issues
+
+### PROCEDURAL VIOLATIONS
+- Failed to provide written notice
+- Missed mandatory timelines (24hr, 48hr, 72hr rules)
+- No reasonable efforts finding before removal
+- Emergency removal without true emergency
+- Failed to consider kinship placement first
+- No safety plan offered before removal
+- Inadequate investigation (one-sided, no father contact, etc.)
+- Failed to interview children properly
+- Coerced statements from children
+
+### EVIDENTIARY ISSUES
+- Hearsay relied upon as fact
+- Anonymous allegations treated as credible
+- No corroborating evidence
+- Expert opinions without qualification
+- Medical diagnoses without examination
+- Conclusions without factual basis
+- Speculation presented as assessment
+
+### FEDERAL LAW VIOLATIONS
+- **ASFA** (Adoption and Safe Families Act) timeline violations
+- **CAPTA** (Child Abuse Prevention and Treatment Act) requirements not met
+- **ICWA** (Indian Child Welfare Act) violations for Native families
+- **ADA** (Americans with Disabilities Act) discrimination
+- **Title VI** civil rights violations
+
+### AGENCY MISCONDUCT
+- Caseworker bias or prejudice
+- Conflict of interest
+- Retaliation for exercising rights
+- Intimidation or threats
+- Failure to follow agency policy
+- Inadequate supervision
+- Pattern of similar misconduct
+
+### DOCUMENT-SPECIFIC ISSUES
+- Inconsistencies within the document
+- Contradictions with other documents
+- Missing required signatures or dates
+- Incorrect legal citations
+- Improper service of documents
+- Backdated entries
+- Unsigned declarations
+
+## HOW TO EXPLAIN ISSUES:
+
+For EACH issue found, provide:
+1. **What was found**: The specific problematic statement/action
+2. **Why it's wrong**: The legal/factual basis for the violation
+3. **How it applies to this case**: Specific impact on this family
+4. **How to challenge it**: Defense strategy or motion to file
+5. **Severity**: How damaging this is to CPS's case
+
+## OUTPUT FORMAT (JSON):
+
 {{
-    "summary": "Brief 2-3 sentence summary of the document",
-    "document_type": "Type of CPS document (petition, safety plan, court order, letter, report, etc.)",
-    "key_allegations": ["List of allegations made against the parent"],
-    "violations": [
+    "summary": "2-3 sentence overview of this document and its most critical issues",
+    "document_type": "petition/safety_plan/court_order/report/letter/assessment/other",
+    "overall_assessment": "HIGHLY PROBLEMATIC / PROBLEMATIC / CONCERNING / STANDARD",
+    "credibility_score": 1-10 (10 = appears legitimate, 1 = full of problems),
+    
+    "fraud_and_perjury": [
         {{
-            "type": "violation_type_code",
-            "description": "Detailed description of the violation",
-            "severity": "high/medium/low",
-            "legal_basis": "Constitutional amendment or statute violated",
-            "defense_strategy": "How to challenge this"
+            "finding": "Exact quote or description of fraudulent/perjurious statement",
+            "explanation": "Why this is fraud/perjury",
+            "evidence_contradiction": "How this contradicts facts/evidence",
+            "legal_consequence": "Perjury charges, case dismissal, sanctions, etc.",
+            "severity": "critical/high/medium"
         }}
     ],
+    
+    "constitutional_violations": [
+        {{
+            "amendment": "4th/5th/6th/14th/1st",
+            "violation_type": "specific type (warrantless entry, etc.)",
+            "description": "Detailed description of what happened",
+            "legal_basis": "Case law or statute supporting this violation",
+            "defense_strategy": "Motion to suppress, dismiss, etc.",
+            "severity": "critical/high/medium"
+        }}
+    ],
+    
+    "procedural_violations": [
+        {{
+            "procedure_violated": "Name of procedure/policy",
+            "description": "What they failed to do",
+            "legal_requirement": "What law requires this procedure",
+            "impact_on_case": "How this affects the family's rights",
+            "remedy": "What relief to seek",
+            "severity": "critical/high/medium"
+        }}
+    ],
+    
+    "evidentiary_issues": [
+        {{
+            "issue_type": "hearsay/speculation/no_foundation/etc.",
+            "problematic_statement": "The specific statement",
+            "why_inadmissible": "Evidentiary rule violated",
+            "challenge_strategy": "Motion in limine, objection basis",
+            "severity": "high/medium/low"
+        }}
+    ],
+    
+    "federal_law_violations": [
+        {{
+            "statute": "ASFA/CAPTA/ICWA/ADA/Title VI",
+            "specific_violation": "What requirement was violated",
+            "description": "Details of the violation",
+            "remedy": "Federal complaint, dismissal motion, etc.",
+            "severity": "critical/high/medium"
+        }}
+    ],
+    
+    "caseworker_misconduct": [
+        {{
+            "caseworker_name": "Name if mentioned",
+            "misconduct_type": "bias/coercion/retaliation/etc.",
+            "description": "What they did wrong",
+            "evidence": "How we know this from the document",
+            "complaint_basis": "Grounds for formal complaint",
+            "severity": "critical/high/medium"
+        }}
+    ],
+    
+    "key_allegations": [
+        {{
+            "allegation": "The specific allegation",
+            "basis": "What evidence (if any) supports it",
+            "weaknesses": "Problems with this allegation",
+            "defense": "How to refute this"
+        }}
+    ],
+    
     "timeline_events": [
         {{
-            "date": "YYYY-MM-DD or approximate",
+            "date": "YYYY-MM-DD or description",
             "event": "What happened",
-            "significance": "Legal significance",
+            "legal_significance": "Why this matters legally",
+            "deadline_triggered": "Any statutory deadline this triggers",
             "actors": ["People involved"]
         }}
     ],
-    "deadlines": ["Any deadlines mentioned with dates"],
+    
     "named_individuals": [
         {{
-            "name": "Person's name",
-            "role": "Their role (caseworker, judge, etc.)",
-            "actions": "What they did"
+            "name": "Full name",
+            "role": "caseworker/supervisor/judge/attorney/witness/etc.",
+            "actions_described": "What they did per this document",
+            "potential_issues": "Any misconduct or problems with their actions"
         }}
     ],
-    "defense_opportunities": ["Specific defense arguments available"],
-    "recommended_actions": ["Immediate steps the parent should take"],
-    "motions_to_consider": ["Legal motions that could be filed"],
-    "red_flags": ["Concerning elements in the document"],
-    "strengths_for_defense": ["Elements that help the parent's case"]
+    
+    "defense_opportunities": [
+        {{
+            "opportunity": "Specific defense argument or strategy",
+            "legal_basis": "Law or precedent supporting this",
+            "likelihood_of_success": "strong/moderate/worth_trying",
+            "how_to_execute": "Steps to pursue this defense"
+        }}
+    ],
+    
+    "motions_to_file": [
+        {{
+            "motion_type": "dismiss/suppress/continuance/etc.",
+            "basis": "Grounds for the motion",
+            "urgency": "immediate/soon/when_appropriate",
+            "likelihood_of_success": "strong/moderate/possible"
+        }}
+    ],
+    
+    "questions_to_investigate": [
+        "Things that need more information or investigation"
+    ],
+    
+    "recommended_immediate_actions": [
+        "Urgent steps the family should take NOW"
+    ],
+    
+    "case_notes_to_add": [
+        {{
+            "note_title": "Brief title",
+            "note_content": "Detailed note to add to case file",
+            "importance": "critical/high/medium"
+        }}
+    ]
 }}
 
-Violation type codes to use:
-- fourth_amendment: Illegal search/seizure, warrantless entry
-- fourteenth_amendment: Due process violations
-- fifth_amendment: Self-incrimination issues
-- sixth_amendment: Right to counsel violations
-- first_amendment: Religious/speech freedom issues
-- no_written_notice: Failed to provide proper notice
-- improper_investigation: Investigation procedure violations
-- missed_deadlines: CPS missed legal deadlines
-- no_reasonable_efforts: Failed to make reasonable efforts
-- falsified_reports: False or misleading statements
-- hearsay_evidence: Reliance on hearsay
-- biased_investigation: One-sided investigation
-- denied_visitation: Improper visitation denial
-- icwa_violation: Indian Child Welfare Act violation
-- asfa_violation: ASFA timeline violation
-- capta_violation: CAPTA requirement violation"""
+REMEMBER: Be AGGRESSIVE. If there's ANY possibility of a violation, FLAG IT. 
+This family's children may be at stake. Leave no stone unturned.
+Find the FRAUD. Expose the LIES. Reveal the VIOLATIONS."""
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -2098,10 +2256,143 @@ Provide your complete analysis in JSON format. Be thorough - this parent's famil
     except json.JSONDecodeError:
         analysis_data = {"raw_analysis": response}
     
-    # Auto-create violations in the database
+    # Auto-create violations in the database from ALL violation categories
     created_violations = []
+    
+    # Process constitutional violations
+    if "constitutional_violations" in analysis_data and isinstance(analysis_data["constitutional_violations"], list):
+        for v in analysis_data["constitutional_violations"][:10]:
+            if isinstance(v, dict):
+                violation_id = str(uuid.uuid4())
+                violation_doc = {
+                    "_id": violation_id,
+                    "case_id": case_id,
+                    "user_id": user_id,
+                    "violation_type": f"{v.get('amendment', 'constitutional')}_amendment",
+                    "violation_category": "constitutional",
+                    "description": f"{v.get('violation_type', '')}: {v.get('description', '')}",
+                    "severity": v.get("severity", "high"),
+                    "statute_reference": v.get("legal_basis", ""),
+                    "defense_strategy": v.get("defense_strategy", ""),
+                    "source": f"AI Analysis of {filename}",
+                    "auto_extracted": True,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.violations.insert_one(violation_doc)
+                created_violations.append(violation_id)
+    
+    # Process fraud and perjury findings
+    if "fraud_and_perjury" in analysis_data and isinstance(analysis_data["fraud_and_perjury"], list):
+        for v in analysis_data["fraud_and_perjury"][:10]:
+            if isinstance(v, dict):
+                violation_id = str(uuid.uuid4())
+                violation_doc = {
+                    "_id": violation_id,
+                    "case_id": case_id,
+                    "user_id": user_id,
+                    "violation_type": "fraud_perjury",
+                    "violation_category": "fraud",
+                    "description": f"FRAUD/PERJURY: {v.get('finding', '')} - {v.get('explanation', '')}",
+                    "severity": v.get("severity", "critical"),
+                    "evidence_contradiction": v.get("evidence_contradiction", ""),
+                    "legal_consequence": v.get("legal_consequence", ""),
+                    "source": f"AI Analysis of {filename}",
+                    "auto_extracted": True,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.violations.insert_one(violation_doc)
+                created_violations.append(violation_id)
+    
+    # Process procedural violations
+    if "procedural_violations" in analysis_data and isinstance(analysis_data["procedural_violations"], list):
+        for v in analysis_data["procedural_violations"][:10]:
+            if isinstance(v, dict):
+                violation_id = str(uuid.uuid4())
+                violation_doc = {
+                    "_id": violation_id,
+                    "case_id": case_id,
+                    "user_id": user_id,
+                    "violation_type": "procedural_violation",
+                    "violation_category": "procedural",
+                    "description": f"{v.get('procedure_violated', '')}: {v.get('description', '')}",
+                    "severity": v.get("severity", "high"),
+                    "statute_reference": v.get("legal_requirement", ""),
+                    "impact": v.get("impact_on_case", ""),
+                    "remedy": v.get("remedy", ""),
+                    "source": f"AI Analysis of {filename}",
+                    "auto_extracted": True,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.violations.insert_one(violation_doc)
+                created_violations.append(violation_id)
+    
+    # Process federal law violations
+    if "federal_law_violations" in analysis_data and isinstance(analysis_data["federal_law_violations"], list):
+        for v in analysis_data["federal_law_violations"][:10]:
+            if isinstance(v, dict):
+                violation_id = str(uuid.uuid4())
+                violation_doc = {
+                    "_id": violation_id,
+                    "case_id": case_id,
+                    "user_id": user_id,
+                    "violation_type": f"{v.get('statute', 'federal').lower()}_violation",
+                    "violation_category": "federal_law",
+                    "description": f"{v.get('statute', 'Federal')}: {v.get('specific_violation', '')} - {v.get('description', '')}",
+                    "severity": v.get("severity", "critical"),
+                    "remedy": v.get("remedy", ""),
+                    "source": f"AI Analysis of {filename}",
+                    "auto_extracted": True,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.violations.insert_one(violation_doc)
+                created_violations.append(violation_id)
+    
+    # Process caseworker misconduct
+    if "caseworker_misconduct" in analysis_data and isinstance(analysis_data["caseworker_misconduct"], list):
+        for v in analysis_data["caseworker_misconduct"][:10]:
+            if isinstance(v, dict):
+                violation_id = str(uuid.uuid4())
+                violation_doc = {
+                    "_id": violation_id,
+                    "case_id": case_id,
+                    "user_id": user_id,
+                    "violation_type": "caseworker_misconduct",
+                    "violation_category": "misconduct",
+                    "description": f"Caseworker {v.get('caseworker_name', 'Unknown')}: {v.get('misconduct_type', '')} - {v.get('description', '')}",
+                    "severity": v.get("severity", "high"),
+                    "evidence": v.get("evidence", ""),
+                    "complaint_basis": v.get("complaint_basis", ""),
+                    "source": f"AI Analysis of {filename}",
+                    "auto_extracted": True,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.violations.insert_one(violation_doc)
+                created_violations.append(violation_id)
+    
+    # Process evidentiary issues
+    if "evidentiary_issues" in analysis_data and isinstance(analysis_data["evidentiary_issues"], list):
+        for v in analysis_data["evidentiary_issues"][:10]:
+            if isinstance(v, dict):
+                violation_id = str(uuid.uuid4())
+                violation_doc = {
+                    "_id": violation_id,
+                    "case_id": case_id,
+                    "user_id": user_id,
+                    "violation_type": f"evidentiary_{v.get('issue_type', 'issue')}",
+                    "violation_category": "evidentiary",
+                    "description": f"{v.get('issue_type', 'Evidence Issue')}: {v.get('problematic_statement', '')} - {v.get('why_inadmissible', '')}",
+                    "severity": v.get("severity", "medium"),
+                    "challenge_strategy": v.get("challenge_strategy", ""),
+                    "source": f"AI Analysis of {filename}",
+                    "auto_extracted": True,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.violations.insert_one(violation_doc)
+                created_violations.append(violation_id)
+    
+    # Fallback to old format if present
     if "violations" in analysis_data and isinstance(analysis_data["violations"], list):
-        for v in analysis_data["violations"][:10]:  # Limit to 10
+        for v in analysis_data["violations"][:10]:
             if isinstance(v, dict) and v.get("type") and v.get("description"):
                 violation_id = str(uuid.uuid4())
                 violation_doc = {
@@ -2141,12 +2432,72 @@ Provide your complete analysis in JSON format. Be thorough - this parent's famil
                 await db.timeline_events.insert_one(event_doc)
                 created_timeline.append(event_id)
     
+    # Auto-create case notes from analysis findings
+    created_notes = []
+    if "case_notes_to_add" in analysis_data and isinstance(analysis_data["case_notes_to_add"], list):
+        for note in analysis_data["case_notes_to_add"][:10]:
+            if isinstance(note, dict) and note.get("note_content"):
+                note_id = str(uuid.uuid4())
+                note_doc = {
+                    "note_id": note_id,
+                    "case_id": case_id,
+                    "user_id": user_id,
+                    "feature_name": f"Document Analysis: {filename}",
+                    "prompt": note.get("note_title", "AI Finding"),
+                    "response": note.get("note_content", ""),
+                    "importance": note.get("importance", "high"),
+                    "auto_generated": True,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.ai_case_notes.insert_one(note_doc)
+                created_notes.append(note_id)
+    
+    # Also create a summary note with the overall findings
+    summary_note_id = str(uuid.uuid4())
+    summary_content = f"""## Document Analysis Summary: {filename}
+
+**Overall Assessment:** {analysis_data.get('overall_assessment', 'N/A')}
+**Credibility Score:** {analysis_data.get('credibility_score', 'N/A')}/10
+
+### Key Findings:
+- **Constitutional Violations Found:** {len(analysis_data.get('constitutional_violations', []))}
+- **Fraud/Perjury Issues:** {len(analysis_data.get('fraud_and_perjury', []))}
+- **Procedural Violations:** {len(analysis_data.get('procedural_violations', []))}
+- **Federal Law Violations:** {len(analysis_data.get('federal_law_violations', []))}
+- **Caseworker Misconduct:** {len(analysis_data.get('caseworker_misconduct', []))}
+- **Evidentiary Issues:** {len(analysis_data.get('evidentiary_issues', []))}
+
+### Summary:
+{analysis_data.get('summary', 'Analysis complete.')}
+
+### Recommended Immediate Actions:
+{chr(10).join(['- ' + action for action in analysis_data.get('recommended_immediate_actions', ['Review findings with attorney'])[:5]])}
+
+### Motions to Consider Filing:
+{chr(10).join(['- ' + m.get('motion_type', '') + ': ' + m.get('basis', '') for m in analysis_data.get('motions_to_file', [])[:5]])}
+"""
+    
+    await db.ai_case_notes.insert_one({
+        "note_id": summary_note_id,
+        "case_id": case_id,
+        "user_id": user_id,
+        "feature_name": "Document Analysis Summary",
+        "prompt": f"Complete analysis of {filename}",
+        "response": summary_content,
+        "importance": "critical",
+        "auto_generated": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    created_notes.append(summary_note_id)
+    
     return {
         "analysis": analysis_data,
         "violations": created_violations,
         "timeline": created_timeline,
+        "notes": created_notes,
         "violations_created": len(created_violations),
-        "timeline_events_created": len(created_timeline)
+        "timeline_events_created": len(created_timeline),
+        "notes_created": len(created_notes)
     }
 
 
