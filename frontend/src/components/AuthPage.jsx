@@ -1,34 +1,95 @@
-/**
- * CPS Punisher - Auth Page Component
- */
-import React, { useState } from 'react';
-import { Loader2, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
+import api, { API_URL } from '../lib/api';
+import {
+  Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
+  MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut, LogIn,
+  Home, Settings, Star, Check, ChevronDown, Play, Lock, CheckCircle2,
+  Loader2, Upload, Clock, Eye, Download, Plus, Trash2, Edit2, Send,
+  CreditCard, Crown, Building2, Zap, Mic, Radio, Volume2, Copy, Key,
+  MapPin, Coins, BarChart3, User, ChevronRight, HelpCircle, Bot, RefreshCw,
+  Save
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 function AuthPage({ onNavigate }) {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
-  const { login } = useAuth();
+  const [errorMessage, setErrorMessage] = useState('');
+  const [retryCount, setRetryCount] = useState(0);
+  const [connectionStatus, setConnectionStatus] = useState('checking');
+  const { login, signup } = useAuth();
+
+  // Test connection on mount
+  useEffect(() => {
+    const testConnection = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/health`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (response.ok) {
+          setConnectionStatus('connected');
+        } else {
+          setConnectionStatus('error');
+        }
+      } catch (e) {
+        console.error('Connection test failed:', e);
+        setConnectionStatus('error');
+      }
+    };
+    testConnection();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (connectionStatus === 'error') {
+      setErrorMessage('Cannot connect to server. Please check your internet connection and try again.');
+      return;
+    }
     setLoading(true);
+    setErrorMessage('');
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
       } else {
-        // signup handled by context
+        await signup(formData.name, formData.email, formData.password);
       }
+      setRetryCount(0);
     } catch (error) {
-      // Error handled in context
+      const msg = error.message || 'An error occurred';
+      setErrorMessage(msg);
+      if (msg.includes('network') || msg.includes('connection') || msg.includes('timeout') || msg.includes('fetch')) {
+        setRetryCount(prev => prev + 1);
+        setConnectionStatus('error');
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleRetry = async () => {
+    setErrorMessage('');
+    setConnectionStatus('checking');
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/health`);
+      if (response.ok) {
+        setConnectionStatus('connected');
+        handleSubmit(new Event('submit'));
+      } else {
+        setConnectionStatus('error');
+        setErrorMessage('Still cannot connect. Please try again in a moment.');
+      }
+    } catch (e) {
+      setConnectionStatus('error');
+      setErrorMessage('Connection failed. Please check your internet.');
+    }
+  };
+
+  // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
   const handleGoogleLogin = () => {
-    const redirectUrl = window.location.origin;
+    const redirectUrl = window.location.origin; // Redirect to root, session_id will be in hash
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
@@ -45,8 +106,27 @@ function AuthPage({ onNavigate }) {
           <p className="text-gray-400 mt-2">
             {isLogin ? 'Sign in to continue your fight' : 'Create your account to fight back'}
           </p>
+          {/* Connection Status Indicator */}
+          <div className="mt-2 flex items-center justify-center gap-2 text-sm">
+            {connectionStatus === 'checking' && (
+              <span className="text-yellow-500 flex items-center gap-1">
+                <Loader2 className="w-3 h-3 animate-spin" /> Connecting...
+              </span>
+            )}
+            {connectionStatus === 'connected' && (
+              <span className="text-green-500 flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" /> Connected
+              </span>
+            )}
+            {connectionStatus === 'error' && (
+              <span className="text-red-500 flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3" /> Connection Issue
+              </span>
+            )}
+          </div>
         </div>
 
+        {/* Google Sign In Button */}
         <button
           onClick={handleGoogleLogin}
           className="w-full mb-4 flex items-center justify-center gap-3 bg-white text-gray-900 font-medium py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
@@ -113,6 +193,22 @@ function AuthPage({ onNavigate }) {
             />
           </div>
 
+          {/* Error message with retry */}
+          {errorMessage && (
+            <div className="bg-red-900/30 border border-red-800 rounded-lg p-4">
+              <p className="text-red-400 text-sm mb-2">{errorMessage}</p>
+              {(errorMessage.includes('network') || errorMessage.includes('connection') || errorMessage.includes('timeout')) && (
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="text-sm bg-red-600 hover:bg-red-700 px-3 py-1 rounded flex items-center gap-1"
+                >
+                  <RefreshCw className="w-4 h-4" /> Try Again
+                </button>
+              )}
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}
@@ -150,5 +246,7 @@ function AuthPage({ onNavigate }) {
     </div>
   );
 }
+
+// Dashboard Component
 
 export default AuthPage;

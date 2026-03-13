@@ -1,15 +1,39 @@
-/**
- * CPS Punisher - Landing Page Component
- */
-import React from 'react';
-import { 
-  Shield, Brain, AlertTriangle, FileText, Scale, Calendar, 
-  MessageSquare, ArrowRight, Play, Lock, CheckCircle2 
+import React, { useState, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
+import api, { API_URL } from '../lib/api';
+import {
+  Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
+  MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut, LogIn,
+  Home, Settings, Star, Check, ChevronDown, Play, Lock, CheckCircle2,
+  Loader2, Upload, Clock, Eye, Download, Plus, Trash2, Edit2, Send,
+  CreditCard, Crown, Building2, Zap, Mic, Radio, Volume2, Copy, Key,
+  MapPin, Coins, BarChart3, User, ChevronRight, HelpCircle, Bot, RefreshCw,
+  Save
 } from 'lucide-react';
 
 function LandingPage({ onNavigate }) {
   return (
     <div className="min-h-screen bg-black">
+      {/* Top Navigation Bar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-gray-800/50">
+        <div className="container mx-auto px-4 flex items-center justify-between h-16">
+          <div className="flex items-center gap-3">
+            <img src="/images/shield-logo.png" alt="CPS Punisher" className="w-8 h-9" />
+            <span className="text-lg font-bold tracking-wider" style={{ fontFamily: 'Oswald, sans-serif' }}>THE CPS PUNISHER</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => onNavigate('auth')}
+              className="px-5 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors flex items-center gap-2"
+              data-testid="landing-sign-in-btn"
+            >
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </button>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background with hero image */}
@@ -142,5 +166,7 @@ function LandingPage({ onNavigate }) {
     </div>
   );
 }
+
+// Auth Page
 
 export default LandingPage;

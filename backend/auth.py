@@ -3,21 +3,18 @@ CPS Punisher - Authentication Utilities
 JWT creation, password hashing, and user verification
 """
 from datetime import datetime, timezone, timedelta
-from typing import Optional
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from passlib.context import CryptContext
 from jose import jwt, JWTError
 
-from config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_DAYS
+from config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_DAYS, ADMIN_EMAILS
 
-# Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer(auto_error=False)
 
 
 def create_access_token(data: dict) -> str:
-    """Create a JWT access token"""
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
     to_encode.update({"exp": expire})
@@ -25,48 +22,37 @@ def create_access_token(data: dict) -> str:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash"""
     return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
-    """Hash a password"""
     return pwd_context.hash(password)
 
 
-def decode_token(token: str) -> Optional[dict]:
-    """Decode and validate a JWT token"""
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
-    except JWTError:
-        return None
-
-
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """FastAPI dependency to get current authenticated user"""
-    from database import get_db
-    
     if not credentials:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    
-    payload = decode_token(credentials.credentials)
-    if not payload:
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("user_id")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return {"user_id": user_id, "email": payload.get("email")}
+    except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
-    
-    user_id = payload.get("user_id")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid token payload")
-    
+
+
+async def get_admin_user(current_user: dict = Depends(get_current_user)):
+    from database import get_db
     db = get_db()
-    user = await db.users.find_one({"_id": user_id})
+    user = await db.users.find_one({"_id": current_user["user_id"]})
     if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-    
-    return {
-        "user_id": user["_id"],
-        "email": user["email"],
-        "name": user["name"],
-        "tier": user.get("tier", "free"),
-        "state": user.get("state")
-    }
+        raise HTTPException(status_code=404, detail="User not found")
+    is_admin = (
+        user.get("email") in ADMIN_EMAILS or
+        user.get("is_admin", False) or
+        user.get("role") == "admin"
+    )
+    if not is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user

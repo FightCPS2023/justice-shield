@@ -1,14 +1,11 @@
 """
-CPS Punisher - Pydantic Schemas
-All request/response models for the API
+CPS Punisher - All Pydantic Schemas (matching server.py models exactly)
 """
 from pydantic import BaseModel, Field, EmailStr
 from typing import Optional, List, Dict, Any
-from datetime import datetime
 
 
 # ============== AUTH MODELS ==============
-
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
@@ -32,8 +29,36 @@ class PasscodeRequest(BaseModel):
     passcode: str
 
 
-# ============== CASE MODELS ==============
+# ============== ADMIN MODELS ==============
+class PasscodeToggleRequest(BaseModel):
+    passcode: str
+    active: bool
 
+class UserTierUpdateRequest(BaseModel):
+    user_id: str
+    tier: str
+
+class AdvocateApplication(BaseModel):
+    name: str
+    email: EmailStr
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    photo_url: Optional[str] = None
+    bio: str
+    experience_years: int
+    specialties: List[str]
+    state: str
+    city: Optional[str] = None
+    organization: Optional[str] = None
+    certifications: Optional[List[str]] = []
+    languages: Optional[List[str]] = ["English"]
+
+class AdvocateStatusUpdate(BaseModel):
+    advocate_id: str
+    status: str
+
+
+# ============== CASE MODELS ==============
 class CaseCreate(BaseModel):
     title: str
     description: Optional[str] = None
@@ -59,124 +84,158 @@ class CaseUpdate(BaseModel):
 
 
 # ============== DOCUMENT MODELS ==============
-
 class DocumentCreate(BaseModel):
     case_id: str
     title: str
     content: str
-    document_type: Optional[str] = "general"
+    doc_type: str
+    date: Optional[str] = None
+
+class DocumentUpload(BaseModel):
+    case_id: str
+    title: str
+    content: str
+    doc_type: str
+    source: str = "upload"
 
 
 # ============== VIOLATION MODELS ==============
-
 class ViolationCreate(BaseModel):
     case_id: str
     violation_type: str
     description: str
-    date_occurred: Optional[str] = None
-    severity: Optional[str] = "medium"
-    evidence_notes: Optional[str] = None
+    severity: str = "medium"
+    date: Optional[str] = None
+    statute_reference: Optional[str] = None
+    constitutional_basis: Optional[str] = None
 
 
 # ============== TIMELINE MODELS ==============
-
 class TimelineEventCreate(BaseModel):
     case_id: str
     title: str
-    event_date: str
-    event_type: Optional[str] = "general"
-    description: Optional[str] = None
+    description: str
+    date: str
+    event_type: str = "general"
+    importance: str = "medium"
 
 
 # ============== STRATEGY MODELS ==============
-
 class StrategyCreate(BaseModel):
     case_id: str
     title: str
-    content: str
-    strategy_type: Optional[str] = "general"
+    description: str
+    priority: str = "medium"
+    legal_basis: Optional[str] = None
+    case_law_support: Optional[List[str]] = []
 
 
 # ============== EVIDENCE MODELS ==============
-
 class EvidenceItemCreate(BaseModel):
     case_id: str
     title: str
     description: str
-    evidence_type: Optional[str] = "document"
-    date_collected: Optional[str] = None
+    evidence_type: str
+    date_obtained: Optional[str] = None
     source: Optional[str] = None
+    supports_defense: bool = True
 
 
 # ============== COMMUNICATION MODELS ==============
-
 class CommunicationLogCreate(BaseModel):
     case_id: str
-    communication_type: str
-    contact_name: str
+    contact_type: str
+    contact_with: str
     date: str
     summary: str
-    follow_up_needed: Optional[bool] = False
+    favorable: Optional[bool] = None
 
 
 # ============== SERVICE MODELS ==============
-
 class ServiceRecordCreate(BaseModel):
     case_id: str
     service_type: str
-    provider: str
-    start_date: str
-    status: Optional[str] = "in_progress"
+    provider: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    status: str = "in_progress"
     notes: Optional[str] = None
 
 
 # ============== COURT FILING MODELS ==============
-
 class CourtFilingCreate(BaseModel):
     case_id: str
     filing_type: str
     title: str
-    filed_date: str
+    date_filed: Optional[str] = None
+    status: str = "pending"
     content: Optional[str] = None
-    status: Optional[str] = "filed"
 
 
 # ============== CRIMINAL CASE MODELS ==============
-
 class CriminalCaseCreate(BaseModel):
     case_id: str
-    charges: List[str]
-    court: str
-    status: str
-    notes: Optional[str] = None
+    criminal_case_number: Optional[str] = None
+    charges: List[Dict[str, Any]] = []
+    court: Optional[str] = None
+    prosecutor: Optional[str] = None
+    defense_attorney: Optional[str] = None
+    bond_status: Optional[str] = None
+    next_court_date: Optional[str] = None
+    relation_to_cps: Optional[str] = None
 
 
 # ============== JUDGE RESEARCH MODELS ==============
-
 class JudgeResearchCreate(BaseModel):
     case_id: str
     judge_name: str
-    court: str
+    court: Optional[str] = None
+    research_notes: Optional[str] = None
     known_rulings: Optional[List[str]] = []
-    tendencies: Optional[str] = None
-    notes: Optional[str] = None
+    judicial_philosophy: Optional[str] = None
 
 
 # ============== CALENDAR MODELS ==============
-
 class CalendarEventCreate(BaseModel):
     title: str
-    event_type: str
-    start_datetime: str
-    end_datetime: Optional[str] = None
     description: Optional[str] = None
+    event_date: str
+    event_time: Optional[str] = None
+    event_type: str = "general"
     case_id: Optional[str] = None
-    location: Optional[str] = None
-    reminder: Optional[bool] = True
+    reminder_days: Optional[int] = 1
+
+
+# ============== CHAT MODELS ==============
+class ChatMessage(BaseModel):
+    message: str
+    session_id: Optional[str] = None
+    case_id: Optional[str] = None
+    context_type: Optional[str] = "general"
+
+
+# ============== AI ANALYSIS MODELS ==============
+class AIAnalysisRequest(BaseModel):
+    case_id: str
+    document_content: str
+    analysis_type: str = "general"
+
+class LegalResearchRequest(BaseModel):
+    query: str
+    state: Optional[str] = None
+    topic: Optional[str] = None
+    violation_types: Optional[List[str]] = []
+
+class DocumentGeneratorRequest(BaseModel):
+    case_id: str
+    document_type: str
+    custom_data: Optional[Dict[str, Any]] = None
+    include_violations: bool = True
+    include_timeline: bool = True
+    include_case_law: bool = True
 
 
 # ============== FORUM MODELS ==============
-
 class ForumPostCreate(BaseModel):
     title: str
     content: str
@@ -185,7 +244,6 @@ class ForumPostCreate(BaseModel):
 
 
 # ============== NOTEPAD MODELS ==============
-
 class NotepadEntryCreate(BaseModel):
     case_id: Optional[str] = None
     title: str
@@ -203,14 +261,10 @@ class NotepadEntryUpdate(BaseModel):
     tags: Optional[List[str]] = None
 
 
-# ============== CHAT MODELS ==============
-
-class ChatMessage(BaseModel):
-    message: str
-    case_id: Optional[str] = None
-
-
 # ============== PAYMENT MODELS ==============
+class CreditPurchaseRequest(BaseModel):
+    package_id: str
+    origin_url: str
 
 class CheckoutRequest(BaseModel):
     tier: str
@@ -219,7 +273,23 @@ class CheckoutRequest(BaseModel):
     cancel_url: Optional[str] = None
 
 
-# ============== AI STRATEGY MODELS ==============
+# ============== STRATEGY BUILDER MODELS ==============
+class LegalArgumentRequest(BaseModel):
+    case_id: str
+    argument_type: str
+    key_facts: Optional[str] = None
+    target_violation: Optional[str] = None
+
+class EvidenceMapping(BaseModel):
+    case_id: str
+    evidence_description: str
+    related_violations: Optional[List[str]] = []
+
+class PrecedentSearchRequest(BaseModel):
+    case_id: str
+    legal_issue: str
+    jurisdiction: Optional[str] = None
+    search_scope: Optional[str] = "federal_and_state"
 
 class StrategyBuildRequest(BaseModel):
     case_id: str
@@ -229,19 +299,27 @@ class StrategyBuildRequest(BaseModel):
     evidence_summary: Optional[str] = None
     timeline_summary: Optional[str] = None
 
-class ArgumentGenerateRequest(BaseModel):
-    case_id: str
-    argument_type: str
-    violation: Optional[str] = None
-    facts: Optional[str] = None
 
-class EvidenceMapRequest(BaseModel):
+# ============== COMMUNITY MODELS ==============
+class VisitationCreate(BaseModel):
     case_id: str
-    evidence_items: List[Dict[str, str]]
-    violations: Optional[List[str]] = []
+    visit_date: str
+    visit_time: Optional[str] = None
+    location: Optional[str] = None
+    children_present: Optional[List[str]] = []
+    supervisor_name: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    notes: Optional[str] = None
+    concerns: Optional[str] = None
+    positive_observations: Optional[str] = None
 
-class PrecedentSearchRequest(BaseModel):
+class CourtHearingCreate(BaseModel):
     case_id: str
-    search_query: str
-    jurisdiction: Optional[str] = None
-    issue_type: Optional[str] = None
+    hearing_type: str
+    hearing_date: str
+    hearing_time: Optional[str] = None
+    court_name: Optional[str] = None
+    judge_name: Optional[str] = None
+    notes: Optional[str] = None
+    outcome: Optional[str] = None
+    next_steps: Optional[str] = None

@@ -1,22 +1,21 @@
-"""
-CPS Punisher - Authentication Routes
-User signup, login, profile management, passcode redemption, Google OAuth
-"""
+"""Auth routes - signup, login, profile, Google OAuth"""
 import uuid
 import httpx
 from datetime import datetime, timezone, timedelta
+from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, EmailStr
 
 from database import get_db
-from auth import create_access_token, verify_password, get_password_hash, get_current_user
-from models.schemas import UserCreate, UserLogin, TokenResponse, PasscodeRequest
-from config import FULL_ACCESS_PASSCODE
-
-router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+from auth import get_current_user, create_access_token, verify_password, get_password_hash
+from config import TIER_LEVELS, TIER_FEATURES, VALID_PASSCODES, EMERGENT_LLM_KEY
+from models.schemas import UserCreate, UserLogin, TokenResponse
 
 
-@router.post("/signup", response_model=TokenResponse)
+router = APIRouter()
+
+@router.post("/api/auth/signup", response_model=TokenResponse)
 async def signup(user_data: UserCreate):
     """Register a new user"""
     db = get_db()
@@ -39,6 +38,7 @@ async def signup(user_data: UserCreate):
     }
     
     await db.users.insert_one(user_doc)
+    
     access_token = create_access_token({"user_id": user_id, "email": user_data.email})
     
     return TokenResponse(
@@ -50,8 +50,7 @@ async def signup(user_data: UserCreate):
         state=user_data.state
     )
 
-
-@router.post("/login", response_model=TokenResponse)
+@router.post("/api/auth/login", response_model=TokenResponse)
 async def login(user_data: UserLogin):
     """Login and get access token"""
     db = get_db()
@@ -70,8 +69,7 @@ async def login(user_data: UserLogin):
         state=user.get("state")
     )
 
-
-@router.get("/me")
+@router.get("/api/auth/me")
 async def get_me(current_user: dict = Depends(get_current_user)):
     """Get current user profile"""
     db = get_db()
@@ -81,8 +79,7 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     user["id"] = user.pop("_id")
     return user
 
-
-@router.put("/profile")
+@router.put("/api/auth/profile")
 async def update_profile(update_data: dict, current_user: dict = Depends(get_current_user)):
     """Update user profile"""
     db = get_db()
@@ -97,13 +94,89 @@ async def update_profile(update_data: dict, current_user: dict = Depends(get_cur
     return {"message": "Profile updated"}
 
 
-@router.post("/redeem-passcode")
-async def redeem_passcode(request: PasscodeRequest, current_user: dict = Depends(get_current_user)):
-    """Redeem a passcode for full enterprise access"""
+@router.get("/api/auth/tier-status")
+async def get_tier_status(current_user: dict = Depends(get_current_user)):
+    """Get user's tier info, usage, and limits"""
     db = get_db()
-    if request.passcode != FULL_ACCESS_PASSCODE:
+    user = await db.users.find_one({"_id": current_user["user_id"]}, {"password_hash": 0})
+    user_tier = user.get("tier", "free") if user else "free"
+    tier_limits = TIER_FEATURES.get(user_tier, TIER_FEATURES["free"])
+
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+
+    docs_this_month = await db.documents.count_documents({
+        "user_id": current_user["user_id"],
+        "source": "upload",
+        "created_at": {"$gte": month_start}
+    })
+    case_count = await db.cases.count_documents({"user_id": current_user["user_id"]})
+    ai_used = user.get("ai_credits_used", 0) if user else 0
+
+    return {
+        "tier": user_tier,
+        "tier_level": TIER_LEVELS.get(user_tier, 0),
+        "limits": tier_limits,
+        "usage": {
+            "docs_uploaded_this_month": docs_this_month,
+            "ai_credits_used": ai_used,
+            "cases_created": case_count,
+        },
+        "remaining": {
+            "docs": tier_limits["docs_per_month"] - docs_this_month if tier_limits["docs_per_month"] != -1 else -1,
+            "ai_credits": tier_limits["ai_credits"] - ai_used if tier_limits["ai_credits"] != -1 else -1,
+            "cases": tier_limits["cases_max"] - case_count if tier_limits["cases_max"] != -1 else -1,
+        }
+    }
+
+
+# ============== FULL ACCESS PASSCODES ==============
+# 20 unique passcodes for enterprise access (reusable until deactivated)
+VALID_PASSCODES = [
+    "PUNISHER2024",      # Original passcode
+    "CPS-WARRIOR-001",
+    "CPS-WARRIOR-002", 
+    "CPS-WARRIOR-003",
+    "CPS-WARRIOR-004",
+    "CPS-WARRIOR-005",
+    "FAMILY-DEFENDER-01",
+    "FAMILY-DEFENDER-02",
+    "FAMILY-DEFENDER-03",
+    "FAMILY-DEFENDER-04",
+    "FAMILY-DEFENDER-05",
+    "LEGAL-SHIELD-001",
+    "LEGAL-SHIELD-002",
+    "LEGAL-SHIELD-003",
+    "LEGAL-SHIELD-004",
+    "LEGAL-SHIELD-005",
+    "JUSTICE-KEY-2024-A",
+    "JUSTICE-KEY-2024-B",
+    "JUSTICE-KEY-2024-C",
+    "JUSTICE-KEY-2024-D",
+]
+
+class PasscodeRequest(BaseModel):
+    passcode: str
+
+@router.post("/api/auth/redeem-passcode")
+async def redeem_passcode(request: PasscodeRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Redeem a passcode for full enterprise access to all features.
+    This grants the user enterprise tier permanently.
+    Passcodes are reusable by multiple users.
+    """
+    db = get_db()
+    # Check if passcode is valid (case-insensitive)
+    passcode_upper = request.passcode.upper().strip()
+    if passcode_upper not in [p.upper() for p in VALID_PASSCODES]:
         raise HTTPException(status_code=400, detail="Invalid passcode")
     
+    # Check if passcode is disabled by admin
+    disabled_doc = await db.admin_settings.find_one({"_id": "disabled_passcodes"})
+    if disabled_doc and passcode_upper in [p.upper() for p in disabled_doc.get("passcodes", [])]:
+        raise HTTPException(status_code=400, detail="This passcode has been deactivated")
+    
+    # Upgrade user to enterprise tier
     await db.users.update_one(
         {"_id": current_user["user_id"]},
         {"$set": {
@@ -114,11 +187,12 @@ async def redeem_passcode(request: PasscodeRequest, current_user: dict = Depends
         }}
     )
     
+    # Log the redemption (for tracking purposes)
     await db.passcode_redemptions.insert_one({
         "_id": str(uuid.uuid4()),
         "user_id": current_user["user_id"],
         "email": current_user.get("email"),
-        "passcode_used": "***REDACTED***",
+        "passcode_used": passcode_upper,
         "tier_granted": "enterprise",
         "redeemed_at": datetime.now(timezone.utc).isoformat()
     })
@@ -130,26 +204,46 @@ async def redeem_passcode(request: PasscodeRequest, current_user: dict = Depends
     }
 
 
-@router.post("/google/session")
+@router.post("/api/auth/google/session")
 async def process_google_session(request: Request):
-    """Process Google OAuth session_id from Emergent Auth"""
+    """
+    Process Google OAuth session_id from Emergent Auth
+    REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+    """
     db = get_db()
-    data = await request.json()
+    try:
+        data = await request.json()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON body: {str(e)}")
+    
     session_id = data.get("session_id")
+    print(f"Google OAuth: Received session_id: {session_id[:50] if session_id else 'None'}...")
     
     if not session_id:
         raise HTTPException(status_code=400, detail="session_id is required")
     
-    async with httpx.AsyncClient() as client:
+    # Exchange session_id for user data from Emergent Auth
+    async with httpx.AsyncClient(timeout=30.0) as client:
         try:
+            auth_url = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
+            print(f"Google OAuth: Calling {auth_url}")
             response = await client.get(
-                "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+                auth_url,
                 headers={"X-Session-ID": session_id}
             )
+            print(f"Google OAuth: Response status={response.status_code}")
             if response.status_code != 200:
-                raise HTTPException(status_code=401, detail="Invalid session")
+                print(f"Google OAuth: Emergent auth returned {response.status_code}: {response.text}")
+                raise HTTPException(status_code=401, detail=f"Invalid session - auth service returned {response.status_code}")
+            
             auth_data = response.json()
+            print(f"Google OAuth: Got auth_data with email={auth_data.get('email')}")
+        except httpx.TimeoutException:
+            raise HTTPException(status_code=504, detail="Auth service timeout")
+        except HTTPException:
+            raise
         except Exception as e:
+            print(f"Google OAuth error: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Auth service error: {str(e)}")
     
     email = auth_data.get("email")
@@ -158,12 +252,16 @@ async def process_google_session(request: Request):
     session_token = auth_data.get("session_token")
     
     if not email or not session_token:
-        raise HTTPException(status_code=400, detail="Invalid auth response")
+        print(f"Google OAuth: Missing email or session_token in auth response: {auth_data}")
+        raise HTTPException(status_code=400, detail="Invalid auth response - missing email or session_token")
     
+    # Check if user exists, if not create
     existing_user = await db.users.find_one({"email": email})
     
     if existing_user:
         user_id = existing_user["_id"]
+        user_tier = existing_user.get("tier", "free")
+        # Update user info if needed
         await db.users.update_one(
             {"_id": user_id},
             {"$set": {
@@ -172,21 +270,22 @@ async def process_google_session(request: Request):
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }}
         )
-        tier = existing_user.get("tier", "free")
     else:
+        # Create new user
         user_id = str(uuid.uuid4())
-        tier = "free"
+        user_tier = "free"
         await db.users.insert_one({
             "_id": user_id,
             "email": email,
             "name": name,
             "picture": picture,
             "auth_provider": "google",
-            "tier": tier,
+            "tier": "free",
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat()
         })
     
+    # Store session
     expires_at = datetime.now(timezone.utc) + timedelta(days=7)
     await db.user_sessions.update_one(
         {"user_id": user_id},
@@ -198,31 +297,35 @@ async def process_google_session(request: Request):
         upsert=True
     )
     
+    # Create JWT token for the user (compatible with existing auth)
     access_token = create_access_token({"user_id": user_id, "email": email})
     
+    # Create response with cookie
     response_data = {
         "access_token": access_token,
         "user_id": user_id,
         "email": email,
         "name": name,
         "picture": picture,
-        "tier": tier
+        "tier": user_tier
     }
     
+    from fastapi.responses import JSONResponse
     response = JSONResponse(content=response_data)
     response.set_cookie(
         key="session_token",
         value=session_token,
-        max_age=7*24*60*60,
+        max_age=7*24*60*60,  # 7 days
         path="/",
         secure=True,
         httponly=True,
         samesite="none"
     )
+    
     return response
 
 
-@router.post("/google/logout")
+@router.post("/api/auth/google/logout")
 async def google_logout(request: Request):
     """Logout and clear Google OAuth session"""
     db = get_db()
@@ -231,6 +334,8 @@ async def google_logout(request: Request):
     if session_token:
         await db.user_sessions.delete_one({"session_token": session_token})
     
+    from fastapi.responses import JSONResponse
     response = JSONResponse(content={"message": "Logged out"})
     response.delete_cookie(key="session_token", path="/")
     return response
+
