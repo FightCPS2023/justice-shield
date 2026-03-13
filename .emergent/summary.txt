@@ -1,179 +1,171 @@
 <analysis>**original_problem_statement:**
-The user wants to create a powerful legal application named THE CPS PUNISHER. The initial goal was to replicate and enhance an existing application with over 324 features, aiming to create an unstoppable defender of the family.
+The user wants to create a powerful legal application named THE CPS PUNISHER. The goal is to build an unstoppable defender of the family with features superior to commercial legal tools.
 
 **PRODUCT REQUIREMENTS:**
--   **Core App Replication:** Recreate all features from the user's original application.
--   **Superior Legal Research:** The app's research capabilities must surpass commercial tools.
--   **Tiered Access & Payments:** A multi-level subscription model (Free, Essential, Professional, Attorney) with strict feature enforcement, a pay-as-you-go credit system, and passcode-based access. Integrations include Stripe and Google OAuth.
--   **Key Features Requested & Implemented:** Legal Notepad, CourtListener UI, Case Preparation Kit, ADA Accommodations, enhanced document uploads (drag-and-drop, folder), a Cetient AI-style research/document generation tool, a Legal Forensic Document Analyzer, and a pay-as-you-go credit system.
--   **New Features Requested this Session:**
-    -   An Advocate Signup system for advocates to create profiles (photo, bio, experience).
-    -   An Admin Board to manage users, approve advocates, and manage passcodes.
-    -   A feature to automatically save all AI-generated responses (from chat, research, analysis) into a dedicated AI Case Notes section for each case.
-    -   An in-app Help Bot to assist users with navigation and answer questions about features.
-    -   Support for uploading and analyzing audio and video files, in addition to documents.
+-   **Core Functionality:** Case and document management, tiered subscriptions (Free, Essential, Professional, Attorney) with Stripe, and a pay-as-you-go credit system.
+-   **AI-Powered Tools:**
+    -   Smart Legal Research, Smart Document Generator, and a Law Library.
+    -   **Hyper-Advanced Document Analysis:** The AI must be the smartest in CPS case law, capable of analyzing documents (including scanned PDFs and images) to identify not just constitutional violations, but also fraud, perjury, procedural errors, and other wrongful actions. It should explain its findings and automatically save them as case notes.
+    -   **Audio/Video Analysis:** Support for uploading and transcribing audio and video files for analysis.
+-   **User & Advocate Management:**
+    -   An Advocate Signup system and directory.
+    -   An Admin Board to manage users, approve advocates, and oversee the application.
+-   **New Features Requested:**
+    -   A **Background Check** feature, similar to a police NCIC search, to find addresses, phone numbers, criminal records, and court records for individuals.
+-   **Mobile Accessibility:** The application must be fully functional and user-friendly on mobile devices, with the ultimate goal of being deployable to app stores.
+-   **Reliability:** The application must be stable and free of the recurring network errors that are preventing users from signing up and using the app.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A comprehensive full-stack legal application with a FastAPI backend and a React frontend. The application features robust JWT and Google OAuth authentication, a 4-tier subscription system with Stripe integration, and a pay-as-you-go credit system.
+A full-stack legal application with a FastAPI backend and a React frontend. It includes JWT/Google OAuth authentication, a 4-tier subscription system with Stripe, and a credit system. Core features like case management, AI document generation, a law library, an admin board, and an advocate directory are implemented.
 
-Functionality includes case and document management, advanced AI tools (Smart Legal Research, Smart Document Generator, Forensic Document Analyzer), a Law Library, and a Legal Notepad. This session added several major features: an **Admin Dashboard** for comprehensive site management (users, passcodes, advocate approvals), an **Advocate Directory** with a public application form, an **AI Case Notes** system that automatically saves all AI outputs to the relevant case, and an interactive in-app **Help Bot**. The document upload functionality was expanded to accept PDF, audio, and video files.
+This session added significant enhancements:
+-   **Advanced Document Analysis:** PDF extraction now uses OCR for scanned documents. Image analysis uses AI Vision. The core analysis AI has been massively upgraded to detect fraud, perjury, and procedural errors, providing detailed explanations.
+-   **Multimedia Support:** Audio and video files can now be uploaded and automatically transcribed using OpenAI Whisper.
+-   **Background Check:** A new Person Lookup feature has been implemented on the backend and frontend, allowing users to run background checks using AI credits.
+-   **Mobile/PWA:** The app is now a Progressive Web App (PWA) with a service worker and improved mobile responsive styling.
+-   **Network Error Mitigation:** Frontend code was added to display connection status, provide better error messages, and offer a retry button for auth actions.
 
-However, the application is suffering from critical production deployment issues, leading to a persistent CORS problem that breaks most functionality (POST, PUT, DELETE requests) on the live site.
+Despite these advances, the application is plagued by a critical deployment issue preventing users from reliably signing up or using the app on the production domain.
 
 **Last working item**:
--   **Last item agent was working:** Debugging an issue where uploaded PDFs were returning a no readable content error. The agent had just finished expanding file upload support to include audio and video and was about to investigate the PDF text extraction logic in .
--   **Status:** IN PROGRESS
--   **Agent Testing Done:** N
--   **Which testing method agent to use?** backend testing agent
--   **User Testing Done:** Y (User reported the issue)
+-   **Last item agent was working:** Diagnosing and fixing persistent network error when attempting to fetch resource messages reported by users during signup and other activities on the production site ().
+-   **Status:** BLOCKED
+-   **Agent Testing Done:** Y
+-   **Which testing method agent to use?** N/A. This is a deployment issue, not a code issue. The next step is to guide the user on how to correctly redeploy the application.
+-   **User Testing Done:** Y (User is actively reporting the issue for people trying to use the live site).
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Critical Production CORS Failure (P0)**
-    -   **Description:** All non-GET requests (login, signup, create case, AI features) are failing on the production deployment () due to a CORS error. The frontend tries to call the backend (), but the backend is not returning the required  header. This makes the production app almost entirely non-functional.
-    -   **Attempted fixes:** The agent has exhaustively tried to fix this in the backend code () by implementing multiple robust CORS middleware configurations. The code works perfectly in the preview environment, but the changes are not being reflected in the production deployment. This indicates a deployment infrastructure or caching issue, not a code issue.
+-   **Issue 1: Critical Production Deployment Mismatch (P0)**
+    -   **Description:** Users on the production site () are experiencing network errors. The agent has confirmed that the production frontend is running outdated code and is pointing to an old, incorrect backend URL. This mismatch causes CORS and credential errors, making signup and other API calls fail. The code in the current preview environment is correct and works perfectly, but these fixes are not live in production.
+    -   **Attempted fixes:** The agent has confirmed the backend is healthy and the CORS configuration in the current code is correct. The problem is not the code but the stale deployment.
     -   **Next debug checklist:**
-        1.  Confirm with the user that a full redeployment was completed *after* the latest CORS middleware fix.
-        2.  Guide the user to contact Emergent support, as this is likely an infrastructure-level problem. Provide them with the relevant details: Frontend URL, Backend URL, and the fact that CORS works in preview but not production.
-        3.  Do NOT attempt to fix the CORS code again in . The code is correct; the problem is in the deployment environment.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a complete blocker for the application's usability. Fixing it will make the production app functional.
+        1.  Do NOT attempt to change the CORS code in  again. The code is correct.
+        2.  Clearly explain to the user that the production site needs to be **REDEPLOYED** to push all the latest fixes live.
+        3.  Guide the user on how to trigger a new deployment for their application.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a total blocker for the application's usability in production. Fixing it will make the live site functional for all users.
     -   **Status:** BLOCKED
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on other issue:** Blocked on the production deployment environment reflecting the latest code changes.
+    -   **Blocked on other issue:** Blocked on user action to redeploy the application.
 
 -   **Issue 2: Monolithic Codebase (P1)**
-    -   **Description:** The core logic remains in monolithic  and  files. This is a significant source of technical debt, slowing down development and increasing bug risk.
-    -   **Status:** NOT STARTED (in this session)
+    -   **Description:** The core logic is concentrated in massive  and  files, hindering development speed and increasing bug risk.
+    -   **Status:** NOT STARTED
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** both
-
--   **Issue 3: Google OAuth Login (P2)**
-    -   **Description:** Google OAuth login is failing in production, which is a direct symptom of the P0 CORS issue. The code logic for handling the OAuth callback was fixed, but it cannot be verified until the CORS issue is resolved.
-    -   **Status:** BLOCKED
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on other issue:** Issue 1: Critical Production CORS Failure
 
 **In progress Task List**:
--   **Task 1: Fix PDF Text Extraction (P1)**
-    -   **Where to resume:** In , within the  endpoint, investigate the  or equivalent text extraction logic to understand why it's failing on certain user-uploaded PDFs and returning no readable content.
-    -   **What will be achieved with this?** Ensures all valid PDF documents can be uploaded and their content correctly extracted for analysis.
-    -   **Status:** IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?** backend
-    -   **Blocked on something:** No.
+None. All current work is blocked by the P0 deployment issue.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   **(P0) Full E2E Test of Production:** Once the CORS issue is resolved, perform a full end-to-end test of all features on the production site, including Advocate signup, Admin board, and AI features.
-    -   **(P1) Codebase Refactoring:** Begin the incremental process of breaking down  and  into modular components.
+    -   **(P0) Full E2E Test of Production:** Once the deployment issue is resolved, perform a comprehensive end-to-end test of all features on the live production site.
+    -   **(P1) Codebase Refactoring:** Begin the incremental process of breaking down  and  into modular components (e.g., FastAPI routers, React components).
 -   **Future Tasks:**
     -   **(P2)** Deepen CourtListener Integration.
     -   **(P2)** Build out multi-client management for the Attorney Suite.
-    -   **(P2)** Integrate an email notification system.
-    -   **(P2)** Implement a streaming response or background job architecture for slow AI endpoints to improve UX.
-    -   **(P2)** Implement analysis for uploaded audio and video files.
+    -   **(P2)** Implement an email notification system.
+    -   **(P2)** Implement a streaming response architecture for slow AI endpoints to improve UX.
 
 **Completed work in this session**
--   **Deployment Issues Fixed:** Resolved multiple deployment blockers, including adding a  endpoint for Kubernetes, fixing , and removing a hardcoded .
--   **Production CORS Debugging:** Implemented multiple robust CORS middleware solutions in  to handle cross-domain requests. The code is now correct, though the production environment has not yet reflected these changes.
--   **Advocate & Admin System:**
-    -   **Backend:** Created DB models and a full suite of API endpoints for advocate applications and a multi-faceted admin dashboard (user management, advocate approval, passcode management).
-    -   **Frontend:** Built the UI for the public Advocate Directory, the Become an Advocate application form, and a comprehensive  visible only to admin users.
--   **AI Response Saving:** Implemented a new  database collection and updated all AI endpoints to automatically save their generated responses to the corresponding case file. A new AI Notes tab was added to the UI to view them.
--   **In-App Help Bot:** Added a floating AI assistant to the dashboard to help users navigate the app and understand its features, complete with its own backend endpoint and system prompt.
--   **Enhanced Document Uploads:** Modified the backend and frontend to allow uploading of audio and video files, in addition to PDFs. Added UI icons to differentiate file types.
--   **Reusable Passcodes:** Modified the passcode system from single-use to be multi-use, allowing the user to distribute 20 reusable codes for Enterprise tier access.
--   **Google OAuth Debugging:** Investigated and fixed the frontend logic for handling the Google OAuth callback, but testing remains blocked by the production CORS issue.
--   **Legal Forensic Document Analyzer:** Verified the feature is fully implemented on both backend and frontend but is blocked from full E2E testing due to an LLM key budget issue (which was later resolved, but testing shifted to other priorities).
+-   **Document Analysis Overhaul:**
+    -   Fixed PDF extraction with an OCR fallback () for scanned documents.
+    -   Implemented AI Vision for image analysis.
+    -   Dramatically enhanced the AI analysis prompt to detect fraud, perjury, and procedural errors, in addition to constitutional violations.
+-   **Audio/Video Transcription:** Added support for uploading and transcribing audio and video files using OpenAI Whisper.
+-   **Background Check Feature:** Implemented a new Person Lookup feature (backend and frontend) for running background checks, integrated with the app's credit system.
+-   **Mobile & PWA Conversion:** Converted the frontend into a Progressive Web App (PWA) with a manifest and service worker, and fixed several mobile UI/UX issues, including the sidebar navigation.
+-   **Network Error Mitigation:** Diagnosed production deployment issues and added frontend resilience features like a connection status indicator, better error messages, and retry buttons on auth forms.
+-   **Admin Board UI Fix:** Relocated and restyled the Admin Board button in the sidebar for better visibility and accessibility, fixing user reports of it being missing or unclickable.
+-   **Payment Tier Updates:** Updated the pricing page to accurately reflect all the new and enhanced features in each subscription tier.
+-   **Section 1983 Legal Content:** Enhanced the internal knowledge base () with updated case law and procedures for Section 1983 civil rights claims.
 
 **Earlier issues found/mentioned but not fixed**
--   The critical CORS issue (Issue #1) was found, and the code was fixed, but the issue persists in production due to a deployment/infrastructure problem.
+-   The critical production deployment mismatch (Issue #1) was identified, but it cannot be fixed with code changes and requires a user-initiated redeployment.
 
 **Known issue recurrence from previous fork**
--   **Codebase Refactoring:** The need to break up monolithic files is a persistent high-priority task that has been postponed again.
--   **Deployment/CORS Issues:** While the initial deployment errors were fixed, they were replaced by a persistent CORS issue in production, making this a new recurring theme.
+-   **Deployment/CORS Issues:** This issue has evolved from a code-level CORS problem to a more critical deployment-level problem where the production environment is running stale code.
+-   **Codebase Refactoring:** This high-priority technical debt task continues to be postponed in favor of feature development.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Frontend:** React, Vite, Tailwind CSS, shadcn/ui, 
--   **Backend:** Python, FastAPI, Pydantic, PyPDF2
+-   **Frontend:** React, Vite, Tailwind CSS, shadcn/ui, PWA (Service Workers)
+-   **Backend:** Python, FastAPI, Pydantic
 -   **Database:** MongoDB
--   **AI:** 
--   **CORS:** Extensive work with  and custom middleware solutions.
+-   **AI:** , OpenAI Whisper, AI Vision models
+-   **Document Processing:** , , 
 
 **key DB schema**
--   **User:** {user_id, email, password_hash, tier, subscription_id, **is_admin**, **advocate_status**}
--   **Case:** {case_id, user_id, case_name, ...}
--   **Document:** {doc_id, case_id, filename, content, **file_category**}
--   **Note:** {entry_id, user_id, case_id, ...}
--   **Passcode:** {passcode, is_active} (New)
--   **Advocate:** {advocate_id, user_id, name, photo_url, location, bio, experience, specialties, approved} (New)
--   **AICaseNote:** {note_id, case_id, user_id, feature_name, prompt, response, timestamp} (New)
+-   **User:** {user_id, email, password_hash, tier, credits, is_admin, advocate_status}
+-   **Document:** {doc_id, case_id, filename, content, file_category, **analysis**, **extracted_violations**, **fraud_and_perjury**, **timeline_events**}
+-   **AICaseNote:** {note_id, case_id, user_id, feature_name, prompt, response, timestamp}
 
 **All files of reference**
--   : The main monolithic backend. Heavily modified to add CORS middleware, Admin/Advocate endpoints, AI notes saving, the Help Bot, and audio/video upload logic.
--   : The main monolithic frontend. Heavily modified to add Admin/Advocate UI, AI Notes tab, the Help Bot component, and updated file upload logic.
+-   : The monolithic backend. Heavily modified for OCR, transcription, background checks, advanced AI analysis prompts, and CORS fixes.
+-   : The monolithic frontend. Heavily modified to add the Background Check UI, mobile responsiveness fixes, PWA registration, and auth error handling.
+-   : New file for PWA configuration.
+-   : New file to enable PWA offline capabilities.
+-   : Updated with enhanced Section 1983 legal information.
 
 **Areas that need refactoring**:
--   ****: CRITICAL. This file is now even larger and more unmanageable. It desperately needs to be broken down into the  directory.
--   ****: CRITICAL. Numerous components (AdminBoard, AdvocatesTab, AICaseNotesTab, HelpBot, etc.) were added directly to this file and must be extracted into their own modules under .
+-   ****: CRITICAL. The file is dangerously large. Logic for auth, cases, documents, AI tools, admin, and background checks must be split into separate FastAPI routers in the  directory.
+-   ****: CRITICAL. This file contains dozens of components that need to be extracted into their own files under  to be manageable.
 
 **key api endpoints**
--    (POST): Endpoint for validating Google OAuth session ID. Currently blocked by CORS in production.
--    (GET, POST): New suite of endpoints for the admin board.
--    (GET, POST): New suite of endpoints for advocate applications and directory.
--    (GET): New endpoint to fetch saved AI responses for a case.
--    (POST): New endpoint for the in-app AI assistant.
--    (POST): Modified to accept audio/video files.
+-    (POST): Target of the user-reported network errors.
+-    (POST): Now handles PDF (text/scanned), images, audio, and video files.
+-    (POST): Triggers the new, hyper-advanced AI analysis.
+-    (POST): New endpoint for the background check feature.
+-    (GET): Used by the frontend to verify if a user is an admin.
 
 **Critical Info for New Agent**
--   **PRIORITY #1 is the PRODUCTION CORS BLOCKER.** Do not waste time trying to fix the CORS code in . The code has been repeatedly verified and works in the preview environment. The problem lies with the production deployment environment not picking up the changes. Your first action should be to guide the user to **contact Emergent Support** to resolve this infrastructure-level issue.
--   **Do not trust production functionality.** Assume everything requiring a POST/PUT/DELETE request is broken on the live site until the CORS issue is confirmed to be resolved. All new features (Admin, Advocate, AI Notes, etc.) have been implemented but are not usable in production.
--   **LLM Key Budget:** The Emergent LLM key budget was depleted once during this session. While the user added funds, be aware that AI features failing with a generic error could be a sign of this happening again.
--   **Technical Debt:** Once the production environment is stable, the next highest priority is to aggressively pursue the refactoring of  and . Propose a concrete plan to tackle this.
+-   **TOP PRIORITY: PRODUCTION IS BROKEN.** Do not attempt to fix network errors by changing the code. The problem is a **stale production deployment**. The live frontend is pointing to an old backend, causing CORS failures. Your first and most important task is to guide the user to **REDEPLOY** the application to sync the production environment with the working code from the preview environment.
+-   **Confirm the Fix, Then Test:** After the user confirms they have redeployed, your first action should be to test the signup process on the production URL. Once confirmed working, conduct a full E2E test.
+-   **LLM Budget:** The Emergent LLM key budget was exceeded during this session. Be mindful that AI features failing could be due to a lack of funds.
+-   **Technical Debt:** The monolithic codebase is a major liability. After stabilizing production, you must prioritize and propose a concrete plan to refactor  and .
 
 **documents and test reports created in this job**
--   : Updated with the new features implemented.
--    (from previous session, but was viewed).
+-   
+-   
+-    (updated multiple times)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Reports failed to fetch when adding a case, failed to load state in law library, and failed AI response. **Status:** IN PROGRESS (Symptom of CORS issue).
-2.  **User:** Shares console logs showing the CORS error. **Status:** ADDRESSED.
-3.  **User:** Shares health check page logs. **Status:** ADDRESSED.
-4.  **User:** Shares more CORS errors from the frontend. **Status:** ADDRESSED.
-5.  **User:** no failed to fetch i am on a mac **Status:** ADDRESSED (Confirmed issue persists, led to Safari-specific CORS fix).
-6.  **User:** Asks for a deployment health check. **Status:** COMPLETED.
-7.  **User:** Asks if the deployment is a viable solution given the failed to fetch errors. **Status:** ADDRESSED (Agent explained it's a deployment issue, not a code issue).
-8.  **User:** yes ework on those (approving work on Admin/Advocate features). **Status:** COMPLETED.
-9.  **User:** have ai responses save to case files. **Status:** COMPLETED.
-10. **User:** CAN WE BUILD A HELP BOT... AND CHECK THE CASE KIT. **Status:** COMPLETED.
-11. **User:** pdf files showing errors in upload salso allow audio and video files to be uploaded and analyzed failure to fetch errors in the document uploads. **Status:** IN PROGRESS (Audio/video support added, PDF error being debugged).
+1.  **User:** keep gettying errors about netweork errors on multiple fronyts and uiserds i need this to wpoork polease fix this app and make it woerk please - **Status:** IN PROGRESS (This is the P0 deployment issue).
+2.  **User:** Requests updated payment tiers and a new Section 1983 tab with comprehensive legal info. **Status:** COMPLETED.
+3.  **User:** thecpspunisher.com - Confirming the URL they are testing. **Status:** ADDRESSED (This led to the discovery of the production deployment issue).
+4.  **User:** a person isd trying to sign up right now getting those error fetching - Reporting live signup failures. **Status:** ADDRESSED (Agent investigated and confirmed server is working, pointing to a client-side/deployment issue).
+5.  **User:** i want the ai to be the smartest in cps case law... and the admin button is srtill missing - **Status:** COMPLETED (AI analysis was massively enhanced, and the admin button UI was fixed).
+6.  **User:** when creating case says network error connection error - **Status:** ADDRESSED (Part of the larger network error issue).
+7.  **User:** Reports network error when fetching resources when creating account - **Status:** ADDRESSED (Part of the larger network error issue).
+8.  **User:** Asks for a background check feature and complains that PDF/image analysis is not working well. **Status:** COMPLETED (Background check feature was built; PDF/image analysis was overhauled).
+9.  **User:** Asks to call the deployer agent and run a health check. **Status:** COMPLETED.
+10. **User:** Reports not actuallyvanalyzing or reading pictures and that the analysis is a fundamental part of the app that needs to work 100%. **Status:** COMPLETED (Led to the overhaul of the document analysis system).
 
 **Project Health Check:**
--   **Broken:** Production deployment is critically broken due to the CORS issue. All features requiring POST/PUT/DELETE are non-functional on the live site.
+-   **Broken:** The production deployment is non-functional for new users and most API-driven features due to a stale deployment causing fatal CORS errors.
 -   **Mocked:** None.
--   **Technical Debt:** **CRITICAL.** The monolithic architecture is unsustainable.
+-   **Technical Debt:** **CRITICAL**. The application's core logic is in two massive monolithic files (, ), which is unsustainable.
 
 **3rd Party Integrations**
--   **LiteLLM:** Used for all AI features (Emergent LLM Key).
--   **Stripe:** Payments and subscriptions.
--   **Google OAuth:** Authentication (code is fixed, but blocked by CORS in prod).
--   **ReportLab:** PDF generation for Case Prep Kit.
+-   **LiteLLM:** For all generative AI features (Emergent LLM Key).
+-   **OpenAI Whisper:** For audio/video transcription (via ).
+-   **Stripe:** For payments and subscriptions.
+-   **Google OAuth:** For authentication.
+-   **Pytesseract, pdf2image:** For PDF OCR capabilities.
 
 **Testing status**
--   **Testing agent used after significant changes:** NO (Agent performed extensive manual testing via  and screenshots).
+-   **Testing agent used after significant changes:** YES. The agent ran multiple comprehensive E2E test suites which passed in the preview environment, confirming the code is solid.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** None.
--   **Known regressions:** The entire production application is non-functional for mutations due to the CORS/deployment issue.
+-   **Known regressions:** The entire production application has regressed to a nearly unusable state due to the deployment mismatch.
 
 **Credentials to test flow:**
 -   **Admin User:**  / 
--   **Passcodes:** 20 reusable passcodes like , , etc., are defined in  to grant Enterprise tier access.
+-   **Note:** This user will have admin access automatically upon signup because their email is hardcoded in the  list in .
 
 **What agent forgot to execute**
--   The agent has consistently (and correctly, given other priorities) postponed the critical refactoring of the monolithic  and  files.
--   The agent did not call the  after implementing several large features in a row (Admin board, Advocate system, AI notes, Help Bot), opting for manual curl tests instead. A full regression test is highly recommended once the production environment is stable.</analysis>
+-   The critical refactoring of  and  has been consistently postponed to address feature requests and urgent bug fixes. This technical debt is now a significant risk to the project's stability and future development.</analysis>
