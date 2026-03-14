@@ -177,15 +177,54 @@ function DocumentsTab({ selectedCase }) {
     // Update document list
     if (newDocs.length > 0) {
       setDocuments(prev => [...newDocs, ...prev]);
-      const totalViolations = newDocs.reduce((sum, d) => sum + (d.analysis_result?.violations_created || 0), 0);
-      const totalTimeline = newDocs.reduce((sum, d) => sum + (d.analysis_result?.timeline_events_created || 0), 0);
-      toast.success(
-        `${newDocs.length} document(s) uploaded! Found ${totalViolations} violations and ${totalTimeline} timeline events.`,
-        { duration: 6000 }
-      );
+      
+      // Check if any docs are still being analyzed in background
+      const analyzingDocs = newDocs.filter(d => d.analysis_result?.status === 'analyzing');
+      if (analyzingDocs.length > 0) {
+        toast.success(
+          `${newDocs.length} document(s) uploaded! AI analysis running in background...`,
+          { duration: 6000 }
+        );
+        // Poll for analysis completion
+        pollAnalysisStatus(analyzingDocs.map(d => d.id));
+      } else {
+        const totalViolations = newDocs.reduce((sum, d) => sum + (d.analysis_result?.violations_created || 0), 0);
+        toast.success(
+          `${newDocs.length} document(s) uploaded! Found ${totalViolations} violations.`,
+          { duration: 6000 }
+        );
+      }
     }
 
     setBatchUploading(false);
+  };
+
+  // Poll for background analysis completion
+  const pollAnalysisStatus = async (docIds) => {
+    const maxPolls = 20; // 20 * 5s = 100s max
+    for (let poll = 0; poll < maxPolls; poll++) {
+      await new Promise(r => setTimeout(r, 5000)); // Wait 5 seconds
+      
+      let allDone = true;
+      for (const docId of docIds) {
+        try {
+          const status = await api.get(`/api/documents/${docId}/analysis-status`);
+          if (status.status === 'complete') {
+            setDocuments(prev => prev.map(d => 
+              d.id === docId ? { ...d, analysis: status.analysis, analysis_result: status } : d
+            ));
+            toast.success(`Analysis complete! Found ${status.violations_found} violations.`);
+          } else if (status.status === 'error') {
+            toast.error(`Analysis failed: ${status.error || 'Unknown error'}`);
+          } else {
+            allDone = false;
+          }
+        } catch (err) {
+          // Ignore polling errors
+        }
+      }
+      if (allDone) break;
+    }
   };
 
   // Legacy single-file handler (kept for backwards compat)
@@ -283,11 +322,29 @@ function DocumentsTab({ selectedCase }) {
       
       if (!response.ok) throw new Error('Reanalysis failed');
       
-      const result = await response.json();
-      toast.success(`Reanalysis complete! Found ${result.violations_created} new violations.`);
-      loadDocuments();
+      toast.success('Analysis started! Results will appear shortly...', { duration: 5000 });
+      
+      // Poll for completion
+      const maxPolls = 30;
+      for (let i = 0; i < maxPolls; i++) {
+        await new Promise(r => setTimeout(r, 5000));
+        try {
+          const statusResp = await api.get(`/api/documents/${docId}/analysis-status`);
+          if (statusResp.status === 'complete') {
+            toast.success(`Analysis complete! Found ${statusResp.violations_found} violations.`);
+            loadDocuments();
+            break;
+          }
+          if (statusResp.status === 'error') {
+            toast.error(`Analysis failed: ${statusResp.error || 'Unknown error'}. Try again.`);
+            break;
+          }
+        } catch (err) {
+          // Ignore polling errors
+        }
+      }
     } catch (error) {
-      toast.error('Failed to reanalyze document');
+      toast.error('Failed to start reanalysis');
     } finally {
       setAnalyzing(false);
     }
@@ -548,7 +605,12 @@ function DocumentsTab({ selectedCase }) {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {doc.analysis && (
+                        {doc.analysis_status === 'analyzing' && (
+                          <span className="px-2 py-1 bg-yellow-600/20 text-yellow-400 text-xs rounded flex items-center gap-1">
+                            <Loader2 className="w-3 h-3 animate-spin" /> Analyzing...
+                          </span>
+                        )}
+                        {doc.analysis && doc.analysis_status !== 'analyzing' && (
                           <span className="px-2 py-1 bg-green-600/20 text-green-400 text-xs rounded">
                             Analyzed
                           </span>

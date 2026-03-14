@@ -6,7 +6,7 @@ import uuid
 import base64
 from datetime import datetime, timezone
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Depends, File, UploadFile, Form
+from fastapi import APIRouter, HTTPException, Depends, File, UploadFile, Form, BackgroundTasks
 
 from database import get_db
 from auth import get_current_user
@@ -18,6 +18,32 @@ from models.schemas import DocumentCreate
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 router = APIRouter()
+
+
+async def run_document_analysis_bg(doc_id, case_id, case, content, filename, user_id):
+    """Background task: runs document analysis after upload response is sent"""
+    try:
+        result = await analyze_uploaded_document(doc_id, case_id, case, content, filename, user_id)
+        db = get_db()
+        await db.documents.update_one(
+            {"_id": doc_id},
+            {"$set": {
+                "analysis": result.get("analysis"),
+                "analysis_status": "complete" if "error" not in result else "error",
+                "analysis_error": result.get("error"),
+                "extracted_violations": result.get("violations", []),
+                "extracted_timeline": result.get("timeline", [])
+            }}
+        )
+        print(f"[BG] Analysis complete for doc {doc_id}")
+    except Exception as e:
+        print(f"[BG] Analysis error for doc {doc_id}: {e}")
+        db = get_db()
+        await db.documents.update_one(
+            {"_id": doc_id},
+            {"$set": {"analysis_status": "error", "analysis_error": str(e)}}
+        )
+
 
 # ============== DOCUMENTS ENDPOINTS ==============
 
@@ -141,6 +167,7 @@ async def transcribe_audio_video(content: bytes, filename: str, file_ext: str, f
 
 @router.post("/api/documents/upload")
 async def upload_document(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     case_id: str = Form(...),
     title: str = Form(...),
@@ -271,9 +298,10 @@ async def upload_document(
         # Use AI Vision to analyze the image and extract text/information
         try:
             import base64
+            import asyncio as _asyncio
             from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
             
-            print(f"Analyzing image with AI Vision: {file.filename}")
+            print(f"[UPLOAD] Analyzing image with AI Vision: {file.filename}")
             
             # Convert image to base64
             image_base64 = base64.b64encode(content).decode('utf-8')
@@ -282,36 +310,47 @@ async def upload_document(
             vision_chat = LlmChat(
                 api_key=EMERGENT_LLM_KEY,
                 session_id=f"image-analysis-{uuid.uuid4()}",
-                system_message="""You are a legal document and evidence analyzer for CPS (Child Protective Services) cases.
-                Analyze images thoroughly and extract ALL relevant information including:
-                - Any visible text (OCR)
-                - Names, dates, case numbers, addresses
-                - Description of what's shown in the image
-                - Any evidence of conditions, people, or situations
-                - Signatures, stamps, or official markings
-                - Any concerning or relevant details for a legal case
-                Be extremely thorough - this information may be used in court."""
+                system_message="You are a legal document OCR and evidence analyzer for CPS cases. Extract ALL visible text and describe the image thoroughly."
             ).with_model("openai", "gpt-5.2")
             
-            # Create image content
             image_content = ImageContent(image_base64=image_base64)
-            
-            # Analyze the image
             user_message = UserMessage(
-                text=f"Analyze this image from a CPS case file. Extract ALL text visible in the image (perform OCR). Describe everything you see in detail. This is file: {file.filename}",
+                text=f"Extract ALL text from this image (OCR). Describe everything visible. File: {file.filename}",
                 file_contents=[image_content]
             )
             
-            analysis_response = await vision_chat.send_message(user_message)
+            analysis_response = None
+            for vision_attempt in range(2):
+                try:
+                    analysis_response = await _asyncio.wait_for(
+                        vision_chat.send_message(user_message),
+                        timeout=30
+                    )
+                    print(f"[UPLOAD] Vision success on attempt {vision_attempt + 1}")
+                    break
+                except Exception as retry_err:
+                    print(f"[UPLOAD] Vision attempt {vision_attempt + 1} failed: {retry_err}")
+                    if vision_attempt == 0:
+                        await _asyncio.sleep(2)
+                        vision_chat = LlmChat(
+                            api_key=EMERGENT_LLM_KEY,
+                            session_id=f"image-analysis-{uuid.uuid4()}-retry",
+                            system_message="You are a legal document OCR and evidence analyzer. Extract ALL visible text and describe the image."
+                        ).with_model("openai", "gpt-5.2")
+                        image_content = ImageContent(image_base64=image_base64)
+                        user_message = UserMessage(
+                            text=f"Extract ALL text from this image (OCR). Describe everything visible. File: {file.filename}",
+                            file_contents=[image_content]
+                        )
             
             if analysis_response and analysis_response.strip():
                 extracted_text = f"[Image: {file.filename}] (AI Vision Analysis)\n\n{analysis_response}"
-                print(f"Image analysis successful for {file.filename}: {len(analysis_response)} chars")
+                print(f"[UPLOAD] Image analysis successful: {len(analysis_response)} chars")
             else:
-                extracted_text = f"[Image: {file.filename}]\n\nImage uploaded for visual evidence. AI analysis could not extract details."
+                extracted_text = f"[Image: {file.filename}]\n\nImage uploaded. AI Vision could not extract text. Use 'Re-Analyze' button to retry."
         except Exception as vision_err:
-            print(f"Vision analysis error for {file.filename}: {str(vision_err)}")
-            extracted_text = f"[Image: {file.filename}]\n\nImage uploaded for visual evidence. Size: {file_size // 1024}KB. Manual review recommended."
+            print(f"[UPLOAD] Vision error for {file.filename}: {str(vision_err)}")
+            extracted_text = f"[Image: {file.filename}]\n\nImage uploaded ({file_size // 1024}KB). Use 'Re-Analyze' to extract text."
     elif file_ext in audio_extensions:
         file_category = "audio"
         # Attempt to transcribe audio using OpenAI Whisper
@@ -335,12 +374,14 @@ async def upload_document(
         extracted_text = f"[File: {file.filename}]\n\nFile uploaded successfully."
     
     # Save file
+    print(f"[UPLOAD] Saving file: {file.filename}")
     file_id = str(uuid.uuid4())
     file_path = os.path.join(UPLOAD_DIR, f"{file_id}{file_ext}")
     with open(file_path, 'wb') as f:
         f.write(content)
     
     # Create document record
+    print(f"[UPLOAD] Creating DB record...")
     doc_id = str(uuid.uuid4())
     doc = {
         "_id": doc_id,
@@ -361,269 +402,64 @@ async def upload_document(
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
+    print(f"[UPLOAD] Inserting doc into DB...")
     await db.documents.insert_one(doc)
+    print(f"[UPLOAD] DB insert done for {doc_id}")
     
-    # Run AI analysis if requested (skip for large video/audio files)
+    # Run AI analysis in background if requested (don't block upload response)
     analysis_result = None
     skip_analysis = file_category in ['video', 'audio'] and file_size > 5 * 1024 * 1024
     if auto_analyze and EMERGENT_LLM_KEY and not skip_analysis:
-        try:
-            analysis_result = await analyze_uploaded_document(
-                doc_id, case_id, case, extracted_text, file.filename, current_user["user_id"]
-            )
-            # Update document with analysis
-            await db.documents.update_one(
-                {"_id": doc_id},
-                {"$set": {
-                    "analysis": analysis_result.get("analysis"),
-                    "extracted_violations": analysis_result.get("violations", []),
-                    "extracted_timeline": analysis_result.get("timeline", [])
-                }}
-            )
-        except Exception as e:
-            analysis_result = {"error": str(e)}
+        # Schedule analysis as a background task (runs after response is sent)
+        background_tasks.add_task(
+            run_document_analysis_bg, doc_id, case_id, case, extracted_text, file.filename, current_user["user_id"]
+        )
+        analysis_result = {"status": "analyzing", "message": "Document uploaded. AI analysis running in background..."}
+        
+        await db.documents.update_one(
+            {"_id": doc_id},
+            {"$set": {"analysis_status": "analyzing"}}
+        )
     
     doc["id"] = doc.pop("_id")
     doc["analysis_result"] = analysis_result
     
+    print(f"[UPLOAD] Returning response for {doc['id']}")
     return doc
 
 
 async def analyze_uploaded_document(doc_id: str, case_id: str, case: dict, content: str, filename: str, user_id: str):
     """
-    THE CPS PUNISHER - ULTIMATE Document Analysis Engine
-    The most comprehensive AI legal analyst for Child Protective Services cases.
+    THE CPS PUNISHER - Document Analysis Engine
     Detects fraud, perjury, constitutional violations, procedural errors, and more.
     """
     db = get_db()
+    import asyncio
+    import logging
+    logger = logging.getLogger("analysis")
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
+    print(f"[ANALYSIS] Starting for doc {doc_id}, content length: {len(content)}")
     state = case.get("state", "Unknown")
     
-    system_message = f"""You are THE CPS PUNISHER LEGAL AI - the most advanced and aggressive AI legal analyst 
-ever created for Child Protective Services defense. You are a virtual team of:
-- A constitutional law expert
-- A family law attorney 
-- A forensic document analyst
-- A fraud investigator
-- A civil rights advocate
+    system_message = f"""You are THE CPS PUNISHER LEGAL AI - an aggressive CPS defense analyst for families in {state}.
+Detect ALL: fraud, perjury, constitutional violations (4th/5th/6th/14th Amendments), procedural errors, ASFA/CAPTA/ICWA/ADA violations, caseworker misconduct, evidentiary issues.
+Be AGGRESSIVE - flag ANY possible violation. This family's children may be at stake.
 
-You are analyzing a document for a family fighting CPS in {state}.
-
-YOUR MISSION: TEAR THIS DOCUMENT APART. Find EVERY issue, EVERY violation, EVERY lie, EVERY procedural error.
-Families are being destroyed by corrupt and incompetent CPS systems. Your analysis could save children from 
-wrongful removal or reunite a family.
-
-## WHAT YOU MUST DETECT AND FLAG:
-
-### FRAUD & PERJURY
-- False statements of fact
-- Misrepresentation of evidence
-- Fabricated allegations
-- Doctored or altered documents
-- Statements contradicted by evidence
-- Exaggerations presented as fact
-- Omission of exculpatory evidence
-- Cherry-picked facts that mislead
-
-### CONSTITUTIONAL VIOLATIONS
-- **4th Amendment**: Warrantless entry, illegal search, seizure without probable cause, coerced consent
-- **5th Amendment**: Self-incrimination, statements obtained through deception, Miranda-like issues
-- **6th Amendment**: Denied right to counsel, no notification of hearing rights
-- **14th Amendment**: Due process violations, equal protection issues, liberty interest violations
-- **1st Amendment**: Religious discrimination, freedom of expression issues
-
-### PROCEDURAL VIOLATIONS
-- Failed to provide written notice
-- Missed mandatory timelines (24hr, 48hr, 72hr rules)
-- No reasonable efforts finding before removal
-- Emergency removal without true emergency
-- Failed to consider kinship placement first
-- No safety plan offered before removal
-- Inadequate investigation (one-sided, no father contact, etc.)
-- Failed to interview children properly
-- Coerced statements from children
-
-### EVIDENTIARY ISSUES
-- Hearsay relied upon as fact
-- Anonymous allegations treated as credible
-- No corroborating evidence
-- Expert opinions without qualification
-- Medical diagnoses without examination
-- Conclusions without factual basis
-- Speculation presented as assessment
-
-### FEDERAL LAW VIOLATIONS
-- **ASFA** (Adoption and Safe Families Act) timeline violations
-- **CAPTA** (Child Abuse Prevention and Treatment Act) requirements not met
-- **ICWA** (Indian Child Welfare Act) violations for Native families
-- **ADA** (Americans with Disabilities Act) discrimination
-- **Title VI** civil rights violations
-
-### AGENCY MISCONDUCT
-- Caseworker bias or prejudice
-- Conflict of interest
-- Retaliation for exercising rights
-- Intimidation or threats
-- Failure to follow agency policy
-- Inadequate supervision
-- Pattern of similar misconduct
-
-### DOCUMENT-SPECIFIC ISSUES
-- Inconsistencies within the document
-- Contradictions with other documents
-- Missing required signatures or dates
-- Incorrect legal citations
-- Improper service of documents
-- Backdated entries
-- Unsigned declarations
-
-## HOW TO EXPLAIN ISSUES:
-
-For EACH issue found, provide:
-1. **What was found**: The specific problematic statement/action
-2. **Why it's wrong**: The legal/factual basis for the violation
-3. **How it applies to this case**: Specific impact on this family
-4. **How to challenge it**: Defense strategy or motion to file
-5. **Severity**: How damaging this is to CPS's case
-
-## OUTPUT FORMAT (JSON):
-
-{{
-    "summary": "2-3 sentence overview of this document and its most critical issues",
-    "document_type": "petition/safety_plan/court_order/report/letter/assessment/other",
-    "overall_assessment": "HIGHLY PROBLEMATIC / PROBLEMATIC / CONCERNING / STANDARD",
-    "credibility_score": 1-10 (10 = appears legitimate, 1 = full of problems),
-    
-    "fraud_and_perjury": [
-        {{
-            "finding": "Exact quote or description of fraudulent/perjurious statement",
-            "explanation": "Why this is fraud/perjury",
-            "evidence_contradiction": "How this contradicts facts/evidence",
-            "legal_consequence": "Perjury charges, case dismissal, sanctions, etc.",
-            "severity": "critical/high/medium"
-        }}
-    ],
-    
-    "constitutional_violations": [
-        {{
-            "amendment": "4th/5th/6th/14th/1st",
-            "violation_type": "specific type (warrantless entry, etc.)",
-            "description": "Detailed description of what happened",
-            "legal_basis": "Case law or statute supporting this violation",
-            "defense_strategy": "Motion to suppress, dismiss, etc.",
-            "severity": "critical/high/medium"
-        }}
-    ],
-    
-    "procedural_violations": [
-        {{
-            "procedure_violated": "Name of procedure/policy",
-            "description": "What they failed to do",
-            "legal_requirement": "What law requires this procedure",
-            "impact_on_case": "How this affects the family's rights",
-            "remedy": "What relief to seek",
-            "severity": "critical/high/medium"
-        }}
-    ],
-    
-    "evidentiary_issues": [
-        {{
-            "issue_type": "hearsay/speculation/no_foundation/etc.",
-            "problematic_statement": "The specific statement",
-            "why_inadmissible": "Evidentiary rule violated",
-            "challenge_strategy": "Motion in limine, objection basis",
-            "severity": "high/medium/low"
-        }}
-    ],
-    
-    "federal_law_violations": [
-        {{
-            "statute": "ASFA/CAPTA/ICWA/ADA/Title VI",
-            "specific_violation": "What requirement was violated",
-            "description": "Details of the violation",
-            "remedy": "Federal complaint, dismissal motion, etc.",
-            "severity": "critical/high/medium"
-        }}
-    ],
-    
-    "caseworker_misconduct": [
-        {{
-            "caseworker_name": "Name if mentioned",
-            "misconduct_type": "bias/coercion/retaliation/etc.",
-            "description": "What they did wrong",
-            "evidence": "How we know this from the document",
-            "complaint_basis": "Grounds for formal complaint",
-            "severity": "critical/high/medium"
-        }}
-    ],
-    
-    "key_allegations": [
-        {{
-            "allegation": "The specific allegation",
-            "basis": "What evidence (if any) supports it",
-            "weaknesses": "Problems with this allegation",
-            "defense": "How to refute this"
-        }}
-    ],
-    
-    "timeline_events": [
-        {{
-            "date": "YYYY-MM-DD or description",
-            "event": "What happened",
-            "legal_significance": "Why this matters legally",
-            "deadline_triggered": "Any statutory deadline this triggers",
-            "actors": ["People involved"]
-        }}
-    ],
-    
-    "named_individuals": [
-        {{
-            "name": "Full name",
-            "role": "caseworker/supervisor/judge/attorney/witness/etc.",
-            "actions_described": "What they did per this document",
-            "potential_issues": "Any misconduct or problems with their actions"
-        }}
-    ],
-    
-    "defense_opportunities": [
-        {{
-            "opportunity": "Specific defense argument or strategy",
-            "legal_basis": "Law or precedent supporting this",
-            "likelihood_of_success": "strong/moderate/worth_trying",
-            "how_to_execute": "Steps to pursue this defense"
-        }}
-    ],
-    
-    "motions_to_file": [
-        {{
-            "motion_type": "dismiss/suppress/continuance/etc.",
-            "basis": "Grounds for the motion",
-            "urgency": "immediate/soon/when_appropriate",
-            "likelihood_of_success": "strong/moderate/possible"
-        }}
-    ],
-    
-    "questions_to_investigate": [
-        "Things that need more information or investigation"
-    ],
-    
-    "recommended_immediate_actions": [
-        "Urgent steps the family should take NOW"
-    ],
-    
-    "case_notes_to_add": [
-        {{
-            "note_title": "Brief title",
-            "note_content": "Detailed note to add to case file",
-            "importance": "critical/high/medium"
-        }}
-    ]
-}}
-
-REMEMBER: Be AGGRESSIVE. If there's ANY possibility of a violation, FLAG IT. 
-This family's children may be at stake. Leave no stone unturned.
-Find the FRAUD. Expose the LIES. Reveal the VIOLATIONS."""
+Respond ONLY with valid JSON matching this structure:
+{{"summary":"overview","document_type":"petition/report/order/letter/other","overall_assessment":"HIGHLY PROBLEMATIC/PROBLEMATIC/CONCERNING/STANDARD","credibility_score":1-10,
+"fraud_and_perjury":[{{"finding":"what","explanation":"why","severity":"critical/high/medium"}}],
+"constitutional_violations":[{{"amendment":"4th/14th/etc","violation_type":"type","description":"detail","defense_strategy":"motion","severity":"critical/high/medium"}}],
+"procedural_violations":[{{"procedure_violated":"name","description":"detail","remedy":"relief","severity":"critical/high/medium"}}],
+"federal_law_violations":[{{"statute":"ASFA/CAPTA/etc","specific_violation":"detail","remedy":"action","severity":"critical/high/medium"}}],
+"caseworker_misconduct":[{{"caseworker_name":"name","misconduct_type":"type","description":"detail","severity":"critical/high/medium"}}],
+"evidentiary_issues":[{{"issue_type":"hearsay/speculation/etc","problematic_statement":"quote","challenge_strategy":"objection","severity":"high/medium/low"}}],
+"key_allegations":[{{"allegation":"what","weaknesses":"problems","defense":"how to refute"}}],
+"timeline_events":[{{"date":"YYYY-MM-DD","event":"what","legal_significance":"why it matters"}}],
+"defense_opportunities":[{{"opportunity":"strategy","legal_basis":"law","likelihood_of_success":"strong/moderate/worth_trying"}}],
+"motions_to_file":[{{"motion_type":"dismiss/suppress/etc","basis":"grounds","urgency":"immediate/soon/later"}}],
+"recommended_immediate_actions":["action1","action2"],
+"case_notes_to_add":[{{"note_title":"title","note_content":"detail","importance":"critical/high/medium"}}]}}"""
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -636,11 +472,41 @@ Find the FRAUD. Expose the LIES. Reveal the VIOLATIONS."""
 FILENAME: {filename}
 
 DOCUMENT CONTENT:
-{content[:25000]}
+{content[:15000]}
 
 Provide your complete analysis in JSON format. Be thorough - this parent's family is at stake."""
 
-    response = await chat.send_message(UserMessage(text=prompt))
+    max_retries = 2
+    response = None
+    
+    for attempt in range(max_retries + 1):
+        try:
+            print(f"[ANALYSIS] Sending LLM request for doc {doc_id} (attempt {attempt + 1})...")
+            response = await asyncio.wait_for(
+                chat.send_message(UserMessage(text=prompt)),
+                timeout=90
+            )
+            print(f"[ANALYSIS] LLM response received for doc {doc_id}, length: {len(response)}")
+            break
+        except asyncio.TimeoutError:
+            print(f"[ANALYSIS] LLM TIMEOUT for doc {doc_id}")
+            if attempt == max_retries:
+                return {"error": "Analysis timed out. Please try again.", "analysis": None}
+        except Exception as e:
+            print(f"[ANALYSIS] LLM ERROR for doc {doc_id}: {e}")
+            if attempt == max_retries:
+                return {"error": f"Analysis failed: {str(e)}", "analysis": None}
+            # Wait before retry
+            await asyncio.sleep(2)
+            # Create fresh chat for retry
+            chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=f"doc-analysis-{doc_id}-retry{attempt}",
+                system_message=system_message
+            ).with_model("openai", "gpt-5.2")
+    
+    if not response:
+        return {"error": "Analysis failed after retries", "analysis": None}
     
     # Parse JSON response
     try:
@@ -899,8 +765,9 @@ Provide your complete analysis in JSON format. Be thorough - this parent's famil
 
 
 @router.post("/api/documents/{doc_id}/reanalyze")
-async def reanalyze_document(doc_id: str, current_user: dict = Depends(get_current_user)):
-    """Re-run AI analysis on an existing document"""
+async def reanalyze_document(doc_id: str, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
+    """Re-run AI analysis - runs in background and returns immediately"""
+    print(f"[REANALYZE] Starting for doc {doc_id}")
     db = get_db()
     doc = await db.documents.find_one({"_id": doc_id, "user_id": current_user["user_id"]})
     if not doc:
@@ -908,22 +775,14 @@ async def reanalyze_document(doc_id: str, current_user: dict = Depends(get_curre
     
     case = await get_case_with_ownership(doc["case_id"], current_user["user_id"])
     
-    analysis_result = await analyze_uploaded_document(
-        doc_id, doc["case_id"], case, doc.get("content", ""), 
-        doc.get("filename", "document"), current_user["user_id"]
+    await db.documents.update_one({"_id": doc_id}, {"$set": {"analysis_status": "analyzing"}})
+    
+    background_tasks.add_task(
+        run_document_analysis_bg, doc_id, doc["case_id"], case,
+        doc.get("content", ""), doc.get("filename", "document"), current_user["user_id"]
     )
     
-    await db.documents.update_one(
-        {"_id": doc_id},
-        {"$set": {
-            "analysis": analysis_result.get("analysis"),
-            "extracted_violations": analysis_result.get("violations", []),
-            "extracted_timeline": analysis_result.get("timeline", []),
-            "reanalyzed_at": datetime.now(timezone.utc).isoformat()
-        }}
-    )
-    
-    return analysis_result
+    return {"status": "analyzing", "message": "Analysis started. Results will appear shortly.", "doc_id": doc_id}
 
 
 @router.get("/api/documents/{doc_id}/analysis")
@@ -944,3 +803,24 @@ async def get_document_analysis(doc_id: str, current_user: dict = Depends(get_cu
     }
 
 
+
+
+@router.get("/api/documents/{doc_id}/analysis-status")
+async def get_analysis_status(doc_id: str, current_user: dict = Depends(get_current_user)):
+    """Check the status of a background document analysis"""
+    db = get_db()
+    doc = await db.documents.find_one(
+        {"_id": doc_id, "user_id": current_user["user_id"]},
+        {"_id": 0, "analysis_status": 1, "analysis": 1, "analysis_error": 1, "extracted_violations": 1}
+    )
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    status = doc.get("analysis_status", "none")
+    return {
+        "doc_id": doc_id,
+        "status": status,
+        "analysis": doc.get("analysis") if status == "complete" else None,
+        "error": doc.get("analysis_error") if status == "error" else None,
+        "violations_found": len(doc.get("extracted_violations", []))
+    }

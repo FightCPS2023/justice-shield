@@ -11,6 +11,7 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import CaseDetailModal from './CaseDetailModal';
 
 function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
   const { api } = useAuth();
