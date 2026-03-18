@@ -130,14 +130,22 @@ function DocumentsTab({ selectedCase }) {
     }
   };
 
-  const toggleQueueDetails = async (docId) => {
+  const toggleQueueDetails = (docId) => {
     if (activeQueueDocId === docId) {
       setActiveQueueDocId(null);
       return;
     }
-    await fetchQueueDetails(docId);
     setActiveQueueDocId(docId);
+    fetchQueueDetails(docId);
   };
+
+  useEffect(() => {
+    if (!selectedDocument) return;
+    const status = selectedDocument.analysis_status;
+    if (!['queued', 'analyzing', 'error'].includes(status)) return;
+    if (queueDetails[selectedDocument.id] || queueDetailsLoading[selectedDocument.id]) return;
+    fetchQueueDetails(selectedDocument.id);
+  }, [selectedDocument, queueDetails, queueDetailsLoading]);
 
   const validateFile = (file) => {
     const ext = '.' + file.name.split('.').pop().toLowerCase();
@@ -767,9 +775,9 @@ function DocumentsTab({ selectedCase }) {
                         </button>
                         {['queued', 'analyzing', 'error'].includes(doc.analysis_status) && (
                           <button
-                            onClick={async (e) => {
+                            onClick={(e) => {
                               e.stopPropagation();
-                              await toggleQueueDetails(doc.id);
+                              toggleQueueDetails(doc.id);
                             }}
                             className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm flex items-center gap-2"
                             data-testid={`queue-details-btn-${doc.id}`}

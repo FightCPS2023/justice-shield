@@ -54,6 +54,12 @@ class ForensicAnalysisRequest(BaseModel):
 
 router = APIRouter()
 
+ADA_CROSS_REFERENCE = """
+ADA CROSS-REFERENCE REQUIREMENT:
+- Always evaluate ADA Title II (public entities) and Title III (public accommodations) for disability accommodations, access barriers, discrimination, and service modifications.
+- When relevant, cite Title II/III issues and include remedies, strategies, and case notes.
+"""
+
 @router.post("/api/ai/person-lookup")
 async def person_lookup(request: PersonLookupRequest, current_user: dict = Depends(get_current_user)):
     """
@@ -133,7 +139,7 @@ Entry object guidance (include source_type + confidence on every item):
 - online presence items: { "platform": "", "handle_or_url": "", "notes": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
 - red_flags items: { "flag": "", "reason": "", "severity": "low|medium|high", "source_type": "", "confidence_label": "", "confidence_score": 0 }
 
-Make the report detailed and practical. If data is limited, leave arrays empty and explain gaps in verification_gaps and recommendations_next_steps. Always include a strong disclaimer about verification requirements."""
+Make the report detailed and practical. If data is limited, leave arrays empty and explain gaps in verification_gaps and recommendations_next_steps. Always include a strong disclaimer about verification requirements.""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -260,7 +266,7 @@ you will compile information about their court case history including:
    - Probate matters
 
 Present findings in a clear, organized format with case numbers, dates, and outcomes where available.
-Note the jurisdiction for each case and indicate confidence level."""
+Note the jurisdiction for each case and indicate confidence level.""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -366,7 +372,7 @@ IMPORTANT DISCLAIMERS:
 - Always recommend consulting with a licensed attorney
 - Help users understand their rights and potential violations
 
-Be thorough, cite relevant statutes and case law when applicable, and always prioritize protecting children while defending parental rights.{case_context}"""
+Be thorough, cite relevant statutes and case law when applicable, and always prioritize protecting children while defending parental rights.{case_context}""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -492,7 +498,7 @@ Case Context:
 
 You have comprehensive knowledge of all 50 states' CPS statutes, federal laws (ASFA, CAPTA, ICWA), constitutional rights, and case law precedents.
 
-IMPORTANT: You provide legal EDUCATION, not legal advice. Always recommend consulting a licensed attorney.{case_context}"""
+IMPORTANT: You provide legal EDUCATION, not legal advice. Always recommend consulting a licensed attorney.{case_context}""" + ADA_CROSS_REFERENCE
 
     async def generate_stream():
         full_response = ""
@@ -603,7 +609,7 @@ Provide thorough, professional analysis to help parents understand their case. I
 - Practical next steps
 - Legal disclaimers
 
-Note: This is legal education, not legal advice. Recommend consulting an attorney."""
+Note: This is legal education, not legal advice. Recommend consulting an attorney.""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -707,7 +713,7 @@ REQUIREMENTS:
 5. Include signature block and certificate of service
 6. Add legal disclaimer about attorney review
 
-Generate a complete, professional, court-ready document."""
+Generate a complete, professional, court-ready document.""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -782,7 +788,7 @@ You have expertise in:
 - Case law precedents
 - Strategic defense planning
 
-Provide actionable, legally-sound strategies that protect parental rights while acknowledging child safety concerns."""
+Provide actionable, legally-sound strategies that protect parental rights while acknowledging child safety concerns.""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -869,7 +875,7 @@ When researching, provide:
 5. Practical defense applications
 6. Procedural requirements and deadlines
 
-Always note this is legal education, not legal advice."""
+Always note this is legal education, not legal advice.""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -985,7 +991,7 @@ CRITICAL INSTRUCTIONS:
 - Structure output with clear headers and sections
 - Make it court-ready and professionally formatted
 - Include both federal and state-specific citations
-- Flag any time-sensitive deadlines or procedural requirements"""
+- Flag any time-sensitive deadlines or procedural requirements""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -1103,7 +1109,7 @@ DOCUMENT GENERATION RULES:
 7. Include certificate of service, verification, and prayer for relief where appropriate
 8. Fill in all case details from the provided context
 9. Mark anything that needs user input as [FILL IN]
-10. Make it ready to file — not a draft, a FINAL document"""
+10. Make it ready to file — not a draft, a FINAL document""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -1253,7 +1259,7 @@ State whether the document set contains:
 - Defects that could render agreements void ab initio
 Provide overall risk assessment and recommended legal actions.
 
-FORMAT: Use clear section headers, numbered findings, and structured formatting. Be thorough and cite specific text from the documents."""
+FORMAT: Use clear section headers, numbered findings, and structured formatting. Be thorough and cite specific text from the documents.""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,

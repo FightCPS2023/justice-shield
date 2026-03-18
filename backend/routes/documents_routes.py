@@ -5,6 +5,7 @@ import json
 import uuid
 import base64
 import asyncio
+import io
 from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends, File, UploadFile, Form, BackgroundTasks
@@ -26,6 +27,18 @@ ANALYSIS_QUEUE = asyncio.Queue()
 ANALYSIS_QUEUE_DOC_IDS = set()
 ANALYSIS_QUEUE_STARTED = False
 ANALYSIS_QUEUE_LOCK = asyncio.Lock()
+
+DOCUMENT_EXTENSIONS = {'.pdf', '.txt', '.doc', '.docx', '.rtf'}
+IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.heic'}
+AUDIO_EXTENSIONS = {'.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.wma'}
+VIDEO_EXTENSIONS = {'.mp4', '.mov', '.avi', '.mkv', '.wmv', '.webm', '.m4v'}
+ALLOWED_EXTENSIONS = DOCUMENT_EXTENSIONS | IMAGE_EXTENSIONS | AUDIO_EXTENSIONS | VIDEO_EXTENSIONS
+
+ADA_CROSS_REFERENCE = """
+ADA CROSS-REFERENCE REQUIREMENT:
+- Always evaluate ADA Title II (public entities) and Title III (public accommodations) for disability accommodations, access barriers, discrimination, and service modifications.
+- When relevant, cite Title II/III issues and include remedies, strategies, and case notes.
+"""
 
 
 async def run_document_analysis_bg(doc_id, case_id, case, content, filename, user_id):
@@ -95,12 +108,35 @@ async def _process_analysis_job(doc_id: str):
 
     await db.documents.update_one({"_id": doc_id}, {"$set": {"analysis_status": "analyzing", "analysis_error": None}})
 
+    content = doc.get("content", "")
+    if doc.get("source") == "upload" and doc.get("extraction_status") != "complete":
+        await db.documents.update_one(
+            {"_id": doc_id},
+            {"$set": {"extraction_status": "processing", "extraction_error": None}}
+        )
+        extracted_text, extraction_error = await extract_text_from_file(
+            doc.get("file_path", ""),
+            doc.get("file_type", ""),
+            doc.get("filename", "document"),
+            doc.get("file_size", 0)
+        )
+        extraction_status = "complete" if not extraction_error else "error"
+        await db.documents.update_one(
+            {"_id": doc_id},
+            {"$set": {
+                "content": extracted_text,
+                "extraction_status": extraction_status,
+                "extraction_error": extraction_error
+            }}
+        )
+        content = extracted_text
+
     try:
         await run_document_analysis_bg(
             doc_id,
             doc.get("case_id"),
             case,
-            doc.get("content", ""),
+            content,
             doc.get("filename", "document"),
             doc.get("user_id")
         )
@@ -293,6 +329,151 @@ async def transcribe_audio_video(content: bytes, filename: str, file_ext: str, f
         print(f"Transcription error for {filename}: {str(e)}")
         return None
 
+
+async def extract_text_from_file(file_path: str, file_ext: str, filename: str, file_size: int):
+    try:
+        with open(file_path, 'rb') as f:
+            content = f.read()
+    except Exception as e:
+        return f"[File: {filename}]\n\nFile uploaded successfully. Text extraction failed due to a read error.", f"Failed to read file: {str(e)}"
+
+    if file_ext == '.txt':
+        return content.decode('utf-8', errors='ignore'), None
+
+    if file_ext == '.pdf':
+        try:
+            from pypdf import PdfReader
+            pdf_reader = PdfReader(io.BytesIO(content))
+            pdf_text_parts = []
+            pages_with_no_text = []
+
+            for page_num, page in enumerate(pdf_reader.pages, 1):
+                try:
+                    page_text = page.extract_text()
+                    if page_text and page_text.strip() and len(page_text.strip()) > 20:
+                        pdf_text_parts.append(f"--- Page {page_num} ---\n{page_text}")
+                    else:
+                        pages_with_no_text.append(page_num)
+                except Exception:
+                    pages_with_no_text.append(page_num)
+
+            if len(pages_with_no_text) > len(pdf_reader.pages) * 0.5 or (len(pdf_text_parts) == 0 and len(pdf_reader.pages) > 0):
+                try:
+                    from pdf2image import convert_from_bytes
+                    import pytesseract
+
+                    print(f"Attempting OCR for scanned PDF: {filename}")
+                    images = await asyncio.to_thread(convert_from_bytes, content, dpi=200, fmt='png')
+                    ocr_text_parts = []
+
+                    for page_num, image in enumerate(images, 1):
+                        try:
+                            ocr_text = await asyncio.to_thread(pytesseract.image_to_string, image)
+                            if ocr_text and ocr_text.strip():
+                                ocr_text_parts.append(f"--- Page {page_num} (OCR) ---\n{ocr_text.strip()}")
+                        except Exception as ocr_page_err:
+                            print(f"OCR failed for page {page_num}: {str(ocr_page_err)}")
+
+                    if ocr_text_parts:
+                        extracted_text = f"[PDF Document: {filename}] (Text extracted via OCR)\n\n" + "\n\n".join(ocr_text_parts)
+                    elif pdf_text_parts:
+                        extracted_text = f"[PDF Document: {filename}]\n\n" + "\n\n".join(pdf_text_parts)
+                    else:
+                        extracted_text = f"[PDF Document: {filename}]\n\nNote: This PDF appears to be image-based with no readable text. OCR extraction was attempted but found no content."
+                except ImportError as ie:
+                    print(f"OCR libraries not available: {str(ie)}")
+                    if pdf_text_parts:
+                        extracted_text = f"[PDF Document: {filename}]\n\n" + "\n\n".join(pdf_text_parts)
+                    else:
+                        extracted_text = f"[PDF Document: {filename}]\n\nNote: This PDF appears to be scanned/image-based. OCR is not available."
+                except Exception as ocr_err:
+                    print(f"OCR extraction failed for {filename}: {str(ocr_err)}")
+                    if pdf_text_parts:
+                        extracted_text = f"[PDF Document: {filename}]\n\n" + "\n\n".join(pdf_text_parts)
+                    else:
+                        extracted_text = f"[PDF Document: {filename}]\n\nNote: PDF text extraction encountered issues."
+            elif pdf_text_parts:
+                extracted_text = f"[PDF Document: {filename}]\n\n" + "\n\n".join(pdf_text_parts)
+            else:
+                extracted_text = f"[PDF Document: {filename}]\n\nNote: This PDF has no extractable text content."
+
+            return extracted_text, None
+        except Exception as e:
+            print(f"PDF extraction error for {filename}: {str(e)}")
+            return f"[PDF Document: {filename}]\n\nPDF uploaded successfully. Text extraction encountered an issue.", str(e)
+
+    if file_ext in IMAGE_EXTENSIONS:
+        if not EMERGENT_LLM_KEY:
+            return f"[Image: {filename}]\n\nImage uploaded. AI Vision is not available.", "AI Vision unavailable: missing API key"
+        try:
+            import base64 as _b64
+            from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+
+            print(f"[UPLOAD] Analyzing image with AI Vision: {filename}")
+            image_base64 = _b64.b64encode(content).decode('utf-8')
+            vision_chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=f"image-analysis-{uuid.uuid4()}",
+                system_message="You are a legal document OCR and evidence analyzer for CPS cases. Extract ALL visible text and describe the image thoroughly."
+            ).with_model("openai", "gpt-5.2")
+
+            image_content = ImageContent(image_base64=image_base64)
+            user_message = UserMessage(
+                text=f"Extract ALL text from this image (OCR). Describe everything visible. File: {filename}",
+                file_contents=[image_content]
+            )
+
+            analysis_response = None
+            for vision_attempt in range(2):
+                try:
+                    analysis_response = await asyncio.wait_for(
+                        vision_chat.send_message(user_message),
+                        timeout=30
+                    )
+                    print(f"[UPLOAD] Vision success on attempt {vision_attempt + 1}")
+                    break
+                except Exception as retry_err:
+                    print(f"[UPLOAD] Vision attempt {vision_attempt + 1} failed: {retry_err}")
+                    if vision_attempt == 0:
+                        await asyncio.sleep(2)
+                        vision_chat = LlmChat(
+                            api_key=EMERGENT_LLM_KEY,
+                            session_id=f"image-analysis-{uuid.uuid4()}-retry",
+                            system_message="You are a legal document OCR and evidence analyzer. Extract ALL visible text and describe the image."
+                        ).with_model("openai", "gpt-5.2")
+                        image_content = ImageContent(image_base64=image_base64)
+                        user_message = UserMessage(
+                            text=f"Extract ALL text from this image (OCR). Describe everything visible. File: {filename}",
+                            file_contents=[image_content]
+                        )
+
+            if analysis_response and analysis_response.strip():
+                extracted_text = f"[Image: {filename}] (AI Vision Analysis)\n\n{analysis_response}"
+            else:
+                extracted_text = f"[Image: {filename}]\n\nImage uploaded. AI Vision could not extract text."
+            return extracted_text, None
+        except Exception as vision_err:
+            print(f"[UPLOAD] Vision error for {filename}: {str(vision_err)}")
+            return f"[Image: {filename}]\n\nImage uploaded. AI Vision could not extract text.", str(vision_err)
+
+    if file_ext in AUDIO_EXTENSIONS:
+        transcription_text = await transcribe_audio_video(content, filename, file_ext, file_size)
+        if transcription_text:
+            return f"[Audio Recording: {filename}] (Transcribed)\n\n{transcription_text}", None
+        return f"[Audio Recording: {filename}]\n\nAudio file uploaded ({file_size // 1024}KB). Transcription was not available.", None
+
+    if file_ext in VIDEO_EXTENSIONS:
+        transcription_text = await transcribe_audio_video(content, filename, file_ext, file_size)
+        if transcription_text:
+            return f"[Video Recording: {filename}] (Audio Transcribed)\n\n{transcription_text}", None
+        return f"[Video Recording: {filename}]\n\nVideo file uploaded ({file_size // (1024*1024)}MB). Audio transcription was not available.", None
+
+    if file_ext in {'.doc', '.docx', '.rtf'}:
+        return f"[Word Document: {filename}]\n\nDocument uploaded. For best text extraction, consider converting to PDF.", None
+
+    return f"[File: {filename}]\n\nFile uploaded successfully.", None
+
+
 @router.post("/api/documents/upload")
 async def upload_document(
     background_tasks: BackgroundTasks,
@@ -309,7 +490,6 @@ async def upload_document(
     Returns: Document record with extracted text and optional AI analysis
     """
     db = get_db()
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
 
     # Enforce document upload limit
     user_tier = await get_user_tier(current_user["user_id"])
@@ -320,16 +500,7 @@ async def upload_document(
     await get_case_with_ownership(case_id, current_user["user_id"])
     
     # Validate file type - expanded to include audio/video
-    allowed_extensions = {
-        # Documents
-        '.pdf', '.txt', '.doc', '.docx', '.rtf',
-        # Images
-        '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.heic',
-        # Audio
-        '.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.wma',
-        # Video
-        '.mp4', '.mov', '.avi', '.mkv', '.wmv', '.webm', '.m4v'
-    }
+    allowed_extensions = ALLOWED_EXTENSIONS
     file_ext = os.path.splitext(file.filename)[1].lower()
     if file_ext not in allowed_extensions:
         raise HTTPException(status_code=400, detail=f"File type {file_ext} not supported. Allowed: PDF, TXT, DOC, images, audio (MP3, WAV, etc), video (MP4, MOV, etc)")
@@ -344,162 +515,39 @@ async def upload_document(
         raise HTTPException(status_code=400, detail=f"File too large. Maximum {max_size // (1024*1024)}MB for this file type.")
     
     # Determine file category
-    image_extensions = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.heic'}
-    audio_extensions = {'.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.wma'}
-    video_extensions = {'.mp4', '.mov', '.avi', '.mkv', '.wmv', '.webm', '.m4v'}
+    image_extensions = IMAGE_EXTENSIONS
+    audio_extensions = AUDIO_EXTENSIONS
+    video_extensions = VIDEO_EXTENSIONS
     
     # Extract text based on file type
     extracted_text = ""
     file_category = "document"
-    
+    extraction_status = "queued"
+    extraction_error = None
+
     if file_ext == '.txt':
         extracted_text = content.decode('utf-8', errors='ignore')
         file_category = "document"
+        extraction_status = "complete"
     elif file_ext == '.pdf':
         file_category = "document"
-        # Extract text from PDF using pypdf, with OCR fallback for scanned documents
-        try:
-            from pypdf import PdfReader
-            import io
-            
-            pdf_reader = PdfReader(io.BytesIO(content))
-            pdf_text_parts = []
-            pages_with_no_text = []
-            
-            # First pass: try standard text extraction
-            for page_num, page in enumerate(pdf_reader.pages, 1):
-                try:
-                    page_text = page.extract_text()
-                    if page_text and page_text.strip() and len(page_text.strip()) > 20:
-                        pdf_text_parts.append(f"--- Page {page_num} ---\n{page_text}")
-                    else:
-                        pages_with_no_text.append(page_num)
-                except Exception:
-                    pages_with_no_text.append(page_num)
-            
-            # If many pages have no text, try OCR extraction
-            if len(pages_with_no_text) > len(pdf_reader.pages) * 0.5 or (len(pdf_text_parts) == 0 and len(pdf_reader.pages) > 0):
-                try:
-                    from pdf2image import convert_from_bytes
-                    import pytesseract
-                    
-                    print(f"Attempting OCR for scanned PDF: {file.filename}")
-                    images = convert_from_bytes(content, dpi=200, fmt='png')
-                    ocr_text_parts = []
-                    
-                    for page_num, image in enumerate(images, 1):
-                        try:
-                            ocr_text = pytesseract.image_to_string(image)
-                            if ocr_text and ocr_text.strip():
-                                ocr_text_parts.append(f"--- Page {page_num} (OCR) ---\n{ocr_text.strip()}")
-                        except Exception as ocr_page_err:
-                            print(f"OCR failed for page {page_num}: {str(ocr_page_err)}")
-                    
-                    if ocr_text_parts:
-                        extracted_text = f"[PDF Document: {file.filename}] (Text extracted via OCR)\n\n" + "\n\n".join(ocr_text_parts)
-                    elif pdf_text_parts:
-                        # Some text was extracted, use what we have
-                        extracted_text = f"[PDF Document: {file.filename}]\n\n" + "\n\n".join(pdf_text_parts)
-                    else:
-                        extracted_text = f"[PDF Document: {file.filename}]\n\nNote: This PDF appears to be image-based with no readable text. OCR extraction was attempted but found no content. The document has been saved for manual review."
-                except ImportError as ie:
-                    print(f"OCR libraries not available: {str(ie)}")
-                    if pdf_text_parts:
-                        extracted_text = f"[PDF Document: {file.filename}]\n\n" + "\n\n".join(pdf_text_parts)
-                    else:
-                        extracted_text = f"[PDF Document: {file.filename}]\n\nNote: This PDF appears to be scanned/image-based. OCR is not available. The document has been saved for reference."
-                except Exception as ocr_err:
-                    print(f"OCR extraction failed for {file.filename}: {str(ocr_err)}")
-                    if pdf_text_parts:
-                        extracted_text = f"[PDF Document: {file.filename}]\n\n" + "\n\n".join(pdf_text_parts)
-                    else:
-                        extracted_text = f"[PDF Document: {file.filename}]\n\nNote: PDF text extraction encountered issues. The document has been saved for reference."
-            elif pdf_text_parts:
-                extracted_text = f"[PDF Document: {file.filename}]\n\n" + "\n\n".join(pdf_text_parts)
-            else:
-                extracted_text = f"[PDF Document: {file.filename}]\n\nNote: This PDF has no extractable text content. The document has been saved for reference."
-        except Exception as e:
-            print(f"PDF extraction error for {file.filename}: {str(e)}")
-            extracted_text = f"[PDF Document: {file.filename}]\n\nPDF uploaded successfully. Text extraction encountered an issue but the file is saved."
+        extracted_text = f"[PDF Document: {file.filename}]\n\nText extraction queued for background processing."
     elif file_ext in image_extensions:
         file_category = "image"
-        # Use AI Vision to analyze the image and extract text/information
-        try:
-            import base64
-            import asyncio as _asyncio
-            from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
-            
-            print(f"[UPLOAD] Analyzing image with AI Vision: {file.filename}")
-            
-            # Convert image to base64
-            image_base64 = base64.b64encode(content).decode('utf-8')
-            
-            # Create vision chat for image analysis
-            vision_chat = LlmChat(
-                api_key=EMERGENT_LLM_KEY,
-                session_id=f"image-analysis-{uuid.uuid4()}",
-                system_message="You are a legal document OCR and evidence analyzer for CPS cases. Extract ALL visible text and describe the image thoroughly."
-            ).with_model("openai", "gpt-5.2")
-            
-            image_content = ImageContent(image_base64=image_base64)
-            user_message = UserMessage(
-                text=f"Extract ALL text from this image (OCR). Describe everything visible. File: {file.filename}",
-                file_contents=[image_content]
-            )
-            
-            analysis_response = None
-            for vision_attempt in range(2):
-                try:
-                    analysis_response = await _asyncio.wait_for(
-                        vision_chat.send_message(user_message),
-                        timeout=30
-                    )
-                    print(f"[UPLOAD] Vision success on attempt {vision_attempt + 1}")
-                    break
-                except Exception as retry_err:
-                    print(f"[UPLOAD] Vision attempt {vision_attempt + 1} failed: {retry_err}")
-                    if vision_attempt == 0:
-                        await _asyncio.sleep(2)
-                        vision_chat = LlmChat(
-                            api_key=EMERGENT_LLM_KEY,
-                            session_id=f"image-analysis-{uuid.uuid4()}-retry",
-                            system_message="You are a legal document OCR and evidence analyzer. Extract ALL visible text and describe the image."
-                        ).with_model("openai", "gpt-5.2")
-                        image_content = ImageContent(image_base64=image_base64)
-                        user_message = UserMessage(
-                            text=f"Extract ALL text from this image (OCR). Describe everything visible. File: {file.filename}",
-                            file_contents=[image_content]
-                        )
-            
-            if analysis_response and analysis_response.strip():
-                extracted_text = f"[Image: {file.filename}] (AI Vision Analysis)\n\n{analysis_response}"
-                print(f"[UPLOAD] Image analysis successful: {len(analysis_response)} chars")
-            else:
-                extracted_text = f"[Image: {file.filename}]\n\nImage uploaded. AI Vision could not extract text. Use 'Re-Analyze' button to retry."
-        except Exception as vision_err:
-            print(f"[UPLOAD] Vision error for {file.filename}: {str(vision_err)}")
-            extracted_text = f"[Image: {file.filename}]\n\nImage uploaded ({file_size // 1024}KB). Use 'Re-Analyze' to extract text."
+        extracted_text = f"[Image: {file.filename}]\n\nAI Vision extraction queued for background processing."
     elif file_ext in audio_extensions:
         file_category = "audio"
-        # Attempt to transcribe audio using OpenAI Whisper
-        transcription_text = await transcribe_audio_video(content, file.filename, file_ext, file_size)
-        if transcription_text:
-            extracted_text = f"[Audio Recording: {file.filename}] (Transcribed)\n\n{transcription_text}"
-        else:
-            extracted_text = f"[Audio Recording: {file.filename}]\n\nAudio file uploaded ({file_size // 1024}KB). Transcription was not available. This can be used as evidence of conversations, meetings, or incidents."
+        extracted_text = f"[Audio Recording: {file.filename}]\n\nTranscription queued for background processing."
     elif file_ext in video_extensions:
         file_category = "video"
-        # Attempt to transcribe video audio track using OpenAI Whisper
-        transcription_text = await transcribe_audio_video(content, file.filename, file_ext, file_size)
-        if transcription_text:
-            extracted_text = f"[Video Recording: {file.filename}] (Audio Transcribed)\n\n{transcription_text}"
-        else:
-            extracted_text = f"[Video Recording: {file.filename}]\n\nVideo file uploaded ({file_size // (1024*1024)}MB). Audio transcription was not available. This can be used as visual evidence of incidents, visits, or conditions."
+        extracted_text = f"[Video Recording: {file.filename}]\n\nTranscription queued for background processing."
     elif file_ext in {'.doc', '.docx', '.rtf'}:
         file_category = "document"
         extracted_text = f"[Word Document: {file.filename}]\n\nDocument uploaded. For best text extraction, consider converting to PDF."
+        extraction_status = "complete"
     else:
         extracted_text = f"[File: {file.filename}]\n\nFile uploaded successfully."
+        extraction_status = "complete"
     
     # Save file
     print(f"[UPLOAD] Saving file: {file.filename}")
@@ -523,6 +571,8 @@ async def upload_document(
         "file_category": file_category,  # document, image, audio, video
         "doc_type": doc_type,
         "content": extracted_text,
+        "extraction_status": extraction_status,
+        "extraction_error": extraction_error,
         "source": "upload",
         "analysis": None,
         "extracted_violations": [],
@@ -536,8 +586,7 @@ async def upload_document(
     
     # Run AI analysis in background if requested (don't block upload response)
     analysis_result = None
-    skip_analysis = file_category in ['video', 'audio'] and file_size > 5 * 1024 * 1024
-    if auto_analyze and not skip_analysis:
+    if auto_analyze:
         if not EMERGENT_LLM_KEY:
             analysis_result = {
                 "status": "error",
@@ -594,7 +643,7 @@ Respond ONLY with valid JSON matching this structure:
 "defense_opportunities":[{{"opportunity":"strategy","legal_basis":"law","likelihood_of_success":"strong/moderate/worth_trying"}}],
 "motions_to_file":[{{"motion_type":"dismiss/suppress/etc","basis":"grounds","urgency":"immediate/soon/later"}}],
 "recommended_immediate_actions":["action1","action2"],
-"case_notes_to_add":[{{"note_title":"title","note_content":"detail","importance":"critical/high/medium"}}]}}"""
+"case_notes_to_add":[{{"note_title":"title","note_content":"detail","importance":"critical/high/medium"}}]}}""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,

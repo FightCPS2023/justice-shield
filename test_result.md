@@ -82,16 +82,19 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✓ Per-file Queue Details UI fully functional after fixing missing imports. Fixed critical bug: DocumentAnalysisView and ForensicAnalyzerView were not imported, causing runtime errors. After fix: (1) Queue Details button displays correctly for documents with queued/analyzing/error status, (2) Clicking button opens expandable panel below document card, (3) Panel shows queue status (e.g., 'Queue Status: analyzing'), (4) Refresh button present and functional, (5) Panel positioned at x=280, y=587, width=1616, height=50, (6) Analysis tab empty view displays queue status with 'Queue Status: queued', position info, and Refresh Queue button. Minor: Toast error 'Failed to load queue details' appears when API fails (expected behavior). All review request requirements verified: login, Documents tab navigation, file upload, Queue Details panel verification, Analysis tab queue status display. No runtime errors after fix."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TEST PASSED: Queue details panel immediate opening fix verified. CRITICAL REQUIREMENT CONFIRMED: (1) Panel opens IMMEDIATELY at 52ms after clicking Queue Details button - does NOT wait for API fetch to complete, (2) Status displays instantly using fallback from doc.analysis_status ('Queue Status: analyzing' shown immediately), (3) Implementation confirmed: setActiveQueueDocId(docId) called BEFORE fetchQueueDetails(docId) in toggleQueueDetails function (lines 138-139), ensuring panel renders immediately while API fetch runs in background, (4) Status line uses fallback pattern: queueDetails[doc.id]?.status || doc.analysis_status || 'unknown' (line 800), displaying doc.analysis_status before API completes, (5) Additional details (position/timestamps) populate after API returns, (6) Refresh button functional, triggers new API call, (7) Panel closes correctly when clicking Queue Details again. Test executed on https://justice-shield-6.preview.emergentagent.com with case TEST_Docs_80d33484. Found 4 documents with Queue Details buttons (all in 'analyzing' status). No console errors. FIX CONFIRMED WORKING AS DESIGNED."
 
 metadata:
   created_by: "testing_agent"
   version: "1.0"
-  test_sequence: 2
-  last_updated: "2026-03-18T17:20:00Z"
+  test_sequence: 3
+  last_updated: "2026-03-18T20:50:00Z"
 
 test_plan:
   current_focus:
-    - "Per-File Queue Details UI - Testing completed"
+    - "Per-File Queue Details UI - Re-testing completed successfully"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -105,3 +108,5 @@ agent_communication:
     message: "Document Analysis Queue UI testing completed successfully. Tested on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com. All review request requirements verified: (1) Login successful, (2) Documents tab accessible for existing case, (3) Analysis Queue card displays with all metrics (Queued, Processing, Complete, Error counts), (4) Progress bar and percentage visible, (5) Test file uploaded successfully, (6) Queue metrics update via 5-second polling, (7) Document status badges appear correctly (Queued in blue, Analyzing in yellow with spinner, Complete in green). Backend API /api/analysis-queue functional. No UI errors detected. Feature is production-ready."
   - agent: "testing"
     message: "Per-file Queue Details UI testing completed. CRITICAL BUG FIXED: Added missing imports for DocumentAnalysisView and ForensicAnalyzerView in DocumentsTab.jsx - was causing runtime errors. After fix, all features work correctly: (1) Queue Details button appears for documents with status queued/analyzing/error, (2) Clicking button opens Queue Details panel showing status and refresh button, (3) Panel displays queue status correctly (e.g., 'Queue Status: analyzing'), (4) Refresh button functional, (5) Analysis tab empty view displays queue status, position, and Refresh Queue button for documents not yet analyzed. Minor issue: Queue Details panel sometimes needs scroll to be fully visible. Toast error 'Failed to load queue details' appears when API endpoint returns error (red toast at top-right). All requirements from review request verified successfully."
+  - agent: "testing"
+    message: "RE-TEST COMPLETED: Queue Details panel immediate opening fix has been successfully verified. The critical requirement from the review request is CONFIRMED WORKING. Panel opens in 52ms (immediately) after clicking Queue Details button, WITHOUT waiting for the API fetch to complete. The fix implementation is correct: (1) setActiveQueueDocId(docId) is called first to trigger panel rendering, (2) fetchQueueDetails(docId) is called second to fetch API data in background, (3) Status displays immediately using doc.analysis_status as fallback, (4) Additional fields (position/timestamps) populate when API completes. Tested on case TEST_Docs_80d33484 with 4 documents in analyzing status. All review request steps verified: login → Documents tab → Queue Details click → panel opens immediately → shows status/position/timestamps. No issues found. Feature is production-ready."

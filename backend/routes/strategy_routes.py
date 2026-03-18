@@ -17,6 +17,12 @@ from utils.credits import (
 
 router = APIRouter()
 
+ADA_CROSS_REFERENCE = """
+ADA CROSS-REFERENCE REQUIREMENT:
+- Always evaluate ADA Title II (public entities) and Title III (public accommodations) for disability accommodations, access barriers, discrimination, and service modifications.
+- When relevant, cite Title II/III issues and include remedies, strategies, and case notes.
+"""
+
 class LegalArgumentRequest(BaseModel):
     case_id: str
     violation_ids: Optional[List[str]] = []
@@ -107,7 +113,7 @@ Your task is to build a COMPREHENSIVE legal strategy for this {state} CPS case.
 Goal: {request.goal.upper()} - {goal_context.get(request.goal)}
 Approach: {request.aggressive_level.upper()} - {aggressive_context.get(request.aggressive_level)}
 
-Build a strategy that a $500/hour family law attorney would charge thousands to create."""
+Build a strategy that a $500/hour family law attorney would charge thousands to create.""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -286,7 +292,7 @@ Each argument should include:
 - Requested relief
 
 State: {state}
-Argument Type: {request.argument_type.upper()} - {argument_types.get(request.argument_type)}"""
+Argument Type: {request.argument_type.upper()} - {argument_types.get(request.argument_type)}""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -385,7 +391,7 @@ For each piece of evidence, you will:
 1. Identify what legal arguments it supports
 2. Find applicable case law
 3. Explain the evidentiary connection
-4. Draft how to use it in court"""
+4. Draft how to use it in court""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -511,7 +517,7 @@ You have comprehensive knowledge of CPS-related case law including:
 - State appellate decisions
 - Constitutional analysis
 
-Find the most relevant precedents for the given violation type and explain how each applies."""
+Find the most relevant precedents for the given violation type and explain how each applies.""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
