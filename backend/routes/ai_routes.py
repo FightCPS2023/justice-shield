@@ -25,6 +25,14 @@ class PersonLookupRequest(BaseModel):
     additional_info: Optional[str] = None
     lookup_type: str = "comprehensive"
 
+class PersonLookupResponse(BaseModel):
+    name: str
+    lookup_type: str
+    results: dict
+    sources_checked: List[str]
+    disclaimer: str
+    timestamp: str
+
 class HelpBotMessage(BaseModel):
     message: str
     context: Optional[str] = None
@@ -73,60 +81,59 @@ async def person_lookup(request: PersonLookupRequest, current_user: dict = Depen
     if user_tier not in ["attorney", "enterprise"]:
         await deduct_credits(current_user["user_id"], FEATURE_CREDIT_COSTS.get("person_lookup", 5), "person_lookup")
     
-    system_message = """You are an expert investigator and public records researcher. Your role is to help families 
-defend themselves in CPS cases by providing comprehensive background information on individuals involved in their case.
+    system_message = """You are an expert investigator and public records researcher. Your role is to help families
+protect themselves in CPS cases by producing a comprehensive, structured background report on individuals involved in their case.
 
-When given a person's name and available information, you will:
+OUTPUT RULES (STRICT):
+- Return ONLY a valid JSON object. No markdown, no extra commentary.
+- Use double quotes for all keys/strings.
+- If a field is unknown, use null or an empty array.
+- Never claim access to live/paid databases. Treat findings as investigative leads that require verification.
 
-1. **Personal Information Discovery**:
-   - Compile known addresses (current and previous)
-   - List known phone numbers
-   - Find email addresses if publicly available
-   - Identify relatives and known associates
-   - Employment history if publicly available
+Return this JSON schema with ALL top-level keys present:
+{
+  "subject": { "full_name": "", "aliases": [], "date_of_birth": "", "age": "", "known_locations": [], "notes": "" },
+  "section_confidence": {
+    "identity": { "data_availability": "High|Medium|Low", "confidence_score": 0, "confidence_label": "Confirmed|Likely|Possible|Unverified" },
+    "contact_info": { "data_availability": "High|Medium|Low", "confidence_score": 0, "confidence_label": "Confirmed|Likely|Possible|Unverified" },
+    "relatives_associates": { "data_availability": "High|Medium|Low", "confidence_score": 0, "confidence_label": "Confirmed|Likely|Possible|Unverified" },
+    "employment_professional": { "data_availability": "High|Medium|Low", "confidence_score": 0, "confidence_label": "Confirmed|Likely|Possible|Unverified" },
+    "criminal_records": { "data_availability": "High|Medium|Low", "confidence_score": 0, "confidence_label": "Confirmed|Likely|Possible|Unverified" },
+    "civil_records": { "data_availability": "High|Medium|Low", "confidence_score": 0, "confidence_label": "Confirmed|Likely|Possible|Unverified" },
+    "family_court": { "data_availability": "High|Medium|Low", "confidence_score": 0, "confidence_label": "Confirmed|Likely|Possible|Unverified" },
+    "cps_related": { "data_availability": "High|Medium|Low", "confidence_score": 0, "confidence_label": "Confirmed|Likely|Possible|Unverified" },
+    "online_presence": { "data_availability": "High|Medium|Low", "confidence_score": 0, "confidence_label": "Confirmed|Likely|Possible|Unverified" }
+  },
+  "summary": { "narrative": "", "key_findings": [], "potential_red_flags": [] },
+  "contact_info": { "addresses": [], "phone_numbers": [], "emails": [] },
+  "relatives_associates": [],
+  "employment_professional": { "employers": [], "licenses": [], "disciplinary_actions": [] },
+  "criminal_records": [],
+  "civil_records": [],
+  "family_court": [],
+  "cps_related": [],
+  "online_presence": { "social_profiles": [], "professional_profiles": [], "news_mentions": [] },
+  "red_flags": [],
+  "recommendations_next_steps": [],
+  "verification_gaps": [],
+  "report_metadata": { "lookup_type": "", "focus": "", "jurisdiction_context": "" },
+  "disclaimer": ""
+}
 
-2. **Criminal Records Research**:
-   - Search for criminal history in relevant jurisdictions
-   - Identify any felony or misdemeanor convictions
-   - Note pending charges if public
-   - Find sex offender registry status
-   - Look for restraining orders or protective orders
+Entry object guidance (include source_type + confidence on every item):
+- addresses items: { "address": "", "type": "current|previous|possible", "date_range": "", "jurisdiction": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
+- phone_numbers items: { "phone": "", "type": "mobile|landline|possible", "date_range": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
+- emails items: { "email": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
+- relatives_associates items: { "name": "", "relationship": "", "notes": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
+- employers items: { "employer": "", "role": "", "date_range": "", "jurisdiction": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
+- disciplinary_actions items: { "action": "", "date": "", "jurisdiction": "", "details": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
+- records items (criminal/civil/family): { "case_name": "", "case_number": "", "jurisdiction": "", "charges_or_claims": "", "status": "", "disposition": "", "date": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
+- licenses items: { "license_type": "", "license_id": "", "jurisdiction": "", "status": "", "disciplinary_notes": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
+- cps_related items: { "issue": "", "details": "", "jurisdiction": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
+- online presence items: { "platform": "", "handle_or_url": "", "notes": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
+- red_flags items: { "flag": "", "reason": "", "severity": "low|medium|high", "source_type": "", "confidence_label": "", "confidence_score": 0 }
 
-3. **Civil Court Records**:
-   - Lawsuits (plaintiff and defendant)
-   - Divorces and family court matters
-   - Bankruptcies
-   - Judgments and liens
-   - Small claims cases
-
-4. **Professional Records**:
-   - Professional licenses and status
-   - Disciplinary actions
-   - Complaints filed against them
-   - Board certifications
-
-5. **CPS/Social Worker Specific** (if applicable):
-   - Look for patterns of complaints
-   - Professional misconduct history
-   - Cases where they testified
-   - Known issues or controversies
-
-6. **Public Social Media & Online Presence**:
-   - Social media profiles
-   - Professional profiles (LinkedIn)
-   - News mentions
-   - Public statements or posts
-
-Format your response as a detailed report with clear sections. Include:
-- Confidence level for each piece of information (Confirmed, Likely, Possible, Unverified)
-- Source type for each finding (Court Records, Public Database, Social Media, etc.)
-- Dates when available
-- Potential red flags or concerns relevant to CPS defense
-
-IMPORTANT: You are simulating a comprehensive background check using your knowledge. Present information as if from a real investigation. 
-Note any areas where official paid services would provide additional verified data.
-
-Always maintain professional objectivity and note that all information should be verified through official channels before use in legal proceedings."""
+Make the report detailed and practical. If data is limited, leave arrays empty and explain gaps in verification_gaps and recommendations_next_steps. Always include a strong disclaimer about verification requirements."""
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -140,8 +147,6 @@ Always maintain professional objectivity and note that all information should be
         location_info += f"State: {request.state}. "
     if request.city:
         location_info += f"City: {request.city}. "
-    
-    additional = f"Additional information: {request.additional_info}" if request.additional_info else ""
     
     lookup_focus = {
         "comprehensive": "Provide a comprehensive background report covering all areas.",
@@ -157,32 +162,40 @@ Always maintain professional objectivity and note that all information should be
     prompt = f"""PERSON LOOKUP REQUEST
 
 Subject Name: {request.name}
-{location_info}
-{additional}
+Location Context: {location_info.strip() if location_info else 'Not provided'}
+Additional Identifiers: {request.additional_info or 'None'}
 
 Lookup Type: {request.lookup_type.upper()}
 Focus: {focus_instruction}
 
-Please conduct a thorough background investigation on this individual. This is for a CPS case defense where knowing 
-about the caseworker, judge, or other involved parties can be crucial for the family's legal strategy.
-
-Provide a detailed report with all findable information organized by category. Include confidence levels and 
-note where official verification would be needed.
-
-If this person appears to be a CPS caseworker or government employee, pay special attention to:
-- Their professional history and any complaints
-- Previous cases they've been involved in
-- Any patterns of behavior or concerns
-- Professional disciplinary actions"""
+Instructions:
+- Return ONLY the JSON object defined in the system message.
+- Populate every relevant section with specific, structured findings.
+- Every item must include source_type and confidence fields.
+- If no data is available, leave arrays empty and explain gaps in verification_gaps.
+- If the subject appears to be a CPS caseworker or government employee, prioritize professional history, complaints, disciplinary actions, and recurring patterns.
+"""
 
     user_message = UserMessage(text=prompt)
     
     try:
-        response = await chat.send_message(user_message)
+        raw_response = await chat.send_message(user_message)
+        
+        parsed_report = None
+        normalized_report = raw_response
+        try:
+            json_start = raw_response.find("{")
+            json_end = raw_response.rfind("}")
+            if json_start != -1 and json_end != -1 and json_end > json_start:
+                parsed_report = json.loads(raw_response[json_start:json_end + 1])
+                normalized_report = json.dumps(parsed_report, indent=2)
+        except Exception:
+            parsed_report = None
         
         # Parse and structure the response
         results = {
-            "raw_report": response,
+            "raw_report": normalized_report,
+            "structured_report": parsed_report,
             "name_searched": request.name,
             "location_searched": f"{request.city or 'Any'}, {request.state or 'Any'}",
             "lookup_type": request.lookup_type,
@@ -196,22 +209,6 @@ If this person appears to be a CPS caseworker or government employee, pay specia
             "Social Media Intelligence",
             "News & Media Archives"
         ]
-        
-        # Save to AI case notes if a case is active
-        case_id = request.additional_info  # Can pass case_id in additional_info
-        if case_id:
-            try:
-                await db.ai_case_notes.insert_one({
-                    "note_id": str(uuid.uuid4()),
-                    "case_id": case_id,
-                    "user_id": current_user["user_id"],
-                    "feature_name": "Person Lookup",
-                    "prompt": f"Background check on: {request.name}",
-                    "response": response,
-                    "created_at": datetime.now(timezone.utc).isoformat()
-                })
-            except:
-                pass  # Don't fail if note saving fails
         
         return PersonLookupResponse(
             name=request.name,

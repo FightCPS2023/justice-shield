@@ -63,6 +63,12 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Frontend updated with polling for background analysis completion
 - Testing: 100% pass rate (12/12 backend, all frontend)
 
+### Session 3: Background Check Report Quality - COMPLETE
+- Upgraded person-lookup prompt to require strict JSON structured reports
+- Added per-section confidence + data availability guidance and red flag structure
+- Added JSON parsing with formatted output for consistent UI display
+- Disabled automatic saving of background check results to case notes (per user preference)
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
