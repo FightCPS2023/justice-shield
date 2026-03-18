@@ -26,9 +26,11 @@ function DocumentsTab({ selectedCase }) {
   const [dragActive, setDragActive] = useState(false);
   const [uploadQueue, setUploadQueue] = useState([]);
   const [batchUploading, setBatchUploading] = useState(false);
+  const [queueMetrics, setQueueMetrics] = useState(null);
+  const [queueLoading, setQueueLoading] = useState(false);
   const fileInputRef = React.useRef(null);
   const folderInputRef = React.useRef(null);
-
+  const queuePollRef = useRef(null);
   const ALLOWED_EXTENSIONS = ['.pdf', '.txt', '.png', '.jpg', '.jpeg', '.doc', '.docx', '.rtf', '.gif', '.webp', '.heic', '.mp3', '.wav', '.m4a', '.aac', '.ogg', '.mp4', '.mov', '.avi', '.mkv', '.webm'];
   const MAX_FILE_SIZE = 10 * 1024 * 1024;  // 10MB for documents/images
   const MAX_MEDIA_SIZE = 50 * 1024 * 1024; // 50MB for audio/video
@@ -62,9 +64,22 @@ function DocumentsTab({ selectedCase }) {
   ];
 
   useEffect(() => {
-    if (selectedCase) {
-      loadDocuments();
+    if (!selectedCase) return;
+    loadDocuments();
+    loadQueueMetrics();
+
+    if (queuePollRef.current) {
+      clearInterval(queuePollRef.current);
     }
+    queuePollRef.current = setInterval(() => {
+      loadQueueMetrics();
+    }, 5000);
+
+    return () => {
+      if (queuePollRef.current) {
+        clearInterval(queuePollRef.current);
+      }
+    };
   }, [selectedCase]);
 
   const loadDocuments = async () => {
@@ -77,6 +92,19 @@ function DocumentsTab({ selectedCase }) {
       console.error('Failed to load documents:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadQueueMetrics = async () => {
+    if (!selectedCase) return;
+    setQueueLoading(true);
+    try {
+      const data = await api.get(`/api/analysis-queue?case_id=${selectedCase.id}`);
+      setQueueMetrics(data);
+    } catch (error) {
+      console.error('Failed to load analysis queue metrics:', error);
+    } finally {
+      setQueueLoading(false);
     }
   };
 
@@ -177,12 +205,13 @@ function DocumentsTab({ selectedCase }) {
     // Update document list
     if (newDocs.length > 0) {
       setDocuments(prev => [...newDocs, ...prev]);
+      loadQueueMetrics();
       
       // Check if any docs are still being analyzed in background
-      const analyzingDocs = newDocs.filter(d => d.analysis_result?.status === 'analyzing');
+      const analyzingDocs = newDocs.filter(d => ['analyzing', 'queued'].includes(d.analysis_result?.status));
       if (analyzingDocs.length > 0) {
         toast.success(
-          `${newDocs.length} document(s) uploaded! AI analysis running in background...`,
+          `${newDocs.length} document(s) uploaded! AI analysis queued...`,
           { duration: 6000 }
         );
         // Poll for analysis completion
@@ -211,10 +240,12 @@ function DocumentsTab({ selectedCase }) {
           const status = await api.get(`/api/documents/${docId}/analysis-status`);
           if (status.status === 'complete') {
             setDocuments(prev => prev.map(d => 
-              d.id === docId ? { ...d, analysis: status.analysis, analysis_result: status } : d
+              d.id === docId ? { ...d, analysis: status.analysis, analysis_result: status, analysis_status: 'complete' } : d
             ));
+            loadQueueMetrics();
             toast.success(`Analysis complete! Found ${status.violations_found} violations.`);
           } else if (status.status === 'error') {
+            loadQueueMetrics();
             toast.error(`Analysis failed: ${status.error || 'Unknown error'}`);
           } else {
             allDone = false;
@@ -321,8 +352,15 @@ function DocumentsTab({ selectedCase }) {
       });
       
       if (!response.ok) throw new Error('Reanalysis failed');
-      
-      toast.success('Analysis started! Results will appear shortly...', { duration: 5000 });
+
+      const result = await response.json().catch(() => ({}));
+      const queueMsg = result?.queue_position ? ` (Position ${result.queue_position})` : '';
+      if (result?.status === 'queued') {
+        toast.success(`Analysis queued${queueMsg}. Results will appear shortly...`, { duration: 5000 });
+      } else {
+        toast.success('Analysis started! Results will appear shortly...', { duration: 5000 });
+      }
+      loadQueueMetrics();
       
       // Poll for completion
       const maxPolls = 30;
@@ -333,10 +371,12 @@ function DocumentsTab({ selectedCase }) {
           if (statusResp.status === 'complete') {
             toast.success(`Analysis complete! Found ${statusResp.violations_found} violations.`);
             loadDocuments();
+            loadQueueMetrics();
             break;
           }
           if (statusResp.status === 'error') {
             toast.error(`Analysis failed: ${statusResp.error || 'Unknown error'}. Try again.`);
+            loadQueueMetrics();
             break;
           }
         } catch (err) {
@@ -384,6 +424,15 @@ function DocumentsTab({ selectedCase }) {
     }
   };
 
+  const queuedCount = queueMetrics?.queued || 0;
+  const processingCount = queueMetrics?.processing || 0;
+  const completeCount = queueMetrics?.complete || 0;
+  const errorCount = queueMetrics?.error || 0;
+  const totalQueueCount = queueMetrics?.total || 0;
+  const completedQueueCount = completeCount + errorCount;
+  const queueProgress = totalQueueCount > 0 ? Math.round((completedQueueCount / totalQueueCount) * 100) : 0;
+
+
   if (!selectedCase) {
     return (
       <div className="text-center py-12 animate-fadeIn" data-testid="documents-tab">
@@ -429,6 +478,54 @@ function DocumentsTab({ selectedCase }) {
       {/* Upload Tab */}
       {activeSubTab === 'upload' && (
         <div className="space-y-6">
+          {/* Analysis Queue Metrics */}
+          <div className="bg-gray-800/40 border border-gray-700 rounded-xl p-5" data-testid="analysis-queue-card">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div>
+                <h3 className="text-lg font-semibold">Analysis Queue</h3>
+                <p className="text-sm text-gray-400">Server-side queue with real-time progress</p>
+              </div>
+              <div className="text-xs text-gray-500" data-testid="analysis-queue-last-updated">
+                {queueMetrics?.last_updated ? `Updated ${new Date(queueMetrics.last_updated).toLocaleTimeString()}` : 'Updating...'}
+              </div>
+            </div>
+            <div className="grid md:grid-cols-4 gap-3 mb-4">
+              <div className="bg-gray-900/60 rounded-lg p-3" data-testid="analysis-queue-queued-count">
+                <p className="text-xs text-gray-500">Queued</p>
+                <p className="text-xl font-semibold text-blue-400">{queuedCount}</p>
+              </div>
+              <div className="bg-gray-900/60 rounded-lg p-3" data-testid="analysis-queue-processing-count">
+                <p className="text-xs text-gray-500">Processing</p>
+                <p className="text-xl font-semibold text-yellow-400">{processingCount}</p>
+              </div>
+              <div className="bg-gray-900/60 rounded-lg p-3" data-testid="analysis-queue-complete-count">
+                <p className="text-xs text-gray-500">Complete</p>
+                <p className="text-xl font-semibold text-green-400">{completeCount}</p>
+              </div>
+              <div className="bg-gray-900/60 rounded-lg p-3" data-testid="analysis-queue-error-count">
+                <p className="text-xs text-gray-500">Errors</p>
+                <p className="text-xl font-semibold text-red-400">{errorCount}</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span data-testid="analysis-queue-total">Total: {totalQueueCount}</span>
+                <span data-testid="analysis-queue-progress">Progress: {queueProgress}%</span>
+              </div>
+              <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden" data-testid="analysis-queue-progress-bar">
+                <div
+                  className="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 transition-all"
+                  style={{ width: `${queueProgress}%` }}
+                />
+              </div>
+              {totalQueueCount === 0 && (
+                <p className="text-xs text-gray-500" data-testid="analysis-queue-empty">
+                  Queue is empty. Upload documents to start analysis.
+                </p>
+              )}
+            </div>
+          </div>
+
           {/* Upload Zone - Drop Area */}
           <div
             onDrop={handleDrop}
@@ -605,13 +702,23 @@ function DocumentsTab({ selectedCase }) {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
+                        {doc.analysis_status === 'queued' && (
+                          <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded" data-testid={`doc-status-queued-${doc.id}`}>
+                            Queued
+                          </span>
+                        )}
                         {doc.analysis_status === 'analyzing' && (
-                          <span className="px-2 py-1 bg-yellow-600/20 text-yellow-400 text-xs rounded flex items-center gap-1">
+                          <span className="px-2 py-1 bg-yellow-600/20 text-yellow-400 text-xs rounded flex items-center gap-1" data-testid={`doc-status-analyzing-${doc.id}`}>
                             <Loader2 className="w-3 h-3 animate-spin" /> Analyzing...
                           </span>
                         )}
-                        {doc.analysis && doc.analysis_status !== 'analyzing' && (
-                          <span className="px-2 py-1 bg-green-600/20 text-green-400 text-xs rounded">
+                        {doc.analysis_status === 'error' && (
+                          <span className="px-2 py-1 bg-red-600/20 text-red-400 text-xs rounded" data-testid={`doc-status-error-${doc.id}`}>
+                            Analysis Failed
+                          </span>
+                        )}
+                        {doc.analysis && doc.analysis_status === 'complete' && (
+                          <span className="px-2 py-1 bg-green-600/20 text-green-400 text-xs rounded" data-testid={`doc-status-complete-${doc.id}`}>
                             Analyzed
                           </span>
                         )}

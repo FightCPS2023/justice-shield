@@ -22,6 +22,10 @@ router = APIRouter()
 
 ANALYSIS_CONCURRENCY = 2
 ANALYSIS_SEMAPHORE = asyncio.Semaphore(ANALYSIS_CONCURRENCY)
+ANALYSIS_QUEUE = asyncio.Queue()
+ANALYSIS_QUEUE_DOC_IDS = set()
+ANALYSIS_QUEUE_STARTED = False
+ANALYSIS_QUEUE_LOCK = asyncio.Lock()
 
 
 async def run_document_analysis_bg(doc_id, case_id, case, content, filename, user_id):
@@ -47,6 +51,127 @@ async def run_document_analysis_bg(doc_id, case_id, case, content, filename, use
             {"_id": doc_id},
             {"$set": {"analysis_status": "error", "analysis_error": str(e)}}
         )
+
+
+async def _seed_analysis_queue():
+    db = get_db()
+    async for item in db.analysis_queue.find({"status": "queued"}).sort("created_at", 1).limit(500):
+        doc_id = item.get("doc_id")
+        if doc_id and doc_id not in ANALYSIS_QUEUE_DOC_IDS:
+            await ANALYSIS_QUEUE.put(doc_id)
+            ANALYSIS_QUEUE_DOC_IDS.add(doc_id)
+
+
+async def _process_analysis_job(doc_id: str):
+    db = get_db()
+    queue_item = await db.analysis_queue.find_one({"doc_id": doc_id})
+    if not queue_item:
+        return
+
+    await db.analysis_queue.update_one(
+        {"doc_id": doc_id},
+        {"$set": {"status": "processing", "started_at": datetime.now(timezone.utc).isoformat(), "error": None}}
+    )
+
+    doc = await db.documents.find_one({"_id": doc_id})
+    if not doc:
+        await db.analysis_queue.update_one(
+            {"doc_id": doc_id},
+            {"$set": {"status": "error", "error": "Document not found", "completed_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        return
+
+    case = await db.cases.find_one({"_id": doc.get("case_id")})
+    if not case:
+        await db.analysis_queue.update_one(
+            {"doc_id": doc_id},
+            {"$set": {"status": "error", "error": "Case not found", "completed_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        await db.documents.update_one(
+            {"_id": doc_id},
+            {"$set": {"analysis_status": "error", "analysis_error": "Case not found"}}
+        )
+        return
+
+    await db.documents.update_one({"_id": doc_id}, {"$set": {"analysis_status": "analyzing", "analysis_error": None}})
+
+    try:
+        await run_document_analysis_bg(
+            doc_id,
+            doc.get("case_id"),
+            case,
+            doc.get("content", ""),
+            doc.get("filename", "document"),
+            doc.get("user_id")
+        )
+        await db.analysis_queue.update_one(
+            {"doc_id": doc_id},
+            {"$set": {"status": "complete", "completed_at": datetime.now(timezone.utc).isoformat()}}
+        )
+    except Exception as e:
+        await db.analysis_queue.update_one(
+            {"doc_id": doc_id},
+            {"$set": {"status": "error", "error": str(e), "completed_at": datetime.now(timezone.utc).isoformat()}}
+        )
+
+
+async def _analysis_queue_worker():
+    await _seed_analysis_queue()
+    while True:
+        doc_id = await ANALYSIS_QUEUE.get()
+        ANALYSIS_QUEUE_DOC_IDS.discard(doc_id)
+        await _process_analysis_job(doc_id)
+        ANALYSIS_QUEUE.task_done()
+
+
+async def _ensure_analysis_worker():
+    global ANALYSIS_QUEUE_STARTED
+    if ANALYSIS_QUEUE_STARTED:
+        return
+    async with ANALYSIS_QUEUE_LOCK:
+        if ANALYSIS_QUEUE_STARTED:
+            return
+        ANALYSIS_QUEUE_STARTED = True
+        asyncio.create_task(_analysis_queue_worker())
+
+
+async def _enqueue_analysis_job(doc_id: str, case_id: str, user_id: str, reason: str = "upload"):
+    db = get_db()
+    created_at = datetime.now(timezone.utc).isoformat()
+    await db.analysis_queue.update_one(
+        {"doc_id": doc_id},
+        {"$set": {
+            "doc_id": doc_id,
+            "case_id": case_id,
+            "user_id": user_id,
+            "status": "queued",
+            "reason": reason,
+            "created_at": created_at,
+            "started_at": None,
+            "completed_at": None,
+            "error": None
+        }},
+        upsert=True
+    )
+    await db.documents.update_one(
+        {"_id": doc_id},
+        {"$set": {"analysis_status": "queued", "analysis_error": None}}
+    )
+
+    await _ensure_analysis_worker()
+
+    if doc_id not in ANALYSIS_QUEUE_DOC_IDS:
+        await ANALYSIS_QUEUE.put(doc_id)
+        ANALYSIS_QUEUE_DOC_IDS.add(doc_id)
+
+    queue_position = await db.analysis_queue.count_documents({
+        "case_id": case_id,
+        "user_id": user_id,
+        "status": "queued",
+        "created_at": {"$lte": created_at}
+    })
+
+    return queue_position
 
 
 # ============== DOCUMENTS ENDPOINTS ==============
@@ -103,8 +228,7 @@ async def delete_document(doc_id: str, current_user: dict = Depends(get_current_
 UPLOAD_DIR = "/tmp/cps_uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Maximum file size for Whisper transcription (25MB)
-WHISPER_MAX_SIZE = 25 * 1024 * 1024
+# Maximum file size for Whisper transcription (from config)
 
 async def transcribe_audio_video(content: bytes, filename: str, file_ext: str, file_size: int) -> str:
     """
@@ -193,7 +317,7 @@ async def upload_document(
         raise HTTPException(status_code=403, detail="Document upload limit reached for your plan. Please upgrade to upload more documents.")
 
     # Verify case ownership
-    case = await get_case_with_ownership(case_id, current_user["user_id"])
+    await get_case_with_ownership(case_id, current_user["user_id"])
     
     # Validate file type - expanded to include audio/video
     allowed_extensions = {
@@ -250,7 +374,7 @@ async def upload_document(
                         pdf_text_parts.append(f"--- Page {page_num} ---\n{page_text}")
                     else:
                         pages_with_no_text.append(page_num)
-                except Exception as page_err:
+                except Exception:
                     pages_with_no_text.append(page_num)
             
             # If many pages have no text, try OCR extraction
@@ -385,7 +509,7 @@ async def upload_document(
         f.write(content)
     
     # Create document record
-    print(f"[UPLOAD] Creating DB record...")
+    print("[UPLOAD] Creating DB record...")
     doc_id = str(uuid.uuid4())
     doc = {
         "_id": doc_id,
@@ -406,7 +530,7 @@ async def upload_document(
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
-    print(f"[UPLOAD] Inserting doc into DB...")
+    print("[UPLOAD] Inserting doc into DB...")
     await db.documents.insert_one(doc)
     print(f"[UPLOAD] DB insert done for {doc_id}")
     
@@ -424,18 +548,16 @@ async def upload_document(
                 {"$set": {"analysis_status": "error", "analysis_error": "AI analysis unavailable: missing API key"}}
             )
         else:
-            # Schedule analysis as a background task (runs after response is sent)
-            background_tasks.add_task(
-                run_document_analysis_bg, doc_id, case_id, case, extracted_text, file.filename, current_user["user_id"]
-            )
-            analysis_result = {"status": "analyzing", "message": "Document uploaded. AI analysis running in background..."}
-            
-            await db.documents.update_one(
-                {"_id": doc_id},
-                {"$set": {"analysis_status": "analyzing"}}
-            )
+            queue_position = await _enqueue_analysis_job(doc_id, case_id, current_user["user_id"], "upload")
+            analysis_result = {
+                "status": "queued",
+                "message": "Document queued for AI analysis...",
+                "queue_position": queue_position
+            }
     
     doc["id"] = doc.pop("_id")
+    if analysis_result and analysis_result.get("status"):
+        doc["analysis_status"] = analysis_result.get("status")
     doc["analysis_result"] = analysis_result
     
     print(f"[UPLOAD] Returning response for {doc['id']}")
@@ -450,8 +572,6 @@ async def analyze_uploaded_document(doc_id: str, case_id: str, case: dict, conte
     db = get_db()
     if not EMERGENT_LLM_KEY:
         return {"error": "AI analysis unavailable: missing API key", "analysis": None}
-    import logging
-    logger = logging.getLogger("analysis")
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
     print(f"[ANALYSIS] Starting for doc {doc_id}, content length: {len(content)}")
@@ -796,16 +916,17 @@ async def reanalyze_document(doc_id: str, background_tasks: BackgroundTasks, cur
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
     
-    case = await get_case_with_ownership(doc["case_id"], current_user["user_id"])
+    await get_case_with_ownership(doc["case_id"], current_user["user_id"])
     
-    await db.documents.update_one({"_id": doc_id}, {"$set": {"analysis_status": "analyzing"}})
+    await db.documents.update_one({"_id": doc_id}, {"$set": {"analysis_status": "queued", "analysis_error": None}})
+    queue_position = await _enqueue_analysis_job(doc_id, doc["case_id"], doc.get("user_id"), "reanalyze")
     
-    background_tasks.add_task(
-        run_document_analysis_bg, doc_id, doc["case_id"], case,
-        doc.get("content", ""), doc.get("filename", "document"), current_user["user_id"]
-    )
-    
-    return {"status": "analyzing", "message": "Analysis started. Results will appear shortly.", "doc_id": doc_id}
+    return {
+        "status": "queued",
+        "message": "Analysis queued. Results will appear shortly.",
+        "doc_id": doc_id,
+        "queue_position": queue_position
+    }
 
 
 @router.get("/api/documents/{doc_id}/analysis")
@@ -828,22 +949,73 @@ async def get_document_analysis(doc_id: str, current_user: dict = Depends(get_cu
 
 
 
+@router.get("/api/analysis-queue")
+async def get_analysis_queue_status(case_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get analysis queue metrics for the current user (optionally filtered by case)"""
+    db = get_db()
+    query = {"user_id": current_user["user_id"]}
+    if case_id:
+        query["case_id"] = case_id
+
+    counts = {}
+    for status in ["queued", "processing", "complete", "error"]:
+        counts[status] = await db.analysis_queue.count_documents({**query, "status": status})
+
+    total = counts["queued"] + counts["processing"] + counts["complete"] + counts["error"]
+    last_updated = datetime.now(timezone.utc).isoformat()
+
+    queued_docs = []
+    position = 0
+    async for item in db.analysis_queue.find({**query, "status": "queued"}).sort("created_at", 1).limit(200):
+        position += 1
+        queued_docs.append({
+            "doc_id": item.get("doc_id"),
+            "position": position,
+            "created_at": item.get("created_at")
+        })
+
+    return {
+        "queued": counts["queued"],
+        "processing": counts["processing"],
+        "complete": counts["complete"],
+        "error": counts["error"],
+        "total": total,
+        "queued_docs": queued_docs,
+        "last_updated": last_updated
+    }
+
+
 @router.get("/api/documents/{doc_id}/analysis-status")
 async def get_analysis_status(doc_id: str, current_user: dict = Depends(get_current_user)):
     """Check the status of a background document analysis"""
     db = get_db()
     doc = await db.documents.find_one(
         {"_id": doc_id, "user_id": current_user["user_id"]},
-        {"_id": 0, "analysis_status": 1, "analysis": 1, "analysis_error": 1, "extracted_violations": 1}
+        {"_id": 0, "analysis_status": 1, "analysis": 1, "analysis_error": 1, "extracted_violations": 1, "case_id": 1}
     )
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
-    
+
     status = doc.get("analysis_status", "none")
+    queue_position = None
+    queue_status = None
+    if status == "queued":
+        queue_item = await db.analysis_queue.find_one({"doc_id": doc_id}, {"created_at": 1, "status": 1})
+        if queue_item:
+            queue_status = queue_item.get("status")
+            queue_position = await db.analysis_queue.count_documents({
+                "user_id": current_user["user_id"],
+                "case_id": doc.get("case_id"),
+                "status": "queued",
+                "created_at": {"$lte": queue_item.get("created_at")}
+            })
+
     return {
         "doc_id": doc_id,
         "status": status,
         "analysis": doc.get("analysis") if status == "complete" else None,
         "error": doc.get("analysis_error") if status == "error" else None,
-        "violations_found": len(doc.get("extracted_violations", []))
+        "violations_found": len(doc.get("extracted_violations", [])),
+        "queue_status": queue_status,
+        "queue_position": queue_position
     }
