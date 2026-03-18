@@ -11,6 +11,8 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import DocumentAnalysisView from './DocumentAnalysisView';
+import ForensicAnalyzerView from './ForensicAnalyzerView';
 
 function DocumentsTab({ selectedCase }) {
   const { api } = useAuth();
@@ -28,6 +30,9 @@ function DocumentsTab({ selectedCase }) {
   const [batchUploading, setBatchUploading] = useState(false);
   const [queueMetrics, setQueueMetrics] = useState(null);
   const [queueLoading, setQueueLoading] = useState(false);
+  const [queueDetails, setQueueDetails] = useState({});
+  const [queueDetailsLoading, setQueueDetailsLoading] = useState({});
+  const [activeQueueDocId, setActiveQueueDocId] = useState(null);
   const fileInputRef = React.useRef(null);
   const folderInputRef = React.useRef(null);
   const queuePollRef = useRef(null);
@@ -67,6 +72,9 @@ function DocumentsTab({ selectedCase }) {
     if (!selectedCase) return;
     loadDocuments();
     loadQueueMetrics();
+    setQueueDetails({});
+    setQueueDetailsLoading({});
+    setActiveQueueDocId(null);
 
     if (queuePollRef.current) {
       clearInterval(queuePollRef.current);
@@ -106,6 +114,29 @@ function DocumentsTab({ selectedCase }) {
     } finally {
       setQueueLoading(false);
     }
+  };
+
+  const fetchQueueDetails = async (docId) => {
+    setQueueDetailsLoading(prev => ({ ...prev, [docId]: true }));
+    try {
+      const data = await api.get(`/api/analysis-queue/${docId}`);
+      setQueueDetails(prev => ({ ...prev, [docId]: data }));
+      return data;
+    } catch (error) {
+      toast.error('Failed to load queue details');
+      return null;
+    } finally {
+      setQueueDetailsLoading(prev => ({ ...prev, [docId]: false }));
+    }
+  };
+
+  const toggleQueueDetails = async (docId) => {
+    if (activeQueueDocId === docId) {
+      setActiveQueueDocId(null);
+      return;
+    }
+    await fetchQueueDetails(docId);
+    setActiveQueueDocId(docId);
   };
 
   const validateFile = (file) => {
@@ -431,6 +462,7 @@ function DocumentsTab({ selectedCase }) {
   const totalQueueCount = queueMetrics?.total || 0;
   const completedQueueCount = completeCount + errorCount;
   const queueProgress = totalQueueCount > 0 ? Math.round((completedQueueCount / totalQueueCount) * 100) : 0;
+  const selectedQueueInfo = selectedDocument ? queueDetails[selectedDocument.id] : null;
 
 
   if (!selectedCase) {
@@ -678,16 +710,16 @@ function DocumentsTab({ selectedCase }) {
               <h3 className="text-lg font-semibold mb-4">Uploaded Documents</h3>
               <div className="space-y-3">
                 {documents.filter(d => d.source === 'upload').map(doc => (
-                  <div 
-                    key={doc.id} 
-                    className={`bg-gray-800/50 border rounded-xl p-4 cursor-pointer transition-all ${
-                      selectedDocument?.id === doc.id ? 'border-red-500' : 'border-gray-700 hover:border-gray-600'
-                    }`}
-                    onClick={() => {
-                      setSelectedDocument(doc);
-                      setActiveSubTab('analysis');
-                    }}
-                  >
+                  <div key={doc.id} className="space-y-2">
+                    <div 
+                      className={`bg-gray-800/50 border rounded-xl p-4 cursor-pointer transition-all ${
+                        selectedDocument?.id === doc.id ? 'border-red-500' : 'border-gray-700 hover:border-gray-600'
+                      }`}
+                      onClick={() => {
+                        setSelectedDocument(doc);
+                        setActiveSubTab('analysis');
+                      }}
+                    >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {getFileIcon(doc.file_type, doc.file_category)}
@@ -729,12 +761,71 @@ function DocumentsTab({ selectedCase }) {
                             setActiveSubTab('analysis');
                           }}
                           className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm"
+                          data-testid={`view-analysis-btn-${doc.id}`}
                         >
                           View Analysis
                         </button>
+                        {['queued', 'analyzing', 'error'].includes(doc.analysis_status) && (
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              await toggleQueueDetails(doc.id);
+                            }}
+                            className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm flex items-center gap-2"
+                            data-testid={`queue-details-btn-${doc.id}`}
+                          >
+                            {queueDetailsLoading[doc.id] ? (
+                              <><Loader2 className="w-3 h-3 animate-spin" /> Loading</>
+                            ) : (
+                              <>Queue Details</>
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
+                  {activeQueueDocId === doc.id && (
+                    <div className="mt-3 bg-gray-900/60 border border-gray-700 rounded-lg p-3" data-testid={`queue-details-panel-${doc.id}`}>
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-200" data-testid={`queue-details-status-${doc.id}`}>
+                            Queue Status: {queueDetails[doc.id]?.status || doc.analysis_status || 'unknown'}
+                          </p>
+                          {queueDetails[doc.id]?.queue_position && (
+                            <p className="text-xs text-gray-400" data-testid={`queue-details-position-${doc.id}`}>
+                              Position: {queueDetails[doc.id]?.queue_position}
+                            </p>
+                          )}
+                          {queueDetails[doc.id]?.started_at && (
+                            <p className="text-xs text-gray-500" data-testid={`queue-details-started-${doc.id}`}>
+                              Started: {new Date(queueDetails[doc.id].started_at).toLocaleString()}
+                            </p>
+                          )}
+                          {queueDetails[doc.id]?.completed_at && (
+                            <p className="text-xs text-gray-500" data-testid={`queue-details-completed-${doc.id}`}>
+                              Completed: {new Date(queueDetails[doc.id].completed_at).toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            await fetchQueueDetails(doc.id);
+                          }}
+                          className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs"
+                          data-testid={`queue-details-refresh-${doc.id}`}
+                        >
+                          Refresh
+                        </button>
+                      </div>
+                      {queueDetails[doc.id]?.error && (
+                        <p className="mt-2 text-xs text-red-400" data-testid={`queue-details-error-${doc.id}`}>
+                          Error: {queueDetails[doc.id].error}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
                 ))}
               </div>
             </div>
@@ -783,6 +874,8 @@ function DocumentsTab({ selectedCase }) {
               document={selectedDocument} 
               onReanalyze={() => reanalyzeDocument(selectedDocument.id)}
               analyzing={analyzing}
+              queueInfo={selectedQueueInfo}
+              onRefreshQueue={() => fetchQueueDetails(selectedDocument.id)}
             />
           ) : (
             <div className="text-center py-12">

@@ -11,26 +11,52 @@ import {
   Save
 } from 'lucide-react';
 
-function DocumentAnalysisView({ document, onReanalyze, analyzing }) {
+function DocumentAnalysisView({ document, onReanalyze, analyzing, queueInfo, onRefreshQueue }) {
   const analysis = document.analysis_result?.analysis || document.analysis;
+  const queueStatus = queueInfo?.status || document.analysis_status;
+  const queuePosition = queueInfo?.queue_position || document.analysis_result?.queue_position;
+  const queueError = queueInfo?.error || document.analysis_error;
   
   if (!analysis) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-12" data-testid="document-analysis-empty">
         <AlertTriangle className="w-12 h-12 mx-auto text-yellow-500 mb-4" />
         <h3 className="text-xl font-semibold mb-2">No Analysis Available</h3>
         <p className="text-gray-400 mb-4">This document hasn't been analyzed yet</p>
-        <button 
-          onClick={onReanalyze}
-          disabled={analyzing}
-          className="btn-punisher"
-        >
-          {analyzing ? (
-            <><Loader2 className="w-5 h-5 animate-spin inline mr-2" /> Analyzing...</>
-          ) : (
-            <><Brain className="w-5 h-5 inline mr-2" /> Analyze Now</>
+        {queueStatus && (
+          <div className="mb-4 text-sm text-gray-300" data-testid="document-analysis-queue-status">
+            <p>Queue Status: <span className="text-blue-400">{queueStatus}</span></p>
+            {queuePosition && (
+              <p data-testid="document-analysis-queue-position">Position: {queuePosition}</p>
+            )}
+            {queueError && (
+              <p className="text-red-400" data-testid="document-analysis-queue-error">Error: {queueError}</p>
+            )}
+          </div>
+        )}
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <button 
+            onClick={onReanalyze}
+            disabled={analyzing}
+            className="btn-punisher"
+            data-testid="document-analysis-reanalyze-button"
+          >
+            {analyzing ? (
+              <><Loader2 className="w-5 h-5 animate-spin inline mr-2" /> Analyzing...</>
+            ) : (
+              <><Brain className="w-5 h-5 inline mr-2" /> Analyze Now</>
+            )}
+          </button>
+          {onRefreshQueue && queueStatus && (
+            <button
+              onClick={onRefreshQueue}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+              data-testid="document-analysis-refresh-queue"
+            >
+              Refresh Queue
+            </button>
           )}
-        </button>
+        </div>
       </div>
     );
   }
@@ -49,6 +75,7 @@ function DocumentAnalysisView({ document, onReanalyze, analyzing }) {
           onClick={onReanalyze}
           disabled={analyzing}
           className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center gap-2"
+          data-testid="document-analysis-reanalyze-button-header"
         >
           {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
           Re-analyze

@@ -953,6 +953,7 @@ async def get_document_analysis(doc_id: str, current_user: dict = Depends(get_cu
 async def get_analysis_queue_status(case_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     """Get analysis queue metrics for the current user (optionally filtered by case)"""
     db = get_db()
+    await _ensure_analysis_worker()
     query = {"user_id": current_user["user_id"]}
     if case_id:
         query["case_id"] = case_id
@@ -985,6 +986,33 @@ async def get_analysis_queue_status(case_id: Optional[str] = None, current_user:
     }
 
 
+@router.get("/api/analysis-queue/{doc_id}")
+async def get_analysis_queue_item(doc_id: str, current_user: dict = Depends(get_current_user)):
+    """Get per-document queue details"""
+    db = get_db()
+    await _ensure_analysis_worker()
+    item = await db.analysis_queue.find_one(
+        {"doc_id": doc_id, "user_id": current_user["user_id"]},
+        {"_id": 0}
+    )
+    if not item:
+        raise HTTPException(status_code=404, detail="Queue item not found")
+
+    queue_position = None
+    if item.get("status") == "queued":
+        queue_position = await db.analysis_queue.count_documents({
+            "user_id": current_user["user_id"],
+            "case_id": item.get("case_id"),
+            "status": "queued",
+            "created_at": {"$lte": item.get("created_at")}
+        })
+
+    return {
+        **item,
+        "queue_position": queue_position
+    }
+
+
 @router.get("/api/documents/{doc_id}/analysis-status")
 async def get_analysis_status(doc_id: str, current_user: dict = Depends(get_current_user)):
     """Check the status of a background document analysis"""
@@ -997,18 +1025,16 @@ async def get_analysis_status(doc_id: str, current_user: dict = Depends(get_curr
         raise HTTPException(status_code=404, detail="Document not found")
 
     status = doc.get("analysis_status", "none")
+    queue_item = await db.analysis_queue.find_one({"doc_id": doc_id}, {"created_at": 1, "status": 1})
+    queue_status = queue_item.get("status") if queue_item else None
     queue_position = None
-    queue_status = None
-    if status == "queued":
-        queue_item = await db.analysis_queue.find_one({"doc_id": doc_id}, {"created_at": 1, "status": 1})
-        if queue_item:
-            queue_status = queue_item.get("status")
-            queue_position = await db.analysis_queue.count_documents({
-                "user_id": current_user["user_id"],
-                "case_id": doc.get("case_id"),
-                "status": "queued",
-                "created_at": {"$lte": queue_item.get("created_at")}
-            })
+    if queue_status == "queued" and queue_item:
+        queue_position = await db.analysis_queue.count_documents({
+            "user_id": current_user["user_id"],
+            "case_id": doc.get("case_id"),
+            "status": "queued",
+            "created_at": {"$lte": queue_item.get("created_at")}
+        })
 
     return {
         "doc_id": doc_id,
