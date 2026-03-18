@@ -74,6 +74,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Implemented exponential retry delays for transient LLM errors/timeouts
 - Added explicit error reporting when AI API key is missing
 
+### Session 5: Server-Side Analysis Queue + Progress Metrics - COMPLETE
+- Added persistent analysis queue with queued/processing/complete/error statuses
+- Added /api/analysis-queue metrics endpoint and queue position support
+- Updated Documents UI with live queue metrics, progress bar, and queued badges
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
