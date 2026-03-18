@@ -197,12 +197,12 @@ frontend:
 metadata:
   created_by: "testing_agent"
   version: "1.0"
-  test_sequence: 6
-  last_updated: "2026-03-18T22:41:00Z"
+  test_sequence: 7
+  last_updated: "2026-03-18T22:44:00Z"
 
 test_plan:
   current_focus:
-    - "Backend Serialization Smoke Test - COMPLETED AND PASSING"
+    - "ObjectId Encoder Update Verification - COMPLETED AND PASSING"
   stuck_tasks: []
   test_all: false
   test_priority: "completed"
@@ -224,3 +224,5 @@ agent_communication:
     message: "✅ RE-TEST COMPLETED - SAFE-BACK FIX VERIFIED SUCCESSFUL! All Back/Cancel button tests PASSED (14/14 tests). Tested on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com. RESULTS: (1) Cases Tab - Back button closes modal without navigation (✓), Cancel button closes modal (✓), (2) Violations Tab - Back button closes modal without navigation (✓), Cancel button closes modal (✓), (3) Person Lookup Tab - Back button stays in app without navigation (✓), Cancel button clears fields (✓), (4) Research Tab - Back button stays in app without navigation (✓), Cancel button clears query (✓). NO navigation to about:blank occurred in ANY test. Safe-back fix implementation confirmed: handleBack() checks if referrer.startsWith(window.location.origin) && window.history.length > 1 before calling window.history.back(). Since direct navigation has no same-origin referrer, unwanted navigation is prevented while modal close/form clear actions work correctly. No console errors detected. All features working as expected."
   - agent: "testing"
     message: "✅ BACKEND SERIALIZATION SMOKE TEST COMPLETED SUCCESSFULLY! Found and fixed CRITICAL backend bug: ImportError 'ENCODERS_BY_TYPE' from 'pydantic.json' in server.py line 18-19. This Pydantic v1 approach is incompatible with Pydantic v2. FIXED by removing deprecated imports and ENCODERS_BY_TYPE[ObjectId] = str line from /app/backend/server.py. Backend now starts successfully (pid 8748). Smoke test results: (1) Landing page loads ✅, (2) Login page accessible ✅, (3) Login with cpsvhuntingjustice@gmail.com/cpssuxass successful ✅, (4) Dashboard loads completely with full navigation sidebar, welcome message 'Welcome Back, Punisher', current plan display (Attorney tier), usage metrics (AI Credits 11/2000, Unlimited docs/cases), action buttons (New Case, AI Chat, Research, Law Library), active cases count (11), AI sessions (11/2000), states covered (50), and recent cases list ✅. (5) No console errors detected ✅. Application fully functional after backend serialization fix. All smoke test requirements from review request met."
+  - agent: "testing"
+    message: "✅ OBJECTID ENCODER UPDATE VERIFICATION COMPLETED SUCCESSFULLY! Re-ran comprehensive smoke test to verify ObjectId encoder update. Test executed on https://justice-shield-6.preview.emergentagent.com at 2026-03-18T22:44:00Z. RESULTS: (1) Landing page loads successfully ✅, (2) Login page renders with all required fields (email input, password input, Sign In button, Continue with Google option) ✅, (3) Login with cpsvhuntingjustice@gmail.com/cpssuxass successful ✅, (4) Dashboard loads completely with ALL expected elements: Welcome message 'Welcome Back, Punisher', full navigation sidebar (14+ menu items), Attorney tier plan, usage metrics (AI Credits 11/2000, Unlimited docs/cases), 4 action buttons (New Case, AI Chat, Research, Law Library), Active Cases: 11, AI Sessions: 11/2000, States Covered: 50, Recent Cases list (TEST_Docs_80d33484, TEST_Summary_cd3d28a8, TEST_GetCase_6cfefdcc) ✅. (5) Console logs clean - only service worker registration log, no errors or warnings ✅. (6) All 4/4 dashboard indicators verified ✅. CONCLUSION: ObjectId encoder update has been successfully implemented and verified. Application is fully functional with no backend or frontend errors. All serialization working correctly."

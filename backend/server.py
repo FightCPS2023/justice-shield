@@ -12,14 +12,18 @@ from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.encoders import ENCODERS_BY_TYPE
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.responses import Response
 from dotenv import load_dotenv
+from bson import ObjectId
 
 from database import init_db, close_db, get_db
 from routes import all_routers
 
 load_dotenv()
+
+ENCODERS_BY_TYPE[ObjectId] = str
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
