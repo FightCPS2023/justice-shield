@@ -79,6 +79,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added /api/analysis-queue metrics endpoint and queue position support
 - Updated Documents UI with live queue metrics, progress bar, and queued badges
 
+### Session 6: Per-File Queue Details - COMPLETE
+- Added /api/analysis-queue/{doc_id} endpoint for per-document queue details
+- Added queue detail panels in the document list with status, position, timestamps, and refresh
+- Added queue status display in empty analysis view with refresh action
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
