@@ -28,7 +28,10 @@ function ResearchTab() {
   };
 
   const handleBack = () => {
-    window.history.back();
+    const referrer = document.referrer || '';
+    if (referrer.startsWith(window.location.origin) && window.history.length > 1) {
+      window.history.back();
+    }
   };
 
   const handleSearch = async (e) => {

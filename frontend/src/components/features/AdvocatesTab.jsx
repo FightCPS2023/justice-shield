@@ -96,7 +96,10 @@ function AdvocatesTab() {
 
   const handleBack = () => {
     setShowApplyForm(false);
-    window.history.back();
+    const referrer = document.referrer || '';
+    if (referrer.startsWith(window.location.origin) && window.history.length > 1) {
+      window.history.back();
+    }
   };
 
   const toggleSpecialty = (specialty) => {
