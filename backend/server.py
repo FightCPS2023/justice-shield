@@ -21,7 +21,6 @@ from routes import all_routers
 
 load_dotenv()
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
