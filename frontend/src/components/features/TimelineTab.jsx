@@ -17,12 +17,13 @@ function TimelineTab({ selectedCase }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     title: '',
     description: '',
     date: '',
     event_type: 'general'
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   useEffect(() => {
     if (selectedCase) {
@@ -55,13 +56,23 @@ function TimelineTab({ selectedCase }) {
       });
       setEvents([...events, newEvent].sort((a, b) => new Date(a.date) - new Date(b.date)));
       setShowAdd(false);
-      setFormData({ title: '', description: '', date: '', event_type: 'general' });
+      setFormData(initialFormState);
       toast.success('Timeline event added!');
     } catch (error) {
       toast.error(error.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowAdd(false);
+  };
+
+  const handleBack = () => {
+    setShowAdd(false);
+    window.history.back();
   };
 
   if (!selectedCase) {
@@ -139,10 +150,23 @@ function TimelineTab({ selectedCase }) {
                 />
               </div>
               <div className="flex gap-3">
-                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-3 border border-gray-600 rounded-lg hover:bg-gray-700">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="flex-1 px-4 py-3 border border-gray-600 rounded-lg hover:bg-gray-700"
+                  data-testid="timeline-back-btn"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="flex-1 px-4 py-3 border border-gray-600 rounded-lg hover:bg-gray-700"
+                  data-testid="timeline-cancel-btn"
+                >
                   Cancel
                 </button>
-                <button type="submit" disabled={loading} className="flex-1 btn-punisher">
+                <button type="submit" disabled={loading} className="flex-1 btn-punisher" data-testid="timeline-submit-btn">
                   {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Add Event'}
                 </button>
               </div>

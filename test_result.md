@@ -86,18 +86,119 @@ frontend:
         agent: "testing"
         comment: "✅ RE-TEST PASSED: Queue details panel immediate opening fix verified. CRITICAL REQUIREMENT CONFIRMED: (1) Panel opens IMMEDIATELY at 52ms after clicking Queue Details button - does NOT wait for API fetch to complete, (2) Status displays instantly using fallback from doc.analysis_status ('Queue Status: analyzing' shown immediately), (3) Implementation confirmed: setActiveQueueDocId(docId) called BEFORE fetchQueueDetails(docId) in toggleQueueDetails function (lines 138-139), ensuring panel renders immediately while API fetch runs in background, (4) Status line uses fallback pattern: queueDetails[doc.id]?.status || doc.analysis_status || 'unknown' (line 800), displaying doc.analysis_status before API completes, (5) Additional details (position/timestamps) populate after API returns, (6) Refresh button functional, triggers new API call, (7) Panel closes correctly when clicking Queue Details again. Test executed on https://justice-shield-6.preview.emergentagent.com with case TEST_Docs_80d33484. Found 4 documents with Queue Details buttons (all in 'analyzing' status). No console errors. FIX CONFIRMED WORKING AS DESIGNED."
 
+  - task: "Cases Tab - Cancel Button Functionality"
+    implemented: true
+    working: true
+    file: "frontend/src/components/features/CasesTab.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✓ CANCEL button works correctly. New Case modal Cancel button successfully: (1) Closes modal, (2) Clears all form fields (title, state, case_number, description). Tested by filling form with 'Test Case for Cancel' title and 'CA' state, clicking Cancel, reopening modal and confirming all fields empty. No UI errors detected."
+
+  - task: "Cases Tab - Back Button Functionality"
+    implemented: true
+    working: false
+    file: "frontend/src/components/features/CasesTab.jsx"
+    stuck_count: 1
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "✗ CRITICAL BUG: Back button calls window.history.back() causing unintended navigation. Testing showed: (1) Back button DOES close the modal (correct), (2) BUT it also navigates browser to about:blank or previous page (WRONG). URL changed from https://justice-shield-6.preview.emergentagent.com/ to about:blank after clicking Back. Expected behavior: Back button should ONLY close modal using setShowCreate(false), NOT call window.history.back(). This breaks user flow by navigating away from the current page. Bug location: CasesTab.jsx lines 59-62 in handleBack() function."
+
+  - task: "Violations Tab - Cancel Button Functionality"
+    implemented: true
+    working: true
+    file: "frontend/src/components/features/ViolationsTab.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✓ CANCEL button works correctly. Add Violation modal Cancel button successfully: (1) Closes modal, (2) Clears all form fields (violation_type, description, severity, date, statute_reference). Tested by filling form with '4th Amendment - Unreasonable Search' and description, clicking Cancel, reopening modal and confirming all fields empty. No UI errors detected."
+
+  - task: "Violations Tab - Back Button Functionality"
+    implemented: true
+    working: false
+    file: "frontend/src/components/features/ViolationsTab.jsx"
+    stuck_count: 1
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "✗ CRITICAL BUG: Back button calls window.history.back() causing unintended navigation. Same issue as Cases tab. Expected behavior: Back button should ONLY close modal using setShowAdd(false), NOT call window.history.back(). This breaks user flow. Bug location: ViolationsTab.jsx lines 92-95 in handleBack() function."
+
+  - task: "Person Lookup Tab - Cancel Button Functionality"
+    implemented: true
+    working: true
+    file: "frontend/src/components/features/PersonLookupTab.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✓ CANCEL button works correctly. Person Lookup Cancel button successfully: (1) Clears all form fields (name, state, city, additional_info), (2) Clears any displayed results (setLookupResult(null)). Tested by filling form with 'Jennifer Martinez', 'Texas', 'Dallas', 'DOB 1985-05-15', clicking Cancel, and confirming all fields cleared. No UI errors detected."
+
+  - task: "Person Lookup Tab - Back Button Functionality"
+    implemented: true
+    working: false
+    file: "frontend/src/components/features/PersonLookupTab.jsx"
+    stuck_count: 1
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "✗ CRITICAL BUG: Back button calls window.history.back() causing unintended navigation. URL changed from https://justice-shield-6.preview.emergentagent.com/ to about:blank after clicking Back button. This is NOT a modal - it's a tab, so Back button shouldn't navigate browser history at all. Expected behavior: Remove the Back button entirely OR have it navigate to a previous tab/section within the app, NOT call window.history.back(). Bug location: PersonLookupTab.jsx lines 99-101 in handleBack() function."
+
+  - task: "Research Tab - Cancel Button Functionality"
+    implemented: true
+    working: true
+    file: "frontend/src/components/features/ResearchTab.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✓ CANCEL button works correctly. Research Cancel button successfully: (1) Clears query field (setQuery('')), (2) Clears results (setResults('')), (3) Clears search time (setSearchTime(null)). Tested by filling query with 'What are my Fourth Amendment rights during CPS investigation?', clicking Cancel, and confirming query cleared. No UI errors detected."
+
+  - task: "Research Tab - Back Button Functionality"
+    implemented: true
+    working: false
+    file: "frontend/src/components/features/ResearchTab.jsx"
+    stuck_count: 1
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "✗ CRITICAL BUG: Back button calls window.history.back() causing unintended navigation. URL changed from https://justice-shield-6.preview.emergentagent.com/ to about:blank after clicking Back button. This is NOT a modal - it's a tab, so Back button shouldn't navigate browser history at all. Expected behavior: Remove the Back button entirely OR have it navigate to a previous tab/section within the app, NOT call window.history.back(). Bug location: ResearchTab.jsx lines 30-32 in handleBack() function."
+
 metadata:
   created_by: "testing_agent"
   version: "1.0"
-  test_sequence: 3
-  last_updated: "2026-03-18T20:50:00Z"
+  test_sequence: 4
+  last_updated: "2026-03-18T21:55:00Z"
 
 test_plan:
   current_focus:
-    - "Per-File Queue Details UI - Re-testing completed successfully"
-  stuck_tasks: []
+    - "Back/Cancel Button Testing - Completed"
+    - "Critical Bug Found: window.history.back() in Back buttons"
+  stuck_tasks:
+    - "Cases Tab - Back Button Functionality"
+    - "Violations Tab - Back Button Functionality"
+    - "Person Lookup Tab - Back Button Functionality"
+    - "Research Tab - Back Button Functionality"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "critical_first"
 
 agent_communication:
   - agent: "testing"
@@ -110,3 +211,5 @@ agent_communication:
     message: "Per-file Queue Details UI testing completed. CRITICAL BUG FIXED: Added missing imports for DocumentAnalysisView and ForensicAnalyzerView in DocumentsTab.jsx - was causing runtime errors. After fix, all features work correctly: (1) Queue Details button appears for documents with status queued/analyzing/error, (2) Clicking button opens Queue Details panel showing status and refresh button, (3) Panel displays queue status correctly (e.g., 'Queue Status: analyzing'), (4) Refresh button functional, (5) Analysis tab empty view displays queue status, position, and Refresh Queue button for documents not yet analyzed. Minor issue: Queue Details panel sometimes needs scroll to be fully visible. Toast error 'Failed to load queue details' appears when API endpoint returns error (red toast at top-right). All requirements from review request verified successfully."
   - agent: "testing"
     message: "RE-TEST COMPLETED: Queue Details panel immediate opening fix has been successfully verified. The critical requirement from the review request is CONFIRMED WORKING. Panel opens in 52ms (immediately) after clicking Queue Details button, WITHOUT waiting for the API fetch to complete. The fix implementation is correct: (1) setActiveQueueDocId(docId) is called first to trigger panel rendering, (2) fetchQueueDetails(docId) is called second to fetch API data in background, (3) Status displays immediately using doc.analysis_status as fallback, (4) Additional fields (position/timestamps) populate when API completes. Tested on case TEST_Docs_80d33484 with 4 documents in analyzing status. All review request steps verified: login → Documents tab → Queue Details click → panel opens immediately → shows status/position/timestamps. No issues found. Feature is production-ready."
+  - agent: "testing"
+    message: "BACK/CANCEL BUTTON TESTING COMPLETED. Tested all 4 tabs as requested. Login successful with cpsvhuntingjustice@gmail.com. CANCEL BUTTONS: All working correctly - Cases modal (✓), Violations modal (✓), Person Lookup form (✓), Research form (✓). All Cancel buttons properly close modals/clear forms without errors. CRITICAL BUG FOUND IN ALL BACK BUTTONS: Every Back button across the app (Cases modal, Violations modal, Person Lookup tab, Research tab) calls window.history.back() which navigates browser to about:blank or previous page. This is WRONG - Back buttons should only close modals or clear state, NOT navigate browser history. Affected files: CasesTab.jsx (line 59-62), ViolationsTab.jsx (line 92-95), PersonLookupTab.jsx (line 99-101), ResearchTab.jsx (line 30-32). FIX REQUIRED: Remove window.history.back() from all handleBack() functions. For modals (Cases/Violations), just keep setShowCreate(false)/setShowAdd(false). For tabs (Person Lookup/Research), either remove Back button entirely or have it navigate within the app (not browser history)."

@@ -17,7 +17,8 @@ function ForumTab() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
-  const [formData, setFormData] = useState({ title: '', content: '', category: 'general' });
+  const initialFormState = { title: '', content: '', category: 'general' };
+  const [formData, setFormData] = useState(initialFormState);
 
   const categories = [
     { id: 'general', label: 'General Discussion' },
@@ -48,11 +49,21 @@ function ForumTab() {
       const newPost = await api.post('/api/forum/posts', formData);
       setPosts([newPost, ...posts]);
       setShowAdd(false);
-      setFormData({ title: '', content: '', category: 'general' });
+      setFormData(initialFormState);
       toast.success('Post created!');
     } catch (error) {
       toast.error('Failed to create post');
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowAdd(false);
+  };
+
+  const handleBack = () => {
+    setShowAdd(false);
+    window.history.back();
   };
 
   return (
@@ -103,8 +114,9 @@ function ForumTab() {
                 />
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
-                <button type="submit" className="flex-1 btn-punisher">Post</button>
+                <button type="button" onClick={handleBack} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="forum-back-btn">Back</button>
+                <button type="button" onClick={handleCancel} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="forum-cancel-btn">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher" data-testid="forum-submit-btn">Post</button>
               </div>
             </form>
           </div>

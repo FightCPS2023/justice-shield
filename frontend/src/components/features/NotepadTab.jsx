@@ -19,12 +19,13 @@ function NotepadTab({ selectedCase }) {
   const [showForm, setShowForm] = useState(false);
   const [viewMode, setViewMode] = useState('all'); // all, case, global
   const [selectedEntry, setSelectedEntry] = useState(null);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     title: '',
     content: '',
     category: 'general',
     tags: ''
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const categories = [
     { value: 'general', label: 'General Notes', color: 'bg-gray-500' },
@@ -66,11 +67,21 @@ function NotepadTab({ selectedCase }) {
       await api.post('/api/notepad', entry);
       toast.success('Note created!');
       setShowForm(false);
-      setFormData({ title: '', content: '', category: 'general', tags: '' });
+      setFormData(initialFormState);
       loadEntries();
     } catch (error) {
       toast.error('Failed to create note');
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowForm(false);
+  };
+
+  const handleBack = () => {
+    setShowForm(false);
+    window.history.back();
   };
 
   const deleteEntry = async (id) => {
@@ -219,17 +230,25 @@ function NotepadTab({ selectedCase }) {
             </div>
             <div className="flex gap-3">
               <button
+                onClick={handleBack}
+                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg"
+                data-testid="notepad-back-btn"
+              >
+                Back
+              </button>
+              <button
+                onClick={handleCancel}
+                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg"
+                data-testid="notepad-cancel-btn"
+              >
+                Cancel
+              </button>
+              <button
                 onClick={createEntry}
                 className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold"
                 data-testid="save-note-btn"
               >
                 Save Note
-              </button>
-              <button
-                onClick={() => setShowForm(false)}
-                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg"
-              >
-                Cancel
               </button>
             </div>
           </div>

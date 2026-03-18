@@ -17,14 +17,15 @@ function ServicesTab({ selectedCase }) {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     service_type: '',
     provider: '',
     start_date: '',
     end_date: '',
     status: 'in_progress',
     notes: ''
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const serviceTypes = [
     'Parenting Classes', 'Drug Testing', 'Counseling', 'Therapy', 'Anger Management',
@@ -64,11 +65,21 @@ function ServicesTab({ selectedCase }) {
       });
       setServices([newService, ...services]);
       setShowAdd(false);
-      setFormData({ service_type: '', provider: '', start_date: '', end_date: '', status: 'in_progress', notes: '' });
+      setFormData(initialFormState);
       toast.success('Service added!');
     } catch (error) {
       toast.error('Failed to add service');
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowAdd(false);
+  };
+
+  const handleBack = () => {
+    setShowAdd(false);
+    window.history.back();
   };
 
   if (!selectedCase) {
@@ -160,8 +171,9 @@ function ServicesTab({ selectedCase }) {
                 />
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
-                <button type="submit" className="flex-1 btn-punisher">Add Service</button>
+                <button type="button" onClick={handleBack} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="services-back-btn">Back</button>
+                <button type="button" onClick={handleCancel} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="services-cancel-btn">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher" data-testid="services-submit-btn">Add Service</button>
               </div>
             </form>
           </div>

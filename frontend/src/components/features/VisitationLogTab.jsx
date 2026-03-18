@@ -18,7 +18,7 @@ function VisitationLogTab({ selectedCase }) {
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     date: new Date().toISOString().split('T')[0],
     time: '10:00',
     duration: 60,
@@ -31,7 +31,8 @@ function VisitationLogTab({ selectedCase }) {
     visit_allowed: true,
     reason_denied: '',
     notes: ''
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const emotionalStates = [
     { id: 'happy', label: 'Happy', icon: '😊', color: 'text-green-400' },
@@ -66,10 +67,21 @@ function VisitationLogTab({ selectedCase }) {
       });
       setVisits([newVisit, ...visits]);
       setShowAdd(false);
+      setFormData(initialFormState);
       toast.success('Visit logged!');
     } catch (error) {
       toast.error('Failed to log visit');
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowAdd(false);
+  };
+
+  const handleBack = () => {
+    setShowAdd(false);
+    window.history.back();
   };
 
   if (!selectedCase) {
@@ -202,8 +214,9 @@ function VisitationLogTab({ selectedCase }) {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
-                <button type="submit" className="flex-1 btn-punisher">Log Visit</button>
+                <button type="button" onClick={handleBack} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="visitation-back-btn">Back</button>
+                <button type="button" onClick={handleCancel} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="visitation-cancel-btn">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher" data-testid="visitation-submit-btn">Log Visit</button>
               </div>
             </form>
           </div>

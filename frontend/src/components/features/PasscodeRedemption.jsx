@@ -18,6 +18,10 @@ function PasscodeRedemption() {
   const [loading, setLoading] = useState(false);
   const [showInput, setShowInput] = useState(false);
 
+  const handleBack = () => {
+    window.history.back();
+  };
+
   const handleRedeem = async (e) => {
     e.preventDefault();
     if (!passcode.trim()) {
@@ -57,6 +61,14 @@ function PasscodeRedemption() {
         </button>
       ) : (
         <form onSubmit={handleRedeem} className="flex gap-2 max-w-md mx-auto">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+            data-testid="passcode-back-btn"
+          >
+            Back
+          </button>
           <input
             type="text"
             value={passcode}
@@ -77,6 +89,7 @@ function PasscodeRedemption() {
             type="button"
             onClick={() => { setShowInput(false); setPasscode(''); }}
             className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+            data-testid="passcode-cancel-btn"
           >
             Cancel
           </button>

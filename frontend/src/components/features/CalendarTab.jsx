@@ -17,13 +17,14 @@ function CalendarTab() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     title: '',
     description: '',
     event_date: '',
     event_time: '',
     event_type: 'general'
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const eventTypes = [
     { value: 'court_hearing', label: 'Court Hearing', color: 'bg-red-500' },
@@ -55,13 +56,23 @@ function CalendarTab() {
       const newEvent = await api.post('/api/calendar', formData);
       setEvents([...events, newEvent].sort((a, b) => new Date(a.event_date) - new Date(b.event_date)));
       setShowAdd(false);
-      setFormData({ title: '', description: '', event_date: '', event_time: '', event_type: 'general' });
+      setFormData(initialFormState);
       toast.success('Event added to calendar!');
     } catch (error) {
       toast.error(error.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowAdd(false);
+  };
+
+  const handleBack = () => {
+    setShowAdd(false);
+    window.history.back();
   };
 
   const handleDelete = async (eventId) => {
@@ -150,10 +161,13 @@ function CalendarTab() {
                 />
               </div>
               <div className="flex gap-3">
-                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-3 border border-gray-600 rounded-lg hover:bg-gray-700">
+                <button type="button" onClick={handleBack} className="flex-1 px-4 py-3 border border-gray-600 rounded-lg hover:bg-gray-700" data-testid="calendar-back-btn">
+                  Back
+                </button>
+                <button type="button" onClick={handleCancel} className="flex-1 px-4 py-3 border border-gray-600 rounded-lg hover:bg-gray-700" data-testid="calendar-cancel-btn">
                   Cancel
                 </button>
-                <button type="submit" disabled={loading} className="flex-1 btn-punisher">
+                <button type="submit" disabled={loading} className="flex-1 btn-punisher" data-testid="calendar-submit-btn">
                   {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Add Event'}
                 </button>
               </div>

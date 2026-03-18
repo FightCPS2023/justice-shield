@@ -17,7 +17,7 @@ function CriminalCaseTab({ selectedCase }) {
   const [criminalCase, setCriminalCase] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     criminal_case_number: '',
     court: '',
     prosecutor: '',
@@ -26,7 +26,8 @@ function CriminalCaseTab({ selectedCase }) {
     next_court_date: '',
     relation_to_cps: '',
     charges: []
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
   const [chargeInput, setChargeInput] = useState({ charge: '', statute: '', severity: 'misdemeanor' });
 
   useEffect(() => {
@@ -54,10 +55,21 @@ function CriminalCaseTab({ selectedCase }) {
       });
       setCriminalCase(data);
       setShowAdd(false);
+      setFormData(initialFormState);
       toast.success('Criminal case info saved!');
     } catch (error) {
       toast.error('Failed to save criminal case');
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowAdd(false);
+  };
+
+  const handleBack = () => {
+    setShowAdd(false);
+    window.history.back();
   };
 
   const addCharge = () => {
@@ -207,8 +219,9 @@ function CriminalCaseTab({ selectedCase }) {
                 )}
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
-                <button type="submit" className="flex-1 btn-punisher">Save Criminal Case</button>
+                <button type="button" onClick={handleBack} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="criminal-back-btn">Back</button>
+                <button type="button" onClick={handleCancel} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="criminal-cancel-btn">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher" data-testid="criminal-submit-btn">Save Criminal Case</button>
               </div>
             </form>
           </div>

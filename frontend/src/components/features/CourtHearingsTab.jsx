@@ -19,14 +19,15 @@ function CourtHearingsTab({ selectedCase }) {
   const [hearingTypes, setHearingTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     date: '',
     time: '09:00',
     hearing_type: 'adjudication',
     judge: '',
     location: '',
     notes: ''
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   useEffect(() => {
     loadHearingTypes();
@@ -67,10 +68,21 @@ function CourtHearingsTab({ selectedCase }) {
         setNextHearing(newHearing);
       }
       setShowAdd(false);
+      setFormData(initialFormState);
       toast.success('Hearing added!');
     } catch (error) {
       toast.error('Failed to add hearing');
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowAdd(false);
+  };
+
+  const handleBack = () => {
+    setShowAdd(false);
+    window.history.back();
   };
 
   if (!selectedCase) {
@@ -152,8 +164,9 @@ function CourtHearingsTab({ selectedCase }) {
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 h-20" />
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
-                <button type="submit" className="flex-1 btn-punisher">Add Hearing</button>
+                <button type="button" onClick={handleBack} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="hearings-back-btn">Back</button>
+                <button type="button" onClick={handleCancel} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="hearings-cancel-btn">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher" data-testid="hearings-submit-btn">Add Hearing</button>
               </div>
             </form>
           </div>

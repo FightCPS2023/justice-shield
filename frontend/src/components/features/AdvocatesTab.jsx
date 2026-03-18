@@ -20,7 +20,7 @@ function AdvocatesTab() {
   const [showApplyForm, setShowApplyForm] = useState(false);
   const [selectedAdvocate, setSelectedAdvocate] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     name: '',
     email: '',
     phone: '',
@@ -34,7 +34,8 @@ function AdvocatesTab() {
     organization: '',
     certifications: '',
     languages: 'English'
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const states = [
     'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
@@ -80,16 +81,22 @@ function AdvocatesTab() {
       await api.post('/api/advocates/apply', applicationData);
       toast.success('Application submitted! We will review it and get back to you soon.');
       setShowApplyForm(false);
-      setFormData({
-        name: '', email: '', phone: '', website: '', photo_url: '', bio: '',
-        experience_years: '', specialties: [], state: '', city: '', organization: '',
-        certifications: '', languages: 'English'
-      });
+      setFormData(initialFormState);
     } catch (error) {
       toast.error(error.message || 'Failed to submit application');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowApplyForm(false);
+  };
+
+  const handleBack = () => {
+    setShowApplyForm(false);
+    window.history.back();
   };
 
   const toggleSpecialty = (specialty) => {
@@ -296,8 +303,17 @@ function AdvocatesTab() {
               <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowApplyForm(false)}
+                  onClick={handleBack}
                   className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                  data-testid="advocate-back-btn"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                  data-testid="advocate-cancel-btn"
                 >
                   Cancel
                 </button>
@@ -305,6 +321,7 @@ function AdvocatesTab() {
                   type="submit"
                   disabled={submitting || formData.specialties.length === 0}
                   className="px-6 py-2 bg-gradient-to-r from-red-600 to-purple-600 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                  data-testid="advocate-submit-btn"
                 >
                   {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit Application'}
                 </button>

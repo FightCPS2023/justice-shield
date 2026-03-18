@@ -21,6 +21,16 @@ function ResearchTab() {
   const [researchType, setResearchType] = useState('comprehensive');
   const [searchTime, setSearchTime] = useState(null);
 
+  const handleCancel = () => {
+    setQuery('');
+    setResults('');
+    setSearchTime(null);
+  };
+
+  const handleBack = () => {
+    window.history.back();
+  };
+
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!query.trim()) return;
@@ -99,7 +109,7 @@ function ResearchTab() {
       </div>
 
       {/* Search Form */}
-      <form onSubmit={handleSearch} className="space-y-3">
+      <form onSubmit={handleSearch} className="space-y-3">
         <div className="flex gap-3">
           <select
             value={state}
@@ -120,7 +130,7 @@ function ResearchTab() {
               data-testid="research-input"
             />
             {query && (
-              <button type="button" onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+              <button type="button" onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white" data-testid="research-clear-btn">
                 <X className="w-4 h-4" />
               </button>
             )}
@@ -128,6 +138,14 @@ function ResearchTab() {
           <button type="submit" disabled={loading || !query.trim()} className="btn-punisher px-6 flex items-center gap-2 disabled:opacity-50" data-testid="research-btn">
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
             Research
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <button type="button" onClick={handleBack} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg" data-testid="research-back-btn">
+            Back
+          </button>
+          <button type="button" onClick={handleCancel} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg" data-testid="research-cancel-btn">
+            Cancel
           </button>
         </div>
       </form>

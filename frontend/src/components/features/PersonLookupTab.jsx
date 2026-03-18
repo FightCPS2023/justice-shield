@@ -17,13 +17,14 @@ function PersonLookupTab({ selectedCase }) {
   const [lookupResult, setLookupResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searchHistory, setSearchHistory] = useState([]);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     name: '',
     state: '',
     city: '',
     additional_info: '',
     lookup_type: 'comprehensive'
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const lookupTypes = [
     { id: 'comprehensive', label: 'Comprehensive Report', desc: 'Full background including criminal, civil, addresses, contacts' },
@@ -88,6 +89,15 @@ function PersonLookupTab({ selectedCase }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setLookupResult(null);
+  };
+
+  const handleBack = () => {
+    window.history.back();
   };
 
   return (
@@ -181,9 +191,24 @@ function PersonLookupTab({ selectedCase }) {
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3">
           <button
+            onClick={handleBack}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+            data-testid="personlookup-back-btn"
+          >
+            Back
+          </button>
+          <button
+            onClick={handleCancel}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+            data-testid="personlookup-cancel-btn"
+          >
+            Cancel
+          </button>
+          <button
             onClick={handleLookup}
             disabled={loading}
             className="btn-punisher flex items-center gap-2"
+            data-testid="personlookup-run-btn"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
             Run Background Check
@@ -192,6 +217,7 @@ function PersonLookupTab({ selectedCase }) {
             onClick={handleCourtSearch}
             disabled={loading}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center gap-2 transition-colors"
+            data-testid="personlookup-courtsearch-btn"
           >
             <Scale className="w-5 h-5" />
             Search Court Records

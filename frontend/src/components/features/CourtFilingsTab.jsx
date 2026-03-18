@@ -17,13 +17,14 @@ function CourtFilingsTab({ selectedCase }) {
   const [filings, setFilings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     filing_type: 'motion',
     title: '',
     date_filed: '',
     status: 'pending',
     content: ''
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const filingTypes = [
     { id: 'motion', label: 'Motion' },
@@ -71,11 +72,21 @@ function CourtFilingsTab({ selectedCase }) {
       });
       setFilings([newFiling, ...filings]);
       setShowAdd(false);
-      setFormData({ filing_type: 'motion', title: '', date_filed: '', status: 'pending', content: '' });
+      setFormData(initialFormState);
       toast.success('Court filing added!');
     } catch (error) {
       toast.error('Failed to add filing');
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowAdd(false);
+  };
+
+  const handleBack = () => {
+    setShowAdd(false);
+    window.history.back();
   };
 
   if (!selectedCase) {
@@ -158,8 +169,9 @@ function CourtFilingsTab({ selectedCase }) {
                 />
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
-                <button type="submit" className="flex-1 btn-punisher">Add Filing</button>
+                <button type="button" onClick={handleBack} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="filings-back-btn">Back</button>
+                <button type="button" onClick={handleCancel} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="filings-cancel-btn">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher" data-testid="filings-submit-btn">Add Filing</button>
               </div>
             </form>
           </div>

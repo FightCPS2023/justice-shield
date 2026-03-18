@@ -17,13 +17,14 @@ function CommunicationsTab({ selectedCase }) {
   const [communications, setCommunications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     contact_type: 'phone',
     contact_with: '',
     date: '',
     summary: '',
     favorable: null
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const contactTypes = [
     { id: 'phone', label: 'Phone Call' },
@@ -59,11 +60,21 @@ function CommunicationsTab({ selectedCase }) {
       });
       setCommunications([newComm, ...communications]);
       setShowAdd(false);
-      setFormData({ contact_type: 'phone', contact_with: '', date: '', summary: '', favorable: null });
+      setFormData(initialFormState);
       toast.success('Communication logged!');
     } catch (error) {
       toast.error('Failed to log communication');
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowAdd(false);
+  };
+
+  const handleBack = () => {
+    setShowAdd(false);
+    window.history.back();
   };
 
   if (!selectedCase) {
@@ -155,8 +166,9 @@ function CommunicationsTab({ selectedCase }) {
                 </div>
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
-                <button type="submit" className="flex-1 btn-punisher">Log Communication</button>
+                <button type="button" onClick={handleBack} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="communications-back-btn">Back</button>
+                <button type="button" onClick={handleCancel} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="communications-cancel-btn">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher" data-testid="communications-submit-btn">Log Communication</button>
               </div>
             </form>
           </div>

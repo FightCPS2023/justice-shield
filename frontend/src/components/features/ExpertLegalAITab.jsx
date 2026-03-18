@@ -20,6 +20,15 @@ function ExpertLegalAITab({ selectedCase }) {
   const [response, setResponse] = useState(null);
   const [history, setHistory] = useState([]);
 
+  const handleCancel = () => {
+    setQuestion('');
+    setResponse(null);
+  };
+
+  const handleBack = () => {
+    window.history.back();
+  };
+
   const analysisTypes = [
     { id: 'comprehensive', label: 'Comprehensive Analysis', desc: 'Full legal analysis with citations' },
     { id: 'strategy', label: 'Strategy Focus', desc: 'Defense strategy recommendations' },
@@ -120,23 +129,43 @@ function ExpertLegalAITab({ selectedCase }) {
               type="button"
               onClick={() => setQuestion(q)}
               className="px-3 py-1 bg-gray-800 border border-gray-700 rounded-full text-xs hover:border-purple-500 transition-colors"
+              data-testid={`expert-sample-question-${i}`}
             >
               {q.substring(0, 40)}...
             </button>
           ))}
         </div>
 
-        <button
-          type="submit"
-          disabled={loading || !question.trim()}
-          className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <><Loader2 className="w-6 h-6 animate-spin" /> Analyzing (30-60 seconds)...</>
-          ) : (
-            <><Brain className="w-6 h-6" /> Get Expert Analysis</>
-          )}
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+            data-testid="expert-back-btn"
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+            data-testid="expert-cancel-btn"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading || !question.trim()}
+            className="flex-1 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
+            data-testid="expert-submit-btn"
+          >
+            {loading ? (
+              <><Loader2 className="w-6 h-6 animate-spin" /> Analyzing (30-60 seconds)...</>
+            ) : (
+              <><Brain className="w-6 h-6" /> Get Expert Analysis</>
+            )}
+          </button>
+        </div>
       </form>
 
       {/* Response */}

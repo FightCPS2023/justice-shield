@@ -17,13 +17,14 @@ function ViolationsTab({ selectedCase }) {
   const [violations, setViolations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     violation_type: '',
     description: '',
     severity: 'medium',
     date: '',
     statute_reference: ''
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const violationTypes = [
     '4th Amendment - Unreasonable Search',
@@ -74,13 +75,23 @@ function ViolationsTab({ selectedCase }) {
       });
       setViolations([...violations, newViolation]);
       setShowAdd(false);
-      setFormData({ violation_type: '', description: '', severity: 'medium', date: '', statute_reference: '' });
+      setFormData(initialFormState);
       toast.success('Violation added!');
     } catch (error) {
       toast.error(error.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowAdd(false);
+  };
+
+  const handleBack = () => {
+    setShowAdd(false);
+    window.history.back();
   };
 
   if (!selectedCase) {
@@ -169,10 +180,13 @@ function ViolationsTab({ selectedCase }) {
                 />
               </div>
               <div className="flex gap-3">
-                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-3 border border-gray-600 rounded-lg hover:bg-gray-700">
+                <button type="button" onClick={handleBack} className="flex-1 px-4 py-3 border border-gray-600 rounded-lg hover:bg-gray-700" data-testid="violations-back-btn">
+                  Back
+                </button>
+                <button type="button" onClick={handleCancel} className="flex-1 px-4 py-3 border border-gray-600 rounded-lg hover:bg-gray-700" data-testid="violations-cancel-btn">
                   Cancel
                 </button>
-                <button type="submit" disabled={loading} className="flex-1 btn-punisher">
+                <button type="submit" disabled={loading} className="flex-1 btn-punisher" data-testid="violations-submit-btn">
                   {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Add Violation'}
                 </button>
               </div>

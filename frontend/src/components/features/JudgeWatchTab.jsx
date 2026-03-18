@@ -19,13 +19,14 @@ function JudgeWatchTab({ selectedCase }) {
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     judge_name: '',
     court: '',
     research_notes: '',
     judicial_philosophy: '',
     known_rulings: []
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
   const [rulingInput, setRulingInput] = useState('');
 
   useEffect(() => {
@@ -66,10 +67,21 @@ function JudgeWatchTab({ selectedCase }) {
       });
       setJudgeResearch(research);
       setShowAdd(false);
+      setFormData(initialFormState);
       toast.success('Judge research saved!');
     } catch (error) {
       toast.error('Failed to save research');
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowAdd(false);
+  };
+
+  const handleBack = () => {
+    setShowAdd(false);
+    window.history.back();
   };
 
   const addRuling = () => {
@@ -187,8 +199,9 @@ function JudgeWatchTab({ selectedCase }) {
                 )}
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
-                <button type="submit" className="flex-1 btn-punisher">Save Research</button>
+                <button type="button" onClick={handleBack} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="judgewatch-back-btn">Back</button>
+                <button type="button" onClick={handleCancel} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="judgewatch-cancel-btn">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher" data-testid="judgewatch-submit-btn">Save Research</button>
               </div>
             </form>
           </div>

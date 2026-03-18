@@ -18,13 +18,14 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
   const [showCreate, setShowCreate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [viewingCase, setViewingCase] = useState(null);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     title: '',
     description: '',
     state: '',
     case_number: '',
     children_names: []
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const states = [
     'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
@@ -42,13 +43,22 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
       setCases([...cases, newCase]);
       setSelectedCase(newCase);
       setShowCreate(false);
-      setFormData({ title: '', description: '', state: '', case_number: '', children_names: [] });
+      setFormData(initialFormState);
       toast.success('Case created successfully!');
     } catch (error) {
       toast.error(error.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+  };
+
+  const handleBack = () => {
+    setShowCreate(false);
+    window.history.back();
   };
 
   return (
@@ -120,8 +130,17 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setShowCreate(false)}
+                  onClick={handleBack}
                   className="flex-1 px-4 py-3 border border-gray-600 rounded-lg hover:bg-gray-700"
+                  data-testid="case-back-btn"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { handleCancel(); setShowCreate(false); }}
+                  className="flex-1 px-4 py-3 border border-gray-600 rounded-lg hover:bg-gray-700"
+                  data-testid="case-cancel-btn"
                 >
                   Cancel
                 </button>

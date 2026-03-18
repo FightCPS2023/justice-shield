@@ -17,14 +17,15 @@ function EvidenceTab({ selectedCase }) {
   const [evidence, setEvidence] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     title: '',
     description: '',
     evidence_type: 'document',
     date_obtained: '',
     source: '',
     supports_defense: true
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const evidenceTypes = [
     { id: 'document', label: 'Document' },
@@ -64,11 +65,21 @@ function EvidenceTab({ selectedCase }) {
       });
       setEvidence([newEvidence, ...evidence]);
       setShowAdd(false);
-      setFormData({ title: '', description: '', evidence_type: 'document', date_obtained: '', source: '', supports_defense: true });
+      setFormData(initialFormState);
       toast.success('Evidence added!');
     } catch (error) {
       toast.error('Failed to add evidence');
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setShowAdd(false);
+  };
+
+  const handleBack = () => {
+    setShowAdd(false);
+    window.history.back();
   };
 
   if (!selectedCase) {
@@ -159,8 +170,9 @@ function EvidenceTab({ selectedCase }) {
                 <label className="text-sm">This evidence supports the defense</label>
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
-                <button type="submit" className="flex-1 btn-punisher">Add Evidence</button>
+                <button type="button" onClick={handleBack} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="evidence-back-btn">Back</button>
+                <button type="button" onClick={handleCancel} className="flex-1 px-4 py-2 bg-gray-700 rounded-lg" data-testid="evidence-cancel-btn">Cancel</button>
+                <button type="submit" className="flex-1 btn-punisher" data-testid="evidence-submit-btn">Add Evidence</button>
               </div>
             </form>
           </div>
