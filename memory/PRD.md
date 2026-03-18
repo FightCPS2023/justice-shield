@@ -69,6 +69,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added JSON parsing with formatted output for consistent UI display
 - Disabled automatic saving of background check results to case notes (per user preference)
 
+### Session 4: Document Analysis Reliability Hardening - COMPLETE
+- Added concurrency throttling for background analysis to reduce LLM rate-limit failures
+- Implemented exponential retry delays for transient LLM errors/timeouts
+- Added explicit error reporting when AI API key is missing
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment

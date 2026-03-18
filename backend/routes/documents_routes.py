@@ -4,6 +4,7 @@ import re
 import json
 import uuid
 import base64
+import asyncio
 from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends, File, UploadFile, Form, BackgroundTasks
@@ -18,6 +19,9 @@ from models.schemas import DocumentCreate
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 router = APIRouter()
+
+ANALYSIS_CONCURRENCY = 2
+ANALYSIS_SEMAPHORE = asyncio.Semaphore(ANALYSIS_CONCURRENCY)
 
 
 async def run_document_analysis_bg(doc_id, case_id, case, content, filename, user_id):
@@ -409,17 +413,27 @@ async def upload_document(
     # Run AI analysis in background if requested (don't block upload response)
     analysis_result = None
     skip_analysis = file_category in ['video', 'audio'] and file_size > 5 * 1024 * 1024
-    if auto_analyze and EMERGENT_LLM_KEY and not skip_analysis:
-        # Schedule analysis as a background task (runs after response is sent)
-        background_tasks.add_task(
-            run_document_analysis_bg, doc_id, case_id, case, extracted_text, file.filename, current_user["user_id"]
-        )
-        analysis_result = {"status": "analyzing", "message": "Document uploaded. AI analysis running in background..."}
-        
-        await db.documents.update_one(
-            {"_id": doc_id},
-            {"$set": {"analysis_status": "analyzing"}}
-        )
+    if auto_analyze and not skip_analysis:
+        if not EMERGENT_LLM_KEY:
+            analysis_result = {
+                "status": "error",
+                "message": "AI analysis unavailable: missing API key"
+            }
+            await db.documents.update_one(
+                {"_id": doc_id},
+                {"$set": {"analysis_status": "error", "analysis_error": "AI analysis unavailable: missing API key"}}
+            )
+        else:
+            # Schedule analysis as a background task (runs after response is sent)
+            background_tasks.add_task(
+                run_document_analysis_bg, doc_id, case_id, case, extracted_text, file.filename, current_user["user_id"]
+            )
+            analysis_result = {"status": "analyzing", "message": "Document uploaded. AI analysis running in background..."}
+            
+            await db.documents.update_one(
+                {"_id": doc_id},
+                {"$set": {"analysis_status": "analyzing"}}
+            )
     
     doc["id"] = doc.pop("_id")
     doc["analysis_result"] = analysis_result
@@ -434,7 +448,8 @@ async def analyze_uploaded_document(doc_id: str, case_id: str, case: dict, conte
     Detects fraud, perjury, constitutional violations, procedural errors, and more.
     """
     db = get_db()
-    import asyncio
+    if not EMERGENT_LLM_KEY:
+        return {"error": "AI analysis unavailable: missing API key", "analysis": None}
     import logging
     logger = logging.getLogger("analysis")
     from emergentintegrations.llm.chat import LlmChat, UserMessage
@@ -476,34 +491,42 @@ DOCUMENT CONTENT:
 
 Provide your complete analysis in JSON format. Be thorough - this parent's family is at stake."""
 
-    max_retries = 2
+    max_retries = 3
     response = None
+    error_text = ""
+    retry_delays = [2, 5, 10]
     
     for attempt in range(max_retries + 1):
         try:
             print(f"[ANALYSIS] Sending LLM request for doc {doc_id} (attempt {attempt + 1})...")
-            response = await asyncio.wait_for(
-                chat.send_message(UserMessage(text=prompt)),
-                timeout=90
-            )
+            async with ANALYSIS_SEMAPHORE:
+                response = await asyncio.wait_for(
+                    chat.send_message(UserMessage(text=prompt)),
+                    timeout=90
+                )
             print(f"[ANALYSIS] LLM response received for doc {doc_id}, length: {len(response)}")
             break
         except asyncio.TimeoutError:
+            error_text = "timeout"
             print(f"[ANALYSIS] LLM TIMEOUT for doc {doc_id}")
             if attempt == max_retries:
                 return {"error": "Analysis timed out. Please try again.", "analysis": None}
         except Exception as e:
-            print(f"[ANALYSIS] LLM ERROR for doc {doc_id}: {e}")
+            error_text = str(e)
+            print(f"[ANALYSIS] LLM ERROR for doc {doc_id}: {error_text}")
             if attempt == max_retries:
-                return {"error": f"Analysis failed: {str(e)}", "analysis": None}
-            # Wait before retry
-            await asyncio.sleep(2)
-            # Create fresh chat for retry
-            chat = LlmChat(
-                api_key=EMERGENT_LLM_KEY,
-                session_id=f"doc-analysis-{doc_id}-retry{attempt}",
-                system_message=system_message
-            ).with_model("openai", "gpt-5.2")
+                return {"error": f"Analysis failed: {error_text}", "analysis": None}
+        
+        wait_seconds = retry_delays[min(attempt, len(retry_delays) - 1)]
+        if "rate limit" in error_text.lower() or "429" in error_text:
+            wait_seconds = max(wait_seconds, 8)
+        await asyncio.sleep(wait_seconds)
+        
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"doc-analysis-{doc_id}-retry{attempt}",
+            system_message=system_message
+        ).with_model("openai", "gpt-5.2")
     
     if not response:
         return {"error": "Analysis failed after retries", "analysis": None}
