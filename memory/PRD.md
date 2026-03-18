@@ -89,6 +89,10 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Moved heavy PDF/image/audio/video extraction into the background analysis pipeline to reduce upload-time failures
 - Added extraction_status tracking for queued/processing/complete/error on uploaded docs
 
+### Session 8: Back + Cancel Buttons Across Forms - COMPLETE
+- Added Back and Cancel controls inline next to primary actions across key forms (cases, violations, evidence, hearings, filings, services, communications, visitation, strategy, criminal case, judge watch, advocates, forum, notepad, research, expert AI, background check)
+- Cancel clears form data and halts action; Back safely closes modals or stays in-app without navigating to about:blank
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
