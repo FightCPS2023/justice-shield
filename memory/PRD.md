@@ -84,6 +84,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added queue detail panels in the document list with status, position, timestamps, and refresh
 - Added queue status display in empty analysis view with refresh action
 
+### Session 7: ADA Cross-Referencing + Background Extraction Pipeline - COMPLETE
+- Added ADA Title II/III cross-reference guidance across AI tools (chat, research, doc gen, strategy, forensic, background check)
+- Moved heavy PDF/image/audio/video extraction into the background analysis pipeline to reduce upload-time failures
+- Added extraction_status tracking for queued/processing/complete/error on uploaded docs
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
