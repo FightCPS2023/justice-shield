@@ -28,6 +28,17 @@ ANALYSIS_QUEUE_DOC_IDS = set()
 ANALYSIS_QUEUE_STARTED = False
 ANALYSIS_QUEUE_LOCK = asyncio.Lock()
 
+MAX_ANALYSIS_RETRIES = 3
+TRANSIENT_ERROR_KEYWORDS = [
+    "badgateway",
+    "bad gateway",
+    "502",
+    "rate limit",
+    "timeout",
+    "temporarily",
+    "gateway"
+]
+
 DOCUMENT_EXTENSIONS = {'.pdf', '.txt', '.doc', '.docx', '.rtf'}
 IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.heic'}
 AUDIO_EXTENSIONS = {'.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.wma'}
@@ -57,6 +68,7 @@ async def run_document_analysis_bg(doc_id, case_id, case, content, filename, use
             }}
         )
         print(f"[BG] Analysis complete for doc {doc_id}")
+        return result
     except Exception as e:
         print(f"[BG] Analysis error for doc {doc_id}: {e}")
         db = get_db()
@@ -64,6 +76,14 @@ async def run_document_analysis_bg(doc_id, case_id, case, content, filename, use
             {"_id": doc_id},
             {"$set": {"analysis_status": "error", "analysis_error": str(e)}}
         )
+        return {"error": str(e), "analysis": None}
+
+
+def _is_transient_error(error_text: str) -> bool:
+    if not error_text:
+        return False
+    text = error_text.lower()
+    return any(keyword in text for keyword in TRANSIENT_ERROR_KEYWORDS)
 
 
 async def _seed_analysis_queue():
@@ -132,7 +152,7 @@ async def _process_analysis_job(doc_id: str):
         content = extracted_text
 
     try:
-        await run_document_analysis_bg(
+        result = await run_document_analysis_bg(
             doc_id,
             doc.get("case_id"),
             case,
@@ -140,6 +160,42 @@ async def _process_analysis_job(doc_id: str):
             doc.get("filename", "document"),
             doc.get("user_id")
         )
+
+        if result and result.get("error"):
+            error_text = result.get("error", "")
+            retry_count = int(doc.get("analysis_retry_count", 0) or 0)
+            if _is_transient_error(error_text) and retry_count < MAX_ANALYSIS_RETRIES:
+                retry_count += 1
+                await db.documents.update_one(
+                    {"_id": doc_id},
+                    {"$set": {
+                        "analysis_status": "queued",
+                        "analysis_error": None,
+                        "analysis_retry_count": retry_count
+                    }}
+                )
+                await db.analysis_queue.update_one(
+                    {"doc_id": doc_id},
+                    {"$set": {
+                        "status": "queued",
+                        "error": None,
+                        "started_at": None,
+                        "completed_at": None,
+                        "created_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                await _ensure_analysis_worker()
+                if doc_id not in ANALYSIS_QUEUE_DOC_IDS:
+                    await ANALYSIS_QUEUE.put(doc_id)
+                    ANALYSIS_QUEUE_DOC_IDS.add(doc_id)
+                return
+
+            await db.analysis_queue.update_one(
+                {"doc_id": doc_id},
+                {"$set": {"status": "error", "error": error_text, "completed_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            return
+
         await db.analysis_queue.update_one(
             {"doc_id": doc_id},
             {"$set": {"status": "complete", "completed_at": datetime.now(timezone.utc).isoformat()}}
@@ -575,6 +631,9 @@ async def upload_document(
         "extraction_error": extraction_error,
         "source": "upload",
         "analysis": None,
+        "analysis_status": "queued" if auto_analyze and EMERGENT_LLM_KEY else None,
+        "analysis_error": None,
+        "analysis_retry_count": 0,
         "extracted_violations": [],
         "extracted_timeline": [],
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -660,10 +719,10 @@ DOCUMENT CONTENT:
 
 Provide your complete analysis in JSON format. Be thorough - this parent's family is at stake."""
 
-    max_retries = 3
+    max_retries = 4
     response = None
     error_text = ""
-    retry_delays = [2, 5, 10]
+    retry_delays = [2, 5, 10, 20]
     
     for attempt in range(max_retries + 1):
         try:
@@ -967,7 +1026,7 @@ async def reanalyze_document(doc_id: str, background_tasks: BackgroundTasks, cur
     
     await get_case_with_ownership(doc["case_id"], current_user["user_id"])
     
-    await db.documents.update_one({"_id": doc_id}, {"$set": {"analysis_status": "queued", "analysis_error": None}})
+    await db.documents.update_one({"_id": doc_id}, {"$set": {"analysis_status": "queued", "analysis_error": None, "analysis_retry_count": 0}})
     queue_position = await _enqueue_analysis_job(doc_id, doc["case_id"], doc.get("user_id"), "reanalyze")
     
     return {

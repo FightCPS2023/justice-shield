@@ -101,6 +101,10 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Fixed DocumentAnalysisView to safely render structured key_allegations and defense_opportunities objects without React runtime errors
 - Added defensive rendering for object fields (allegation, weaknesses, defense, legal_basis, likelihood)
 
+### Session 11: Transient 502 Auto-Retry - COMPLETE
+- Added transient error detection + auto re-queue for 502/BadGateway/timeout LLM failures
+- Increased LLM retry window for analysis to reduce false failures under load
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
