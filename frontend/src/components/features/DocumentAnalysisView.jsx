@@ -138,12 +138,30 @@ function DocumentAnalysisView({ document, onReanalyze, analyzing, queueInfo, onR
             Key Allegations Against You
           </h3>
           <ul className="space-y-2">
-            {data.key_allegations.map((allegation, i) => (
-              <li key={i} className="flex items-start gap-2">
-                <span className="text-yellow-500">•</span>
-                <span className="text-gray-300">{allegation}</span>
-              </li>
-            ))}
+            {data.key_allegations.map((allegation, i) => {
+              const isObject = allegation && typeof allegation === 'object';
+              const allegationText = isObject ? (allegation.allegation || allegation.claim || '') : allegation;
+              const weaknesses = isObject ? allegation.weaknesses : null;
+              const defense = isObject ? allegation.defense : null;
+              return (
+                <li key={i} className="flex items-start gap-2" data-testid={`key-allegation-item-${i}`}>
+                  <span className="text-yellow-500">•</span>
+                  <div>
+                    <span className="text-gray-300" data-testid={`key-allegation-text-${i}`}>{String(allegationText || '')}</span>
+                    {weaknesses && (
+                      <p className="text-sm text-orange-300 mt-1" data-testid={`key-allegation-weaknesses-${i}`}>
+                        Weaknesses: {String(weaknesses)}
+                      </p>
+                    )}
+                    {defense && (
+                      <p className="text-sm text-green-400 mt-1" data-testid={`key-allegation-defense-${i}`}>
+                        Defense: {String(defense)}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
@@ -201,12 +219,30 @@ function DocumentAnalysisView({ document, onReanalyze, analyzing, queueInfo, onR
               Defense Opportunities
             </h3>
             <ul className="space-y-2">
-              {data.defense_opportunities.map((opp, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-300">{opp}</span>
-                </li>
-              ))}
+              {data.defense_opportunities.map((opp, i) => {
+                const isObject = opp && typeof opp === 'object';
+                const opportunityText = isObject ? (opp.opportunity || opp.summary || '') : opp;
+                const legalBasis = isObject ? opp.legal_basis : null;
+                const likelihood = isObject ? opp.likelihood_of_success : null;
+                return (
+                  <li key={i} className="flex items-start gap-2" data-testid={`defense-opportunity-item-${i}`}>
+                    <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="text-gray-300" data-testid={`defense-opportunity-text-${i}`}>{String(opportunityText || '')}</span>
+                      {legalBasis && (
+                        <p className="text-sm text-green-300 mt-1" data-testid={`defense-opportunity-legal-${i}`}>
+                          Legal Basis: {String(legalBasis)}
+                        </p>
+                      )}
+                      {likelihood && (
+                        <p className="text-sm text-yellow-300 mt-1" data-testid={`defense-opportunity-likelihood-${i}`}>
+                          Likelihood: {String(likelihood)}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
