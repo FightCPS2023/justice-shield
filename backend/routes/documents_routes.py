@@ -13,7 +13,7 @@ from fastapi import APIRouter, HTTPException, Depends, File, UploadFile, Form, B
 from database import get_db
 from auth import get_current_user
 from config import EMERGENT_LLM_KEY, UPLOAD_DIR, WHISPER_MAX_SIZE
-from utils.credits import get_user_tier, check_doc_upload_limit, get_case_with_ownership, increment_ai_credits
+from utils.credits import get_user_tier, check_doc_upload_limit, get_case_with_ownership, increment_ai_credits, save_case_memory
 from models.schemas import DocumentCreate
 
 
@@ -67,6 +67,48 @@ async def run_document_analysis_bg(doc_id, case_id, case, content, filename, use
                 "extracted_timeline": result.get("timeline", [])
             }}
         )
+
+        analysis = result.get("analysis")
+        if analysis and isinstance(analysis, dict):
+            memory_lines = []
+            summary = analysis.get("summary")
+            if summary:
+                memory_lines.append(f"Summary: {summary if isinstance(summary, str) else json.dumps(summary)}")
+            key_allegations = analysis.get("key_allegations") or []
+            if key_allegations:
+                formatted = []
+                for item in key_allegations[:5]:
+                    if isinstance(item, dict):
+                        formatted.append(item.get("allegation") or item.get("claim") or json.dumps(item))
+                    else:
+                        formatted.append(str(item))
+                memory_lines.append("Key Allegations: " + "; ".join([f for f in formatted if f]))
+            defense_opps = analysis.get("defense_opportunities") or []
+            if defense_opps:
+                formatted = []
+                for item in defense_opps[:5]:
+                    if isinstance(item, dict):
+                        formatted.append(item.get("opportunity") or item.get("summary") or json.dumps(item))
+                    else:
+                        formatted.append(str(item))
+                memory_lines.append("Defense Opportunities: " + "; ".join([f for f in formatted if f]))
+            recommended_actions = analysis.get("recommended_immediate_actions") or analysis.get("recommended_actions") or []
+            if recommended_actions:
+                formatted = [str(a) for a in recommended_actions[:5]]
+                memory_lines.append("Recommended Actions: " + "; ".join([f for f in formatted if f]))
+
+            memory_content = "\n".join([line for line in memory_lines if line])
+            if memory_content:
+                await save_case_memory(
+                    case_id=case_id,
+                    user_id=user_id,
+                    title=f"Doc Analysis Memory: {filename}",
+                    content=memory_content,
+                    tags=["auto", "document-analysis"],
+                    source="document_analysis",
+                    metadata={"doc_id": doc_id}
+                )
+
         print(f"[BG] Analysis complete for doc {doc_id}")
         return result
     except Exception as e:

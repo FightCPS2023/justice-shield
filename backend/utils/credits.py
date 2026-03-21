@@ -169,3 +169,47 @@ async def save_ai_response_to_case(
     }
     await db.ai_case_notes.insert_one(ai_note)
     return note_id
+
+
+async def save_case_memory(
+    case_id: str,
+    user_id: str,
+    title: str,
+    content: str,
+    tags: list = None,
+    source: str = "auto",
+    metadata: dict = None
+):
+    if not case_id or not content:
+        return None
+    db = get_db()
+    memory_id = str(uuid.uuid4())
+    memory_entry = {
+        "_id": memory_id,
+        "case_id": case_id,
+        "user_id": user_id,
+        "title": title or "Case Memory",
+        "content": content,
+        "tags": tags or [],
+        "source": source,
+        "metadata": metadata or {},
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.case_memory.insert_one(memory_entry)
+    return memory_id
+
+
+async def get_case_memory_context(case_id: str, user_id: str, limit: int = 25) -> str:
+    if not case_id:
+        return ""
+    db = get_db()
+    memories = []
+    async for entry in db.case_memory.find({"case_id": case_id, "user_id": user_id}).sort("created_at", -1).limit(limit):
+        title = entry.get("title") or "Memory"
+        content = entry.get("content") or ""
+        tags = entry.get("tags", [])
+        tag_text = f" [tags: {', '.join(tags)}]" if tags else ""
+        memories.append(f"- {title}: {content}{tag_text}")
+    if not memories:
+        return ""
+    return "CASE MEMORY (facts collected so far):\n" + "\n".join(memories)

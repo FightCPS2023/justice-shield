@@ -15,6 +15,7 @@ from .podcast_routes import router as podcast_router
 from .caselaw_routes import router as caselaw_router
 from .ada_routes import router as ada_router
 from .strategy_routes import router as strategy_router
+from .case_memory_routes import router as case_memory_router
 
 all_routers = [
     auth_router,
@@ -34,4 +35,5 @@ all_routers = [
     caselaw_router,
     ada_router,
     strategy_router,
+    case_memory_router,
 ]

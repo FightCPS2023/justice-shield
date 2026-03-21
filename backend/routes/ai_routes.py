@@ -12,7 +12,7 @@ from auth import get_current_user
 from config import EMERGENT_LLM_KEY, COURTLISTENER_API_KEY
 from utils.credits import (
     get_user_tier, check_ai_credits, increment_ai_credits,
-    get_case_with_ownership, save_ai_response_to_case, require_tier
+    get_case_with_ownership, save_ai_response_to_case, require_tier, get_case_memory_context
 )
 from models.schemas import ChatMessage, AIAnalysisRequest, LegalResearchRequest, DocumentGeneratorRequest
 from pydantic import BaseModel
@@ -342,6 +342,9 @@ Case Context:
 - Identified Violations: {', '.join(violations) if violations else 'None documented yet'}
 - Caseworker: {case.get('caseworker_name', 'Unknown')}
 - Judge: {case.get('judge_name', 'Unknown')}"""
+            memory_context = await get_case_memory_context(message_data.case_id, current_user["user_id"])
+            if memory_context:
+                case_context += f"\n\n{memory_context}"
 
     context_prompts = {
         "general": "Answer questions about CPS cases, parental rights, and defense strategies.",
@@ -482,6 +485,9 @@ Case Context:
 - Identified Violations: {', '.join(violations) if violations else 'None documented yet'}
 - Caseworker: {case.get('caseworker_name', 'Unknown')}
 - Judge: {case.get('judge_name', 'Unknown')}"""
+            memory_context = await get_case_memory_context(message_data.case_id, current_user["user_id"])
+            if memory_context:
+                case_context += f"\n\n{memory_context}"
 
     context_prompts = {
         "general": "Answer questions about CPS cases, parental rights, and defense strategies.",
@@ -680,6 +686,7 @@ async def ai_generate_document(request: DocumentGeneratorRequest, current_user: 
     violations_text = "\n".join([f"- {v.get('violation_type', 'Unknown')}: {v.get('description', 'No description')}" for v in violations[:15]]) or "No violations documented yet"
     timeline_text = "\n".join([f"- {e.get('date', 'N/A')}: {e.get('title', '')} - {e.get('description', '')}" for e in timeline[:20]]) or "No timeline events"
     strategies_text = "\n".join([f"- {s.get('title', '')}: {s.get('description', '')}" for s in strategies[:10]]) or "No strategies documented"
+    memory_context = await get_case_memory_context(request.case_id, current_user["user_id"])
     
     # Get user info
     user = await db.users.find_one({"_id": current_user["user_id"]})
@@ -704,6 +711,9 @@ Case Timeline:
 
 Defense Strategies:
 {strategies_text}
+
+CASE MEMORY:
+{memory_context or 'No stored memory yet'}
 
 REQUIREMENTS:
 1. Use proper legal formatting for {case.get('state', 'the jurisdiction')}
@@ -799,6 +809,7 @@ Provide actionable, legally-sound strategies that protect parental rights while 
     violations_text = "\n".join([f"- {v.get('violation_type')}: {v.get('description')}" for v in violations]) or "None documented"
     timeline_text = "\n".join([f"- {e.get('date')}: {e.get('title')}" for e in timeline[:15]]) or "No events"
     evidence_text = "\n".join([f"- {e.get('title')}: {e.get('description')}" for e in evidence[:10]]) or "No evidence logged"
+    memory_context = await get_case_memory_context(case_id, current_user["user_id"])
     
     prompt = f"""Analyze this CPS case and develop a comprehensive defense strategy:
 
@@ -814,6 +825,9 @@ CASE TIMELINE ({len(timeline)} events):
 
 EVIDENCE ({len(evidence)} items):
 {evidence_text}
+
+CASE MEMORY:
+{memory_context or 'No stored memory yet'}
 
 Provide:
 1. CASE STRENGTH ASSESSMENT (1-10 scale with explanation)
@@ -944,6 +958,9 @@ Case Context:
 - Description: {case.get('description', 'N/A')}
 - Violations Found: {chr(10).join(violations) if violations else 'None documented'}
 """
+            memory_context = await get_case_memory_context(request.case_id, current_user["user_id"])
+            if memory_context:
+                case_context += f"\n{memory_context}\n"
 
     # Pull relevant pre-built legal knowledge for speed
     state_law_context = ""
@@ -1085,6 +1102,9 @@ TIMELINE ({len(timeline)} events):
 EVIDENCE ({len(evidence)} items):
 {chr(10).join(evidence) if evidence else 'None yet'}
 """
+            memory_context = await get_case_memory_context(request.case_id, current_user["user_id"])
+            if memory_context:
+                case_context += f"\n{memory_context}\n"
 
     # State law context
     state_law = ""
@@ -1355,6 +1375,8 @@ async def expert_legal_analysis(
         f"- {e.get('date', 'Unknown')}: {e.get('title')}"
         for e in sorted(timeline, key=lambda x: x.get('date', ''))
     ]) if timeline else "No timeline events"
+
+    memory_context = await get_case_memory_context(case_id, current_user["user_id"])
     
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -1374,6 +1396,9 @@ TIMELINE:
 {timeline_text}
 
 Documents on file: {len(documents)}
+
+CASE MEMORY:
+{memory_context or 'No stored memory yet'}
 
 USER'S QUESTION:
 {question}

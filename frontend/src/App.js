@@ -26,6 +26,7 @@ import PricingTab from './components/features/PricingTab';
 import SettingsTab from './components/features/SettingsTab';
 import AdminBoardTab from './components/features/AdminBoardTab';
 import AICaseNotesTab from './components/features/AICaseNotesTab';
+import CaseMemoryTab from './components/features/CaseMemoryTab';
 import SmartDocTab from './components/features/SmartDocTab';
 import EvidenceTab from './components/features/EvidenceTab';
 import CommunicationsTab from './components/features/CommunicationsTab';
@@ -219,6 +220,7 @@ function Dashboard({ onNavigate }) {
     { id: 'overview', icon: Home, label: 'Overview', minTier: 'free' },
     { id: 'cases', icon: FileText, label: 'My Cases', minTier: 'free' },
     { id: 'ainotes', icon: Brain, label: 'AI Case Notes', minTier: 'free', highlight: true },
+    { id: 'memory', icon: Brain, label: 'Case Memory', minTier: 'free', highlight: true },
     { id: 'violations', icon: AlertTriangle, label: 'Violations', minTier: 'free' },
     { id: 'timeline', icon: Clock, label: 'Timeline', minTier: 'free' },
     { id: 'evidence', icon: Eye, label: 'Evidence', minTier: 'free' },
@@ -383,6 +385,7 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'documents' && <DocumentsTab selectedCase={selectedCase} />}
           {activeTab === 'smartdoc' && <SmartDocTab selectedCase={selectedCase} />}
           {activeTab === 'ainotes' && <AICaseNotesTab selectedCase={selectedCase} />}
+          {activeTab === 'memory' && <CaseMemoryTab selectedCase={selectedCase} />}
           {activeTab === 'timeline' && <TimelineTab selectedCase={selectedCase} />}
           {activeTab === 'evidence' && <EvidenceTab selectedCase={selectedCase} />}
           {activeTab === 'evidencelist' && <EvidenceChecklistTab selectedCase={selectedCase} />}
