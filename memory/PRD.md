@@ -105,6 +105,12 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added transient error detection + auto re-queue for 502/BadGateway/timeout LLM failures
 - Increased LLM retry window for analysis to reduce false failures under load
 
+### Session 12: Case Memory System - COMPLETE
+- Added persistent case memory collection with create/list/delete endpoints
+- Added Case Memory UI tab with Add/Delete controls and tagging
+- Injected case memory into AI prompts (chat, research, doc generation, defense strategy, expert analysis)
+- Auto-saves key findings from document analysis into case memory
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
