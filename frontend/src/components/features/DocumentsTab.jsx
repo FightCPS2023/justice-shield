@@ -168,12 +168,26 @@ function DocumentsTab({ selectedCase }) {
     formData.append('doc_type', 'cps_document');
     formData.append('auto_analyze', 'true');
 
-    const token = localStorage.getItem('cps_token');
-    const response = await fetch(`${API_URL}/api/documents/upload`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
-      body: formData
-    });
+    const token = api.getToken ? api.getToken() : localStorage.getItem('cps_token');
+    if (!token) {
+      throw new Error('Session expired. Please log in again.');
+    }
+
+    const apiBase = (API_URL || '').replace(/\/+$/, '');
+    const uploadUrl = apiBase
+      ? (apiBase.endsWith('/api') ? `${apiBase}/documents/upload` : `${apiBase}/api/documents/upload`)
+      : '/api/documents/upload';
+
+    let response;
+    try {
+      response = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+    } catch (error) {
+      throw new Error('Connection error. Please check your internet and try again.');
+    }
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Upload failed' }));
