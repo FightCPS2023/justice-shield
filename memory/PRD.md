@@ -111,6 +111,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Injected case memory into AI prompts (chat, research, doc generation, defense strategy, expert analysis)
 - Auto-saves key findings from document analysis into case memory
 
+### Session 13: Upload Resilience Fix - COMPLETE
+- Added safer token handling and upload URL normalization for document uploads
+- Added explicit connection-error handling to prevent immediate “failed to fetch” in incognito
+- Added session-expired guard with user-friendly messaging
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
