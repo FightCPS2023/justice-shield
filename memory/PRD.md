@@ -116,6 +116,10 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added explicit connection-error handling to prevent immediate “failed to fetch” in incognito
 - Added session-expired guard with user-friendly messaging
 
+### Session 14: DOCX/RTF Extraction Fix - COMPLETE
+- Added DOCX and RTF text extraction (python-docx, striprtf) to prevent “no substantive text” errors
+- DOCX/RTF now extracted in background and fed into analysis
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment

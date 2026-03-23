@@ -438,6 +438,28 @@ async def extract_text_from_file(file_path: str, file_ext: str, filename: str, f
     if file_ext == '.txt':
         return content.decode('utf-8', errors='ignore'), None
 
+    if file_ext == '.docx':
+        try:
+            from docx import Document
+            doc = Document(io.BytesIO(content))
+            paragraphs = [p.text.strip() for p in doc.paragraphs if p.text and p.text.strip()]
+            extracted = "\n".join(paragraphs)
+            if extracted:
+                return f"[Word Document: {filename}]\n\n{extracted}", None
+            return f"[Word Document: {filename}]\n\nNo readable text found in the .docx.", "No text extracted"
+        except Exception as e:
+            return f"[Word Document: {filename}]\n\nDocument uploaded. Text extraction failed.", str(e)
+
+    if file_ext == '.rtf':
+        try:
+            from striprtf.striprtf import rtf_to_text
+            extracted = rtf_to_text(content.decode('utf-8', errors='ignore'))
+            if extracted and extracted.strip():
+                return f"[RTF Document: {filename}]\n\n{extracted.strip()}", None
+            return f"[RTF Document: {filename}]\n\nNo readable text found in the RTF.", "No text extracted"
+        except Exception as e:
+            return f"[RTF Document: {filename}]\n\nDocument uploaded. Text extraction failed.", str(e)
+
     if file_ext == '.pdf':
         try:
             from pypdf import PdfReader
@@ -639,9 +661,12 @@ async def upload_document(
     elif file_ext in video_extensions:
         file_category = "video"
         extracted_text = f"[Video Recording: {file.filename}]\n\nTranscription queued for background processing."
-    elif file_ext in {'.doc', '.docx', '.rtf'}:
+    elif file_ext in {'.docx', '.rtf'}:
         file_category = "document"
-        extracted_text = f"[Word Document: {file.filename}]\n\nDocument uploaded. For best text extraction, consider converting to PDF."
+        extracted_text = f"[Document: {file.filename}]\n\nText extraction queued for background processing."
+    elif file_ext == '.doc':
+        file_category = "document"
+        extracted_text = f"[Word Document: {file.filename}]\n\nDocument uploaded. Please convert .doc to PDF or .docx for reliable text extraction."
         extraction_status = "complete"
     else:
         extracted_text = f"[File: {file.filename}]\n\nFile uploaded successfully."
