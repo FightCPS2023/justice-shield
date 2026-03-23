@@ -9,6 +9,7 @@ from database import get_db
 from auth import get_current_user
 from utils.credits import get_case_with_ownership, require_tier
 from models.schemas import ForumPostCreate, NotepadEntryCreate, NotepadEntryUpdate, VisitationCreate, CourtHearingCreate
+from .courtlistener_routes import STATES_INFO, STATE_CPS_DATABASE, format_state_law_info, get_generic_state_info
 
 
 router = APIRouter()
@@ -468,7 +469,7 @@ async def get_court_hearings(case_id: str, current_user: dict = Depends(get_curr
         try:
             hearing_date = datetime.strptime(h["date"], "%Y-%m-%d")
             h["days_until"] = max(0, (hearing_date - datetime.now()).days)
-        except:
+        except Exception:
             h["days_until"] = 0
     
     # Get next upcoming hearing
