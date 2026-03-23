@@ -12,6 +12,28 @@ from utils.credits import require_tier, check_ai_credits, increment_ai_credits, 
 
 router = APIRouter()
 
+
+class SimpleCache:
+    def __init__(self):
+        self._store = {}
+
+    def get(self, key: str):
+        entry = self._store.get(key)
+        if not entry:
+            return None
+        value, expires_at = entry
+        if expires_at and datetime.now(timezone.utc).timestamp() > expires_at:
+            self._store.pop(key, None)
+            return None
+        return value
+
+    def set(self, key: str, value, ttl: int = 3600):
+        expires_at = datetime.now(timezone.utc).timestamp() + ttl if ttl else None
+        self._store[key] = (value, expires_at)
+
+
+_cache = SimpleCache()
+
 @router.get("/api/courtlistener/search")
 async def search_court_opinions(
     q: str = Query(..., description="Search query"),
@@ -1086,7 +1108,7 @@ async def get_all_states():
     return {"states": sorted(states, key=lambda x: x["name"])}
 
 @router.get("/api/law-library/{state_code}")
-async def get_state_law_info(state_code: str, current_user: dict = Depends(require_tier("professional", feature_key="law_library"))):
+async def get_state_law_info(state_code: str, current_user: dict = Depends(require_tier("free", feature_key="law_library"))):
     """Get comprehensive CPS law information for a state - INSTANT LOADING from cache/pre-built database"""
     state_code = state_code.upper()
 

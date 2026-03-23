@@ -238,12 +238,28 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Document Upload - uploadSingleFile Update - VERIFIED"
-  stuck_tasks: []
+    - "Law Library - Navigation and Content Loading"
+  stuck_tasks:
+    - "Law Library - Frontend navigation not working correctly"
   test_all: false
-  test_priority: "completed"
+  test_priority: "high_first"
+
+frontend:
+  - task: "Law Library - Navigation and Content Loading"
+    implemented: true
+    working: false
+    file: "frontend/src/App.js, frontend/src/components/features/LawLibraryTab.jsx"
+    stuck_count: 1
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL BUG: Law Library navigation not working. Test attempted to navigate to Law Library via sidebar menu item (id: 'library'), but clicking the 'Law Library' button does not navigate to the Law Library tab. Instead, the page remains on 'My Cases' tab. The library-tab data-testid is found in DOM but content is not displayed. No /api/law-library/CA API call is made when clicking CA state button, confirming the Law Library component is not actually rendered. Frontend routing issue - the activeTab state is not being set to 'library' when clicking the Law Library menu item. Tested on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com. Backend API endpoint /api/law-library/{state_code} exists in courtlistener_routes.py and backend is running (no errors in recent logs). Issue is purely frontend navigation/routing."
 
 agent_communication:
+  - agent: "testing"
+    message: "❌ LAW LIBRARY FEATURE TEST FAILED - CRITICAL NAVIGATION BUG FOUND. Attempted to test Law Library feature as requested. Successfully logged in and found Law Library menu item in sidebar (requires 'professional' tier, user has 'attorney' tier so access is granted). However, clicking the 'Law Library' button in the sidebar does not navigate to the Law Library tab. The page remains stuck on 'My Cases' tab. The library-tab data-testid element is found in DOM (test passes that check), but the actual Law Library content is never displayed. When attempting to click CA state button, no /api/law-library/CA API call is made, confirming the Law Library component is not rendered. This is a frontend routing/navigation issue - the activeTab state in App.js is not being updated to 'library' when the Law Library menu item is clicked. Backend API is working fine (no errors in logs). REQUIRES IMMEDIATE FIX: Main agent needs to debug the sidebar navigation click handler in App.js (lines 288-299) to ensure setActiveTab('library') is being called correctly when the Law Library menu item is clicked."
   - agent: "testing"
     message: "Initial comprehensive testing completed for Background Check (Person Lookup) feature. All requirements from the review request have been verified and are working correctly. The feature is production-ready."
   - agent: "testing"
