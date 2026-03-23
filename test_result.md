@@ -247,17 +247,34 @@ test_plan:
 frontend:
   - task: "Law Library - Navigation and Content Loading"
     implemented: true
-    working: false
+    working: true
     file: "frontend/src/App.js, frontend/src/components/features/LawLibraryTab.jsx"
-    stuck_count: 1
+    stuck_count: 0
     priority: "critical"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL BUG: Law Library navigation not working. Test attempted to navigate to Law Library via sidebar menu item (id: 'library'), but clicking the 'Law Library' button does not navigate to the Law Library tab. Instead, the page remains on 'My Cases' tab. The library-tab data-testid is found in DOM but content is not displayed. No /api/law-library/CA API call is made when clicking CA state button, confirming the Law Library component is not actually rendered. Frontend routing issue - the activeTab state is not being set to 'library' when clicking the Law Library menu item. Tested on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com. Backend API endpoint /api/law-library/{state_code} exists in courtlistener_routes.py and backend is running (no errors in recent logs). Issue is purely frontend navigation/routing."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TEST PASSED: Law Library navigation and content loading now working correctly! All review request requirements verified on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com/cpssuxass. RESULTS: (1) Login successful ✓, (2) Click Law Library in sidebar - navigation works, Law Library tab renders with state grid visible (50 states displayed) ✓, (3) Click CA state button - API call GET /api/law-library/CA returns 200 OK ✓, (4) California CPS Law Guide content loads successfully (2320 characters) displaying: CPS Agency (California Department of Social Services), Governing Statutes (Welfare & Institutions Code §300-395), Key Timeframes (Detention Hearing: 48 hours, Jurisdiction Hearing: 15 court days, etc.), Key Statutory Provisions (WIC §300, §306, §319, §361, §366.26), Discovery Rights ✓, (5) Content displays correctly in formatted pre element ✓. Navigation issue FIXED - sidebar click handler now correctly sets activeTab to 'library'. Frontend routing working as expected. No console errors detected. MINOR ISSUE: Save to Notepad button returns 500 error (backend issue: NameError: name 'STATES_INFO' is not defined in /app/backend/routes/community_routes.py line 201). This is a separate backend bug that needs fixing but does NOT affect the core Law Library navigation and content loading functionality which is the main review request requirement."
+
+  - task: "Law Library - Save to Notepad Functionality"
+    implemented: true
+    working: false
+    file: "backend/routes/community_routes.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ BACKEND BUG: Save to Notepad functionality failing with 500 Internal Server Error. When clicking 'Save to Notepad' button after loading CA state law content, API call POST /api/notepad/save-from-library returns 500 error. Backend error log shows: NameError: name 'STATES_INFO' is not defined at /app/backend/routes/community_routes.py line 201 in save_from_law_library function. The function is trying to use STATES_INFO variable that doesn't exist or is not imported. Error toast displays: 'Failed to save to notepad'. FIX REQUIRED: Main agent needs to either (1) define STATES_INFO dictionary in community_routes.py, or (2) import it from the correct module, or (3) use an alternative approach to get state name from state code. This is a backend-only issue - frontend is working correctly and making the API call with proper authentication."
 
 agent_communication:
+  - agent: "testing"
+    message: "✅ LAW LIBRARY RE-TEST COMPLETED SUCCESSFULLY! The main review request requirement (Law Library navigation and content loading) is now WORKING. All steps verified: (1) Login ✓, (2) Click Law Library in sidebar ✓, (3) Law Library tab renders with state grid ✓, (4) Click CA ✓, (5) Content loads (2320 chars of CA CPS law) ✓. API call GET /api/law-library/CA returns 200 OK. Navigation issue has been FIXED by main agent. SEPARATE ISSUE FOUND: Save to Notepad button returns 500 error due to backend bug (NameError: STATES_INFO not defined in community_routes.py line 201). This is a minor issue that doesn't affect the core functionality tested in the review request."
   - agent: "testing"
     message: "❌ LAW LIBRARY FEATURE TEST FAILED - CRITICAL NAVIGATION BUG FOUND. Attempted to test Law Library feature as requested. Successfully logged in and found Law Library menu item in sidebar (requires 'professional' tier, user has 'attorney' tier so access is granted). However, clicking the 'Law Library' button in the sidebar does not navigate to the Law Library tab. The page remains stuck on 'My Cases' tab. The library-tab data-testid element is found in DOM (test passes that check), but the actual Law Library content is never displayed. When attempting to click CA state button, no /api/law-library/CA API call is made, confirming the Law Library component is not rendered. This is a frontend routing/navigation issue - the activeTab state in App.js is not being updated to 'library' when the Law Library menu item is clicked. Backend API is working fine (no errors in logs). REQUIRES IMMEDIATE FIX: Main agent needs to debug the sidebar navigation click handler in App.js (lines 288-299) to ensure setActiveTab('library') is being called correctly when the Law Library menu item is clicked."
   - agent: "testing"

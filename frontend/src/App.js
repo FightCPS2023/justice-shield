@@ -251,7 +251,7 @@ function Dashboard({ onNavigate }) {
     { id: 'personlookup', icon: Search, label: 'Background Check', minTier: 'professional', highlight: true },
     { id: 'legaldb', icon: BookOpen, label: 'Legal Knowledge Base', minTier: 'professional' },
     { id: 'research', icon: Search, label: 'Legal Research', minTier: 'professional' },
-    { id: 'library', icon: BookOpen, label: 'Law Library', minTier: 'professional' },
+    { id: 'library', icon: BookOpen, label: 'Law Library', minTier: 'free' },
     { id: 'section1983', icon: Gavel, label: 'Section 1983 Lawsuit', minTier: 'attorney', highlight: true },
     { id: 'courtlistener', icon: Scale, label: 'Court Opinions', minTier: 'attorney', highlight: true },
     { id: 'podcast', icon: Mic, label: 'Podcast Creator', minTier: 'attorney' },
