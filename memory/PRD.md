@@ -124,6 +124,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Unlocked Law Library for free tier and fixed in-memory cache for state law responses
 - Resolved Save to Notepad error by importing state data helpers into community routes
 
+### Session 16: How-To Guide + Essential Price Update - COMPLETE
+- Added How To Use guide in sidebar with step-by-step workflow + troubleshooting
+- Updated Essential plan pricing to $19/mo and $190/yr (frontend + backend)
+- Updated HelpBot pricing reference
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
