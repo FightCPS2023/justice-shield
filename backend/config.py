@@ -24,7 +24,7 @@ ACCESS_TOKEN_EXPIRE_DAYS = 30
 
 # Stripe pricing tiers
 TIER_PRICING = {
-    "essential": {"monthly": 49.00, "annual": 490.00, "name": "Essential"},
+    "essential": {"monthly": 19.00, "annual": 190.00, "name": "Essential"},
     "professional": {"monthly": 99.00, "annual": 990.00, "name": "Professional"},
     "attorney": {"monthly": 299.00, "annual": 2990.00, "name": "Attorney Suite"},
     "enterprise": {"monthly": 999.00, "annual": 9990.00, "name": "Enterprise"},

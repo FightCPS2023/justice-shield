@@ -4,7 +4,7 @@ import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, Menu, X, LogOut,
   Home, Settings, Lock, Loader2, Clock, Eye, CheckCircle2,
-  CreditCard, Zap, Mic
+  CreditCard, Zap, Mic, HelpCircle
 } from 'lucide-react';
 
 import api, { API_URL } from './lib/api';
@@ -21,6 +21,7 @@ import DocumentsTab from './components/features/DocumentsTab';
 import TimelineTab from './components/features/TimelineTab';
 import ResearchTab from './components/features/ResearchTab';
 import LawLibraryTab from './components/features/LawLibraryTab';
+import HowToTab from './components/features/HowToTab';
 import CalendarTab from './components/features/CalendarTab';
 import PricingTab from './components/features/PricingTab';
 import SettingsTab from './components/features/SettingsTab';
@@ -218,6 +219,7 @@ function Dashboard({ onNavigate }) {
 
   const menuItems = [
     { id: 'overview', icon: Home, label: 'Overview', minTier: 'free' },
+    { id: 'howto', icon: HelpCircle, label: 'How to Use', minTier: 'free', highlight: true },
     { id: 'cases', icon: FileText, label: 'My Cases', minTier: 'free' },
     { id: 'ainotes', icon: Brain, label: 'AI Case Notes', minTier: 'free', highlight: true },
     { id: 'memory', icon: Brain, label: 'Case Memory', minTier: 'free', highlight: true },
@@ -369,6 +371,7 @@ function Dashboard({ onNavigate }) {
       <main className="flex-1 lg:ml-64 pt-16 lg:pt-0">
         <div className="p-6">
           {activeTab === 'overview' && <OverviewTab cases={cases} setActiveTab={setActiveTab} prefetchedData={prefetchedData} />}
+          {activeTab === 'howto' && <HowToTab />}
           {activeTab === 'cases' && <CasesTab cases={cases} setCases={setCases} selectedCase={selectedCase} setSelectedCase={setSelectedCase} />}
           {activeTab === 'chat' && <ChatTab selectedCase={selectedCase} />}
           {activeTab === 'expert' && <ExpertLegalAITab selectedCase={selectedCase} />}

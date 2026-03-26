@@ -230,15 +230,43 @@ frontend:
         agent: "testing"
         comment: "✅ UPLOAD FUNCTIONALITY FULLY VERIFIED: Tested uploadSingleFile function after recent update on https://justice-shield-6.preview.emergentagent.com. All review request requirements passed: (1) Login successful with cpsvhuntingjustice@gmail.com/cpssuxass ✓, (2) Documents tab navigation successful ✓, (3) Case selected (TEST_Docs_80d33484) ✓, (4) Small txt file upload successful ✓, (5) NO 'failed to fetch' error detected ✓, (6) Upload completed with 'done' status and success message '1 document(s) uploaded! AI analysis queued...' ✓, (7) Network requests show successful API calls: POST 200 to /api/documents/upload ✓, (8) Session expired scenario tested: token removed from localStorage, upload attempted, proper error message displayed 'Session expired. Please log in again.' ✓. Implementation verified: Lines 163-197 in DocumentsTab.jsx show proper token validation (lines 171-174), URL construction (lines 176-179), fetch with connection error handling (lines 182-190), and response validation (lines 192-195). Upload queue displays correct status indicators (green checkmark for 'done', red error icon for 'error'). All test scenarios passed successfully. Feature is production-ready."
 
+  - task: "How to Use Tab - Content and Navigation"
+    implemented: true
+    working: true
+    file: "frontend/src/components/features/HowToTab.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ HOW TO USE TAB FULLY FUNCTIONAL: Comprehensive testing completed on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com/cpssuxass. All review request requirements verified: (1) Login successful ✓, (2) How to Use tab accessible from sidebar (marked with NEW badge, data-testid='nav-howto') ✓, (3) Tab renders with proper header 'How to Use THE CPS PUNISHER' and subtitle 'Step-by-step guide to defend your family with confidence.' ✓, (4) All 6 quick start steps display correctly in grid layout: 'Create your case', 'Upload documents', 'Review AI analysis', 'Use the Law Library', 'Build your defense', 'Get help when needed' ✓, (5) Each step shows icon, title, and description ✓, (6) Daily Workflow section present with 4 workflow steps ✓, (7) Troubleshooting Tips section present with yellow warning icon and 4 tips ✓, (8) All sections have proper data-testid attributes for testing ✓, (9) No console errors or UI errors detected ✓. Component structure verified in HowToTab.jsx with proper React implementation. Feature is PRODUCTION-READY."
+
+  - task: "Pricing Tab - Essential Tier Price Update"
+    implemented: true
+    working: true
+    file: "frontend/src/components/features/PricingTab.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL BUG: Pricing tab fails to render with runtime error 'PasscodeRedemption is not defined'. Error occurs at line 283 in PricingTab.jsx where <PasscodeRedemption /> component is used but not imported. The PasscodeRedemption component exists at /app/frontend/src/components/features/PasscodeRedemption.jsx but the import statement is missing from PricingTab.jsx. This prevents the entire Pricing tab from loading. Red error screen displays: 'ReferenceError: PasscodeRedemption is not defined at PricingTab'. FIX REQUIRED: Add import statement 'import PasscodeRedemption from './PasscodeRedemption';' to PricingTab.jsx."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TEST PASSED: Pricing tab now fully functional after fixing PasscodeRedemption import error. All review request requirements verified on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com/cpssuxass. COMPLETE TEST RESULTS: (1) Login successful ✓, (2) Pricing tab accessible from sidebar (data-testid='nav-pricing') ✓, (3) Pricing tab renders without errors (data-testid='pricing-tab') ✓, (4) Essential tier monthly price displays $19 ✓, (5) Essential tier annual price displays $190 ✓, (6) Billing toggle between Monthly and Annual works correctly ✓, (7) All 4 pricing tiers display: Essential ($19/mo, $190/yr), Professional ($99/mo, $990/yr), Attorney Suite ($299/mo, $2990/yr), Enterprise ($999/mo, $9990/yr) ✓, (8) PasscodeRedemption component renders correctly with 'Have a Passcode?' section ✓, (9) Credit purchase section displays ✓, (10) No console errors ✓. FIX APPLIED: Added missing import 'import PasscodeRedemption from './PasscodeRedemption';' at line 14 in PricingTab.jsx. Frontend service restarted successfully. Feature is PRODUCTION-READY."
+
 metadata:
   created_by: "testing_agent"
   version: "1.0"
-  test_sequence: 11
-  last_updated: "2026-03-23T05:23:00Z"
+  test_sequence: 12
+  last_updated: "2026-03-26T12:32:00Z"
 
 test_plan:
   current_focus:
-    - "Law Library - Save to Notepad Functionality"
+    - "How to Use Tab - Content and Navigation"
+    - "Pricing Tab - Essential Tier Price Update"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -277,6 +305,8 @@ frontend:
 agent_communication:
   - agent: "testing"
     message: "✅ LAW LIBRARY SAVE TO NOTEPAD - COMPLETE SUCCESS! All review request requirements verified and working correctly on https://justice-shield-6.preview.emergentagent.com. FULL TEST RESULTS: (1) Login with cpsvhuntingjustice@gmail.com/cpssuxass ✓, (2) Navigate to Law Library tab ✓, (3) Click CA state button ✓, (4) California CPS Law Guide content loads successfully ✓, (5) Click Save to Notepad button ✓, (6) API POST /api/notepad/save-from-library returns 200 OK ✓, (7) Success toast 'California CPS Law saved to your Legal Notepad!' displays ✓, (8) No console errors ✓. The STATES_INFO backend error that was previously reported has been FIXED. The import statement in community_routes.py line 12 is working correctly. Notepad entry created successfully with full CA CPS law content. Feature is PRODUCTION-READY and all functionality working as expected."
+  - agent: "testing"
+    message: "✅ HOW TO USE TAB + ESSENTIAL PRICE UPDATE - COMPLETE SUCCESS! All review request requirements verified on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com/cpssuxass. TEST RESULTS: (1) Login successful ✓, (2) How to Use tab accessible from sidebar (marked with NEW badge) ✓, (3) How to Use page renders correctly with header 'How to Use THE CPS PUNISHER' ✓, (4) All 6 quick start steps visible: Create your case, Upload documents, Review AI analysis, Use the Law Library, Build your defense, Get help when needed ✓, (5) Daily Workflow section present with 4 workflow steps ✓, (6) Troubleshooting Tips section present with 4 tips ✓, (7) Pricing tab accessible from sidebar ✓, (8) Essential tier monthly price displays $19 ✓, (9) Essential tier annual price displays $190 ✓, (10) Billing toggle (Monthly/Annual) works correctly ✓, (11) PasscodeRedemption component renders correctly ✓, (12) No console errors ✓. CRITICAL BUG FIXED: Missing import for PasscodeRedemption component in PricingTab.jsx was causing runtime error preventing Pricing tab from rendering. Added import statement: 'import PasscodeRedemption from './PasscodeRedemption';' at line 14. Both features are PRODUCTION-READY."
   - agent: "testing"
     message: "✅ LAW LIBRARY RE-TEST COMPLETED SUCCESSFULLY! The main review request requirement (Law Library navigation and content loading) is now WORKING. All steps verified: (1) Login ✓, (2) Click Law Library in sidebar ✓, (3) Law Library tab renders with state grid ✓, (4) Click CA ✓, (5) Content loads (2320 chars of CA CPS law) ✓. API call GET /api/law-library/CA returns 200 OK. Navigation issue has been FIXED by main agent. SEPARATE ISSUE FOUND: Save to Notepad button returns 500 error due to backend bug (NameError: STATES_INFO not defined in community_routes.py line 201). This is a minor issue that doesn't affect the core functionality tested in the review request."
   - agent: "testing"

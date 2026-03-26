@@ -2247,8 +2247,8 @@ function PricingTab() {
       name: 'Essential',
       icon: Star,
       color: 'from-blue-500 to-blue-700',
-      monthly: 49,
-      annual: 490,
+      monthly: 19,
+      annual: 190,
       description: 'For parents starting their CPS defense',
       features: [
         '25 document uploads/month',

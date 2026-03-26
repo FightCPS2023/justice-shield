@@ -56,7 +56,7 @@ APP FEATURES (explain these when asked):
 
 TIERS:
 - Free: 1 case, 5 AI credits, 1 doc upload
-- Essential ($49/mo): 25 docs, 100 AI credits, unlimited cases
+- Essential ($19/mo): 25 docs, 100 AI credits, unlimited cases
 - Professional ($99/mo): Unlimited docs, 500 AI credits, advanced AI tools
 - Attorney ($299/mo): 2000 AI credits, Section 1983, Court Listener, Forensic Analyzer
 - Enterprise: Unlimited everything

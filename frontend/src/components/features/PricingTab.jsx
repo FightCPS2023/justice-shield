@@ -11,6 +11,7 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import PasscodeRedemption from './PasscodeRedemption';
 
 function PricingTab() {
   const { api, user } = useAuth();
@@ -23,8 +24,8 @@ function PricingTab() {
       name: 'Essential',
       icon: Star,
       color: 'from-blue-500 to-blue-700',
-      monthly: 49,
-      annual: 490,
+      monthly: 19,
+      annual: 190,
       description: 'For parents starting their CPS defense',
       features: [
         'Unlimited Cases',
