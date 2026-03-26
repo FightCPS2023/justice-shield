@@ -32,7 +32,11 @@ function PrecedentFinderTab({ selectedCase }) {
         include_state: includeOptions.state
       });
       setPrecedents(response);
-      toast.success('Precedents found!');
+      if (response?.used_fallback) {
+        toast.warning('AI analysis temporarily unavailable. Showing database precedents.');
+      } else {
+        toast.success('Precedents found!');
+      }
     } catch (error) {
       toast.error('Failed to find precedents: ' + error.message);
     } finally {

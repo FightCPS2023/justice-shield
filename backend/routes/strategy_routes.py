@@ -579,15 +579,39 @@ Provide a comprehensive precedent analysis:
 Include federal precedents: {request.include_federal}
 Include state precedents: {request.include_state}"""
 
-    response = await chat.send_message(UserMessage(text=prompt))
+    analysis_error = None
+    try:
+        import asyncio
+        # Add 30 second timeout to prevent infinite hanging
+        response = await asyncio.wait_for(
+            chat.send_message(UserMessage(text=prompt)),
+            timeout=30.0
+        )
+        precedent_analysis = response
+    except Exception as e:
+        analysis_error = str(e)
+        fallback_lines = [
+            "AI precedent analysis is temporarily unavailable. Showing database precedents below.",
+            "\nKNOWN SUPREME COURT CASES:",
+        ]
+        for case in supreme_court_relevant[:5]:
+            fallback_lines.append(f"- {case.get('citation')} — {case.get('holding')}")
+        fallback_lines.append("\nKNOWN CIRCUIT CASES:")
+        for case in circuit_relevant[:5]:
+            fallback_lines.append(f"- {case.get('citation')} — {case.get('holding')}")
+        fallback_lines.append("\nINTERNAL CASE LAW NOTES:")
+        fallback_lines.append(json.dumps(internal_cases, indent=2))
+        precedent_analysis = "\n".join(fallback_lines)
     
     return {
         "violation_type": request.violation_type,
-        "precedent_analysis": response,
-        "supreme_court_cases": supreme_court_relevant[:5],
-        "circuit_court_cases": circuit_relevant[:5],
+        "precedent_analysis": precedent_analysis,
+        "supreme_court_cases": supreme_court_relevant[:5] if request.include_federal else [],
+        "circuit_court_cases": circuit_relevant[:5] if request.include_federal else [],
         "qualified_immunity_analysis": immunity,
-        "internal_case_law": internal_cases
+        "internal_case_law": internal_cases,
+        "analysis_error": analysis_error,
+        "used_fallback": analysis_error is not None
     }
 
 
