@@ -10,6 +10,12 @@ from pydantic import BaseModel
 from database import get_db
 from auth import get_current_user
 from config import EMERGENT_LLM_KEY
+from legal_knowledge import (
+    SUPREME_COURT_CASES,
+    CIRCUIT_COURT_CASES,
+    get_relevant_case_law,
+    analyze_qualified_immunity
+)
 from utils.credits import (
     require_tier, check_ai_credits, increment_ai_credits,
     get_case_with_ownership, save_ai_response_to_case
@@ -611,9 +617,4 @@ async def get_saved_arguments(case_id: str, current_user: dict = Depends(get_cur
         arguments.append(a)
     
     return {"arguments": arguments}
-
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
 
