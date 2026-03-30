@@ -171,7 +171,7 @@ function App() {
   const token = localStorage.getItem('cps_token');
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, api, token }}>
+    <AuthContext.Provider value={{ user, setUser, login, signup, logout, api, token }}>
       <div className="min-h-screen bg-black text-white">
         {currentView === 'landing' && <LandingPage onNavigate={setCurrentView} />}
         {currentView === 'auth' && <AuthPage onNavigate={setCurrentView} />}

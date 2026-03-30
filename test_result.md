@@ -386,7 +386,7 @@ frontend:
 
   - task: "Terms/Privacy Acceptance - Terms Gate Modal After Login"
     implemented: true
-    working: false
+    working: true
     file: "frontend/src/App.js"
     stuck_count: 0
     priority: "high"
@@ -395,6 +395,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "⚠️ TERMS GATE MODAL PARTIALLY WORKING: Testing completed on https://justice-shield-6.preview.emergentagent.com. WORKING FEATURES: (1) Terms gate modal correctly does NOT appear for new signups who accepted terms during registration ✓, (2) Modal appears correctly when user data indicates unaccepted terms (tested by modifying localStorage) ✓, (3) Modal displays with data-testid='terms-gate-modal' ✓, (4) Modal shows full Terms and Privacy content (Acceptance, Intellectual Property, User Conduct, Disclaimer, Termination, Governing Law, Privacy sections) ✓, (5) Checkbox visible with data-testid='terms-gate-checkbox' ✓, (6) Accept button visible with data-testid='terms-gate-accept-btn' ✓, (7) Clicking Accept without checkbox keeps modal open (validation working) ✓. ISSUE FOUND: (8) When checkbox is checked and Accept button clicked, API call to POST /api/auth/accept-terms returns 200 OK (backend logs confirm success), BUT frontend displays error toast 'Unable to save acceptance. Please try again.' and modal does NOT close ✗. This suggests a frontend error handling issue where the API response is not being processed correctly, or there's a mismatch in expected response format. The catch block in handleAcceptTerms (App.js lines 229-248) is being triggered despite backend success. IMPACT: Users who somehow have unaccepted terms cannot accept them through the gate modal. However, new signups work perfectly (they accept during registration). This is a MEDIUM priority issue since the main signup flow works correctly."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TEST PASSED - SETUSER FIX VERIFIED SUCCESSFUL! Comprehensive re-testing completed on https://justice-shield-6.preview.emergentagant.com after setUser fix implementation. ALL REVIEW REQUEST REQUIREMENTS VERIFIED: (1) Login successful with existing user cpsvhuntingjustice@gmail.com ✓, (2) Simulated user without accepted_terms by modifying localStorage (set accepted_terms=false, accepted_privacy=false) ✓, (3) Terms gate modal appeared correctly after page reload with data-testid='terms-gate-modal' ✓, (4) Modal displayed proper title 'Terms of Service & Privacy Policy' with full Terms and Privacy content ✓, (5) Checkbox (data-testid='terms-gate-checkbox') and Accept button (data-testid='terms-gate-accept-btn') present and functional ✓, (6) Checkbox successfully checked ✓, (7) CRITICAL FIX VERIFIED: Clicking Accept & Continue button triggered API call to POST /api/auth/accept-terms which returned 200 OK with response body {'accepted_terms': True, 'accepted_privacy': True, 'accepted_at': '2026-03-30T19:16:32.275962+00:00'} ✓, (8) CRITICAL FIX VERIFIED: Modal closed successfully (not visible after acceptance) ✓, (9) CRITICAL FIX VERIFIED: NO error toast appeared ✓, (10) User data in localStorage correctly updated with accepted_terms=true, accepted_privacy=true, and accepted_at timestamp ✓, (11) Dashboard remained accessible after acceptance ✓, (12) No console errors detected ✓. ROOT CAUSE OF FIX: The setUser(updatedUser) call at line 242 in App.js properly updates the user state with the new accepted_terms values, which triggers the useEffect at lines 221-227 to close the modal by setting setShowTermsGate(false). The previous issue where the catch block was triggered despite 200 OK has been resolved. Feature is PRODUCTION-READY and working as designed."
 
   - task: "Policies Tab - Content Display"
     implemented: true
@@ -411,12 +414,12 @@ frontend:
 metadata:
   created_by: "testing_agent"
   version: "1.0"
-  test_sequence: 14
-  last_updated: "2026-03-30T19:15:00Z"
+  test_sequence: 15
+  last_updated: "2026-03-30T19:20:00Z"
 
 test_plan:
   current_focus:
-    - "Terms Gate Modal - Accept Terms API Error Handling"
+    []
   stuck_tasks:
     - "Precedent Finder - LLM Library Timeout Issue"
   test_all: false
@@ -425,3 +428,5 @@ test_plan:
 agent_communication:
   - agent: "testing"
     message: "✅ TERMS/PRIVACY ACCEPTANCE + POLICIES TAB TESTING COMPLETED! Comprehensive testing performed on https://justice-shield-6.preview.emergentagent.com covering all review request requirements. SUMMARY: (1) Signup screen Terms/Privacy checkbox - FULLY WORKING ✓, (2) View Policies modal - FULLY WORKING ✓, (3) Signup without checkbox validation - FULLY WORKING ✓, (4) Signup with checkbox - FULLY WORKING ✓, (5) Terms gate modal display logic - FULLY WORKING ✓, (6) Policies tab content - FULLY WORKING ✓. ISSUE FOUND: Terms gate modal acceptance has a frontend error handling bug. When user clicks Accept with checkbox checked, backend API returns 200 OK but frontend shows error toast and modal doesn't close. This appears to be a response parsing issue in App.js handleAcceptTerms function (lines 229-248). The catch block is triggered despite backend success. IMPACT: Medium priority - main signup flow works perfectly, only affects edge case where existing users need to accept terms retroactively. RECOMMENDATION: Main agent should investigate the api.post response handling in handleAcceptTerms function and verify the response format matches what's expected. May need to add console logging to debug why the catch block is triggered when backend returns 200 OK."
+  - agent: "testing"
+    message: "✅ TERMS GATE MODAL RE-TEST COMPLETED - SETUSER FIX VERIFIED SUCCESSFUL! Comprehensive re-testing performed on https://justice-shield-6.preview.emergentagent.com after setUser fix implementation. ALL REVIEW REQUEST STEPS VERIFIED: (1) Login with existing user cpsvhuntingjustice@gmail.com ✓, (2) Simulated user without accepted_terms by modifying localStorage (set accepted_terms=false, accepted_privacy=false, deleted accepted_at) ✓, (3) Page reloaded to trigger useEffect ✓, (4) Terms gate modal appeared correctly with data-testid='terms-gate-modal' ✓, (5) Modal displayed proper title 'Terms of Service & Privacy Policy' with full content ✓, (6) Checkbox checked successfully ✓, (7) Accept & Continue button clicked ✓, (8) API call to POST /api/auth/accept-terms returned 200 OK with response {'accepted_terms': True, 'accepted_privacy': True, 'accepted_at': '2026-03-30T19:16:32.275962+00:00'} ✓, (9) CRITICAL: Modal closed successfully (not visible) ✓, (10) CRITICAL: NO error toast appeared ✓, (11) localStorage updated correctly with accepted_terms=true, accepted_privacy=true, accepted_at timestamp ✓, (12) Dashboard remained accessible ✓, (13) No console errors ✓. THE FIX WORKS: The setUser(updatedUser) call at line 242 in App.js properly updates the user state, which triggers the useEffect at lines 221-227 to close the modal. The previous issue where an error toast appeared despite 200 OK has been RESOLVED. Feature is PRODUCTION-READY."
