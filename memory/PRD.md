@@ -129,6 +129,12 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Updated Essential plan pricing to $19/mo and $190/yr (frontend + backend)
 - Updated HelpBot pricing reference
 
+### Session 17: Policies + Required Acceptance - COMPLETE
+- Added Policies sidebar tab with Terms of Service and Privacy Policy
+- Added required acceptance on signup with modal viewing policies
+- Added terms gate modal for existing users until acceptance is recorded
+- Added backend acceptance fields + /api/auth/accept-terms endpoint
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
