@@ -809,6 +809,8 @@ Provide your complete analysis in JSON format. Be thorough - this parent's famil
         except Exception as e:
             error_text = str(e)
             print(f"[ANALYSIS] LLM ERROR for doc {doc_id}: {error_text}")
+            if "budget has been exceeded" in error_text.lower() or "insufficient" in error_text.lower():
+                return {"error": "AI budget exceeded. Please add balance to your Universal Key and retry.", "analysis": None}
             if attempt == max_retries:
                 return {"error": f"Analysis failed: {error_text}", "analysis": None}
         
