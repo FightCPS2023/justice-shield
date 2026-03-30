@@ -25,12 +25,17 @@ function PrecedentFinderTab({ selectedCase }) {
     setPrecedents(null);
 
     try {
-      const response = await api.post('/api/precedent-finder/search', {
+      const requestPromise = api.post('/api/precedent-finder/search', {
         violation_type: violationType,
         state: state || null,
         include_federal: includeOptions.federal,
         include_state: includeOptions.state
       });
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timed out. Please try again.')), 30000)
+      );
+
+      const response = await Promise.race([requestPromise, timeoutPromise]);
       setPrecedents(response);
       if (response?.used_fallback) {
         toast.warning('AI analysis temporarily unavailable. Showing database precedents.');

@@ -582,11 +582,13 @@ Include state precedents: {request.include_state}"""
     analysis_error = None
     try:
         import asyncio
-        # Add 30 second timeout to prevent infinite hanging
-        response = await asyncio.wait_for(
-            chat.send_message(UserMessage(text=prompt)),
-            timeout=30.0
-        )
+        task = asyncio.create_task(chat.send_message(UserMessage(text=prompt)))
+        done, pending = await asyncio.wait({task}, timeout=30.0)
+        if not done:
+            for pending_task in pending:
+                pending_task.cancel()
+            raise asyncio.TimeoutError("AI request timed out")
+        response = list(done)[0].result()
         precedent_analysis = response
     except Exception as e:
         analysis_error = str(e)
