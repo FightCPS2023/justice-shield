@@ -16,10 +16,13 @@ function AuthPage({ onNavigate }) {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [acceptedPolicies, setAcceptedPolicies] = useState(false);
+  const [showPoliciesModal, setShowPoliciesModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [retryCount, setRetryCount] = useState(0);
   const [connectionStatus, setConnectionStatus] = useState('checking');
   const { login, signup } = useAuth();
+  const effectiveDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   // Test connection on mount
   useEffect(() => {
@@ -51,10 +54,18 @@ function AuthPage({ onNavigate }) {
     setLoading(true);
     setErrorMessage('');
     try {
+      if (!isLogin && !acceptedPolicies) {
+        setErrorMessage('You must accept the Terms of Service and Privacy Policy to create an account.');
+        setLoading(false);
+        return;
+      }
       if (isLogin) {
         await login(formData.email, formData.password);
       } else {
-        await signup(formData.name, formData.email, formData.password);
+        await signup(formData.name, formData.email, formData.password, {
+          accepted_terms: true,
+          accepted_privacy: true
+        });
       }
       setRetryCount(0);
     } catch (error) {
@@ -94,7 +105,8 @@ function AuthPage({ onNavigate }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black p-4">
+    <>
+      <div className="min-h-screen flex items-center justify-center bg-black p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img 
@@ -209,6 +221,31 @@ function AuthPage({ onNavigate }) {
             </div>
           )}
 
+          {!isLogin && (
+            <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4" data-testid="policies-acceptance-block">
+              <label className="flex items-start gap-2 text-sm text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={acceptedPolicies}
+                  onChange={(e) => setAcceptedPolicies(e.target.checked)}
+                  className="mt-1"
+                  data-testid="policies-accept-checkbox"
+                />
+                <span>
+                  I agree to the Terms of Service and Privacy Policy.
+                  <button
+                    type="button"
+                    onClick={() => setShowPoliciesModal(true)}
+                    className="ml-2 text-red-400 hover:text-red-300 underline"
+                    data-testid="policies-view-link"
+                  >
+                    View Policies
+                  </button>
+                </span>
+              </label>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}
@@ -244,6 +281,57 @@ function AuthPage({ onNavigate }) {
         </button>
       </div>
     </div>
+
+    {showPoliciesModal && (
+      <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" data-testid="policies-modal">
+        <div className="bg-gray-900 border border-gray-700 rounded-xl max-w-2xl w-full p-6 overflow-y-auto max-h-[90vh]">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold">Terms of Service & Privacy Policy</h2>
+              <p className="text-sm text-gray-400">Effective Date: {effectiveDate}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPoliciesModal(false)}
+              className="text-gray-400 hover:text-white"
+              data-testid="policies-modal-close"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="space-y-4 text-sm text-gray-300">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Terms of Service</h3>
+              <p><strong>Acceptance:</strong> By downloading or using “The CPS Punisher,” you agree to these Terms.</p>
+              <p><strong>Intellectual Property:</strong> All content, features, and functionalities are owned by Darren Guay and protected by IP laws. Users are granted a limited, non-exclusive license for personal use only. No reproduction, modification, or reverse engineering is permitted.</p>
+              <p><strong>User Conduct:</strong> Users must not copy, distribute, or use the app for illegal purposes.</p>
+              <p><strong>Disclaimer:</strong> The app provides analysis for informational purposes only, not legal advice.</p>
+              <p><strong>Termination:</strong> Violation may result in account termination and legal action.</p>
+              <p><strong>Governing Law:</strong> State of Maine.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Privacy Policy</h3>
+              <p><strong>Information Collected:</strong> We collect user-provided data (e.g., CPS case details) and device information.</p>
+              <p><strong>Use of Information:</strong> Data is used solely for app functionality and analysis; not shared with third parties without consent.</p>
+              <p><strong>Security:</strong> We implement reasonable measures to protect data.</p>
+              <p><strong>User Rights:</strong> Users may request data access or deletion via <span className="text-purple-300">punisher@cpsbreakingnews.com</span>.</p>
+              <p><strong>Changes:</strong> We may update this policy; continued use constitutes acceptance.</p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              type="button"
+              onClick={() => setShowPoliciesModal(false)}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+              data-testid="policies-modal-close-btn"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
   );
 }
 

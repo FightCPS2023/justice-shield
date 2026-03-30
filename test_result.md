@@ -369,3 +369,59 @@ agent_communication:
     message: "✅ CASE MEMORY TAB COMPREHENSIVE TEST COMPLETED SUCCESSFULLY! Tested new Case Memory feature on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com/cpssuxass. ALL REVIEW REQUEST REQUIREMENTS VERIFIED: (1) Login successful ✓, (2) Case Memory tab accessible from sidebar (marked with NEW badge) ✓, (3) Empty state renders correctly with message 'No memory entries yet. Add key facts to improve AI accuracy.' ✓, (4) Add Memory button opens form with Title, Memory Content, and Tags (comma separated) fields ✓, (5) Form validation works - title and content required ✓, (6) Save Memory creates new entry via API POST /api/cases/{case_id}/memory ✓, (7) New entry displays with correct title, full content, timestamp, and source (manual) ✓, (8) Tags parse correctly from comma-separated input and display as purple badges with tag icon ✓, (9) Delete button (red trash icon) present on each entry ✓, (10) Delete functionality works via API DELETE /api/cases/{case_id}/memory/{memory_id} ✓, (11) Entry removed from list after deletion ✓, (12) Empty state returns after deleting all entries ✓, (13) Success toasts display: 'Memory saved' (green) and 'Memory deleted' (green) ✓, (14) No UI errors, no React overlays, no console errors ✓. Backend routes verified in /app/backend/routes/case_memory_routes.py. Feature is PRODUCTION-READY with full CRUD functionality working correctly."
   - agent: "testing"
     message: "✅ DOCUMENT UPLOAD - uploadSingleFile UPDATE VERIFICATION COMPLETED SUCCESSFULLY! Comprehensive testing performed on https://justice-shield-6.preview.emergentagant.com with credentials cpsvhuntingjustice@gmail.com/cpssuxass. ALL REVIEW REQUEST REQUIREMENTS PASSED: (1) Login successful ✓, (2) Documents tab navigation successful ✓, (3) Case selected (TEST_Docs_80d33484 with 40 documents) ✓, (4) Small txt file (test document) uploaded successfully ✓, (5) Upload completed with 'done' status - NO 'failed to fetch' error detected ✓, (6) Success message displayed: '1 document(s) uploaded! AI analysis queued...' ✓, (7) Network monitoring shows successful API calls: POST 200 to /api/documents/upload ✓, (8) Session expired scenario tested: removed token from localStorage, attempted upload, proper error message 'Session expired. Please log in again.' displayed in upload queue ✓. CODE VERIFICATION: Lines 163-197 in DocumentsTab.jsx show proper implementation: token validation with error message (lines 171-174), URL construction logic (lines 176-179), fetch with try-catch for connection errors (lines 182-190), response validation with error handling (lines 192-195). Upload queue UI displays correct status indicators: green checkmark with 'done' badge for successful uploads, red error icon with 'error' badge for failed uploads. Both test scenarios (normal upload and session expired) passed successfully. Feature is PRODUCTION-READY and working as designed."
+
+
+frontend:
+  - task: "Terms/Privacy Acceptance - Signup Screen Checkbox"
+    implemented: true
+    working: true
+    file: "frontend/src/components/AuthPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ SIGNUP SCREEN TERMS/PRIVACY FULLY FUNCTIONAL: Comprehensive testing completed on https://justice-shield-6.preview.emergentagent.com. All review request requirements verified: (1) Signup screen displays Terms/Privacy acceptance block with data-testid='policies-acceptance-block' ✓, (2) Checkbox visible and functional with data-testid='policies-accept-checkbox' ✓, (3) 'View Policies' link visible with data-testid='policies-view-link' ✓, (4) Clicking 'View Policies' opens modal with full Terms of Service and Privacy Policy content ✓, (5) Modal displays title 'Terms of Service & Privacy Policy' with effective date ✓, (6) Modal contains complete Terms sections: Acceptance, Intellectual Property, User Conduct, Disclaimer, Termination, Governing Law ✓, (7) Modal contains complete Privacy sections: Information Collected, Use of Information, Security, User Rights, Changes ✓, (8) Modal close button (X and Close button) works correctly ✓, (9) Attempting signup without checking checkbox displays error message 'You must accept the Terms of Service and Privacy Policy to create an account.' in red error box ✓, (10) Checking checkbox and submitting creates account successfully ✓, (11) Signup with checkbox checked redirects to dashboard ✓, (12) Success toast 'Account created! Welcome to THE CPS PUNISHER!' displays ✓. Test used dummy email testuser_1774897732225@example.com. All UI elements render correctly with proper styling. Feature is PRODUCTION-READY."
+
+  - task: "Terms/Privacy Acceptance - Terms Gate Modal After Login"
+    implemented: true
+    working: false
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "⚠️ TERMS GATE MODAL PARTIALLY WORKING: Testing completed on https://justice-shield-6.preview.emergentagent.com. WORKING FEATURES: (1) Terms gate modal correctly does NOT appear for new signups who accepted terms during registration ✓, (2) Modal appears correctly when user data indicates unaccepted terms (tested by modifying localStorage) ✓, (3) Modal displays with data-testid='terms-gate-modal' ✓, (4) Modal shows full Terms and Privacy content (Acceptance, Intellectual Property, User Conduct, Disclaimer, Termination, Governing Law, Privacy sections) ✓, (5) Checkbox visible with data-testid='terms-gate-checkbox' ✓, (6) Accept button visible with data-testid='terms-gate-accept-btn' ✓, (7) Clicking Accept without checkbox keeps modal open (validation working) ✓. ISSUE FOUND: (8) When checkbox is checked and Accept button clicked, API call to POST /api/auth/accept-terms returns 200 OK (backend logs confirm success), BUT frontend displays error toast 'Unable to save acceptance. Please try again.' and modal does NOT close ✗. This suggests a frontend error handling issue where the API response is not being processed correctly, or there's a mismatch in expected response format. The catch block in handleAcceptTerms (App.js lines 229-248) is being triggered despite backend success. IMPACT: Users who somehow have unaccepted terms cannot accept them through the gate modal. However, new signups work perfectly (they accept during registration). This is a MEDIUM priority issue since the main signup flow works correctly."
+
+  - task: "Policies Tab - Content Display"
+    implemented: true
+    working: true
+    file: "frontend/src/components/features/PoliciesTab.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ POLICIES TAB FULLY FUNCTIONAL: Comprehensive testing completed on https://justice-shield-6.preview.emergentagant.com after successful signup. All review request requirements verified: (1) Policies navigation item visible in sidebar with data-testid='nav-policies' ✓, (2) Clicking Policies tab loads content successfully ✓, (3) Policies tab renders with data-testid='policies-tab' ✓, (4) Header section displays with data-testid='policies-header' showing title 'Policies & Legal' and subtitle 'Review the Terms of Service and Privacy Policy for The CPS Punisher.' ✓, (5) Terms of Service section visible with data-testid='terms-section' ✓, (6) Terms section displays red FileText icon and title 'Terms of Service' ✓, (7) Terms section shows effective date ✓, (8) Terms section contains all required content: Acceptance, Intellectual Property, User Conduct, Disclaimer, Termination, Governing Law ✓, (9) Privacy Policy section visible with data-testid='privacy-section' ✓, (10) Privacy section displays purple ShieldCheck icon and title 'Privacy Policy' ✓, (11) Privacy section shows effective date ✓, (12) Privacy section contains all required content: Information Collected, Use of Information, Security, User Rights (with email punisher@cpsbreakingnews.com), Changes ✓. All content properly formatted with proper spacing and styling. No console errors detected. Feature is PRODUCTION-READY."
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 14
+  last_updated: "2026-03-30T19:15:00Z"
+
+test_plan:
+  current_focus:
+    - "Terms Gate Modal - Accept Terms API Error Handling"
+  stuck_tasks:
+    - "Precedent Finder - LLM Library Timeout Issue"
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "testing"
+    message: "✅ TERMS/PRIVACY ACCEPTANCE + POLICIES TAB TESTING COMPLETED! Comprehensive testing performed on https://justice-shield-6.preview.emergentagent.com covering all review request requirements. SUMMARY: (1) Signup screen Terms/Privacy checkbox - FULLY WORKING ✓, (2) View Policies modal - FULLY WORKING ✓, (3) Signup without checkbox validation - FULLY WORKING ✓, (4) Signup with checkbox - FULLY WORKING ✓, (5) Terms gate modal display logic - FULLY WORKING ✓, (6) Policies tab content - FULLY WORKING ✓. ISSUE FOUND: Terms gate modal acceptance has a frontend error handling bug. When user clicks Accept with checkbox checked, backend API returns 200 OK but frontend shows error toast and modal doesn't close. This appears to be a response parsing issue in App.js handleAcceptTerms function (lines 229-248). The catch block is triggered despite backend success. IMPACT: Medium priority - main signup flow works perfectly, only affects edge case where existing users need to accept terms retroactively. RECOMMENDATION: Main agent should investigate the api.post response handling in handleAcceptTerms function and verify the response format matches what's expected. May need to add console logging to debug why the catch block is triggered when backend returns 200 OK."

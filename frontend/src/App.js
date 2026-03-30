@@ -22,6 +22,7 @@ import TimelineTab from './components/features/TimelineTab';
 import ResearchTab from './components/features/ResearchTab';
 import LawLibraryTab from './components/features/LawLibraryTab';
 import HowToTab from './components/features/HowToTab';
+import PoliciesTab from './components/features/PoliciesTab';
 import CalendarTab from './components/features/CalendarTab';
 import PricingTab from './components/features/PricingTab';
 import SettingsTab from './components/features/SettingsTab';
@@ -135,9 +136,9 @@ function App() {
     }
   };
 
-  const signup = async (name, email, password) => {
+  const signup = async (name, email, password, policyData = {}) => {
     try {
-      const data = await api.post('/api/auth/signup', { name, email, password });
+      const data = await api.post('/api/auth/signup', { name, email, password, ...policyData });
       localStorage.setItem('cps_token', data.access_token);
       localStorage.setItem('cps_user', JSON.stringify(data));
       setUser(data);
@@ -183,7 +184,9 @@ function App() {
 
 // Dashboard - Main layout with sidebar and tab routing
 function Dashboard({ onNavigate }) {
-  const { user, logout, api } = useAuth();
+  const { user, logout, api, setUser } = useAuth();
+  const [showTermsGate, setShowTermsGate] = useState(false);
+  const [termsGateChecked, setTermsGateChecked] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [cases, setCases] = useState([]);
   const [selectedCase, setSelectedCase] = useState(null);
@@ -191,6 +194,7 @@ function Dashboard({ onNavigate }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [prefetchedData, setPrefetchedData] = useState({});
   const [isAdmin, setIsAdmin] = useState(false);
+  const effectiveDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   useEffect(() => {
     const prefetch = async () => {
@@ -214,12 +218,42 @@ function Dashboard({ onNavigate }) {
     prefetch();
   }, []);
 
+  useEffect(() => {
+    if (user && (!user.accepted_terms || !user.accepted_privacy)) {
+      setShowTermsGate(true);
+    } else {
+      setShowTermsGate(false);
+    }
+  }, [user]);
+
+  const handleAcceptTerms = async () => {
+    if (!termsGateChecked) {
+      toast.error('You must accept the Terms and Privacy Policy to continue.');
+      return;
+    }
+    try {
+      const response = await api.post('/api/auth/accept-terms');
+      const updatedUser = {
+        ...user,
+        accepted_terms: true,
+        accepted_privacy: true,
+        accepted_at: response.accepted_at
+      };
+      setUser(updatedUser);
+      localStorage.setItem('cps_user', JSON.stringify(updatedUser));
+      setShowTermsGate(false);
+    } catch (error) {
+      toast.error('Unable to save acceptance. Please try again.');
+    }
+  };
+
   const TIER_LEVELS = { free: 0, essential: 1, professional: 2, attorney: 3, enterprise: 4 };
   const userTierLevel = TIER_LEVELS[user?.tier] || 0;
 
   const menuItems = [
     { id: 'overview', icon: Home, label: 'Overview', minTier: 'free' },
     { id: 'howto', icon: HelpCircle, label: 'How to Use', minTier: 'free', highlight: true },
+    { id: 'policies', icon: FileText, label: 'Policies', minTier: 'free' },
     { id: 'cases', icon: FileText, label: 'My Cases', minTier: 'free' },
     { id: 'ainotes', icon: Brain, label: 'AI Case Notes', minTier: 'free', highlight: true },
     { id: 'memory', icon: Brain, label: 'Case Memory', minTier: 'free', highlight: true },
@@ -263,6 +297,44 @@ function Dashboard({ onNavigate }) {
 
   return (
     <div className="min-h-screen bg-gray-900 flex">
+      {showTermsGate && (
+        <div className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4" data-testid="terms-gate-modal">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl max-w-2xl w-full p-6 overflow-y-auto max-h-[90vh]">
+            <h2 className="text-2xl font-bold mb-2">Terms of Service & Privacy Policy</h2>
+            <p className="text-sm text-gray-400 mb-4">Effective Date: {effectiveDate}</p>
+            <div className="space-y-3 text-sm text-gray-300">
+              <p><strong>Acceptance:</strong> By using “The CPS Punisher,” you agree to these Terms.</p>
+              <p><strong>Intellectual Property:</strong> All content, features, and functionalities are owned by Darren Guay and protected by IP laws. Users are granted a limited, non-exclusive license for personal use only. No reproduction, modification, or reverse engineering is permitted.</p>
+              <p><strong>User Conduct:</strong> Users must not copy, distribute, or use the app for illegal purposes.</p>
+              <p><strong>Disclaimer:</strong> The app provides analysis for informational purposes only, not legal advice.</p>
+              <p><strong>Termination:</strong> Violation may result in account termination and legal action.</p>
+              <p><strong>Governing Law:</strong> State of Maine.</p>
+              <p><strong>Privacy:</strong> Data is used solely for app functionality and analysis; users may request access or deletion via <span className="text-purple-300">punisher@cpsbreakingnews.com</span>.</p>
+            </div>
+            <label className="flex items-start gap-2 text-sm text-gray-300 mt-6">
+              <input
+                type="checkbox"
+                checked={termsGateChecked}
+                onChange={(e) => setTermsGateChecked(e.target.checked)}
+                className="mt-1"
+                data-testid="terms-gate-checkbox"
+              />
+              <span>I agree to the Terms of Service and Privacy Policy.</span>
+            </label>
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={handleAcceptTerms}
+                className="px-5 py-2 bg-red-600 hover:bg-red-700 rounded-lg"
+                data-testid="terms-gate-accept-btn"
+              >
+                Accept & Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-black border-r border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} data-testid="sidebar">
         <div className="p-4 border-b border-gray-800">
@@ -372,6 +444,7 @@ function Dashboard({ onNavigate }) {
         <div className="p-6">
           {activeTab === 'overview' && <OverviewTab cases={cases} setActiveTab={setActiveTab} prefetchedData={prefetchedData} />}
           {activeTab === 'howto' && <HowToTab />}
+          {activeTab === 'policies' && <PoliciesTab />}
           {activeTab === 'cases' && <CasesTab cases={cases} setCases={setCases} selectedCase={selectedCase} setSelectedCase={setSelectedCase} />}
           {activeTab === 'chat' && <ChatTab selectedCase={selectedCase} />}
           {activeTab === 'expert' && <ExpertLegalAITab selectedCase={selectedCase} />}

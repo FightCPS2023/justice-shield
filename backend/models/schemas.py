@@ -11,6 +11,8 @@ class UserCreate(BaseModel):
     password: str
     name: str
     state: Optional[str] = None
+    accepted_terms: bool = False
+    accepted_privacy: bool = False
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -24,6 +26,9 @@ class TokenResponse(BaseModel):
     name: str
     tier: str
     state: Optional[str] = None
+    accepted_terms: Optional[bool] = None
+    accepted_privacy: Optional[bool] = None
+    accepted_at: Optional[str] = None
 
 class PasscodeRequest(BaseModel):
     passcode: str

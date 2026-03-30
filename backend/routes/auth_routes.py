@@ -23,7 +23,11 @@ async def signup(user_data: UserCreate):
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     
+    if not user_data.accepted_terms or not user_data.accepted_privacy:
+        raise HTTPException(status_code=400, detail="You must accept the Terms of Service and Privacy Policy")
+
     user_id = str(uuid.uuid4())
+    accepted_at = datetime.now(timezone.utc).isoformat()
     user_doc = {
         "_id": user_id,
         "email": user_data.email,
@@ -33,6 +37,9 @@ async def signup(user_data: UserCreate):
         "tier": "free",
         "ai_credits_used": 0,
         "docs_generated": 0,
+        "accepted_terms": True,
+        "accepted_privacy": True,
+        "accepted_at": accepted_at,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
@@ -47,7 +54,10 @@ async def signup(user_data: UserCreate):
         email=user_data.email,
         name=user_data.name,
         tier="free",
-        state=user_data.state
+        state=user_data.state,
+        accepted_terms=True,
+        accepted_privacy=True,
+        accepted_at=accepted_at
     )
 
 @router.post("/api/auth/login", response_model=TokenResponse)
@@ -66,7 +76,10 @@ async def login(user_data: UserLogin):
         email=user["email"],
         name=user.get("name", "User"),
         tier=user.get("tier", "free"),
-        state=user.get("state")
+        state=user.get("state"),
+        accepted_terms=user.get("accepted_terms"),
+        accepted_privacy=user.get("accepted_privacy"),
+        accepted_at=user.get("accepted_at")
     )
 
 @router.get("/api/auth/me")
@@ -92,6 +105,18 @@ async def update_profile(update_data: dict, current_user: dict = Depends(get_cur
         {"$set": update_doc}
     )
     return {"message": "Profile updated"}
+
+
+@router.post("/api/auth/accept-terms")
+async def accept_terms(current_user: dict = Depends(get_current_user)):
+    """Accept Terms of Service and Privacy Policy"""
+    db = get_db()
+    accepted_at = datetime.now(timezone.utc).isoformat()
+    await db.users.update_one(
+        {"_id": current_user["user_id"]},
+        {"$set": {"accepted_terms": True, "accepted_privacy": True, "accepted_at": accepted_at, "updated_at": accepted_at}}
+    )
+    return {"accepted_terms": True, "accepted_privacy": True, "accepted_at": accepted_at}
 
 
 @router.get("/api/auth/tier-status")
@@ -129,31 +154,6 @@ async def get_tier_status(current_user: dict = Depends(get_current_user)):
         }
     }
 
-
-# ============== FULL ACCESS PASSCODES ==============
-# 20 unique passcodes for enterprise access (reusable until deactivated)
-VALID_PASSCODES = [
-    "PUNISHER2024",      # Original passcode
-    "CPS-WARRIOR-001",
-    "CPS-WARRIOR-002", 
-    "CPS-WARRIOR-003",
-    "CPS-WARRIOR-004",
-    "CPS-WARRIOR-005",
-    "FAMILY-DEFENDER-01",
-    "FAMILY-DEFENDER-02",
-    "FAMILY-DEFENDER-03",
-    "FAMILY-DEFENDER-04",
-    "FAMILY-DEFENDER-05",
-    "LEGAL-SHIELD-001",
-    "LEGAL-SHIELD-002",
-    "LEGAL-SHIELD-003",
-    "LEGAL-SHIELD-004",
-    "LEGAL-SHIELD-005",
-    "JUSTICE-KEY-2024-A",
-    "JUSTICE-KEY-2024-B",
-    "JUSTICE-KEY-2024-C",
-    "JUSTICE-KEY-2024-D",
-]
 
 class PasscodeRequest(BaseModel):
     passcode: str
@@ -281,6 +281,9 @@ async def process_google_session(request: Request):
             "picture": picture,
             "auth_provider": "google",
             "tier": "free",
+            "accepted_terms": False,
+            "accepted_privacy": False,
+            "accepted_at": None,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat()
         })
@@ -310,7 +313,6 @@ async def process_google_session(request: Request):
         "tier": user_tier
     }
     
-    from fastapi.responses import JSONResponse
     response = JSONResponse(content=response_data)
     response.set_cookie(
         key="session_token",
@@ -334,7 +336,6 @@ async def google_logout(request: Request):
     if session_token:
         await db.user_sessions.delete_one({"session_token": session_token})
     
-    from fastapi.responses import JSONResponse
     response = JSONResponse(content={"message": "Logged out"})
     response.delete_cookie(key="session_token", path="/")
     return response

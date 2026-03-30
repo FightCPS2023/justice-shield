@@ -84,9 +84,36 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const login = (userData, token) => {
-    localStorage.setItem('cps_token', token);
-    setUser(userData);
+  const login = async (email, password) => {
+    const response = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Login failed' }));
+      throw new Error(error.detail || 'Login failed');
+    }
+    const data = await response.json();
+    localStorage.setItem('cps_token', data.access_token);
+    setUser(data);
+    return data;
+  };
+
+  const signup = async (name, email, password, policyData = {}) => {
+    const response = await fetch(`${API_URL}/api/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, ...policyData })
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Signup failed' }));
+      throw new Error(error.detail || 'Signup failed');
+    }
+    const data = await response.json();
+    localStorage.setItem('cps_token', data.access_token);
+    setUser(data);
+    return data;
   };
 
   const logout = () => {
@@ -99,6 +126,7 @@ export function AuthProvider({ children }) {
     user,
     setUser,
     login,
+    signup,
     logout,
     loading,
     api,
