@@ -28,7 +28,11 @@ function AuthPage({ onNavigate }) {
   useEffect(() => {
     const testConnection = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/health`, {
+        if (!API_URL) {
+          setConnectionStatus('error');
+          return;
+        }
+        const response = await fetch(`${API_URL}/health`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -47,10 +51,6 @@ function AuthPage({ onNavigate }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (connectionStatus === 'error') {
-      setErrorMessage('Cannot connect to server. Please check your internet connection and try again.');
-      return;
-    }
     setLoading(true);
     setErrorMessage('');
     try {
@@ -68,6 +68,7 @@ function AuthPage({ onNavigate }) {
         });
       }
       setRetryCount(0);
+      setConnectionStatus('connected');
     } catch (error) {
       const msg = error.message || 'An error occurred';
       setErrorMessage(msg);
@@ -84,10 +85,14 @@ function AuthPage({ onNavigate }) {
     setErrorMessage('');
     setConnectionStatus('checking');
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/health`);
+      if (!API_URL) {
+        setConnectionStatus('error');
+        setErrorMessage('Server configuration missing. Please refresh the page.');
+        return;
+      }
+      const response = await fetch(`${API_URL}/health`);
       if (response.ok) {
         setConnectionStatus('connected');
-        handleSubmit(new Event('submit'));
       } else {
         setConnectionStatus('error');
         setErrorMessage('Still cannot connect. Please try again in a moment.');
