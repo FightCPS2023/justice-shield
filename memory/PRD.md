@@ -135,6 +135,10 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added terms gate modal for existing users until acceptance is recorded
 - Added backend acceptance fields + /api/auth/accept-terms endpoint
 
+### Session 18: Login Connection Error Fix - COMPLETE
+- Removed hard block on login when health check fails; login now proceeds if backend is reachable
+- Normalized health check to use API_URL and improved retry messaging
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
