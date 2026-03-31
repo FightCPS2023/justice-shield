@@ -20,7 +20,7 @@ function CommunicationsTab({ selectedCase }) {
   const initialFormState = {
     contact_type: 'phone',
     contact_with: '',
-    date: '',
+    date: new Date().toISOString().split('T')[0],
     summary: '',
     favorable: null
   };
@@ -46,6 +46,7 @@ function CommunicationsTab({ selectedCase }) {
       setCommunications(data.communications || []);
     } catch (error) {
       console.error('Failed to load communications:', error);
+      toast.error(error.message || 'Failed to load communications');
     } finally {
       setLoading(false);
     }
@@ -63,7 +64,7 @@ function CommunicationsTab({ selectedCase }) {
       setFormData(initialFormState);
       toast.success('Communication logged!');
     } catch (error) {
-      toast.error('Failed to log communication');
+      toast.error(error.message || 'Failed to log communication');
     }
   };
 
