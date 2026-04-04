@@ -34,7 +34,7 @@ async def generate_section_1983_complaint(
     This is THE MOST POWERFUL feature - turns CPS violations into federal lawsuits.
     """
     db = get_db()
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
     
     case = await get_case_with_ownership(case_id, current_user["user_id"])
     
@@ -133,7 +133,7 @@ Make it AGGRESSIVE and POWERFUL - these officials violated constitutional rights
             error_text = "timeout"
             if attempt == max_retries:
                 raise HTTPException(status_code=504, detail="Generation timed out. Please try again.")
-        except Exception as e:
+        except (ChatError, Exception) as e:
             error_text = str(e)
             if "budget has been exceeded" in error_text.lower() or "insufficient" in error_text.lower():
                 raise HTTPException(status_code=402, detail="AI budget exceeded. Please add balance to your Universal Key and retry.")

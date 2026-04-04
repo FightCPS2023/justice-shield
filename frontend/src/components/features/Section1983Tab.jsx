@@ -43,7 +43,10 @@ function Section1983Tab({ selectedCase }) {
     }
 
     setErrorMessage('');
+    setComplaint(null);
     setGenerating(true);
+    let didSucceed = false;
+    let failureMessage = '';
     try {
       const data = await api.post('/api/section-1983/generate', {
         case_id: selectedCase.id,
@@ -53,15 +56,24 @@ function Section1983Tab({ selectedCase }) {
         include_conspiracy: includeConspiracy,
         relief_sought: ['Compensatory damages', 'Punitive damages', 'Declaratory relief', 'Injunctive relief', 'Attorney fees']
       });
+      if (!data?.complaint) {
+        throw new Error(data?.detail || 'Complaint generation failed. Please retry.');
+      }
       setComplaint(data);
+      didSucceed = true;
       setErrorMessage('');
       toast.success('Section 1983 Complaint generated!');
     } catch (error) {
-      const message = error?.message || 'Failed to generate complaint';
-      setErrorMessage(message);
-      toast.error(message);
+      failureMessage = error?.message || 'Failed to generate complaint';
+      setErrorMessage(failureMessage);
+      toast.error(failureMessage);
     } finally {
       setGenerating(false);
+      if (!didSucceed && !failureMessage) {
+        const fallbackMessage = 'Complaint generation failed. Please retry.';
+        setErrorMessage(fallbackMessage);
+        toast.error(fallbackMessage);
+      }
     }
   };
 
