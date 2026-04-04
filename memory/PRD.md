@@ -143,6 +143,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added default date for communications form to prevent empty submissions
 - Added clearer error messages for communications load/submit failures
 
+### Session 20: User-Friendly Onboarding - COMPLETE
+- Added onboarding checklist with progress actions on Overview
+- Added quick-start wizard and walkthrough tour (Overview + How To Use)
+- Added start-tour trigger from How To Use
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
