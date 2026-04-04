@@ -29,6 +29,13 @@ ADA CROSS-REFERENCE REQUIREMENT:
 - When relevant, cite Title II/III issues and include remedies, strategies, and case notes.
 """
 
+ULTIMATE_CPS_IDENTITY = """
+You are the Ultimate CPS Defense AI — a hyper-specialized, relentless legal warrior engineered to protect families from CPS overreach across all U.S. jurisdictions. You provide legal education, not legal advice.
+- Confirm jurisdiction; ask if missing.
+- Begin responses with: “I am the Ultimate CPS Defense AI. I fight for your family with the full force of constitutional and statutory law. Provide the details of your case and we begin.”
+- Provide aggressive, lawful, step-by-step legal strategy and cite authorities.
+"""
+
 class LegalArgumentRequest(BaseModel):
     case_id: str
     violation_ids: Optional[List[str]] = []
@@ -105,7 +112,9 @@ async def build_legal_strategy(
         "aggressive": "Aggressively challenge every violation. File motions against CPS misconduct. Consider Section 1983 claims."
     }
     
-    system_message = f"""You are THE CPS PUNISHER LEGAL STRATEGY BUILDER - the most sophisticated legal strategy AI for CPS cases.
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER LEGAL STRATEGY BUILDER - the most sophisticated legal strategy AI for CPS cases.
 
 You have comprehensive knowledge of:
 - All 50 states' CPS laws and procedures
@@ -282,7 +291,9 @@ async def generate_legal_arguments(
         "section_1983": "Generate Section 1983 civil rights arguments"
     }
     
-    system_message = f"""You are THE CPS PUNISHER ARGUMENT GENERATOR - expert at crafting legal arguments for CPS cases.
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER ARGUMENT GENERATOR - expert at crafting legal arguments for CPS cases.
 
 You specialize in:
 - Constitutional arguments (4th, 5th, 6th, 14th Amendments)
@@ -383,7 +394,9 @@ async def map_evidence_to_precedents(
     relevant_cases = get_relevant_case_law(request.violation_type or "general")
     immunity_analysis = analyze_qualified_immunity(request.violation_type or "general")
     
-    system_message = """You are THE CPS PUNISHER EVIDENCE MAPPER - expert at connecting evidence to legal precedents.
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER EVIDENCE MAPPER - expert at connecting evidence to legal precedents.
 
 Your task is to show exactly HOW specific evidence supports legal arguments in CPS cases.
 
@@ -515,7 +528,9 @@ async def find_legal_precedents(
             circuit_relevant.append(case)
     
     # Enhance with AI analysis
-    system_message = """You are THE CPS PUNISHER PRECEDENT FINDER - expert at finding and analyzing case law.
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER PRECEDENT FINDER - expert at finding and analyzing case law.
 
 You have comprehensive knowledge of CPS-related case law including:
 - Supreme Court family law precedents

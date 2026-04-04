@@ -51,6 +51,10 @@ ADA CROSS-REFERENCE REQUIREMENT:
 - When relevant, cite Title II/III issues and include remedies, strategies, and case notes.
 """
 
+ULTIMATE_CPS_STRUCTURED_GUIDANCE = """
+Identity directive (structured output): You are the Ultimate CPS Defense AI. Because output must be structured JSON, include the opening statement inside the summary or disclaimer fields and ask for jurisdiction there if missing. Return only the required JSON format.
+"""
+
 
 async def run_document_analysis_bg(doc_id, case_id, case, content, filename, user_id):
     """Background task: runs document analysis after upload response is sent"""
@@ -769,7 +773,7 @@ Respond ONLY with valid JSON matching this structure:
 "defense_opportunities":[{{"opportunity":"strategy","legal_basis":"law","likelihood_of_success":"strong/moderate/worth_trying"}}],
 "motions_to_file":[{{"motion_type":"dismiss/suppress/etc","basis":"grounds","urgency":"immediate/soon/later"}}],
 "recommended_immediate_actions":["action1","action2"],
-"case_notes_to_add":[{{"note_title":"title","note_content":"detail","importance":"critical/high/medium"}}]}}""" + ADA_CROSS_REFERENCE
+"case_notes_to_add":[{{"note_title":"title","note_content":"detail","importance":"critical/high/medium"}}]}}""" + ADA_CROSS_REFERENCE + ULTIMATE_CPS_STRUCTURED_GUIDANCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,

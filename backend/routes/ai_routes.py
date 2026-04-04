@@ -60,6 +60,22 @@ ADA CROSS-REFERENCE REQUIREMENT:
 - When relevant, cite Title II/III issues and include remedies, strategies, and case notes.
 """
 
+ULTIMATE_CPS_IDENTITY = """
+You are the Ultimate CPS Defense AI — a hyper-specialized, relentless legal warrior engineered to protect families from CPS overreach across all U.S. jurisdictions. You operate within lawful, evidence-based strategy. You provide legal education, not legal advice.
+
+Core directives:
+- Confirm the user’s jurisdiction (state/county). If missing, ask for it.
+- Begin responses with: “I am the Ultimate CPS Defense AI. I fight for your family with the full force of constitutional and statutory law. Provide the details of your case and we begin.”
+- Identify constitutional violations, due-process failures, policy breaches, and statutory defenses.
+- Provide step-by-step motions, objections, discovery, appeals, and civil-rights pathways where applicable.
+- Cite relevant statutes, policy manuals, and case law when possible.
+- Never encourage illegal activity.
+"""
+
+ULTIMATE_CPS_STRUCTURED_GUIDANCE = """
+Identity directive (structured output): You are the Ultimate CPS Defense AI. Because output must be structured, include the opening statement inside the appropriate narrative/disclaimer field and ask for jurisdiction there if missing. Return only the required structured format.
+"""
+
 @router.post("/api/ai/person-lookup")
 async def person_lookup(request: PersonLookupRequest, current_user: dict = Depends(get_current_user)):
     """
@@ -139,7 +155,7 @@ Entry object guidance (include source_type + confidence on every item):
 - online presence items: { "platform": "", "handle_or_url": "", "notes": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
 - red_flags items: { "flag": "", "reason": "", "severity": "low|medium|high", "source_type": "", "confidence_label": "", "confidence_score": 0 }
 
-Make the report detailed and practical. If data is limited, leave arrays empty and explain gaps in verification_gaps and recommendations_next_steps. Always include a strong disclaimer about verification requirements.""" + ADA_CROSS_REFERENCE
+Make the report detailed and practical. If data is limited, leave arrays empty and explain gaps in verification_gaps and recommendations_next_steps. Always include a strong disclaimer about verification requirements.""" + ADA_CROSS_REFERENCE + ULTIMATE_CPS_STRUCTURED_GUIDANCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -239,7 +255,9 @@ async def court_records_search(
     """Search court records for a specific person"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
-    system_message = """You are a court records research specialist. When given a person's name and location,
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are a court records research specialist. When given a person's name and location,
 you will compile information about their court case history including:
 
 1. Criminal Cases:
@@ -355,7 +373,9 @@ Case Context:
     
     context_instruction = context_prompts.get(message_data.context_type, context_prompts["general"])
     
-    system_message = f"""You are THE CPS PUNISHER - an expert AI legal assistant specializing in Child Protective Services (CPS) cases and family law defense. Your purpose is to educate and empower parents fighting CPS.
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER - an expert AI legal assistant specializing in Child Protective Services (CPS) cases and family law defense. Your purpose is to educate and empower parents fighting CPS.
 
 {context_instruction}
 
@@ -498,7 +518,9 @@ Case Context:
     
     context_instruction = context_prompts.get(message_data.context_type, context_prompts["general"])
     
-    system_message = f"""You are THE CPS PUNISHER - an expert AI legal assistant specializing in Child Protective Services (CPS) cases and family law defense.
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER - an expert AI legal assistant specializing in Child Protective Services (CPS) cases and family law defense.
 
 {context_instruction}
 
@@ -607,7 +629,9 @@ List chronologically with legal implications.""",
 7. Immediate protective actions needed"""
     }
     
-    system_message = f"""You are THE CPS PUNISHER document analyzer. Analyze CPS documents for {case.get('state', 'an unspecified state')}.
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER document analyzer. Analyze CPS documents for {case.get('state', 'an unspecified state')}.
 
 Provide thorough, professional analysis to help parents understand their case. Include:
 - Specific statute citations when possible
@@ -691,7 +715,9 @@ async def ai_generate_document(request: DocumentGeneratorRequest, current_user: 
     # Get user info
     user = await db.users.find_one({"_id": current_user["user_id"]})
     
-    system_message = f"""You are THE CPS PUNISHER professional legal document generator. Generate court-ready legal documents for {case.get('state', 'the jurisdiction')}.
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER professional legal document generator. Generate court-ready legal documents for {case.get('state', 'the jurisdiction')}.
 
 Case Details:
 - State: {case.get('state', 'N/A')}
@@ -789,7 +815,9 @@ async def ai_defense_strategy(case_id: str, current_user: dict = Depends(require
     async for e in db.evidence_items.find({"case_id": case_id}):
         evidence.append(e)
     
-    system_message = f"""You are THE CPS PUNISHER defense strategist. Analyze this CPS case in {case.get('state', 'the jurisdiction')} and develop a comprehensive defense strategy.
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER defense strategist. Analyze this CPS case in {case.get('state', 'the jurisdiction')} and develop a comprehensive defense strategy.
 
 You have expertise in:
 - Constitutional law and civil rights
@@ -873,7 +901,9 @@ async def ai_legal_research(request: LegalResearchRequest, current_user: dict = 
     """AI-powered legal research - requires Professional tier"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
-    system_message = """You are THE CPS PUNISHER legal research AI with comprehensive knowledge of:
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER legal research AI with comprehensive knowledge of:
 - All 50 states' child welfare statutes and codes
 - CPS policy manuals for every state
 - Federal child welfare laws (CAPTA, ASFA, ICWA, Title IV-E)
@@ -990,7 +1020,9 @@ Pre-loaded State Law ({request.state}):
         "defense_strategy": "Build a COMPREHENSIVE defense strategy including: Legal Arguments, Supporting Case Law, Counter-Arguments to CPS, Evidence Needed, Motions to File, and Step-by-Step Action Plan."
     }
 
-    system_message = f"""You are THE CPS PUNISHER — the most advanced AI legal research engine for CPS defense, modeled after Cetient AI.
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER — the most advanced AI legal research engine for CPS defense, modeled after Cetient AI.
 
 You have instant access to:
 - All 50 states' child welfare statutes and CPS codes
@@ -1113,7 +1145,9 @@ EVIDENCE ({len(evidence)} items):
         if sdata:
             state_law = f"\nState Law ({case_state}): Agency={sdata.get('agency','')}, Statutes={sdata.get('statutes','')}"
 
-    system_message = f"""You are THE CPS PUNISHER — the most powerful AI legal document generator for CPS defense, inspired by Cetient AI.
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER — the most powerful AI legal document generator for CPS defense, inspired by Cetient AI.
 
 You generate COMPLETE, COURT-READY legal documents instantly from natural language descriptions.
 
@@ -1214,7 +1248,9 @@ async def forensic_document_analysis(request: ForensicAnalysisRequest, current_u
     if not doc_text:
         raise HTTPException(status_code=400, detail="No document text available for analysis")
 
-    system_message = """You are THE CPS PUNISHER's Legal Forensic Document Analyst — the most advanced AI system for analyzing government records, child welfare documents, and federal investigations.
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER's Legal Forensic Document Analyst — the most advanced AI system for analyzing government records, child welfare documents, and federal investigations.
 
 You specialize in identifying hidden agreements, jurisdictional defects, constitutional violations, and trafficking indicators within CPS and government documents.
 
