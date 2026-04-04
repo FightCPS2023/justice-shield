@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import api, { API_URL } from '../../lib/api';
+import { API_URL } from '../../lib/api';
 import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut, LogIn,
@@ -31,7 +31,7 @@ function Section1983Tab({ selectedCase }) {
       const data = await api.get('/api/section-1983/templates');
       setTemplates(data);
     } catch (error) {
-      console.error('Failed to load templates');
+      console.error('Failed to load templates from', API_URL, error);
     }
   };
 
@@ -54,7 +54,7 @@ function Section1983Tab({ selectedCase }) {
       setComplaint(data);
       toast.success('Section 1983 Complaint generated!');
     } catch (error) {
-      toast.error('Failed to generate complaint');
+      toast.error(error?.message || 'Failed to generate complaint');
     } finally {
       setGenerating(false);
     }
@@ -71,9 +71,9 @@ function Section1983Tab({ selectedCase }) {
     return (
       <div className="text-center py-12" data-testid="section1983-tab">
         <img src="/images/shield-logo.png" alt="CPS Punisher" className="w-24 h-28 mx-auto mb-4" />
-        <h3 className="text-2xl font-semibold mb-2">Section 1983 Lawsuit Generator</h3>
-        <p className="text-gray-400">Select a case to generate a federal civil rights complaint</p>
-        <p className="text-sm text-red-400 mt-2">Turn CPS violations into federal lawsuits</p>
+        <h3 className="text-2xl font-semibold mb-2" data-testid="section1983-empty-title">Section 1983 Lawsuit Generator</h3>
+        <p className="text-gray-400" data-testid="section1983-empty-subtitle">Select a case to generate a federal civil rights complaint</p>
+        <p className="text-sm text-red-400 mt-2" data-testid="section1983-empty-warning">Turn CPS violations into federal lawsuits</p>
       </div>
     );
   }
@@ -84,11 +84,15 @@ function Section1983Tab({ selectedCase }) {
         <div className="flex items-center gap-4">
           <img src="/images/shield-logo.png" alt="Logo" className="w-16 h-20 hidden md:block" />
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
+            <h1
+              className="text-3xl font-bold flex items-center gap-3"
+              style={{ fontFamily: 'Oswald, sans-serif' }}
+              data-testid="section1983-header-title"
+            >
               <Gavel className="w-8 h-8 text-red-500" />
               Section 1983 Civil Rights Lawsuit
             </h1>
-            <p className="text-gray-300 mt-2">
+            <p className="text-gray-300 mt-2" data-testid="section1983-header-description">
               42 U.S.C. § 1983 allows you to sue government officials who violate your constitutional rights.
               This is YOUR most powerful weapon against CPS overreach.
             </p>
@@ -100,7 +104,11 @@ function Section1983Tab({ selectedCase }) {
       {templates && (
         <div className="grid md:grid-cols-2 gap-4">
           {templates.claim_types.map(claim => (
-            <div key={claim.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+            <div
+              key={claim.id}
+              data-testid={`section1983-claim-card-${claim.id}`}
+              className="bg-gray-800/50 border border-gray-700 rounded-xl p-4"
+            >
               <div className="flex items-center gap-2 mb-2">
                 <input
                   type="checkbox"
@@ -112,6 +120,7 @@ function Section1983Tab({ selectedCase }) {
                       setViolations(violations.filter(v => v !== claim.id));
                     }
                   }}
+                  data-testid={`section1983-claim-${claim.id}-checkbox`}
                   className="w-4 h-4"
                 />
                 <h3 className="font-semibold text-red-400">{claim.name}</h3>
@@ -138,16 +147,25 @@ function Section1983Tab({ selectedCase }) {
               value={defendant}
               onChange={(e) => updateDefendant(i, e.target.value)}
               placeholder="e.g., Jane Smith, CPS Caseworker (Individual Capacity)"
+              data-testid={`section1983-defendant-input-${i}`}
               className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
             />
             {defendants.length > 1 && (
-              <button onClick={() => setDefendants(defendants.filter((_, j) => j !== i))} className="px-3 py-2 bg-red-600/20 text-red-400 rounded-lg">
+              <button
+                onClick={() => setDefendants(defendants.filter((_, j) => j !== i))}
+                data-testid={`section1983-defendant-remove-${i}-button`}
+                className="px-3 py-2 bg-red-600/20 text-red-400 rounded-lg"
+              >
                 <Trash2 className="w-4 h-4" />
               </button>
             )}
           </div>
         ))}
-        <button onClick={addDefendant} className="mt-2 px-4 py-2 bg-gray-700 rounded-lg text-sm flex items-center gap-2">
+        <button
+          onClick={addDefendant}
+          data-testid="section1983-defendant-add-button"
+          className="mt-2 px-4 py-2 bg-gray-700 rounded-lg text-sm flex items-center gap-2"
+        >
           <Plus className="w-4 h-4" /> Add Defendant
         </button>
         
@@ -159,6 +177,7 @@ function Section1983Tab({ selectedCase }) {
                 <button
                   key={i}
                   onClick={() => setDefendants([...defendants.filter(x => x), d])}
+                  data-testid={`section1983-common-defendant-${i}-button`}
                   className="px-2 py-1 bg-gray-700 rounded hover:bg-gray-600"
                 >
                   {d}
@@ -172,11 +191,23 @@ function Section1983Tab({ selectedCase }) {
       {/* Options */}
       <div className="flex gap-4">
         <label className="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3">
-          <input type="checkbox" checked={includeMonell} onChange={(e) => setIncludeMonell(e.target.checked)} className="w-4 h-4" />
+          <input
+            type="checkbox"
+            checked={includeMonell}
+            onChange={(e) => setIncludeMonell(e.target.checked)}
+            data-testid="section1983-include-monell-checkbox"
+            className="w-4 h-4"
+          />
           <span>Include Monell Claim (Sue the Agency)</span>
         </label>
         <label className="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3">
-          <input type="checkbox" checked={includeConspiracy} onChange={(e) => setIncludeConspiracy(e.target.checked)} className="w-4 h-4" />
+          <input
+            type="checkbox"
+            checked={includeConspiracy}
+            onChange={(e) => setIncludeConspiracy(e.target.checked)}
+            data-testid="section1983-include-conspiracy-checkbox"
+            className="w-4 h-4"
+          />
           <span>Include §1985 Conspiracy Claim</span>
         </label>
       </div>
@@ -185,6 +216,7 @@ function Section1983Tab({ selectedCase }) {
       <button
         onClick={generateComplaint}
         disabled={generating || violations.length === 0}
+        data-testid="section1983-generate-button"
         className="w-full py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
       >
         {generating ? (
@@ -196,7 +228,10 @@ function Section1983Tab({ selectedCase }) {
 
       {/* Generated Complaint */}
       {complaint && (
-        <div className="bg-gradient-to-r from-red-900/30 to-gray-900 border border-red-800/50 rounded-xl p-6">
+        <div
+          className="bg-gradient-to-r from-red-900/30 to-gray-900 border border-red-800/50 rounded-xl p-6"
+          data-testid="section1983-complaint-card"
+        >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold flex items-center gap-2">
               <FileText className="w-6 h-6 text-red-500" />
@@ -205,19 +240,26 @@ function Section1983Tab({ selectedCase }) {
             <div className="flex gap-2">
               <button
                 onClick={() => navigator.clipboard.writeText(complaint.complaint)}
+                data-testid="section1983-copy-button"
                 className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center gap-2"
               >
                 <Copy className="w-4 h-4" /> Copy
               </button>
-              <button className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg flex items-center gap-2">
+              <button
+                data-testid="section1983-download-button"
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg flex items-center gap-2"
+              >
                 <Download className="w-4 h-4" /> Download
               </button>
             </div>
           </div>
-          <pre className="whitespace-pre-wrap text-gray-300 text-sm bg-black/50 p-6 rounded-lg overflow-auto max-h-[800px] font-mono">
+          <pre
+            className="whitespace-pre-wrap text-gray-300 text-sm bg-black/50 p-6 rounded-lg overflow-auto max-h-[800px] font-mono"
+            data-testid="section1983-complaint-text"
+          >
             {complaint.complaint}
           </pre>
-          <p className="text-xs text-gray-500 mt-4">
+          <p className="text-xs text-gray-500 mt-4" data-testid="section1983-complaint-meta">
             Generated: {new Date(complaint.generated_at).toLocaleString()} | 
             Violations analyzed: {complaint.violations_analyzed}
           </p>

@@ -2,6 +2,7 @@
 import uuid
 import json
 import re
+import asyncio
 from datetime import datetime, timezone
 from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Depends, Body
@@ -9,6 +10,8 @@ from fastapi import APIRouter, HTTPException, Depends, Body
 from database import get_db
 from auth import get_current_user
 from config import EMERGENT_LLM_KEY
+from .courtlistener_routes import STATES_INFO
+from .legal_routes import SECTION_1983_SYSTEM_PROMPT
 from utils.credits import (
     get_case_with_ownership, require_tier, check_ai_credits,
     increment_ai_credits, save_ai_response_to_case
@@ -114,7 +117,42 @@ CRITICAL: Include specific case law citations that defeat qualified immunity.
 The complaint must be detailed enough to survive a 12(b)(6) motion to dismiss.
 Make it AGGRESSIVE and POWERFUL - these officials violated constitutional rights."""
 
-    response = await chat.send_message(UserMessage(text=prompt))
+    max_retries = 1
+    response = None
+    error_text = ""
+    retry_delays = [5]
+
+    for attempt in range(max_retries + 1):
+        try:
+            response = await asyncio.wait_for(
+                chat.send_message(UserMessage(text=prompt)),
+                timeout=45
+            )
+            break
+        except asyncio.TimeoutError:
+            error_text = "timeout"
+            if attempt == max_retries:
+                raise HTTPException(status_code=504, detail="Generation timed out. Please try again.")
+        except Exception as e:
+            error_text = str(e)
+            if "budget has been exceeded" in error_text.lower() or "insufficient" in error_text.lower():
+                raise HTTPException(status_code=402, detail="AI budget exceeded. Please add balance to your Universal Key and retry.")
+            if attempt == max_retries:
+                raise HTTPException(status_code=502, detail="AI service error. Please retry in a moment.")
+
+        wait_seconds = retry_delays[min(attempt, len(retry_delays) - 1)]
+        if "rate limit" in error_text.lower() or "429" in error_text:
+            wait_seconds = max(wait_seconds, 8)
+        await asyncio.sleep(wait_seconds)
+
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"1983-{case_id}-{uuid.uuid4().hex[:8]}-retry{attempt}",
+            system_message=SECTION_1983_SYSTEM_PROMPT
+        ).with_model("openai", "gpt-5.2")
+
+    if not response:
+        raise HTTPException(status_code=502, detail="AI service unavailable. Please try again.")
     
     # Save the generated complaint
     complaint_id = str(uuid.uuid4())
