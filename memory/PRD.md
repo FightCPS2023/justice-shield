@@ -155,7 +155,7 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 ### Session 22: Section 1983 Generator Stabilization - COMPLETE
 - Fixed missing imports (STATES_INFO + SECTION_1983_SYSTEM_PROMPT) that caused 500s
 - Added retry + timeout handling with clearer AI budget error messaging for LLM failures
-- Frontend: improved error visibility and added data-testid coverage across Section 1983 UI
+- Frontend: improved error visibility, added data-testid coverage, and set a 45s no-retry timeout for Section 1983 generation
 
 ## Remaining Tasks
 
