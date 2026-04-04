@@ -443,7 +443,7 @@ function Dashboard({ onNavigate }) {
       <main className="flex-1 lg:ml-64 pt-16 lg:pt-0">
         <div className="p-6">
           {activeTab === 'overview' && <OverviewTab cases={cases} setActiveTab={setActiveTab} prefetchedData={prefetchedData} />}
-          {activeTab === 'howto' && <HowToTab />}
+          {activeTab === 'howto' && <HowToTab setActiveTab={setActiveTab} />}
           {activeTab === 'policies' && <PoliciesTab />}
           {activeTab === 'cases' && <CasesTab cases={cases} setCases={setCases} selectedCase={selectedCase} setSelectedCase={setSelectedCase} />}
           {activeTab === 'chat' && <ChatTab selectedCase={selectedCase} />}

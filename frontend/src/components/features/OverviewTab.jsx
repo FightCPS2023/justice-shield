@@ -16,6 +16,18 @@ function OverviewTab({ cases, setActiveTab, prefetchedData = {} }) {
   const { api, user } = useAuth();
   const [tierStatus, setTierStatus] = useState(prefetchedData.tierStatus || null);
   const [creditBalance, setCreditBalance] = useState(prefetchedData.creditBalance || null);
+  const [tourActive, setTourActive] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
+  const [manualProgress, setManualProgress] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('cps_onboarding') || '{}');
+    } catch {
+      return {};
+    }
+  });
+
+  const tierColors = { free: 'text-gray-400', essential: 'text-blue-400', professional: 'text-purple-400', attorney: 'text-amber-400', enterprise: 'text-red-400' };
+  const tierBg = { free: 'bg-gray-600/20', essential: 'bg-blue-600/20', professional: 'bg-purple-600/20', attorney: 'bg-amber-600/20', enterprise: 'bg-red-600/20' };
 
   useEffect(() => {
     if (!tierStatus || !creditBalance) {
@@ -33,8 +45,102 @@ function OverviewTab({ cases, setActiveTab, prefetchedData = {} }) {
     }
   }, []);
 
-  const tierColors = { free: 'text-gray-400', essential: 'text-blue-400', professional: 'text-purple-400', attorney: 'text-amber-400', enterprise: 'text-red-400' };
-  const tierBg = { free: 'bg-gray-600/20', essential: 'bg-blue-600/20', professional: 'bg-purple-600/20', attorney: 'bg-amber-600/20', enterprise: 'bg-red-600/20' };
+  useEffect(() => {
+    const forceTour = localStorage.getItem('cps_tour_force');
+    if (forceTour) {
+      localStorage.removeItem('cps_tour_force');
+      setTourActive(true);
+      setTourStep(0);
+      return;
+    }
+    const seen = localStorage.getItem('cps_tour_seen');
+    if (!seen) {
+      setTourActive(true);
+      setTourStep(0);
+    }
+  }, []);
+
+  const markProgress = (key) => {
+    const updated = { ...manualProgress, [key]: true };
+    setManualProgress(updated);
+    localStorage.setItem('cps_onboarding', JSON.stringify(updated));
+  };
+
+  const tourSteps = [
+    {
+      title: 'Start with a Case',
+      description: 'Create your CPS case so all documents and AI actions are tied to the right record.',
+      actionLabel: 'Go to Cases',
+      action: () => setActiveTab('cases')
+    },
+    {
+      title: 'Upload Documents',
+      description: 'Upload court filings, CPS reports, and evidence. Analysis runs in the background queue.',
+      actionLabel: 'Go to Documents',
+      action: () => setActiveTab('documents')
+    },
+    {
+      title: 'Review AI Findings',
+      description: 'Open a document to see violations, perjury flags, and recommended next steps.',
+      actionLabel: 'Open Documents',
+      action: () => setActiveTab('documents')
+    },
+    {
+      title: 'Use the Law Library',
+      description: 'Search your state law manual and save it to Notepad for quick court prep.',
+      actionLabel: 'Open Law Library',
+      action: () => setActiveTab('library')
+    },
+    {
+      title: 'Build Case Memory',
+      description: 'Save verified facts so AI answers get smarter and more consistent over time.',
+      actionLabel: 'Open Case Memory',
+      action: () => setActiveTab('memory')
+    }
+  ];
+
+  const closeTour = () => {
+    setTourActive(false);
+    localStorage.setItem('cps_tour_seen', '1');
+  };
+
+  const onboardingSteps = [
+    {
+      id: 'case',
+      title: 'Create your first case',
+      description: 'Every AI tool and document is tied to a case.',
+      done: cases.length > 0 || manualProgress.case,
+      action: () => { markProgress('case'); setActiveTab('cases'); }
+    },
+    {
+      id: 'upload',
+      title: 'Upload your first document',
+      description: 'Upload CPS reports, court filings, or evidence.',
+      done: (tierStatus?.usage?.docs_uploaded_this_month ?? 0) > 0 || manualProgress.upload,
+      action: () => { markProgress('upload'); setActiveTab('documents'); }
+    },
+    {
+      id: 'analysis',
+      title: 'Run your first analysis',
+      description: 'Open a document to see AI findings and next steps.',
+      done: (tierStatus?.usage?.ai_credits_used ?? 0) > 0 || manualProgress.analysis,
+      action: () => { markProgress('analysis'); setActiveTab('documents'); }
+    },
+    {
+      id: 'library',
+      title: 'Review your state law manual',
+      description: 'Save the Law Library to Notepad for court prep.',
+      done: manualProgress.library,
+      action: () => { markProgress('library'); setActiveTab('library'); }
+    },
+    {
+      id: 'memory',
+      title: 'Save key facts to Case Memory',
+      description: 'This makes AI answers stronger and consistent.',
+      done: manualProgress.memory,
+      action: () => { markProgress('memory'); setActiveTab('memory'); }
+    }
+  ];
 
   const quickActions = [
     { icon: Plus, label: 'New Case', action: () => setActiveTab('cases'), color: 'bg-red-600' },
@@ -65,6 +171,55 @@ function OverviewTab({ cases, setActiveTab, prefetchedData = {} }) {
 
   return (
     <div className="space-y-6 animate-fadeIn" data-testid="overview-tab">
+      {tourActive && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" data-testid="overview-tour-overlay">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl max-w-xl w-full p-6 space-y-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs text-gray-400" data-testid="overview-tour-step-count">Step {tourStep + 1} of {tourSteps.length}</p>
+                <h2 className="text-2xl font-bold" data-testid="overview-tour-title">{tourSteps[tourStep].title}</h2>
+              </div>
+              <button onClick={closeTour} className="text-gray-400 hover:text-white" data-testid="overview-tour-close">✕</button>
+            </div>
+            <p className="text-gray-300" data-testid="overview-tour-description">{tourSteps[tourStep].description}</p>
+            <div className="flex flex-wrap gap-3 justify-between">
+              <button
+                onClick={() => setTourStep(Math.max(tourStep - 1, 0))}
+                disabled={tourStep === 0}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg disabled:opacity-50"
+                data-testid="overview-tour-back"
+              >
+                Back
+              </button>
+              <button
+                onClick={() => tourSteps[tourStep].action()}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg"
+                data-testid="overview-tour-action"
+              >
+                {tourSteps[tourStep].actionLabel}
+              </button>
+              {tourStep < tourSteps.length - 1 ? (
+                <button
+                  onClick={() => setTourStep(tourStep + 1)}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg"
+                  data-testid="overview-tour-next"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  onClick={closeTour}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg"
+                  data-testid="overview-tour-finish"
+                >
+                  Finish Tour
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header with Chrome Logo */}
       <div className="flex items-center gap-6">
         <img src="/images/chrome-logo.jpg" alt="CPS Punisher" className="w-32 h-auto hidden md:block" />
@@ -73,6 +228,46 @@ function OverviewTab({ cases, setActiveTab, prefetchedData = {} }) {
             Welcome Back, Punisher
           </h1>
           <p className="text-gray-400">Continue your fight for your family</p>
+        </div>
+      </div>
+
+      <div className="bg-gray-800/40 border border-gray-700 rounded-xl p-6" data-testid="onboarding-checklist">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">Onboarding Checklist</h2>
+            <p className="text-sm text-gray-400">Complete these steps for a strong, organized case.</p>
+          </div>
+          <button
+            onClick={() => { setTourActive(true); setTourStep(0); }}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg"
+            data-testid="start-walkthrough-btn"
+          >
+            Start Walkthrough
+          </button>
+        </div>
+        <div className="mt-4 space-y-3">
+          {onboardingSteps.map((step, index) => (
+            <div key={step.id} className="flex flex-wrap items-center justify-between gap-3 bg-gray-900/50 border border-gray-700 rounded-lg p-4" data-testid={`onboarding-step-${index}`}>
+              <div className="flex items-start gap-3">
+                {step.done ? (
+                  <CheckCircle2 className="w-5 h-5 text-green-400 mt-0.5" />
+                ) : (
+                  <Radio className="w-5 h-5 text-gray-500 mt-0.5" />
+                )}
+                <div>
+                  <p className="font-semibold" data-testid={`onboarding-step-title-${index}`}>{step.title}</p>
+                  <p className="text-sm text-gray-400" data-testid={`onboarding-step-desc-${index}`}>{step.description}</p>
+                </div>
+              </div>
+              <button
+                onClick={step.action}
+                className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm"
+                data-testid={`onboarding-step-action-${index}`}
+              >
+                {step.done ? 'Review' : 'Go'}
+              </button>
+            </div>
+          ))}
         </div>
       </div>
 
