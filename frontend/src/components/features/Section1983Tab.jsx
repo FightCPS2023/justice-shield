@@ -21,6 +21,7 @@ function Section1983Tab({ selectedCase }) {
   const [violations, setViolations] = useState(['fourth_amendment', 'fourteenth_substantive_dp']);
   const [includeMonell, setIncludeMonell] = useState(true);
   const [includeConspiracy, setIncludeConspiracy] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     loadTemplates();
@@ -41,6 +42,7 @@ function Section1983Tab({ selectedCase }) {
       return;
     }
 
+    setErrorMessage('');
     setGenerating(true);
     try {
       const data = await api.post('/api/section-1983/generate', {
@@ -52,9 +54,12 @@ function Section1983Tab({ selectedCase }) {
         relief_sought: ['Compensatory damages', 'Punitive damages', 'Declaratory relief', 'Injunctive relief', 'Attorney fees']
       });
       setComplaint(data);
+      setErrorMessage('');
       toast.success('Section 1983 Complaint generated!');
     } catch (error) {
-      toast.error(error?.message || 'Failed to generate complaint');
+      const message = error?.message || 'Failed to generate complaint';
+      setErrorMessage(message);
+      toast.error(message);
     } finally {
       setGenerating(false);
     }
@@ -225,6 +230,15 @@ function Section1983Tab({ selectedCase }) {
           <><Gavel className="w-6 h-6" /> Generate Section 1983 Complaint</>
         )}
       </button>
+
+      {errorMessage && (
+        <div
+          className="rounded-lg border border-red-700/60 bg-red-900/20 px-4 py-3 text-sm text-red-200"
+          data-testid="section1983-error-alert"
+        >
+          {errorMessage}
+        </div>
+      )}
 
       {/* Generated Complaint */}
       {complaint && (
