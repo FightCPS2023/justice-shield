@@ -13,19 +13,20 @@ const api = {
   },
   
   async request(endpoint, options = {}, retryCount = 0) {
+    const { timeoutMs, retryable = true, ...fetchOptions } = options;
     const token = this.getToken();
     const headers = {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
+      ...fetchOptions.headers,
     };
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000);
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs || 60000);
     
     try {
       const response = await fetch(`${API_URL}${endpoint}`, {
-        ...options,
+        ...fetchOptions,
         headers,
         signal: controller.signal,
       });
@@ -51,7 +52,7 @@ const api = {
     } catch (error) {
       clearTimeout(timeoutId);
       
-      if (retryCount < 2 && (error.name === 'AbortError' || error.message === 'Failed to fetch' || error.message.includes('NetworkError'))) {
+      if (retryable && retryCount < 2 && (error.name === 'AbortError' || error.message === 'Failed to fetch' || error.message.includes('NetworkError'))) {
         console.log(`Retrying request (attempt ${retryCount + 2})...`);
         await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
         return this.request(endpoint, options, retryCount + 1);

@@ -48,13 +48,18 @@ function Section1983Tab({ selectedCase }) {
     let didSucceed = false;
     let failureMessage = '';
     try {
-      const data = await api.post('/api/section-1983/generate', {
-        case_id: selectedCase.id,
-        defendants: defendants.filter(d => d.trim()),
-        constitutional_violations: violations,
-        include_monell: includeMonell,
-        include_conspiracy: includeConspiracy,
-        relief_sought: ['Compensatory damages', 'Punitive damages', 'Declaratory relief', 'Injunctive relief', 'Attorney fees']
+      const data = await api.request('/api/section-1983/generate', {
+        method: 'POST',
+        body: JSON.stringify({
+          case_id: selectedCase.id,
+          defendants: defendants.filter(d => d.trim()),
+          constitutional_violations: violations,
+          include_monell: includeMonell,
+          include_conspiracy: includeConspiracy,
+          relief_sought: ['Compensatory damages', 'Punitive damages', 'Declaratory relief', 'Injunctive relief', 'Attorney fees']
+        }),
+        timeoutMs: 45000,
+        retryable: false
       });
       if (!data?.complaint) {
         throw new Error(data?.detail || 'Complaint generation failed. Please retry.');
