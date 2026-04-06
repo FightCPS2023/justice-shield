@@ -164,6 +164,9 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Frontend: Research/SmartDoc show streaming state, timeout errors, and Next Steps panels
 - Sidebar reorganized into collapsible category submenus for faster navigation
 
+### Session 24: Useful Case Law Index Added - COMPLETE
+- Added comprehensive “Useful Case Law Index” sections to legal_knowledge.py with jurisdiction, service/notice, void judgments, DHR accountability, ADA, and Alabama Ex Parte groupings
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment

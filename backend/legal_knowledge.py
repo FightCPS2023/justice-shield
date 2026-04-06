@@ -757,6 +757,147 @@ FEDERAL_STATUTES = {
     }
 }
 
+USEFUL_CASE_LAW_INDEX = {
+    "title": "Useful Case Law Index",
+    "sections": [
+        {
+            "title": "Subject-Matter Jurisdiction & UCCJEA (Power to Act)",
+            "purpose": "Challenges court authority to open the case or act without jurisdiction.",
+            "cases": [
+                {"name": "Ex parte Fordham", "citation": "144 So. 3d 319", "note": "Mandatory UCCJEA jurisdictional requirements."},
+                {"name": "J.B. v. A.B.", "citation": "888 So. 2d 528", "note": "Rule 60(b) + lack of UCCJEA subject matter = void order."},
+                {"name": "Ex parte K.L.P.", "citation": "868 So. 2d 454", "note": "How a court acquires jurisdiction."},
+                {"name": "Ex parte Sealy, LLC", "citation": "904 So. 2d 1230", "note": "Dismissal and case nullity due to lack of jurisdiction."},
+                {"name": "Ex parte S.T.S.", "citation": "806 So. 2d 336", "note": "Limits of juvenile court authority."},
+                {"name": "Ex parte R.S.C.", "citation": "853 So. 2d 228", "note": "Standards for jurisdictional findings in child cases."},
+                {"name": "Ex parte Jim Walter Homes, Inc.", "citation": "(1998)", "note": "Fundamental limits on court power; no jurisdiction means void."},
+                {"name": "Ex parte Bridges", "citation": "925 So. 2d 189", "note": "Writ of prohibition when court acts without jurisdiction."},
+                {"name": "Kulko v. Superior Ct.", "citation": "436 U.S. 84", "note": "Federal limits on personal jurisdiction."},
+                {"name": "Roman Catholic Archdiocese of San Juan v. Feliciano", "citation": "589 U.S. (2020)", "note": "No jurisdiction = no power to act."}
+            ]
+        },
+        {
+            "title": "Service of Process & Procedural Rules (Notice and Rule 4/13)",
+            "purpose": "Support arguments that service was fraudulent or legally insufficient.",
+            "cases": [
+                {"name": "M.M. v. B.L. and M.L.", "citation": "926 So. 2d 1038", "note": "Proper service under Rule 4 and Rule 13."},
+                {"name": "T.B. v. T.H.", "citation": "30 So. 3d 445", "note": "Service of summons is mandatory to initiate a case."},
+                {"name": "R.M. v. Elmore County DHR", "citation": "(2011)", "note": "Proper service is a prerequisite for state intervention."},
+                {"name": "T.F.H. v. A.L.S.", "citation": "(2023)", "note": "Modern application of Rule 13 dependency procedures."},
+                {"name": "Mullane v. Central Hanover Bank", "citation": "339 U.S. 306", "note": "Notice must be reasonably calculated to reach you."},
+                {"name": "Armstrong v. Manzo", "citation": "380 U.S. 545", "note": "Failure to provide notice violates the 14th Amendment."},
+                {"name": "Ex parte Weeks", "citation": "611 So. 2d 259", "note": "Technical requirements for legal notice."},
+                {"name": "Ex parte Powell", "citation": "(var.)", "note": "Standards for service and due process."},
+                {"name": "Hales v. Scott", "citation": "(1985)", "note": "Alabama Supreme Court on service of process."},
+                {"name": "Crawford v. Hall", "citation": "531 So. 2d 874", "note": "Procedural rules for initiating claims."}
+            ]
+        },
+        {
+            "title": "Void Judgments, Nunc Pro Tunc, & Fraud (Rule 60(b))",
+            "purpose": "Attack void orders and retroactive attempts to fix the record.",
+            "cases": [
+                {"name": "Ex parte Courtyard Citiflats (Arrington)", "citation": "259 So. 3d 669", "note": "Nunc pro tunc cannot fix lack of jurisdiction."},
+                {"name": "B.W. v. S.S.", "citation": "(2022)", "note": "Rule 60(b) standard to set aside."},
+                {"name": "United States v. Throckmorton", "citation": "(1878)", "note": "Fraud on the court vacates all actions."},
+                {"name": "Hartford-Empire Co. v. Hazel-Atlas Glass Co.", "citation": "(1944)", "note": "Fraudulent judgments are unenforceable."},
+                {"name": "Ex parte Full Circle Distribution, LLC", "citation": "(2003)", "note": "Standard for vacating void judgments under Rule 60(b)."},
+                {"name": "Insurance Mgt. & Admin. v. Palomar Ins.", "citation": "(1991)", "note": "Rule 60(b) for jurisdictional defects."},
+                {"name": "Ex parte Turner", "citation": "(2002)", "note": "Relief from judgments and appellate rights."},
+                {"name": "Ex parte Antonucci", "citation": "(2005)", "note": "Mandatory standards for vacating orders."}
+            ]
+        },
+        {
+            "title": "DHR Accountability & Reasonable Efforts",
+            "purpose": "Hold DHR to its burden and reunification obligations.",
+            "cases": [
+                {"name": "M.A.J. v. S.F.", "citation": "994 So. 2d 280", "note": "DHR must prove reasonable efforts were made."},
+                {"name": "T.B. v. Cullman Cnty. DHR", "citation": "6 So. 3d 1195", "note": "State carries burden of proof for reunification."},
+                {"name": "Ex parte McDaniel", "citation": "291 So. 3d 847", "note": "Rights of parents in dependency proceedings."},
+                {"name": "N.J.D. v. Madison County DHR", "citation": "110 So. 3d 387", "note": "Dependency standards and parental rights."},
+                {"name": "K.P. v. Madison County DHR", "citation": "243 So. 3d 835", "note": "DHR accountability."},
+                {"name": "R.D. v. Coffee County DHR", "citation": "204 So. 3d 425", "note": "Standards for state interference in family units."},
+                {"name": "Ex parte L.E.O.", "citation": "61 So. 3d 1042", "note": "Standard for dependency findings."},
+                {"name": "In re Gault", "citation": "387 U.S. 1", "note": "Constitutional due process in juvenile proceedings."}
+            ]
+        },
+        {
+            "title": "ADA, Civil Rights, & Federal Protections",
+            "purpose": "ADA/rehab act protections and civil rights limits on state action.",
+            "cases": [
+                {"name": "Bircoll v. Miami Dade County", "citation": "(2007)", "note": "ADA applies to law enforcement and state administrative actions."},
+                {"name": "Alexander v. Choate", "citation": "469 U.S. 287", "note": "Meaningful access under ADA/Rehab Act."},
+                {"name": "Taylor v. Sturgell", "citation": "553 U.S. 880", "note": "Limits on virtual representation."},
+                {"name": "Sweeney v. Alabama ABC Board", "citation": "(2000)", "note": "Civil rights and state agency overreach."}
+            ]
+        },
+        {
+            "title": "Comprehensive Alabama Ex Parte and Misc. Citations",
+            "purpose": "Additional Alabama authorities organized by writs, finality, dependency, due process, and evidence standards.",
+            "cases": [
+                {"name": "Ex parte SCW / Ex parte McInish", "citation": "47 So. 3d 767", "note": "Evidentiary standards; clear and convincing evidence."},
+                {"name": "Ex parte McConico", "citation": "315 So. 3d 610", "note": "Mandamus/prohibition standards."},
+                {"name": "Ex parte Roberts", "citation": "(var.)", "note": "Due process and notice standards."},
+                {"name": "Ex parte Powell", "citation": "(var.)", "note": "Service and due process standards."},
+                {"name": "Ex parte Weeks", "citation": "611 So. 2d 259", "note": "Notice requirements."},
+                {"name": "Ex parte J.M.S.", "citation": "303 So. 3d 155", "note": "Rights in G.C.S. v. J.M.S."},
+                {"name": "Ex parte Moore", "citation": "880 So. 2d 1131", "note": "Finality of judgments."},
+                {"name": "Ex parte R.D.", "citation": "313 So. 3d 1119", "note": "Dependency standards; termination of parental rights."},
+                {"name": "Ex parte Jenkins / Ex parte Smith", "citation": "(var.)", "note": "Extraordinary writs when no adequate remedy."},
+                {"name": "Ex parte T.C.", "citation": "63 So. 3d 627", "note": "Supersedeas/stay during appeal."},
+                {"name": "Ex parte Third Generation, Inc.", "citation": "(2003)", "note": "Law of the case; limits on revisiting final orders."},
+                {"name": "Ex parte Pate IV / Ex parte GC", "citation": "(var.)", "note": "Procedural due process under ARJuvP."},
+                {"name": "Ex parte CLJ / Ex parte RDN / Ex parte Alfa Mut. General Ins. Co.", "citation": "(var.)", "note": "Rule 8/Rule 60(b) mechanics and defect attacks."}
+            ]
+        },
+        {
+            "title": "Stop Order (Writs of Mandamus & Prohibition)",
+            "purpose": "Freeze proceedings when a lower court acts without jurisdiction.",
+            "cases": [
+                {"name": "Ex parte McConico", "citation": "315 So. 3d 610", "note": "Gold standard for mandamus/prohibition."},
+                {"name": "Ex parte Bridges", "citation": "925 So. 2d 189", "note": "Writ of prohibition; court must be prohibited from continuing."},
+                {"name": "Ex parte Jenkins / Ex parte Smith", "citation": "(var.)", "note": "Extraordinary writ when no adequate remedy at law."}
+            ]
+        },
+        {
+            "title": "Finality & Voidness Doctrine (Rule 60)",
+            "purpose": "Once a case is void or final, it cannot be revived without strict Rule 60 compliance.",
+            "cases": [
+                {"name": "Ex parte Moore", "citation": "880 So. 2d 1131", "note": "Finality of judgments."},
+                {"name": "Ex parte Jim Walter Homes, Inc.", "citation": "(1998)", "note": "Void orders for lack of subject matter jurisdiction."},
+                {"name": "Ex parte Third Generation, Inc.", "citation": "(2003)", "note": "Law of the case; limits on revisiting final orders."},
+                {"name": "Ex parte RDN / Ex parte Alfa Mut. General Ins. Co.", "citation": "(var.)", "note": "Rule 8/Rule 60(b) mechanics."}
+            ]
+        },
+        {
+            "title": "Dependency & Parental Rights (DHR Tactics)",
+            "purpose": "Challenge dependency findings and burden of proof tactics.",
+            "cases": [
+                {"name": "Ex parte J.M.S.", "citation": "303 So. 3d 155", "note": "Best interests vs natural rights of parent."},
+                {"name": "Ex parte T.C.", "citation": "63 So. 3d 627", "note": "Stay/supersedeas authority."},
+                {"name": "Ex parte R.D.", "citation": "313 So. 3d 1119", "note": "High burden for termination of parental rights."},
+                {"name": "Ex parte Boykin", "citation": "656 So. 2d 821", "note": "Income/ability to pay vs willful failure."}
+            ]
+        },
+        {
+            "title": "Due Process & Notice (You Didn't Tell Me)",
+            "purpose": "Challenge actions taken without fair notice or hearing.",
+            "cases": [
+                {"name": "Ex parte Weeks", "citation": "611 So. 2d 259", "note": "Notice violation invalidates orders."},
+                {"name": "Ex parte Powell / Ex parte Roberts", "citation": "(var.)", "note": "Right to be heard and to counsel; due process."},
+                {"name": "Ex parte Pate IV / Ex parte GC", "citation": "(var.)", "note": "ARJuvP procedural due process requirements."}
+            ]
+        },
+        {
+            "title": "Judicial Evidence & Record Striking",
+            "purpose": "Remove fraudulent filings or hearsay from the record.",
+            "cases": [
+                {"name": "Ex parte McInish / Ex parte SCW", "citation": "47 So. 3d 767", "note": "Evidentiary standards; clear and convincing evidence."},
+                {"name": "Ex parte CLJ", "citation": "(var.)", "note": "Clear and convincing evidence; evidentiary foundations."}
+            ]
+        }
+    ]
+}
+
 def get_relevant_case_law(violation_type: str) -> dict:
     """Get relevant case law for a specific violation type."""
     case_law = []
