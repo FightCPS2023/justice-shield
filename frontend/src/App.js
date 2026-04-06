@@ -4,7 +4,7 @@ import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, Menu, X, LogOut,
   Home, Settings, Lock, Loader2, Clock, Eye, CheckCircle2,
-  CreditCard, Zap, Mic, HelpCircle
+  CreditCard, Zap, Mic, HelpCircle, ChevronDown
 } from 'lucide-react';
 
 import api, { API_URL } from './lib/api';
@@ -194,6 +194,13 @@ function Dashboard({ onNavigate }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [prefetchedData, setPrefetchedData] = useState({});
   const [isAdmin, setIsAdmin] = useState(false);
+  const [openSections, setOpenSections] = useState({
+    core: true,
+    case: true,
+    ai: true,
+    research: true,
+    community: true
+  });
   const effectiveDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   useEffect(() => {
@@ -250,49 +257,79 @@ function Dashboard({ onNavigate }) {
   const TIER_LEVELS = { free: 0, essential: 1, professional: 2, attorney: 3, enterprise: 4 };
   const userTierLevel = TIER_LEVELS[user?.tier] || 0;
 
-  const menuItems = [
-    { id: 'overview', icon: Home, label: 'Overview', minTier: 'free' },
-    { id: 'howto', icon: HelpCircle, label: 'How to Use', minTier: 'free', highlight: true },
-    { id: 'policies', icon: FileText, label: 'Policies', minTier: 'free' },
-    { id: 'cases', icon: FileText, label: 'My Cases', minTier: 'free' },
-    { id: 'ainotes', icon: Brain, label: 'AI Case Notes', minTier: 'free', highlight: true },
-    { id: 'memory', icon: Brain, label: 'Case Memory', minTier: 'free', highlight: true },
-    { id: 'violations', icon: AlertTriangle, label: 'Violations', minTier: 'free' },
-    { id: 'timeline', icon: Clock, label: 'Timeline', minTier: 'free' },
-    { id: 'evidence', icon: Eye, label: 'Evidence', minTier: 'free' },
-    { id: 'evidencelist', icon: CheckCircle2, label: 'Evidence Checklist', minTier: 'free' },
-    { id: 'visitation', icon: Users, label: 'Visitation Log', minTier: 'free' },
-    { id: 'courthearings', icon: Calendar, label: 'Court Hearings', minTier: 'free' },
-    { id: 'communications', icon: MessageSquare, label: 'Communications', minTier: 'free' },
-    { id: 'calendar', icon: Calendar, label: 'Calendar', minTier: 'free' },
-    { id: 'rights', icon: Shield, label: 'Know Your Rights', minTier: 'free' },
-    { id: 'forum', icon: Users, label: 'Community', minTier: 'free' },
-    { id: 'advocates', icon: Users, label: 'Find Advocates', minTier: 'free' },
-    { id: 'chat', icon: MessageSquare, label: 'AI Assistant', minTier: 'free', highlight: true },
-    { id: 'documents', icon: FileText, label: 'Documents', minTier: 'free', highlight: true },
-    { id: 'smartdoc', icon: Zap, label: 'Smart Doc Generator', minTier: 'free', highlight: true },
-    { id: 'incidents', icon: AlertTriangle, label: 'Incident Analyzer', minTier: 'essential' },
-    { id: 'notepad', icon: FileText, label: 'Legal Notepad', minTier: 'essential', highlight: true },
-    { id: 'courtfilings', icon: Gavel, label: 'Court Filings', minTier: 'essential' },
-    { id: 'services', icon: Users, label: 'Services', minTier: 'essential' },
-    { id: 'strategy', icon: Shield, label: 'Defense Strategy', minTier: 'essential' },
-    { id: 'expert', icon: Brain, label: 'Expert Legal AI', minTier: 'professional', highlight: true },
-    { id: 'strategybuilder', icon: Shield, label: 'Strategy Builder', minTier: 'professional', highlight: true },
-    { id: 'argumentgen', icon: Scale, label: 'Argument Generator', minTier: 'professional', highlight: true },
-    { id: 'evidencemapper', icon: Eye, label: 'Evidence Mapper', minTier: 'professional', highlight: true },
-    { id: 'precedentfinder', icon: Search, label: 'Precedent Finder', minTier: 'professional', highlight: true },
-    { id: 'ada', icon: Scale, label: 'ADA Compliance', minTier: 'professional', highlight: true },
-    { id: 'caselaw', icon: BookOpen, label: 'Case Law Analysis', minTier: 'professional', highlight: true },
-    { id: 'judgewatch', icon: Scale, label: 'Judge Watch', minTier: 'professional' },
-    { id: 'personlookup', icon: Search, label: 'Background Check', minTier: 'professional', highlight: true },
-    { id: 'legaldb', icon: BookOpen, label: 'Legal Knowledge Base', minTier: 'professional' },
-    { id: 'research', icon: Search, label: 'Legal Research', minTier: 'professional' },
-    { id: 'library', icon: BookOpen, label: 'Law Library', minTier: 'free' },
-    { id: 'section1983', icon: Gavel, label: 'Section 1983 Lawsuit', minTier: 'attorney', highlight: true },
-    { id: 'courtlistener', icon: Scale, label: 'Court Opinions', minTier: 'attorney', highlight: true },
-    { id: 'podcast', icon: Mic, label: 'Podcast Creator', minTier: 'attorney' },
-    { id: 'criminal', icon: AlertTriangle, label: 'Criminal Case', minTier: 'attorney' },
-    { id: 'pricing', icon: CreditCard, label: 'Upgrade Plan', minTier: 'free' },
+  const menuSections = [
+    {
+      id: 'core',
+      label: 'Core',
+      items: [
+        { id: 'overview', icon: Home, label: 'Overview', minTier: 'free' },
+        { id: 'howto', icon: HelpCircle, label: 'How to Use', minTier: 'free', highlight: true },
+        { id: 'policies', icon: FileText, label: 'Policies', minTier: 'free' },
+        { id: 'cases', icon: FileText, label: 'My Cases', minTier: 'free' },
+        { id: 'pricing', icon: CreditCard, label: 'Upgrade Plan', minTier: 'free' }
+      ]
+    },
+    {
+      id: 'case',
+      label: 'Case Data',
+      items: [
+        { id: 'documents', icon: FileText, label: 'Documents', minTier: 'free', highlight: true },
+        { id: 'ainotes', icon: Brain, label: 'AI Case Notes', minTier: 'free', highlight: true },
+        { id: 'memory', icon: Brain, label: 'Case Memory', minTier: 'free', highlight: true },
+        { id: 'violations', icon: AlertTriangle, label: 'Violations', minTier: 'free' },
+        { id: 'timeline', icon: Clock, label: 'Timeline', minTier: 'free' },
+        { id: 'evidence', icon: Eye, label: 'Evidence', minTier: 'free' },
+        { id: 'evidencelist', icon: CheckCircle2, label: 'Evidence Checklist', minTier: 'free' },
+        { id: 'visitation', icon: Users, label: 'Visitation Log', minTier: 'free' },
+        { id: 'courthearings', icon: Calendar, label: 'Court Hearings', minTier: 'free' },
+        { id: 'communications', icon: MessageSquare, label: 'Communications', minTier: 'free' },
+        { id: 'calendar', icon: Calendar, label: 'Calendar', minTier: 'free' },
+        { id: 'courtfilings', icon: Gavel, label: 'Court Filings', minTier: 'essential' },
+        { id: 'notepad', icon: FileText, label: 'Legal Notepad', minTier: 'essential', highlight: true }
+      ]
+    },
+    {
+      id: 'ai',
+      label: 'AI Tools',
+      items: [
+        { id: 'chat', icon: MessageSquare, label: 'AI Assistant', minTier: 'free', highlight: true },
+        { id: 'smartdoc', icon: Zap, label: 'Smart Doc Generator', minTier: 'free', highlight: true },
+        { id: 'incidents', icon: AlertTriangle, label: 'Incident Analyzer', minTier: 'essential' },
+        { id: 'strategy', icon: Shield, label: 'Defense Strategy', minTier: 'essential' },
+        { id: 'strategybuilder', icon: Shield, label: 'Strategy Builder', minTier: 'professional', highlight: true },
+        { id: 'argumentgen', icon: Scale, label: 'Argument Generator', minTier: 'professional', highlight: true },
+        { id: 'evidencemapper', icon: Eye, label: 'Evidence Mapper', minTier: 'professional', highlight: true },
+        { id: 'expert', icon: Brain, label: 'Expert Legal AI', minTier: 'professional', highlight: true },
+        { id: 'personlookup', icon: Search, label: 'Background Check', minTier: 'professional', highlight: true },
+        { id: 'section1983', icon: Gavel, label: 'Section 1983 Lawsuit', minTier: 'attorney', highlight: true },
+        { id: 'criminal', icon: AlertTriangle, label: 'Criminal Case', minTier: 'attorney' }
+      ]
+    },
+    {
+      id: 'research',
+      label: 'Research & Law',
+      items: [
+        { id: 'research', icon: Search, label: 'Legal Research', minTier: 'professional' },
+        { id: 'library', icon: BookOpen, label: 'Law Library', minTier: 'free' },
+        { id: 'legaldb', icon: BookOpen, label: 'Legal Knowledge Base', minTier: 'professional' },
+        { id: 'caselaw', icon: BookOpen, label: 'Case Law Analysis', minTier: 'professional', highlight: true },
+        { id: 'precedentfinder', icon: Search, label: 'Precedent Finder', minTier: 'professional', highlight: true },
+        { id: 'courtlistener', icon: Scale, label: 'Court Opinions', minTier: 'attorney', highlight: true },
+        { id: 'rights', icon: Shield, label: 'Know Your Rights', minTier: 'free' },
+        { id: 'ada', icon: Scale, label: 'ADA Compliance', minTier: 'professional', highlight: true },
+        { id: 'judgewatch', icon: Scale, label: 'Judge Watch', minTier: 'professional' }
+      ]
+    },
+    {
+      id: 'community',
+      label: 'Community & Support',
+      items: [
+        { id: 'forum', icon: Users, label: 'Community', minTier: 'free' },
+        { id: 'advocates', icon: Users, label: 'Find Advocates', minTier: 'free' },
+        { id: 'services', icon: Users, label: 'Services', minTier: 'essential' },
+        { id: 'podcast', icon: Mic, label: 'Podcast Creator', minTier: 'attorney' }
+      ]
+    }
   ];
 
   return (
@@ -352,47 +389,64 @@ function Dashboard({ onNavigate }) {
           </div>
         </div>
 
-        <nav className="p-4 space-y-1 max-h-[calc(100vh-220px)] overflow-y-auto pb-4">
-          {menuItems.map((item) => {
-            const itemTierLevel = TIER_LEVELS[item.minTier] || 0;
-            const isLocked = itemTierLevel > userTierLevel;
-            const tierLabel = item.minTier === 'essential' ? 'ESS' : item.minTier === 'professional' ? 'PRO' : item.minTier === 'attorney' ? 'ATT' : null;
-
-            return (
+        <nav className="p-4 space-y-3 max-h-[calc(100vh-220px)] overflow-y-auto pb-4">
+          {menuSections.map((section) => (
+            <div key={section.id} className="space-y-2">
               <button
-                key={item.id}
-                onClick={() => {
-                  if (isLocked) {
-                    toast.error(`This feature requires the ${item.minTier.charAt(0).toUpperCase() + item.minTier.slice(1)} plan or credits. Upgrade or buy credits.`);
-                    setActiveTab('pricing');
-                    setSidebarOpen(false);
-                  } else {
-                    setActiveTab(item.id);
-                    setSidebarOpen(false);
-                  }
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isLocked 
-                    ? 'text-gray-600 hover:bg-gray-800/50 cursor-not-allowed opacity-60'
-                    : activeTab === item.id 
-                      ? 'bg-red-600/20 text-red-500 border border-red-600/30' 
-                      : item.highlight 
-                        ? 'text-purple-400 hover:bg-purple-900/30 hover:text-purple-300 border border-purple-800/30'
-                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                }`}
-                data-testid={`nav-${item.id}`}
+                type="button"
+                onClick={() => setOpenSections((prev) => ({ ...prev, [section.id]: !prev[section.id] }))}
+                className="w-full flex items-center justify-between px-3 py-2 text-xs uppercase tracking-wider text-gray-500 hover:text-gray-300"
+                data-testid={`nav-section-${section.id}-toggle`}
               >
-                {isLocked ? <Lock className="w-4 h-4 text-gray-600 flex-shrink-0" /> : <item.icon className={`w-5 h-5 flex-shrink-0 ${item.highlight && !isLocked ? 'text-purple-400' : ''}`} />}
-                <span className="truncate">{item.label}</span>
-                {isLocked && tierLabel && (
-                  <span className="text-[10px] bg-gray-700 text-gray-400 px-1.5 py-0.5 rounded ml-auto flex-shrink-0">{tierLabel}</span>
-                )}
-                {!isLocked && item.highlight && (
-                  <span className="text-xs bg-purple-600/30 text-purple-300 px-2 py-0.5 rounded-full ml-auto flex-shrink-0">NEW</span>
-                )}
+                <span>{section.label}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${openSections[section.id] ? 'rotate-180' : ''}`} />
               </button>
-            );
-          })}
+              {openSections[section.id] && (
+                <div className="space-y-1" data-testid={`nav-section-${section.id}-items`}>
+                  {section.items.map((item) => {
+                    const itemTierLevel = TIER_LEVELS[item.minTier] || 0;
+                    const isLocked = itemTierLevel > userTierLevel;
+                    const tierLabel = item.minTier === 'essential' ? 'ESS' : item.minTier === 'professional' ? 'PRO' : item.minTier === 'attorney' ? 'ATT' : null;
+
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          if (isLocked) {
+                            toast.error(`This feature requires the ${item.minTier.charAt(0).toUpperCase() + item.minTier.slice(1)} plan or credits. Upgrade or buy credits.`);
+                            setActiveTab('pricing');
+                            setSidebarOpen(false);
+                          } else {
+                            setActiveTab(item.id);
+                            setSidebarOpen(false);
+                          }
+                        }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                          isLocked 
+                            ? 'text-gray-600 hover:bg-gray-800/50 cursor-not-allowed opacity-60'
+                            : activeTab === item.id 
+                              ? 'bg-red-600/20 text-red-500 border border-red-600/30' 
+                              : item.highlight 
+                                ? 'text-purple-400 hover:bg-purple-900/30 hover:text-purple-300 border border-purple-800/30'
+                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                        }`}
+                        data-testid={`nav-${item.id}`}
+                      >
+                        {isLocked ? <Lock className="w-4 h-4 text-gray-600 flex-shrink-0" /> : <item.icon className={`w-5 h-5 flex-shrink-0 ${item.highlight && !isLocked ? 'text-purple-400' : ''}`} />}
+                        <span className="truncate">{item.label}</span>
+                        {isLocked && tierLabel && (
+                          <span className="text-[10px] bg-gray-700 text-gray-400 px-1.5 py-0.5 rounded ml-auto flex-shrink-0">{tierLabel}</span>
+                        )}
+                        {!isLocked && item.highlight && (
+                          <span className="text-xs bg-purple-600/30 text-purple-300 px-2 py-0.5 rounded-full ml-auto flex-shrink-0">NEW</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800 space-y-1 bg-black">
@@ -477,7 +531,7 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'criminal' && <CriminalCaseTab selectedCase={selectedCase} />}
           {activeTab === 'services' && <ServicesTab selectedCase={selectedCase} />}
           {activeTab === 'calendar' && <CalendarTab />}
-          {activeTab === 'research' && <ResearchTab />}
+          {activeTab === 'research' && <ResearchTab selectedCase={selectedCase} />}
           {activeTab === 'library' && <LawLibraryTab />}
           {activeTab === 'courtlistener' && <CourtListenerTab selectedCase={selectedCase} />}
           {activeTab === 'notepad' && <NotepadTab selectedCase={selectedCase} />}

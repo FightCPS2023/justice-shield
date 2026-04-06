@@ -9,10 +9,14 @@ from fastapi.responses import StreamingResponse
 
 from database import get_db
 from auth import get_current_user
-from config import EMERGENT_LLM_KEY, COURTLISTENER_API_KEY
+from config import EMERGENT_LLM_KEY, COURTLISTENER_API_KEY, FEATURE_CREDIT_COSTS
+from legal_knowledge import get_relevant_case_law
+from .courtlistener_routes import STATES_INFO, STATE_CPS_DATABASE
+from .caselaw_routes import CPS_EXPERT_SYSTEM_PROMPT
 from utils.credits import (
     get_user_tier, check_ai_credits, increment_ai_credits,
-    get_case_with_ownership, save_ai_response_to_case, require_tier, get_case_memory_context
+    get_case_with_ownership, save_ai_response_to_case, require_tier, get_case_memory_context,
+    save_case_memory, spend_purchased_credits
 )
 from models.schemas import ChatMessage, AIAnalysisRequest, LegalResearchRequest, DocumentGeneratorRequest
 from pydantic import BaseModel
@@ -41,10 +45,13 @@ class SmartResearchRequest(BaseModel):
     query: str
     state: Optional[str] = None
     case_id: Optional[str] = None
+    research_type: str = "comprehensive"
 
 class SmartDocGenRequest(BaseModel):
-    case_id: str
-    document_type: str
+    prompt: str
+    case_id: Optional[str] = None
+    state: Optional[str] = None
+    document_type: Optional[str] = None
     custom_instructions: Optional[str] = None
 
 class ForensicAnalysisRequest(BaseModel):
@@ -76,6 +83,37 @@ ULTIMATE_CPS_STRUCTURED_GUIDANCE = """
 Identity directive (structured output): You are the Ultimate CPS Defense AI. Because output must be structured, include the opening statement inside the appropriate narrative/disclaimer field and ask for jurisdiction there if missing. Return only the required structured format.
 """
 
+
+def extract_next_steps(text: str, max_items: int = 8) -> List[str]:
+    if not text:
+        return []
+    match = re.search(
+        r"(?:^|\n)(?:#+\s*)?(NEXT STEPS(?: & STRATEGY)?|Next Steps(?: & Strategy)?|Recommended Next Steps)[:\s]*\n",
+        text,
+        re.IGNORECASE
+    )
+    if not match:
+        return []
+    segment = text[match.end():]
+    lines = segment.splitlines()
+    steps: List[str] = []
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            if steps:
+                break
+            continue
+        if stripped.startswith('#') or re.match(r"^[A-Z][A-Z\s]{3,}[:\-]", stripped):
+            break
+        bullet_match = re.match(r"^(?:\d+\.|[-•])\s+(.*)", stripped)
+        if bullet_match:
+            steps.append(bullet_match.group(1).strip())
+        elif steps:
+            steps[-1] = f"{steps[-1]} {stripped}".strip()
+        if len(steps) >= max_items:
+            break
+    return steps
+
 @router.post("/api/ai/person-lookup")
 async def person_lookup(request: PersonLookupRequest, current_user: dict = Depends(get_current_user)):
     """
@@ -83,7 +121,6 @@ async def person_lookup(request: PersonLookupRequest, current_user: dict = Depen
     Searches public records, court records, and compiles comprehensive information.
     Similar to NCIC but for civilian legal defense use.
     """
-    db = get_db()
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
     user_tier = await get_user_tier(current_user["user_id"])
@@ -91,17 +128,30 @@ async def person_lookup(request: PersonLookupRequest, current_user: dict = Depen
     
     # Premium feature - requires professional tier or above
     if user_tier not in ["professional", "attorney", "enterprise"]:
-        # Check if user has credits
-        has_credits = await check_feature_credits(current_user["user_id"], "person_lookup")
-        if not has_credits:
+        has_purchased = await spend_purchased_credits(
+            current_user["user_id"],
+            FEATURE_CREDIT_COSTS.get("person_lookup", 5),
+            "person_lookup"
+        )
+        if not has_purchased:
             raise HTTPException(
-                status_code=403, 
+                status_code=403,
                 detail="Person Lookup requires Professional tier or higher, or credit purchase"
             )
-    
-    # Deduct credits for non-premium users
-    if user_tier not in ["attorney", "enterprise"]:
-        await deduct_credits(current_user["user_id"], FEATURE_CREDIT_COSTS.get("person_lookup", 5), "person_lookup")
+    else:
+        if not await check_ai_credits(current_user["user_id"], user_tier):
+            has_purchased = await spend_purchased_credits(
+                current_user["user_id"],
+                FEATURE_CREDIT_COSTS.get("person_lookup", 5),
+                "person_lookup"
+            )
+            if not has_purchased:
+                raise HTTPException(
+                    status_code=403,
+                    detail="AI credits exhausted. Purchase more credits or upgrade."
+                )
+        else:
+            await increment_ai_credits(current_user["user_id"])
     
     system_message = """You are an expert investigator and public records researcher. Your role is to help families
 protect themselves in CPS cases by producing a comprehensive, structured background report on individuals involved in their case.
@@ -526,7 +576,11 @@ You are THE CPS PUNISHER - an expert AI legal assistant specializing in Child Pr
 
 You have comprehensive knowledge of all 50 states' CPS statutes, federal laws (ASFA, CAPTA, ICWA), constitutional rights, and case law precedents.
 
-IMPORTANT: You provide legal EDUCATION, not legal advice. Always recommend consulting a licensed attorney.{case_context}""" + ADA_CROSS_REFERENCE
+IMPORTANT:
+- You provide legal EDUCATION, not legal advice. Always recommend consulting a licensed attorney.
+- Always end with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actions.
+- If a case_id is provided, add a short "CASE MEMORY UPDATES" bullet list of key facts to store.
+{case_context}""" + ADA_CROSS_REFERENCE
 
     async def generate_stream():
         full_response = ""
@@ -575,6 +629,27 @@ IMPORTANT: You provide legal EDUCATION, not legal advice. Always recommend consu
             "context_type": message_data.context_type,
             "created_at": timestamp
         })
+
+        if message_data.case_id:
+            await save_ai_response_to_case(
+                case_id=message_data.case_id,
+                user_id=current_user["user_id"],
+                feature_type="chat",
+                prompt=message_data.message,
+                response=full_response,
+                metadata={"context_type": message_data.context_type, "session_id": session_id}
+            )
+            next_steps = extract_next_steps(full_response)
+            if next_steps:
+                await save_case_memory(
+                    case_id=message_data.case_id,
+                    user_id=current_user["user_id"],
+                    title="Next Steps - AI Chat",
+                    content="\n".join(next_steps),
+                    tags=["next_steps", "chat"],
+                    source="auto",
+                    metadata={"session_id": session_id}
+                )
     
     return StreamingResponse(
         generate_stream(),
@@ -1056,9 +1131,12 @@ CRITICAL INSTRUCTIONS:
 
 {instruction}
 
-Format your response as a structured legal research brief with numbered sections, citations, and clear actionable recommendations."""
+Format your response as a structured legal research brief with numbered sections, citations, and clear actionable recommendations.
+Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actions."""
 
     response = await chat.send_message(UserMessage(text=prompt))
+
+    next_steps = extract_next_steps(response)
 
     # Save to AI Case Notes if case_id provided
     if request.case_id:
@@ -1070,14 +1148,170 @@ Format your response as a structured legal research brief with numbered sections
             response=response,
             metadata={"research_type": request.research_type, "state": request.state}
         )
+        if next_steps:
+            await save_case_memory(
+                case_id=request.case_id,
+                user_id=current_user["user_id"],
+                title="Next Steps - Smart Research",
+                content="\n".join(next_steps),
+                tags=["next_steps", "research"],
+                source="auto",
+                metadata={"research_type": request.research_type, "state": request.state}
+            )
 
     return {
         "query": request.query,
         "state": request.state,
         "research_type": request.research_type,
         "results": response,
+        "next_steps": next_steps,
         "sources_used": ["State CPS Database", "Federal Law", "Case Law Database", "Constitutional Law"],
     }
+
+
+@router.post("/api/ai/smart-research/stream")
+async def smart_legal_research_stream(request: SmartResearchRequest, current_user: dict = Depends(get_current_user)):
+    """Streaming smart legal research with auto-save and next steps."""
+    db = get_db()
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    import asyncio
+
+    user_tier = await get_user_tier(current_user["user_id"])
+    if not await check_ai_credits(current_user["user_id"], user_tier):
+        has_purchased = await spend_purchased_credits(current_user["user_id"], FEATURE_CREDIT_COSTS.get("legal_research", 3), "smart_research")
+        if not has_purchased:
+            raise HTTPException(status_code=403, detail="AI credits exhausted. Purchase more credits or upgrade.")
+    else:
+        await increment_ai_credits(current_user["user_id"])
+
+    case_context = ""
+    if request.case_id:
+        case = await db.cases.find_one({"_id": request.case_id, "user_id": current_user["user_id"]})
+        if case:
+            violations = []
+            async for v in db.violations.find({"case_id": request.case_id}).limit(10):
+                violations.append(f"- {v.get('violation_type','')}: {v.get('description','')}")
+            case_context = f"""
+Case Context:
+- State: {case.get('state', 'N/A')}
+- Description: {case.get('description', 'N/A')}
+- Violations Found: {chr(10).join(violations) if violations else 'None documented'}
+"""
+            memory_context = await get_case_memory_context(request.case_id, current_user["user_id"])
+            if memory_context:
+                case_context += f"\n{memory_context}\n"
+
+    state_law_context = ""
+    if request.state:
+        state_data = STATE_CPS_DATABASE.get(request.state.upper(), {})
+        if state_data:
+            state_law_context = f"""
+Pre-loaded State Law ({request.state}):
+- Agency: {state_data.get('agency', 'N/A')}
+- Statutes: {state_data.get('statutes', 'N/A')}
+- Key Statutes: {', '.join(state_data.get('key_statutes', [])[:5])}
+"""
+
+    relevant_data = get_relevant_case_law(request.query)
+    relevant_cases = relevant_data.get("relevant_cases", []) if isinstance(relevant_data, dict) else []
+    cases_context = ""
+    if relevant_cases:
+        cases_context = "\nRelevant Precedents from Database:\n" + "\n".join(
+            [f"- {c.get('citation','')}: {c.get('holding','')}" for c in relevant_cases[:5]]
+        )
+
+    research_type_instructions = {
+        "comprehensive": "Provide a COMPLETE legal research brief with: (1) Key Statutes & Citations, (2) Relevant Case Law with Holdings, (3) Constitutional Arguments, (4) CPS Policy Analysis, (5) Defense Strategies, (6) Procedural Requirements & Deadlines, (7) Recommended Next Steps.",
+        "case_law": "Focus on finding the MOST RELEVANT case law precedents. For each case provide: Case Name, Citation, Court, Year, Key Holding, and How It Applies to the query. Include at least 8-10 cases.",
+        "statutes": "Focus on finding ALL relevant statutes and regulations. For each: Full Citation, Key Provisions, Effective Date, and Application to the query.",
+        "defense_strategy": "Build a COMPREHENSIVE defense strategy including: Legal Arguments, Supporting Case Law, Counter-Arguments to CPS, Evidence Needed, Motions to File, and Step-by-Step Action Plan."
+    }
+
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER — the most advanced AI legal research engine for CPS defense, modeled after Cetient AI.
+
+You have instant access to:
+- All 50 states' child welfare statutes and CPS codes
+- 50M+ court opinions via CourtListener
+- Federal child welfare laws (CAPTA, ASFA, ICWA, Title IV-E)
+- Constitutional law (1st, 4th, 5th, 14th Amendments)
+- Section 1983 civil rights case law
+- ADA compliance requirements for CPS
+- Black's Law Dictionary definitions
+{state_law_context}{cases_context}{case_context}
+
+CRITICAL INSTRUCTIONS:
+- ALWAYS cite specific statutes with section numbers
+- ALWAYS cite case law with full case name, court, and year
+- Structure output with clear headers and sections
+- Make it court-ready and professionally formatted
+- Include both federal and state-specific citations
+- Flag any time-sensitive deadlines or procedural requirements
+- Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actions""" + ADA_CROSS_REFERENCE
+
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"smart-research-{uuid.uuid4()}",
+        system_message=system_message
+    ).with_model("openai", "gpt-5.2")
+
+    instruction = research_type_instructions.get(request.research_type, research_type_instructions["comprehensive"])
+    state_note = f"\n\nJurisdiction: {request.state}" if request.state else "\n\nProvide federal law and note where state-specific research is needed."
+
+    prompt = f"""RESEARCH QUERY: {request.query}
+{state_note}
+
+{instruction}
+
+Format your response as a structured legal research brief with numbered sections, citations, and clear actionable recommendations.
+Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actions."""
+
+    async def generate_stream():
+        full_response = ""
+        try:
+            response = await asyncio.wait_for(chat.send_message(UserMessage(text=prompt)), timeout=120)
+            full_response = response
+            chunk_size = 60
+            for i in range(0, len(response), chunk_size):
+                chunk = response[i:i + chunk_size]
+                yield f"data: {json.dumps({'chunk': chunk, 'done': False})}\n\n"
+                await asyncio.sleep(0.02)
+
+            next_steps = extract_next_steps(full_response)
+            if request.case_id:
+                await save_ai_response_to_case(
+                    case_id=request.case_id,
+                    user_id=current_user["user_id"],
+                    feature_type="smart_research",
+                    prompt=request.query,
+                    response=full_response,
+                    metadata={"research_type": request.research_type, "state": request.state}
+                )
+                if next_steps:
+                    await save_case_memory(
+                        case_id=request.case_id,
+                        user_id=current_user["user_id"],
+                        title="Next Steps - Smart Research",
+                        content="\n".join(next_steps),
+                        tags=["next_steps", "research"],
+                        source="auto",
+                        metadata={"research_type": request.research_type, "state": request.state}
+                    )
+
+            yield f"data: {json.dumps({'chunk': '', 'done': True, 'next_steps': next_steps})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
+
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
 
 
 @router.post("/api/ai/smart-document")
@@ -1185,9 +1419,16 @@ Create a COMPLETE, court-ready legal document. Include:
 - Signature block and certificate of service
 - Any required attachments list
 
-Use all available case data. The document should be ready to print and file."""
+Use all available case data. The document should be ready to print and file.
+After the document, add a section titled "NEXT STEPS & STRATEGY (NOT PART OF FILING)" with 4-8 bullet actions."""
 
     response = await chat.send_message(UserMessage(text=prompt))
+
+    next_steps = extract_next_steps(response)
+    document_text = response
+    split_match = re.search(r"(?:^|\n)(?:#+\s*)?NEXT STEPS", response, re.IGNORECASE)
+    if split_match:
+        document_text = response[:split_match.start()].strip()
 
     # Save to AI Case Notes if case_id provided
     if request.case_id:
@@ -1199,13 +1440,178 @@ Use all available case data. The document should be ready to print and file."""
             response=response,
             metadata={"document_type": request.document_type, "state": case_state}
         )
+        if next_steps:
+            await save_case_memory(
+                case_id=request.case_id,
+                user_id=current_user["user_id"],
+                title="Next Steps - Smart Document",
+                content="\n".join(next_steps),
+                tags=["next_steps", "document"],
+                source="auto",
+                metadata={"document_type": request.document_type, "state": case_state}
+            )
 
     return {
         "prompt": request.prompt,
-        "document": response,
+        "document": document_text,
+        "next_steps": next_steps,
         "state": case_state,
         "case_id": request.case_id,
     }
+
+
+@router.post("/api/ai/smart-document/stream")
+async def smart_document_generator_stream(request: SmartDocGenRequest, current_user: dict = Depends(get_current_user)):
+    """Streaming smart document generator with auto-save and next steps."""
+    db = get_db()
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    import asyncio
+
+    user_tier = await get_user_tier(current_user["user_id"])
+    if not await check_ai_credits(current_user["user_id"], user_tier):
+        has_purchased = await spend_purchased_credits(current_user["user_id"], FEATURE_CREDIT_COSTS.get("doc_generate", 3), "smart_document")
+        if not has_purchased:
+            raise HTTPException(status_code=403, detail="AI credits exhausted. Purchase more credits or upgrade.")
+    else:
+        await increment_ai_credits(current_user["user_id"])
+
+    case_context = ""
+    case_state = request.state or ""
+    if request.case_id:
+        case = await db.cases.find_one({"_id": request.case_id, "user_id": current_user["user_id"]})
+        if case:
+            case_state = case.get("state", request.state or "")
+            violations = []
+            async for v in db.violations.find({"case_id": request.case_id}).limit(15):
+                violations.append(f"- {v.get('violation_type','')}: {v.get('description','')}")
+            timeline = []
+            async for e in db.timeline_events.find({"case_id": request.case_id}).sort("date", 1).limit(20):
+                timeline.append(f"- {e.get('date','N/A')}: {e.get('title','')}")
+            evidence = []
+            async for ev in db.evidence.find({"case_id": request.case_id}).limit(10):
+                evidence.append(f"- {ev.get('title','')}: {ev.get('description','')}")
+
+            user = await db.users.find_one({"_id": current_user["user_id"]})
+            case_context = f"""
+CASE DETAILS (auto-pulled):
+- Case Title: {case.get('title', '[CASE TITLE]')}
+- State: {case_state}
+- County: {case.get('county', '[COUNTY]')}
+- Case Number: {case.get('case_number', '[CASE NUMBER]')}
+- Court: {case.get('court_name', '[COURT NAME]')}
+- Judge: {case.get('judge_name', '[JUDGE NAME]')}
+- Caseworker: {case.get('caseworker_name', '[CASEWORKER]')}
+- Parent/Respondent: {user.get('name', '[PARENT NAME]') if user else '[PARENT NAME]'}
+- Children: {', '.join(case.get('children_names', [])) or '[CHILD NAME(S)]'}
+- Description: {case.get('description', 'N/A')}
+
+DOCUMENTED VIOLATIONS ({len(violations)}):
+{chr(10).join(violations) if violations else 'None yet'}
+
+TIMELINE ({len(timeline)} events):
+{chr(10).join(timeline) if timeline else 'None yet'}
+
+EVIDENCE ({len(evidence)} items):
+{chr(10).join(evidence) if evidence else 'None yet'}
+"""
+            memory_context = await get_case_memory_context(request.case_id, current_user["user_id"])
+            if memory_context:
+                case_context += f"\n{memory_context}\n"
+
+    state_law = ""
+    if case_state:
+        sdata = STATE_CPS_DATABASE.get(case_state.upper(), {})
+        if sdata:
+            state_law = f"\nState Law ({case_state}): Agency={sdata.get('agency','')}, Statutes={sdata.get('statutes','')}"
+
+    system_message = f"""{ULTIMATE_CPS_IDENTITY}
+
+You are THE CPS PUNISHER — the most powerful AI legal document generator for CPS defense, inspired by Cetient AI.
+
+You generate COMPLETE, COURT-READY legal documents instantly from natural language descriptions.
+
+{case_context}{state_law}
+
+DOCUMENT GENERATION RULES:
+1. Use proper legal formatting: caption, header, numbered paragraphs, signature block
+2. Cite SPECIFIC statutes with section numbers for the jurisdiction
+3. Cite relevant case law with full citations (case name, court, year)
+4. Include all procedural elements required by the court
+5. Incorporate case facts, violations, and evidence automatically
+6. Use proper legal terminology and professional language
+7. Include certificate of service, verification, and prayer for relief where appropriate
+8. Fill in all case details from the provided context
+9. Mark anything that needs user input as [FILL IN]
+10. Make it ready to file — not a draft, a FINAL document""" + ADA_CROSS_REFERENCE
+
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"smart-doc-{uuid.uuid4()}",
+        system_message=system_message
+    ).with_model("openai", "gpt-5.2")
+
+    doc_hint = f"\nDocument type hint: {request.document_type}" if request.document_type else ""
+    state_hint = f"\nJurisdiction: {case_state}" if case_state else ""
+
+    prompt = f"""GENERATE THIS DOCUMENT: {request.prompt}{doc_hint}{state_hint}
+
+Create a COMPLETE, court-ready legal document. Include:
+- Full legal caption and header
+- All numbered paragraphs with factual allegations and legal arguments
+- Specific statute citations for the jurisdiction
+- Relevant case law citations
+- Prayer for relief / requested orders
+- Signature block and certificate of service
+- Any required attachments list
+
+Use all available case data. The document should be ready to print and file.
+After the document, add a section titled "NEXT STEPS  STRATEGY (NOT PART OF FILING)" with 4-8 bullet actions."""
+
+    async def generate_stream():
+        full_response = ""
+        try:
+            response = await asyncio.wait_for(chat.send_message(UserMessage(text=prompt)), timeout=120)
+            full_response = response
+            chunk_size = 60
+            for i in range(0, len(response), chunk_size):
+                chunk = response[i:i + chunk_size]
+                yield f"data: {json.dumps({'chunk': chunk, 'done': False})}\n\n"
+                await asyncio.sleep(0.02)
+
+            next_steps = extract_next_steps(full_response)
+            if request.case_id:
+                await save_ai_response_to_case(
+                    case_id=request.case_id,
+                    user_id=current_user["user_id"],
+                    feature_type="smart_document",
+                    prompt=request.prompt,
+                    response=full_response,
+                    metadata={"document_type": request.document_type, "state": case_state}
+                )
+                if next_steps:
+                    await save_case_memory(
+                        case_id=request.case_id,
+                        user_id=current_user["user_id"],
+                        title="Next Steps - Smart Document",
+                        content="\n".join(next_steps),
+                        tags=["next_steps", "document"],
+                        source="auto",
+                        metadata={"document_type": request.document_type, "state": case_state}
+                    )
+
+            yield f"data: {json.dumps({'chunk': '', 'done': True, 'next_steps': next_steps})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
+
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
 
 
 # ============== FORENSIC DOCUMENT ANALYSIS ENGINE ==============

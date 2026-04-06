@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import api, { API_URL } from '../../lib/api';
 import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut, LogIn,
@@ -17,11 +16,21 @@ function CourtListenerTab({ selectedCase }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedResult, setSelectedResult] = useState(null);
   const [filters, setFilters] = useState({
     court: '',
     date_after: '',
-    date_before: ''
+    date_before: '',
+    judge: '',
+    docket_number: '',
+    citation: '',
+    order_by: 'score desc'
   });
+  const [opinionModalOpen, setOpinionModalOpen] = useState(false);
+  const [opinionLoading, setOpinionLoading] = useState(false);
+  const [opinionDetail, setOpinionDetail] = useState(null);
+  const [analysisData, setAnalysisData] = useState(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
 
   const courts = [
     { value: '', label: 'All Courts' },
@@ -48,6 +57,10 @@ function CourtListenerTab({ selectedCase }) {
       if (filters.court) params.append('court', filters.court);
       if (filters.date_after) params.append('filed_after', filters.date_after);
       if (filters.date_before) params.append('filed_before', filters.date_before);
+      if (filters.judge) params.append('judge', filters.judge);
+      if (filters.docket_number) params.append('docket_number', filters.docket_number);
+      if (filters.citation) params.append('citation', filters.citation);
+      if (filters.order_by) params.append('order_by', filters.order_by);
       
       const response = await api.get(`/api/courtlistener/search?${params}`);
       setResults(response.results || []);
@@ -72,6 +85,54 @@ function CourtListenerTab({ selectedCase }) {
       toast.success('Case saved to your Legal Notepad!');
     } catch (error) {
       toast.error('Failed to save case');
+    }
+  };
+
+  const openOpinion = async (result) => {
+    const opinionId = result.opinion_id || result.id;
+    if (!opinionId) {
+      toast.error('Opinion details are not available for this result.');
+      return;
+    }
+    setSelectedResult(result);
+    setOpinionModalOpen(true);
+    setOpinionLoading(true);
+    setOpinionDetail(null);
+    try {
+      const data = await api.get(`/api/courtlistener/opinion/${opinionId}`);
+      setOpinionDetail(data);
+    } catch (error) {
+      toast.error('Failed to load full opinion text');
+    } finally {
+      setOpinionLoading(false);
+    }
+  };
+
+  const analyzeOpinion = async (result) => {
+    if (!selectedCase) {
+      toast.error('Select a case to save analysis.');
+      return;
+    }
+    setAnalysisLoading(true);
+    try {
+      const payload = {
+        case_id: selectedCase.id,
+        opinion_id: result.opinion_id || result.id,
+        case_name: result.caseName || result.case_name,
+        citation: result.citation,
+        court: result.court || result.court_id,
+        date_filed: result.dateFiled || result.date_filed,
+        url: result.absolute_url,
+        snippet: result.snippet,
+        opinion_text: opinionDetail?.plain_text || ''
+      };
+      const data = await api.post('/api/courtlistener/analyze', payload);
+      setAnalysisData(data);
+      toast.success('Analysis saved to Case Notes + Case Memory');
+    } catch (error) {
+      toast.error('Analysis failed. Try again.');
+    } finally {
+      setAnalysisLoading(false);
     }
   };
 
@@ -110,22 +171,48 @@ function CourtListenerTab({ selectedCase }) {
           </div>
 
           {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <select
               value={filters.court}
               onChange={(e) => setFilters({...filters, court: e.target.value})}
               className="px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg"
+              data-testid="courtlistener-filter-court"
             >
               {courts.map(c => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
             </select>
             <input
+              type="text"
+              value={filters.judge}
+              onChange={(e) => setFilters({...filters, judge: e.target.value})}
+              className="px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg"
+              placeholder="Judge name"
+              data-testid="courtlistener-filter-judge"
+            />
+            <input
+              type="text"
+              value={filters.docket_number}
+              onChange={(e) => setFilters({...filters, docket_number: e.target.value})}
+              className="px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg"
+              placeholder="Docket number"
+              data-testid="courtlistener-filter-docket"
+            />
+            <input
+              type="text"
+              value={filters.citation}
+              onChange={(e) => setFilters({...filters, citation: e.target.value})}
+              className="px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg"
+              placeholder="Citation"
+              data-testid="courtlistener-filter-citation"
+            />
+            <input
               type="date"
               value={filters.date_after}
               onChange={(e) => setFilters({...filters, date_after: e.target.value})}
               className="px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg"
               placeholder="Filed After"
+              data-testid="courtlistener-filter-after"
             />
             <input
               type="date"
@@ -133,7 +220,19 @@ function CourtListenerTab({ selectedCase }) {
               onChange={(e) => setFilters({...filters, date_before: e.target.value})}
               className="px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg"
               placeholder="Filed Before"
+              data-testid="courtlistener-filter-before"
             />
+            <select
+              value={filters.order_by}
+              onChange={(e) => setFilters({...filters, order_by: e.target.value})}
+              className="px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg"
+              data-testid="courtlistener-filter-order"
+            >
+              <option value="score desc">Relevance</option>
+              <option value="dateFiled desc">Newest</option>
+              <option value="dateFiled asc">Oldest</option>
+              <option value="citeCount desc">Most Cited</option>
+            </select>
           </div>
         </div>
       </div>
@@ -170,6 +269,23 @@ function CourtListenerTab({ selectedCase }) {
                 </div>
                 <div className="flex flex-col gap-2">
                   <button
+                    onClick={() => openOpinion(result)}
+                    className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center gap-1"
+                    data-testid={`courtlistener-opinion-${idx}`}
+                  >
+                    <Eye className="w-4 h-4" />
+                    Opinion
+                  </button>
+                  <button
+                    onClick={() => analyzeOpinion(result)}
+                    disabled={analysisLoading}
+                    className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg text-sm flex items-center gap-1 disabled:opacity-50"
+                    data-testid={`courtlistener-analyze-${idx}`}
+                  >
+                    {analysisLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
+                    Analyze & Save
+                  </button>
+                  <button
                     onClick={() => saveToNotepad(result)}
                     className="px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm flex items-center gap-1"
                     data-testid={`save-case-${idx}`}
@@ -182,16 +298,101 @@ function CourtListenerTab({ selectedCase }) {
                       href={result.absolute_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center gap-1"
+                      className="px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm flex items-center gap-1"
+                      data-testid={`courtlistener-view-${idx}`}
                     >
                       <ArrowRight className="w-4 h-4" />
-                      View
+                      Source
                     </a>
                   )}
                 </div>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {analysisData && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6" data-testid="courtlistener-analysis-panel">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold">AI Analysis & Strategy</h3>
+            <button
+              onClick={() => setAnalysisData(null)}
+              className="text-xs text-gray-400 hover:text-white"
+              data-testid="courtlistener-analysis-close"
+            >
+              Close
+            </button>
+          </div>
+          <pre className="whitespace-pre-wrap text-sm text-gray-300 leading-relaxed font-sans">{analysisData.analysis}</pre>
+          {analysisData.next_steps?.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-sm font-semibold text-emerald-300 mb-2">Next Steps</h4>
+              <ul className="list-disc list-inside text-sm text-gray-300 space-y-1">
+                {analysisData.next_steps.map((step, idx) => (
+                  <li key={idx}>{step}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {opinionModalOpen && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" data-testid="courtlistener-opinion-modal">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
+              <div>
+                <h3 className="text-lg font-semibold" data-testid="courtlistener-opinion-title">
+                  {opinionDetail?.case_name || selectedResult?.caseName || 'Court Opinion'}
+                </h3>
+                <p className="text-xs text-gray-500">
+                  {opinionDetail?.citation || selectedResult?.citation || 'Citation unavailable'}
+                </p>
+              </div>
+              <button
+                onClick={() => setOpinionModalOpen(false)}
+                className="text-gray-400 hover:text-white"
+                data-testid="courtlistener-opinion-close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              {opinionLoading && (
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Loading full opinion...
+                </div>
+              )}
+              {!opinionLoading && (
+                <pre className="whitespace-pre-wrap text-sm text-gray-300 leading-relaxed font-sans" data-testid="courtlistener-opinion-text">
+                  {opinionDetail?.plain_text || 'Full opinion text not available for this result.'}
+                </pre>
+              )}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-700 flex flex-wrap gap-2 justify-end">
+              <button
+                onClick={() => selectedResult && analyzeOpinion(selectedResult)}
+                disabled={analysisLoading || !selectedCase}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg text-sm flex items-center gap-2 disabled:opacity-50"
+                data-testid="courtlistener-opinion-analyze"
+              >
+                {analysisLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
+                Analyze & Save
+              </button>
+              {opinionDetail?.absolute_url && (
+                <a
+                  href={opinionDetail.absolute_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm flex items-center gap-2"
+                  data-testid="courtlistener-opinion-source"
+                >
+                  <ArrowRight className="w-4 h-4" /> Source
+                </a>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
@@ -209,11 +410,12 @@ function CourtListenerTab({ selectedCase }) {
           <h3 className="text-xl font-semibold mb-2">Search Court Opinions</h3>
           <p className="text-gray-400">Enter keywords to search millions of court opinions. Try searches like:</p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {['CPS constitutional rights', 'parental rights due process', 'fourth amendment home entry', 'qualified immunity CPS'].map(term => (
+            {['CPS constitutional rights', 'parental rights due process', 'fourth amendment home entry', 'qualified immunity CPS'].map((term, idx) => (
               <button
                 key={term}
                 onClick={() => { setQuery(term); }}
                 className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-full text-sm"
+                data-testid={`courtlistener-suggestion-${idx}`}
               >
                 {term}
               </button>

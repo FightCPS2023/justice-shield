@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import api, { API_URL } from '../../lib/api';
+import { API_URL } from '../../lib/api';
 import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut, LogIn,
@@ -12,19 +12,25 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-function ResearchTab() {
-  const { api } = useAuth();
+function ResearchTab({ selectedCase }) {
+  const { token } = useAuth();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState('');
   const [loading, setLoading] = useState(false);
   const [state, setState] = useState('');
   const [researchType, setResearchType] = useState('comprehensive');
   const [searchTime, setSearchTime] = useState(null);
+  const [streamingContent, setStreamingContent] = useState('');
+  const [nextSteps, setNextSteps] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleCancel = () => {
     setQuery('');
     setResults('');
     setSearchTime(null);
+    setStreamingContent('');
+    setNextSteps([]);
+    setErrorMessage('');
   };
 
   const handleBack = () => {
@@ -34,24 +40,104 @@ function ResearchTab() {
     }
   };
 
+  const parseNextSteps = (text) => {
+    if (!text) return [];
+    const match = text.match(/(?:^|\n)(?:#+\s*)?(NEXT STEPS(?: & STRATEGY)?|Next Steps(?: & Strategy)?|Recommended Next Steps)[:\s]*\n/i);
+    if (!match) return [];
+    const startIndex = text.indexOf(match[0]) + match[0].length;
+    const segment = text.slice(startIndex);
+    const lines = segment.split('\n');
+    const steps = [];
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        if (steps.length) break;
+        continue;
+      }
+      if (trimmed.startsWith('#') || /^[A-Z][A-Z\s]{3,}[:\-]/.test(trimmed)) break;
+      const bulletMatch = trimmed.match(/^(\d+\.|[-•])\s+(.*)/);
+      if (bulletMatch) {
+        steps.push(bulletMatch[2]);
+      } else if (steps.length) {
+        steps[steps.length - 1] = `${steps[steps.length - 1]} ${trimmed}`.trim();
+      }
+      if (steps.length >= 8) break;
+    }
+    return steps;
+  };
+
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!query.trim()) return;
-    
+    if (!query.trim() || loading) return;
+
     setLoading(true);
     setResults('');
+    setStreamingContent('');
+    setNextSteps([]);
+    setErrorMessage('');
     setSearchTime(null);
     const startTime = Date.now();
+
     try {
-      const response = await api.post('/api/ai/smart-research', {
-        query,
-        state: state || null,
-        research_type: researchType
+      const response = await fetch(`${API_URL}/api/ai/smart-research/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          query,
+          state: state || null,
+          research_type: researchType,
+          case_id: selectedCase?.id || null
+        })
       });
-      setResults(response.results);
+
+      if (!response.ok) throw new Error('Research stream failed');
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullContent = '';
+      let collectedNextSteps = [];
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunkText = decoder.decode(value);
+        const lines = chunkText.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.error) throw new Error(data.error);
+              if (data.chunk) {
+                fullContent += data.chunk;
+                setStreamingContent(fullContent);
+              }
+              if (data.done) {
+                if (Array.isArray(data.next_steps)) {
+                  collectedNextSteps = data.next_steps;
+                }
+              }
+            } catch (parseError) {
+              // ignore chunk parse errors
+            }
+          }
+        }
+      }
+
+      if (!collectedNextSteps.length) {
+        collectedNextSteps = parseNextSteps(fullContent);
+      }
+
+      setResults(fullContent);
+      setStreamingContent('');
+      setNextSteps(collectedNextSteps);
       setSearchTime(((Date.now() - startTime) / 1000).toFixed(1));
     } catch (error) {
-      toast.error(error.message || 'Research failed');
+      const message = error.message || 'Research failed';
+      toast.error(message);
+      setErrorMessage(message);
     } finally {
       setLoading(false);
     }
@@ -112,7 +198,7 @@ function ResearchTab() {
       </div>
 
       {/* Search Form */}
-      <form onSubmit={handleSearch} className="space-y-3">
+      <form onSubmit={handleSearch} className="space-y-3">
         <div className="flex gap-3">
           <select
             value={state}
@@ -162,6 +248,7 @@ function ResearchTab() {
               key={i}
               onClick={() => { setQuery(q); }}
               className="px-3 py-1.5 bg-gray-800/80 hover:bg-gray-700 border border-gray-700/50 rounded-lg text-xs text-gray-300 hover:text-white transition-colors"
+              data-testid={`research-quick-${i}-btn`}
             >
               {q}
             </button>
@@ -171,10 +258,21 @@ function ResearchTab() {
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-8 text-center">
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-8 text-center" data-testid="research-loading">
           <Loader2 className="w-10 h-10 text-red-500 animate-spin mx-auto mb-3" />
           <p className="text-lg font-semibold">Researching legal databases...</p>
           <p className="text-sm text-gray-400 mt-1">Searching statutes, case law, and CPS policies across all jurisdictions</p>
+          {streamingContent && (
+            <div className="mt-4 bg-black/40 border border-gray-700 rounded-lg p-4 text-left" data-testid="research-streaming-output">
+              <pre className="whitespace-pre-wrap text-sm text-gray-300 leading-relaxed font-sans">{streamingContent}<span className="animate-pulse">▊</span></pre>
+            </div>
+          )}
+        </div>
+      )}
+
+      {errorMessage && !loading && (
+        <div className="rounded-xl border border-red-700/60 bg-red-900/20 px-4 py-3 text-sm text-red-200" data-testid="research-error-alert">
+          {errorMessage}
         </div>
       )}
 
@@ -191,6 +289,11 @@ function ResearchTab() {
                 {state && ` — ${state} Jurisdiction`}
                 {searchTime && ` — ${searchTime}s`}
               </p>
+              {selectedCase && (
+                <p className="text-xs text-emerald-400 mt-1" data-testid="research-autosave-indicator">
+                  Auto-saved to {selectedCase.title} (Case Notes + Case Memory)
+                </p>
+              )}
             </div>
             <button
               onClick={() => { navigator.clipboard.writeText(results); toast.success('Copied to clipboard'); }}
@@ -205,6 +308,17 @@ function ResearchTab() {
               <pre className="whitespace-pre-wrap text-sm text-gray-300 leading-relaxed font-sans">{results}</pre>
             </div>
           </div>
+        </div>
+      )}
+
+      {nextSteps.length > 0 && !loading && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6" data-testid="research-next-steps">
+          <h3 className="text-lg font-semibold mb-3">Next Steps & Strategy</h3>
+          <ul className="list-disc list-inside space-y-2 text-sm text-gray-300">
+            {nextSteps.map((step, idx) => (
+              <li key={idx}>{step}</li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

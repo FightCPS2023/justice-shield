@@ -1,14 +1,19 @@
 """CourtListener routes - case law search, judges, law library"""
 import uuid
+import json
+import re
 import httpx
 from datetime import datetime, timezone
 from typing import Optional, List
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, Body
 
 from database import get_db
 from auth import get_current_user
 from config import COURTLISTENER_API_KEY, EMERGENT_LLM_KEY
-from utils.credits import require_tier, check_ai_credits, increment_ai_credits, get_user_tier
+from utils.credits import (
+    require_tier, check_ai_credits, increment_ai_credits, get_user_tier,
+    save_ai_response_to_case, save_case_memory
+)
 
 router = APIRouter()
 
@@ -34,20 +39,64 @@ class SimpleCache:
 
 _cache = SimpleCache()
 
+
+def extract_next_steps(text: str, max_items: int = 8) -> List[str]:
+    if not text:
+        return []
+    match = re.search(
+        r"(?:^|\n)(?:#+\s*)?(NEXT STEPS(?: \u0026 STRATEGY)?|Next Steps(?: \u0026 Strategy)?|Recommended Next Steps)[:\s]*\n",
+        text,
+        re.IGNORECASE
+    )
+    if not match:
+        return []
+    segment = text[match.end():]
+    lines = segment.splitlines()
+    steps: List[str] = []
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            if steps:
+                break
+            continue
+        if stripped.startswith('#') or re.match(r"^[A-Z][A-Z\s]{3,}[:\-]", stripped):
+            break
+        bullet_match = re.match(r"^(?:\d+\.|[-•])\s+(.*)", stripped)
+        if bullet_match:
+            steps.append(bullet_match.group(1).strip())
+        elif steps:
+            steps[-1] = f"{steps[-1]} {stripped}".strip()
+        if len(steps) >= max_items:
+            break
+    return steps
+
+
 @router.get("/api/courtlistener/search")
 async def search_court_opinions(
     q: str = Query(..., description="Search query"),
     court: Optional[str] = None,
     filed_after: Optional[str] = None,
     filed_before: Optional[str] = None,
+    judge: Optional[str] = None,
+    docket_number: Optional[str] = None,
+    citation: Optional[str] = None,
+    order_by: Optional[str] = None,
     current_user: dict = Depends(require_tier("attorney"))
 ):
     """Search CourtListener for case law"""
     try:
+        search_query = q
+        if judge:
+            search_query += f" \"{judge}\""
+        if docket_number:
+            search_query += f" \"{docket_number}\""
+        if citation:
+            search_query += f" \"{citation}\""
+
         params = {
-            "q": q,
+            "q": search_query,
             "type": "o",
-            "order_by": "score desc",
+            "order_by": order_by or "score desc",
             "format": "json"
         }
         
@@ -76,11 +125,11 @@ async def search_court_opinions(
                 formatted_results = []
                 for r in data.get("results", [])[:20]:
                     # Handle citation - it can be a list of strings
-                    citation = r.get("citation", [])
-                    if isinstance(citation, list) and len(citation) > 0:
-                        citation_str = citation[0] if isinstance(citation[0], str) else str(citation[0])
+                    citation_data = r.get("citation", [])
+                    if isinstance(citation_data, list) and len(citation_data) > 0:
+                        citation_str = citation_data[0] if isinstance(citation_data[0], str) else str(citation_data[0])
                     else:
-                        citation_str = str(citation) if citation else ""
+                        citation_str = str(citation_data) if citation_data else ""
                     
                     formatted_results.append({
                         "caseName": r.get("caseName", "Unknown Case"),
@@ -92,8 +141,18 @@ async def search_court_opinions(
                         "snippet": r.get("syllabus", "") or r.get("posture", "") or f"Case: {r.get('caseName', '')}",
                         "absolute_url": f"https://www.courtlistener.com{r.get('absolute_url', '')}",
                         "judge": r.get("judge", ""),
-                        "citeCount": r.get("citeCount", 0)
+                        "citeCount": r.get("citeCount", 0),
+                        "opinion_id": r.get("id") or r.get("opinion_id") or r.get("cluster_id"),
+                        "cluster_id": r.get("cluster_id"),
+                        "download_url": r.get("download_url")
                     })
+                if judge:
+                    formatted_results = [r for r in formatted_results if judge.lower() in (r.get("judge") or "").lower()]
+                if docket_number:
+                    formatted_results = [r for r in formatted_results if docket_number.lower() in (r.get("docketNumber") or "").lower()]
+                if citation:
+                    formatted_results = [r for r in formatted_results if citation.lower() in (r.get("citation") or "").lower()]
+
                 return {
                     "count": data.get("count", 0),
                     "results": formatted_results,
@@ -116,11 +175,11 @@ async def search_judges(
             "is_alias_of__isnull": "true",
             "format": "json"
         }
-        
+
         headers = {"Accept": "application/json"}
         if COURTLISTENER_API_KEY:
             headers["Authorization"] = f"Token {COURTLISTENER_API_KEY}"
-        
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 "https://www.courtlistener.com/api/rest/v4/people/",
@@ -128,7 +187,7 @@ async def search_judges(
                 headers=headers,
                 timeout=30.0
             )
-            
+
             if response.status_code == 200:
                 data = response.json()
                 return {
@@ -139,6 +198,165 @@ async def search_judges(
                 return {"error": f"API returned {response.status_code}", "results": []}
     except Exception as e:
         return {"error": str(e), "results": []}
+
+
+@router.get("/api/courtlistener/opinion/{opinion_id}")
+async def get_court_opinion(opinion_id: int, current_user: dict = Depends(require_tier("attorney"))):
+    """Fetch full opinion text and metadata from CourtListener."""
+    cache_key = f"opinion:{opinion_id}"
+    cached = _cache.get(cache_key)
+    if cached:
+        return cached
+
+    try:
+        headers = {"Accept": "application/json"}
+        if COURTLISTENER_API_KEY:
+            headers["Authorization"] = f"Token {COURTLISTENER_API_KEY}"
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"https://www.courtlistener.com/api/rest/v4/opinions/{opinion_id}/",
+                headers=headers,
+                timeout=30.0
+            )
+
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail="Failed to fetch opinion")
+
+        data = response.json()
+        result = {
+            "opinion_id": opinion_id,
+            "plain_text": data.get("plain_text") or "",
+            "html": data.get("html") or "",
+            "absolute_url": f"https://www.courtlistener.com{data.get('absolute_url', '')}",
+            "download_url": data.get("download_url"),
+            "case_name": data.get("case_name"),
+            "citation": data.get("citation"),
+            "date_filed": data.get("date_filed"),
+            "court": data.get("court")
+        }
+        _cache.set(cache_key, result, ttl=1800)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/api/courtlistener/analyze")
+async def analyze_court_opinion(
+    case_id: str = Body(...),
+    opinion_id: Optional[int] = Body(None),
+    case_name: Optional[str] = Body(None),
+    citation: Optional[str] = Body(None),
+    court: Optional[str] = Body(None),
+    date_filed: Optional[str] = Body(None),
+    url: Optional[str] = Body(None),
+    snippet: Optional[str] = Body(None),
+    opinion_text: Optional[str] = Body(None),
+    current_user: dict = Depends(require_tier("attorney"))
+):
+    """AI analysis of a CourtListener opinion with next steps and auto-save."""
+    db = get_db()
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+    user_tier = await get_user_tier(current_user["user_id"])
+    if not await check_ai_credits(current_user["user_id"], user_tier):
+        raise HTTPException(status_code=403, detail="AI credits exhausted. Purchase more credits or upgrade.")
+    await increment_ai_credits(current_user["user_id"])
+
+    case = await db.cases.find_one({"_id": case_id, "user_id": current_user["user_id"]})
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+
+    text = opinion_text or ""
+    if not text and opinion_id:
+        headers = {"Accept": "application/json"}
+        if COURTLISTENER_API_KEY:
+            headers["Authorization"] = f"Token {COURTLISTENER_API_KEY}"
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"https://www.courtlistener.com/api/rest/v4/opinions/{opinion_id}/",
+                headers=headers,
+                timeout=30.0
+            )
+        if response.status_code == 200:
+            data = response.json()
+            text = data.get("plain_text") or data.get("html") or ""
+            case_name = case_name or data.get("case_name")
+            citation = citation or data.get("citation")
+            court = court or data.get("court")
+            date_filed = date_filed or data.get("date_filed")
+            url = url or f"https://www.courtlistener.com{data.get('absolute_url', '')}"
+
+    if not text:
+        text = snippet or ""
+
+    system_message = """You are THE CPS PUNISHER Court Opinion Analyst. Provide a structured analysis for CPS defense.
+Return in this format:
+1. SUMMARY
+2. KEY HOLDINGS (bullets)
+3. CPS RELEVANCE (why it matters)
+4. QUALIFIED IMMUNITY IMPACT (if relevant)
+5. NEXT STEPS & STRATEGY (bullets)
+6. CITATIONS TO USE
+7. RISKS / LIMITATIONS"""
+
+    prompt = f"""CASE CONTEXT:
+- Case: {case.get('title', 'CPS Case')}
+- State: {case.get('state', 'N/A')}
+- Description: {case.get('description', '')}
+
+OPINION METADATA:
+- Case Name: {case_name or 'Unknown'}
+- Citation: {citation or 'N/A'}
+- Court: {court or 'N/A'}
+- Date Filed: {date_filed or 'N/A'}
+- URL: {url or 'N/A'}
+
+OPINION TEXT (excerpt):
+{text[:12000]}
+
+Provide a structured analysis with actionable next steps for this CPS case."""
+
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"courtlistener-{case_id}-{uuid.uuid4().hex[:8]}",
+        system_message=system_message
+    ).with_model("openai", "gpt-5.2")
+
+    response = await chat.send_message(UserMessage(text=prompt))
+
+    await save_ai_response_to_case(
+        case_id=case_id,
+        user_id=current_user["user_id"],
+        feature_type="courtlistener_analysis",
+        prompt=f"CourtListener Opinion: {case_name or 'Unknown'}",
+        response=response,
+        metadata={"opinion_id": opinion_id, "citation": citation, "court": court, "url": url}
+    )
+
+    next_steps = extract_next_steps(response)
+    if next_steps:
+        await save_case_memory(
+            case_id=case_id,
+            user_id=current_user["user_id"],
+            title="Next Steps - CourtListener Opinion",
+            content="\n".join(next_steps),
+            tags=["next_steps", "courtlistener"],
+            source="auto",
+            metadata={"opinion_id": opinion_id, "citation": citation, "court": court}
+        )
+
+    return {
+        "analysis": response,
+        "next_steps": next_steps,
+        "case_name": case_name,
+        "citation": citation,
+        "court": court,
+        "date_filed": date_filed,
+        "url": url
+    }
 
 
 # ============== LAW LIBRARY ==============

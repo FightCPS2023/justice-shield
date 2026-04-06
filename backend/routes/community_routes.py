@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from database import get_db
 from auth import get_current_user
-from utils.credits import get_case_with_ownership, require_tier
+from utils.credits import get_case_with_ownership, require_tier, save_ai_response_to_case, save_case_memory
 from models.schemas import ForumPostCreate, NotepadEntryCreate, NotepadEntryUpdate, VisitationCreate, CourtHearingCreate
 from .courtlistener_routes import STATES_INFO, STATE_CPS_DATABASE, format_state_law_info, get_generic_state_info
 
@@ -287,6 +287,26 @@ async def save_from_courtlistener(
     }
     
     await db.notepad_entries.insert_one(notepad_entry)
+
+    if case_id:
+        await save_ai_response_to_case(
+            case_id=case_id,
+            user_id=current_user["user_id"],
+            feature_type="courtlistener_save",
+            prompt=f"CourtListener save: {case_name}",
+            response=content,
+            metadata={"citation": citation, "court": court, "date_filed": date_filed, "url": url}
+        )
+        await save_case_memory(
+            case_id=case_id,
+            user_id=current_user["user_id"],
+            title="Court Opinion Saved",
+            content=f"Saved opinion: {case_name} ({citation}).\nNext steps: review full opinion, extract holdings, cite in filings, and map to your violations.",
+            tags=["courtlistener", "case_law"],
+            source="auto",
+            metadata={"citation": citation, "court": court, "date_filed": date_filed, "url": url}
+        )
+
     notepad_entry["id"] = notepad_entry.pop("_id")
     return notepad_entry
 

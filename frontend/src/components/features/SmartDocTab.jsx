@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import api, { API_URL } from '../../lib/api';
+import { API_URL } from '../../lib/api';
 import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut, LogIn,
@@ -13,33 +13,122 @@ import {
 import { useAuth } from '../../context/AuthContext';
 
 function SmartDocTab({ selectedCase }) {
-  const { api } = useAuth();
+  const { token } = useAuth();
   const [prompt, setPrompt] = useState('');
   const [state, setState] = useState(selectedCase?.state || '');
   const [document, setDocument] = useState('');
   const [loading, setLoading] = useState(false);
   const [genTime, setGenTime] = useState(null);
+  const [streamingContent, setStreamingContent] = useState('');
+  const [nextSteps, setNextSteps] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const parseNextSteps = (text) => {
+    if (!text) return [];
+    const match = text.match(/(?:^|\n)(?:#+\s*)?(NEXT STEPS(?: \u0026 STRATEGY)?|Next Steps(?: \u0026 Strategy)?|Recommended Next Steps)[:\s]*\n/i);
+    if (!match) return [];
+    const startIndex = text.indexOf(match[0]) + match[0].length;
+    const segment = text.slice(startIndex);
+    const lines = segment.split('\n');
+    const steps = [];
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        if (steps.length) break;
+        continue;
+      }
+      if (trimmed.startsWith('#') || /^[A-Z][A-Z\s]{3,}[:\-]/.test(trimmed)) break;
+      const bulletMatch = trimmed.match(/^(\d+\.|[-•])\s+(.*)/);
+      if (bulletMatch) {
+        steps.push(bulletMatch[2]);
+      } else if (steps.length) {
+        steps[steps.length - 1] = `${steps[steps.length - 1]} ${trimmed}`.trim();
+      }
+      if (steps.length >= 8) break;
+    }
+    return steps;
+  };
+
+  const splitDocument = (text) => {
+    if (!text) return { documentText: '', steps: [] };
+    const match = text.match(/(?:^|\n)(?:#+\s*)?NEXT STEPS/i);
+    if (!match) return { documentText: text.trim(), steps: [] };
+    const index = text.indexOf(match[0]);
+    const documentText = text.slice(0, index).trim();
+    const steps = parseNextSteps(text);
+    return { documentText, steps };
+  };
 
   useEffect(() => {
     if (selectedCase?.state) setState(selectedCase.state);
   }, [selectedCase]);
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) return;
+    if (!prompt.trim() || loading) return;
     setLoading(true);
     setDocument('');
+    setStreamingContent('');
+    setNextSteps([]);
+    setErrorMessage('');
     setGenTime(null);
     const startTime = Date.now();
     try {
-      const response = await api.post('/api/ai/smart-document', {
-        prompt,
-        case_id: selectedCase?.id || null,
-        state: state || null
+      const response = await fetch(`${API_URL}/api/ai/smart-document/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          prompt,
+          case_id: selectedCase?.id || null,
+          state: state || null
+        })
       });
-      setDocument(response.document);
+
+      if (!response.ok) throw new Error('Document generation stream failed');
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullContent = '';
+      let collectedNextSteps = [];
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunkText = decoder.decode(value);
+        const lines = chunkText.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.error) throw new Error(data.error);
+              if (data.chunk) {
+                fullContent += data.chunk;
+                setStreamingContent(fullContent);
+              }
+              if (data.done) {
+                if (Array.isArray(data.next_steps)) {
+                  collectedNextSteps = data.next_steps;
+                }
+              }
+            } catch (parseError) {
+              // ignore chunk parse errors
+            }
+          }
+        }
+      }
+
+      const { documentText, steps } = splitDocument(fullContent);
+      const finalSteps = collectedNextSteps.length ? collectedNextSteps : steps;
+      setDocument(documentText);
+      setNextSteps(finalSteps);
+      setStreamingContent('');
       setGenTime(((Date.now() - startTime) / 1000).toFixed(1));
     } catch (error) {
-      toast.error(error.message || 'Document generation failed');
+      const message = error.message || 'Document generation failed';
+      toast.error(message);
+      setErrorMessage(message);
     } finally {
       setLoading(false);
     }
@@ -130,12 +219,26 @@ function SmartDocTab({ selectedCase }) {
         </div>
       </div>
 
+      {errorMessage && !loading && (
+        <div
+          className="rounded-xl border border-red-700/60 bg-red-900/20 px-4 py-3 text-sm text-red-200"
+          data-testid="smartdoc-error-alert"
+        >
+          {errorMessage}
+        </div>
+      )}
+
       {/* Loading */}
       {loading && (
-        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-8 text-center">
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-8 text-center" data-testid="smartdoc-loading">
           <Loader2 className="w-10 h-10 text-amber-500 animate-spin mx-auto mb-3" />
           <p className="text-lg font-semibold">Generating your legal document...</p>
           <p className="text-sm text-gray-400 mt-1">Pulling case data, statutes, and precedents for your jurisdiction</p>
+          {streamingContent && (
+            <div className="mt-4 bg-black/40 border border-gray-700 rounded-lg p-4 text-left" data-testid="smartdoc-streaming-output">
+              <pre className="whitespace-pre-wrap text-sm text-gray-300 leading-relaxed font-sans">{streamingContent}<span className="animate-pulse">▊</span></pre>
+            </div>
+          )}
         </div>
       )}
 
@@ -151,6 +254,11 @@ function SmartDocTab({ selectedCase }) {
                 {state && `${state} Jurisdiction — `}Court-ready with citations
                 {genTime && ` — ${genTime}s`}
               </p>
+              {selectedCase && (
+                <p className="text-xs text-emerald-400 mt-1" data-testid="smartdoc-autosave-indicator">
+                  Auto-saved to {selectedCase.title} (Case Notes + Case Memory)
+                </p>
+              )}
             </div>
             <div className="flex gap-2">
               <button
@@ -181,6 +289,17 @@ function SmartDocTab({ selectedCase }) {
           <div className="p-6">
             <pre className="whitespace-pre-wrap text-sm text-gray-300 leading-relaxed font-sans">{document}</pre>
           </div>
+        </div>
+      )}
+
+      {nextSteps.length > 0 && !loading && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6" data-testid="smartdoc-next-steps">
+          <h3 className="text-lg font-semibold mb-3">Next Steps & Strategy</h3>
+          <ul className="list-disc list-inside space-y-2 text-sm text-gray-300">
+            {nextSteps.map((step, idx) => (
+              <li key={idx}>{step}</li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
