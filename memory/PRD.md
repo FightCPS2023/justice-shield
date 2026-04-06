@@ -157,14 +157,21 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added retry + timeout handling with clearer AI budget error messaging for LLM failures
 - Frontend: improved error visibility, added data-testid coverage, and set a 45s no-retry timeout for Section 1983 generation
 
+### Session 23: Streaming AI + CourtListener Deepening + Connected Saves - COMPLETE
+- Added streaming endpoints for Smart Research and Smart Document generation with timeout safeguards
+- Auto-save AI outputs + next-step strategy into Case Notes and Case Memory (Chat, Research, Document, CourtListener save/analyze)
+- CourtListener: added filters (judge, docket, citation, order), opinion detail endpoint, AI opinion analysis, and UI actions
+- Frontend: Research/SmartDoc show streaming state, timeout errors, and Next Steps panels
+- Sidebar reorganized into collapsible category submenus for faster navigation
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
 - User needs to redeploy to push all fixes to production (thecpspunisher.com)
-- LLM budget exceeded in preview; top up Universal Key and re-test Section 1983 generation
+- LLM budget/timeouts in preview can block Streaming Research + Smart Document generation; top up Universal Key for full responses
+- CourtListener opinion detail may require a CourtListener API key for full-text access
 
 ### P2 - Future Features
-- Deepen CourtListener integration
+- CourtListener: add full-opinion fallback or bulk citation export
 - Multi-client management for Attorney Suite
 - Email notification system
-- Streaming response architecture for AI endpoints
