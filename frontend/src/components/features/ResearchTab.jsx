@@ -77,6 +77,8 @@ function ResearchTab({ selectedCase }) {
     setErrorMessage('');
     setSearchTime(null);
     const startTime = Date.now();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
 
     try {
       const response = await fetch(`${API_URL}/api/ai/smart-research/stream`, {
@@ -90,7 +92,8 @@ function ResearchTab({ selectedCase }) {
           state: state || null,
           research_type: researchType,
           case_id: selectedCase?.id || null
-        })
+        }),
+        signal: controller.signal
       });
 
       if (!response.ok) throw new Error('Research stream failed');
@@ -135,10 +138,13 @@ function ResearchTab({ selectedCase }) {
       setNextSteps(collectedNextSteps);
       setSearchTime(((Date.now() - startTime) / 1000).toFixed(1));
     } catch (error) {
-      const message = error.message || 'Research failed';
+      const message = error.name === 'AbortError'
+        ? 'Research timed out. Please try again.'
+        : (error.message || 'Research failed');
       toast.error(message);
       setErrorMessage(message);
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };

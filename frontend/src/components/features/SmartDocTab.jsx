@@ -72,6 +72,8 @@ function SmartDocTab({ selectedCase }) {
     setErrorMessage('');
     setGenTime(null);
     const startTime = Date.now();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
     try {
       const response = await fetch(`${API_URL}/api/ai/smart-document/stream`, {
         method: 'POST',
@@ -83,7 +85,8 @@ function SmartDocTab({ selectedCase }) {
           prompt,
           case_id: selectedCase?.id || null,
           state: state || null
-        })
+        }),
+        signal: controller.signal
       });
 
       if (!response.ok) throw new Error('Document generation stream failed');
@@ -126,10 +129,13 @@ function SmartDocTab({ selectedCase }) {
       setStreamingContent('');
       setGenTime(((Date.now() - startTime) / 1000).toFixed(1));
     } catch (error) {
-      const message = error.message || 'Document generation failed';
+      const message = error.name === 'AbortError'
+        ? 'Document generation timed out. Please try again.'
+        : (error.message || 'Document generation failed');
       toast.error(message);
       setErrorMessage(message);
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
