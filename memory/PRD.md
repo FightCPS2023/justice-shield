@@ -167,6 +167,10 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 ### Session 24: Useful Case Law Index Added - COMPLETE
 - Added comprehensive “Useful Case Law Index” sections to legal_knowledge.py with jurisdiction, service/notice, void judgments, DHR accountability, ADA, and Alabama Ex Parte groupings
 
+### Session 25: Deployment Runtime Hardening (LLM 502) - COMPLETE
+- Added explicit ChatError handling + timeouts in Smart Research and Smart Document endpoints to prevent unhandled crashes
+- Returns 402/502 with user-friendly messages when LLM budget/BadGateway errors occur
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment

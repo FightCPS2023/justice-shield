@@ -2,6 +2,7 @@
 import re
 import json
 import uuid
+import asyncio
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, HTTPException, Depends, Form, Body
@@ -121,7 +122,7 @@ async def person_lookup(request: PersonLookupRequest, current_user: dict = Depen
     Searches public records, court records, and compiles comprehensive information.
     Similar to NCIC but for civilian legal defense use.
     """
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
     
     user_tier = await get_user_tier(current_user["user_id"])
     current_user["tier"] = user_tier
@@ -303,7 +304,7 @@ async def court_records_search(
     current_user: dict = Depends(get_current_user)
 ):
     """Search court records for a specific person"""
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
     
     system_message = f"""{ULTIMATE_CPS_IDENTITY}
 
@@ -379,7 +380,7 @@ This information is being gathered for a CPS case defense strategy."""
 async def ai_chat(message_data: ChatMessage, current_user: dict = Depends(get_current_user)):
     """AI-powered legal chat assistant - available to all tiers with credit limits"""
     db = get_db()
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
 
     user_tier = await get_user_tier(current_user["user_id"])
     current_user["tier"] = user_tier
@@ -496,7 +497,7 @@ Be thorough, cite relevant statutes and case law when applicable, and always pri
 async def help_bot_chat(message_data: HelpBotMessage, current_user: dict = Depends(get_current_user)):
     """Help Bot - guides users through the app, explains features, makes recommendations"""
     db = get_db()
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
     
     # Get user tier and check credits
     user = await db.users.find_one({"_id": current_user["user_id"]})
@@ -531,7 +532,7 @@ Be concise, helpful, and supportive. Users are often stressed dealing with CPS c
 async def ai_chat_stream(message_data: ChatMessage, current_user: dict = Depends(get_current_user)):
     """AI-powered legal chat assistant with streaming response (SSE) - all tiers"""
     db = get_db()
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
     import asyncio
     
     session_id = message_data.session_id or str(uuid.uuid4())
@@ -665,7 +666,7 @@ IMPORTANT:
 @router.post("/api/ai/analyze-document")
 async def ai_analyze_document(request: AIAnalysisRequest, current_user: dict = Depends(get_current_user)):
     """AI-powered document analysis - available to all tiers with credit limits"""
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
     
     case = await get_case_with_ownership(request.case_id, current_user["user_id"])
     
@@ -738,7 +739,7 @@ Note: This is legal education, not legal advice. Recommend consulting an attorne
 async def ai_generate_document(request: DocumentGeneratorRequest, current_user: dict = Depends(require_tier("essential", feature_key="doc_generate"))):
     """AI-powered legal document generator - requires Essential tier"""
     db = get_db()
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
     
     case = await get_case_with_ownership(request.case_id, current_user["user_id"])
     
@@ -873,7 +874,7 @@ Generate the complete document now:"""
 async def ai_defense_strategy(case_id: str, current_user: dict = Depends(require_tier("essential", feature_key="defense_strategy"))):
     """Generate comprehensive defense strategy - requires Essential tier"""
     db = get_db()
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
     
     # Get full case summary
     case = await get_case_with_ownership(case_id, current_user["user_id"])
@@ -974,7 +975,7 @@ Be specific and actionable. Include statute citations and case law references.""
 @router.post("/api/ai/legal-research")
 async def ai_legal_research(request: LegalResearchRequest, current_user: dict = Depends(require_tier("professional", feature_key="legal_research"))):
     """AI-powered legal research - requires Professional tier"""
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
     
     system_message = f"""{ULTIMATE_CPS_IDENTITY}
 
@@ -1039,7 +1040,7 @@ Be thorough and cite sources."""
 async def smart_legal_research(request: SmartResearchRequest, current_user: dict = Depends(get_current_user)):
     """Cetient-style AI research: natural language query -> structured legal research with citations"""
     db = get_db()
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
 
     user_tier = await get_user_tier(current_user["user_id"])
     if not await check_ai_credits(current_user["user_id"], user_tier):
@@ -1134,7 +1135,18 @@ CRITICAL INSTRUCTIONS:
 Format your response as a structured legal research brief with numbered sections, citations, and clear actionable recommendations.
 Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actions."""
 
-    response = await chat.send_message(UserMessage(text=prompt))
+    try:
+        response = await asyncio.wait_for(
+            chat.send_message(UserMessage(text=prompt)),
+            timeout=120
+        )
+    except (ChatError, Exception) as e:
+        error_text = str(e)
+        if "budget" in error_text.lower() or "insufficient" in error_text.lower():
+            raise HTTPException(status_code=402, detail="AI budget exceeded. Please add balance to your Universal Key and retry.")
+        if "502" in error_text or "BadGateway" in error_text or "bad gateway" in error_text.lower():
+            raise HTTPException(status_code=502, detail="AI service temporarily unavailable. Please retry.")
+        raise HTTPException(status_code=502, detail="AI service error. Please retry.")
 
     next_steps = extract_next_steps(response)
 
@@ -1173,7 +1185,7 @@ Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actio
 async def smart_legal_research_stream(request: SmartResearchRequest, current_user: dict = Depends(get_current_user)):
     """Streaming smart legal research with auto-save and next steps."""
     db = get_db()
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
     import asyncio
 
     user_tier = await get_user_tier(current_user["user_id"])
@@ -1318,7 +1330,7 @@ Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actio
 async def smart_document_generator(request: SmartDocGenRequest, current_user: dict = Depends(get_current_user)):
     """Cetient-style: natural language prompt -> complete court-ready legal document with citations"""
     db = get_db()
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
 
     user_tier = await get_user_tier(current_user["user_id"])
     if not await check_ai_credits(current_user["user_id"], user_tier):
@@ -1422,7 +1434,18 @@ Create a COMPLETE, court-ready legal document. Include:
 Use all available case data. The document should be ready to print and file.
 After the document, add a section titled "NEXT STEPS & STRATEGY (NOT PART OF FILING)" with 4-8 bullet actions."""
 
-    response = await chat.send_message(UserMessage(text=prompt))
+    try:
+        response = await asyncio.wait_for(
+            chat.send_message(UserMessage(text=prompt)),
+            timeout=120
+        )
+    except (ChatError, Exception) as e:
+        error_text = str(e)
+        if "budget" in error_text.lower() or "insufficient" in error_text.lower():
+            raise HTTPException(status_code=402, detail="AI budget exceeded. Please add balance to your Universal Key and retry.")
+        if "502" in error_text or "BadGateway" in error_text or "bad gateway" in error_text.lower():
+            raise HTTPException(status_code=502, detail="AI service temporarily unavailable. Please retry.")
+        raise HTTPException(status_code=502, detail="AI service error. Please retry.")
 
     next_steps = extract_next_steps(response)
     document_text = response
@@ -1464,7 +1487,7 @@ After the document, add a section titled "NEXT STEPS & STRATEGY (NOT PART OF FIL
 async def smart_document_generator_stream(request: SmartDocGenRequest, current_user: dict = Depends(get_current_user)):
     """Streaming smart document generator with auto-save and next steps."""
     db = get_db()
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
     import asyncio
 
     user_tier = await get_user_tier(current_user["user_id"])
@@ -1620,7 +1643,7 @@ After the document, add a section titled "NEXT STEPS  STRATEGY (NOT PART OF FILI
 async def forensic_document_analysis(request: ForensicAnalysisRequest, current_user: dict = Depends(get_current_user)):
     """Legal forensic document analyzer — 7-point comprehensive analysis for MOUs, stipulations, void ab initio, trafficking indicators, and structural issues"""
     db = get_db()
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
 
     user_tier = await get_user_tier(current_user["user_id"])
     if not await check_ai_credits(current_user["user_id"], user_tier):
@@ -1797,7 +1820,7 @@ async def expert_legal_analysis(
     This is SMARTER than any other legal AI for CPS cases.
     """
     db = get_db()
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
     
     case = await get_case_with_ownership(case_id, current_user["user_id"])
     violations = await db.violations.find({"case_id": case_id}).to_list(50)
