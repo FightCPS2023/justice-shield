@@ -111,7 +111,7 @@ function AuthPage({ onNavigate }) {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-black p-4">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img 
@@ -120,8 +120,8 @@ function AuthPage({ onNavigate }) {
             className="w-64 mx-auto mb-4"
             style={{ filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.2))' }}
           />
-          <p className="text-gray-400 mt-2">
-            {isLogin ? 'Sign in to continue your fight' : 'Create your account to fight back'}
+          <p className="text-slate-600 mt-2">
+            {isLogin ? 'Welcome back. We’ll keep everything organized for you.' : 'Create your free account and we’ll guide you through your first case.'}
           </p>
           {/* Connection Status Indicator */}
           <div className="mt-2 flex items-center justify-center gap-2 text-sm">
@@ -146,7 +146,7 @@ function AuthPage({ onNavigate }) {
         {/* Google Sign In Button */}
         <button
           onClick={handleGoogleLogin}
-          className="w-full mb-4 flex items-center justify-center gap-3 bg-white text-gray-900 font-medium py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+          className="w-full mb-4 flex items-center justify-center gap-3 bg-white text-slate-900 font-semibold py-3.5 px-4 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors"
           data-testid="google-signin-btn"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -160,14 +160,14 @@ function AuthPage({ onNavigate }) {
 
         <div className="relative mb-4">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-700"></div>
+            <div className="w-full border-t border-slate-200"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-gradient-to-br from-black via-gray-900 to-red-950/30 text-gray-400">or</span>
+            <span className="px-4 py-1 bg-slate-50 text-slate-500 border border-slate-200 rounded-full">or</span>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
           {!isLogin && (
             <div>
               <label className="block text-sm font-medium mb-2">Full Name</label>
@@ -175,7 +175,7 @@ function AuthPage({ onNavigate }) {
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg focus:outline-none focus:border-red-400"
                 placeholder="Enter your name"
                 required={!isLogin}
                 data-testid="name-input"
@@ -189,7 +189,7 @@ function AuthPage({ onNavigate }) {
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg focus:outline-none focus:border-red-400"
               placeholder="Enter your email"
               required
               data-testid="email-input"
@@ -202,7 +202,7 @@ function AuthPage({ onNavigate }) {
               type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg focus:outline-none focus:border-red-400"
               placeholder={isLogin ? 'Enter your password' : 'Create a password (6+ chars)'}
               required
               minLength={6}
@@ -227,8 +227,8 @@ function AuthPage({ onNavigate }) {
           )}
 
           {!isLogin && (
-            <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4" data-testid="policies-acceptance-block">
-              <label className="flex items-start gap-2 text-sm text-gray-300">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4" data-testid="policies-acceptance-block">
+              <label className="flex items-start gap-2 text-sm text-slate-600">
                 <input
                   type="checkbox"
                   checked={acceptedPolicies}
@@ -268,7 +268,7 @@ function AuthPage({ onNavigate }) {
           </button>
         </form>
 
-        <p className="text-center mt-6 text-gray-400">
+        <p className="text-center mt-6 text-slate-600">
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <button
             onClick={() => setIsLogin(!isLogin)}
@@ -280,7 +280,7 @@ function AuthPage({ onNavigate }) {
 
         <button
           onClick={() => onNavigate('landing')}
-          className="block mx-auto mt-4 text-gray-500 hover:text-gray-400"
+          className="block mx-auto mt-4 text-slate-500 hover:text-slate-700"
         >
           ← Back to home
         </button>
@@ -288,23 +288,23 @@ function AuthPage({ onNavigate }) {
     </div>
 
     {showPoliciesModal && (
-      <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" data-testid="policies-modal">
-        <div className="bg-gray-900 border border-gray-700 rounded-xl max-w-2xl w-full p-6 overflow-y-auto max-h-[90vh]">
+      <div className="fixed inset-0 bg-slate-900/30 z-50 flex items-center justify-center p-4" data-testid="policies-modal">
+        <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 overflow-y-auto max-h-[90vh]">
           <div className="flex items-start justify-between mb-4">
             <div>
               <h2 className="text-2xl font-bold">Terms of Service & Privacy Policy</h2>
-              <p className="text-sm text-gray-400">Effective Date: {effectiveDate}</p>
+              <p className="text-sm text-slate-500">Effective Date: {effectiveDate}</p>
             </div>
             <button
               type="button"
               onClick={() => setShowPoliciesModal(false)}
-              className="text-gray-400 hover:text-white"
+              className="text-slate-500 hover:text-slate-700"
               data-testid="policies-modal-close"
             >
               ✕
             </button>
           </div>
-          <div className="space-y-4 text-sm text-gray-300">
+          <div className="space-y-4 text-sm text-slate-600">
             <div>
               <h3 className="text-lg font-semibold mb-2">Terms of Service</h3>
               <p><strong>Acceptance:</strong> By downloading or using “The CPS Punisher,” you agree to these Terms.</p>
@@ -327,7 +327,7 @@ function AuthPage({ onNavigate }) {
             <button
               type="button"
               onClick={() => setShowPoliciesModal(false)}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+              className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full"
               data-testid="policies-modal-close-btn"
             >
               Close

@@ -180,7 +180,7 @@ function ResearchTab({ selectedCase }) {
           <Search className="w-8 h-8 text-red-500" />
           Smart Legal Research
         </h1>
-        <p className="text-gray-400 mt-1">AI-powered research engine — ask any legal question in plain English</p>
+        <p className="text-slate-600 mt-1">AI-powered research engine — ask any legal question in plain English</p>
       </div>
 
       {/* Research Type Selector */}
@@ -192,13 +192,13 @@ function ResearchTab({ selectedCase }) {
             className={`p-4 rounded-xl border text-left transition-all ${
               researchType === rt.id
                 ? 'border-red-500 bg-red-600/10'
-                : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
+                : 'border-slate-200 bg-white hover:border-red-200'
             }`}
             data-testid={`research-type-${rt.id}`}
           >
-            <rt.icon className={`w-5 h-5 mb-2 ${researchType === rt.id ? 'text-red-500' : 'text-gray-500'}`} />
+            <rt.icon className={`w-5 h-5 mb-2 ${researchType === rt.id ? 'text-red-500' : 'text-slate-500'}`} />
             <p className="font-semibold text-sm">{rt.label}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{rt.desc}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{rt.desc}</p>
           </button>
         ))}
       </div>
@@ -209,7 +209,7 @@ function ResearchTab({ selectedCase }) {
           <select
             value={state}
             onChange={(e) => setState(e.target.value)}
-            className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm w-32"
+            className="bg-white border border-slate-200 rounded-lg px-4 py-3 text-sm w-32"
             data-testid="research-state-select"
           >
             <option value="">All States</option>
@@ -221,11 +221,11 @@ function ResearchTab({ selectedCase }) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Ask any CPS legal question in plain English..."
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 pr-12 focus:outline-none focus:border-red-600 text-base"
+              className="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 pr-12 focus:outline-none focus:border-red-600 text-base"
               data-testid="research-input"
             />
             {query && (
-              <button type="button" onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white" data-testid="research-clear-btn">
+              <button type="button" onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700" data-testid="research-clear-btn">
                 <X className="w-4 h-4" />
               </button>
             )}
@@ -236,10 +236,10 @@ function ResearchTab({ selectedCase }) {
           </button>
         </div>
         <div className="flex flex-wrap gap-3">
-          <button type="button" onClick={handleBack} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg" data-testid="research-back-btn">
+          <button type="button" onClick={handleBack} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg" data-testid="research-back-btn">
             Back
           </button>
-          <button type="button" onClick={handleCancel} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg" data-testid="research-cancel-btn">
+          <button type="button" onClick={handleCancel} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg" data-testid="research-cancel-btn">
             Cancel
           </button>
         </div>
@@ -247,13 +247,13 @@ function ResearchTab({ selectedCase }) {
 
       {/* Quick Searches */}
       <div>
-        <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Quick searches</p>
+        <p className="text-xs text-slate-500 mb-2 uppercase tracking-wider">Quick searches</p>
         <div className="flex flex-wrap gap-2">
           {quickSearches.map((q, i) => (
             <button
               key={i}
               onClick={() => { setQuery(q); }}
-              className="px-3 py-1.5 bg-gray-800/80 hover:bg-gray-700 border border-gray-700/50 rounded-lg text-xs text-gray-300 hover:text-white transition-colors"
+              className="px-3 py-1.5 bg-white/80 hover:bg-slate-100 border border-slate-200/50 rounded-lg text-xs text-slate-600 hover:text-slate-700 transition-colors"
               data-testid={`research-quick-${i}-btn`}
             >
               {q}
@@ -264,13 +264,13 @@ function ResearchTab({ selectedCase }) {
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-8 text-center" data-testid="research-loading">
+        <div className="bg-white border border-slate-200 rounded-xl p-8 text-center" data-testid="research-loading">
           <Loader2 className="w-10 h-10 text-red-500 animate-spin mx-auto mb-3" />
           <p className="text-lg font-semibold">Researching legal databases...</p>
-          <p className="text-sm text-gray-400 mt-1">Searching statutes, case law, and CPS policies across all jurisdictions</p>
+          <p className="text-sm text-slate-600 mt-1">Searching statutes, case law, and CPS policies across all jurisdictions</p>
           {streamingContent && (
-            <div className="mt-4 bg-black/40 border border-gray-700 rounded-lg p-4 text-left" data-testid="research-streaming-output">
-              <pre className="whitespace-pre-wrap text-sm text-gray-300 leading-relaxed font-sans">{streamingContent}<span className="animate-pulse">▊</span></pre>
+            <div className="mt-4 bg-black/40 border border-slate-200 rounded-lg p-4 text-left" data-testid="research-streaming-output">
+              <pre className="whitespace-pre-wrap text-sm text-slate-600 leading-relaxed font-sans">{streamingContent}<span className="animate-pulse">▊</span></pre>
             </div>
           )}
         </div>
@@ -284,13 +284,13 @@ function ResearchTab({ selectedCase }) {
 
       {/* Results */}
       {results && !loading && (
-        <div className="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden" data-testid="research-results">
-          <div className="px-6 py-4 border-b border-gray-700 flex items-center justify-between bg-gray-900/50">
+        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden" data-testid="research-results">
+          <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
             <div>
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-green-500" /> Research Complete
               </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 {researchType === 'comprehensive' ? 'Full Research Brief' : researchType === 'case_law' ? 'Case Law Results' : researchType === 'statutes' ? 'Statute Analysis' : 'Defense Strategy'}
                 {state && ` — ${state} Jurisdiction`}
                 {searchTime && ` — ${searchTime}s`}
@@ -303,7 +303,7 @@ function ResearchTab({ selectedCase }) {
             </div>
             <button
               onClick={() => { navigator.clipboard.writeText(results); toast.success('Copied to clipboard'); }}
-              className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm flex items-center gap-1.5"
               data-testid="copy-results-btn"
             >
               <Copy className="w-4 h-4" /> Copy
@@ -311,16 +311,16 @@ function ResearchTab({ selectedCase }) {
           </div>
           <div className="p-6">
             <div className="prose prose-invert max-w-none">
-              <pre className="whitespace-pre-wrap text-sm text-gray-300 leading-relaxed font-sans">{results}</pre>
+              <pre className="whitespace-pre-wrap text-sm text-slate-600 leading-relaxed font-sans">{results}</pre>
             </div>
           </div>
         </div>
       )}
 
       {nextSteps.length > 0 && !loading && (
-        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6" data-testid="research-next-steps">
+        <div className="bg-white border border-slate-200 rounded-xl p-6" data-testid="research-next-steps">
           <h3 className="text-lg font-semibold mb-3">Next Steps & Strategy</h3>
-          <ul className="list-disc list-inside space-y-2 text-sm text-gray-300">
+          <ul className="list-disc list-inside space-y-2 text-sm text-slate-600">
             {nextSteps.map((step, idx) => (
               <li key={idx}>{step}</li>
             ))}

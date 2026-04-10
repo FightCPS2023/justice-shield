@@ -296,8 +296,8 @@ frontend:
 metadata:
   created_by: "testing_agent"
   version: "1.0"
-  test_sequence: 15
-  last_updated: "2026-04-06T08:15:00Z"
+  test_sequence: 16
+  last_updated: "2026-04-10T21:30:00Z"
 
 test_plan:
   current_focus:
@@ -306,6 +306,117 @@ test_plan:
     - "Precedent Finder - LLM Library Timeout Issue"
   test_all: false
   test_priority: "high_first"
+
+
+
+frontend:
+  - task: "Calm Redesign - Landing Page"
+    implemented: true
+    working: true
+    file: "frontend/src/components/LandingPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ LANDING PAGE CALM REDESIGN VERIFIED: Comprehensive testing completed on https://justice-shield-6.preview.emergentagent.com. All review request requirements passed: (1) Light background confirmed - bg-slate-50 (rgb(248, 250, 252)) ✓, (2) Calm microcopy present - 'We're here to help you protect your family — one step at a time. Get calm, guided support with AI-powered analysis, violation detection, and defense strategy generation.' ✓, (3) CTA button text correct - 'Create Free Account' (data-testid='get-started-btn') ✓, (4) Hero image loads - img[alt='Calm family support'] visible with Unsplash image (calm family support theme) ✓, (5) Additional calm elements verified: Trust indicators ('No Credit Card Required', 'Start in 60 Seconds'), supportive section copy ('Ready to feel supported?', 'Your children are counting on you. We'll guide you through your first case gently.'), light color scheme throughout (white/slate-50 backgrounds, slate-600 text) ✓. Screenshot captured. No console errors. Feature is PRODUCTION-READY with excellent calm, supportive UX."
+
+  - task: "Calm Redesign - Auth Page"
+    implemented: true
+    working: true
+    file: "frontend/src/components/AuthPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ AUTH PAGE CALM REDESIGN VERIFIED: All review request requirements passed: (1) Light card UI confirmed - form has 'bg-white border border-slate-200 rounded-2xl p-6 shadow-sm' classes ✓, (2) Supportive microcopy present - Login: 'Welcome back. We'll keep everything organized for you.', Signup: 'Create your free account and we'll guide you through your first case.' ✓, (3) Larger inputs/buttons verified - inputs have 'py-3 text-lg' classes (larger padding and text), buttons have proper sizing ✓, (4) Additional calm elements: Connection status indicator with friendly messages, supportive error handling with retry button, calm placeholder text ('Enter your email', 'Enter your password'), Google sign-in option with clean design ✓. Screenshot captured. Light theme (bg-slate-50 page background, white card) creates calm, approachable feel. Feature is PRODUCTION-READY."
+
+  - task: "Calm Redesign - Sidebar Sections Collapse/Expand"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ SIDEBAR SECTIONS COLLAPSE/EXPAND VERIFIED: All 5 sidebar sections tested successfully on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com/cpssuxass. RESULTS: (1) Core section - Toggle visible (data-testid='nav-section-core-toggle'), items expand/collapse correctly ✓, (2) Case Data section - Toggle visible (data-testid='nav-section-case-toggle'), items expand/collapse correctly ✓, (3) AI Tools section - Toggle visible (data-testid='nav-section-ai-toggle'), items expand/collapse correctly ✓, (4) Research & Law section - Toggle visible (data-testid='nav-section-research-toggle'), items expand/collapse correctly ✓, (5) Community & Support section - Toggle visible (data-testid='nav-section-community-toggle'), items expand/collapse correctly ✓. Implementation uses openSections state (lines 197-203 in App.js) with ChevronDown icon rotation animation. All sections default to expanded (true). MINOR ISSUE: In some cases, clicking community toggle encounters overlay from admin button at bottom of sidebar - this is a z-index/positioning issue but does not prevent functionality. Feature is PRODUCTION-READY with excellent organization."
+
+  - task: "Calm Redesign - Cases Wizard (Start a New Case)"
+    implemented: true
+    working: true
+    file: "frontend/src/components/features/CasesTab.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ CASES WIZARD CALM REDESIGN VERIFIED: Comprehensive testing of 'Start a New Case' wizard completed. All review request requirements passed: (1) Wizard opens via 'Start a New Case' button (data-testid='create-case-btn') ✓, (2) Progress indicator displays correctly - 'Step 1 of 3' with visual progress bar showing 'Describe → Review → Generate' (data-testid='case-wizard-progress') ✓, (3) Step navigation works - Step 1 (case details) → Step 2 (violations) → Step 3 (summary/generate) ✓, (4) Example placeholder text present throughout: Title: 'Example: NH CPS Removal — December 2024', Description: 'Example: In New Hampshire, CPS removed my two children on Dec 19, 2024 without a warrant...', Documents: 'Example uploads: court orders, CPS letters, police reports' ✓, (5) All data-testids present: case-title-input, case-state-select, case-number-input, case-description-input, wizard-next-step-btn, wizard-cancel-btn, wizard-back-step-btn, wizard-create-case-btn ✓, (6) Calm supportive microcopy throughout: 'Let's start your case gently', 'Take a breath. We'll guide you step-by-step and save everything so you can come back anytime.', 'We're here to help you protect your family — one step at a time.' ✓, (7) Cancel functionality works - closes modal and resets form ✓. Screenshots captured for wizard step 1 and step 3. Light theme with white modal, slate borders. Feature is PRODUCTION-READY with excellent calm, guided UX."
+
+  - task: "Calm Redesign - Immediate Help Panel"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ IMMEDIATE HELP PANEL VERIFIED: All review request requirements passed: (1) Panel opens from bottom-right corner via 'Need immediate help?' button (data-testid='immediate-help-toggle') ✓, (2) Panel displays correctly (data-testid='immediate-help-panel') with white background, border, rounded corners, shadow ✓, (3) Supportive content present: Title 'Immediate Help', Subtitle 'You are not alone. Take one small step at a time.', 3-step guidance list ✓, (4) All 3 navigation buttons present and functional: 'Ask the AI for Guidance' (data-testid='help-open-chat') navigates to Chat tab ✓, 'Upload Documents' (data-testid='help-upload-docs') navigates to Documents tab ✓, 'Review Violations' (data-testid='help-review-violations') navigates to Violations tab ✓, (5) Panel closes via X button (data-testid='immediate-help-close') ✓, (6) Panel positioned at bottom-right (fixed bottom-6 right-6 z-40) ✓. Screenshot captured showing panel open with all buttons. Implementation in App.js lines 547-600. Calm, supportive design with gentle guidance. Feature is PRODUCTION-READY."
+
+  - task: "Calm Redesign - Research Tab Light Theme"
+    implemented: true
+    working: true
+    file: "frontend/src/components/features/ResearchTab.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ RESEARCH TAB LIGHT THEME VERIFIED: Tested on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com/cpssuxass. All requirements passed: (1) Light theme confirmed - multiple bg-white and bg-slate-50 elements throughout the tab ✓, (2) No layout issues - title 'Smart Legal Research' visible and properly positioned ✓, (3) Light color scheme: white cards with slate-200 borders, slate-50 header backgrounds, slate-600 text ✓, (4) All UI elements render correctly: search input, filters, results display, loading states ✓. Code review shows consistent use of light backgrounds (lines 195, 212, 224, 267, 287-288, 321). Feature is PRODUCTION-READY with calm, professional light theme."
+
+  - task: "Calm Redesign - Smart Doc Tab Light Theme"
+    implemented: true
+    working: true
+    file: "frontend/src/components/features/SmartDocTab.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ SMART DOC TAB LIGHT THEME VERIFIED: All requirements passed: (1) Light theme confirmed - multiple bg-white and bg-slate-50 elements throughout ✓, (2) No layout issues - title 'Smart Document Generator' visible and properly positioned ✓, (3) Light color scheme: white input areas with slate-200 borders, slate-50 backgrounds for sections ✓, (4) All UI elements render correctly: template buttons, text input, generate button, results display ✓. Code review shows consistent light theme (lines 192, 197, 204, 211, 239, 244, 253-254, 302). Feature is PRODUCTION-READY with calm, accessible light theme."
+
+  - task: "Calm Redesign - Court Opinions Tab Light Theme"
+    implemented: true
+    working: true
+    file: "frontend/src/components/features/CourtListenerTab.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ COURT OPINIONS TAB LIGHT THEME VERIFIED: All requirements passed: (1) Light theme confirmed - multiple bg-white and bg-slate-50 elements throughout ✓, (2) No layout issues - title 'Court Opinions Database' visible and properly positioned ✓, (3) Light color scheme: white search card with slate-200 borders, white result cards, white modals ✓, (4) All UI elements render correctly: search input, filter dropdowns, results cards, opinion modal ✓. Code review shows extensive use of light backgrounds (lines 150, 158, 178, 189, 197, 205, 213, 221, 228, 245, 316, 343, 400, 408). Feature is PRODUCTION-READY with professional, calm light theme."
+
+  - task: "Calm Redesign - Mobile View (390x844)"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js, frontend/src/components/LandingPage.jsx, frontend/src/components/AuthPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ MOBILE VIEW CALM REDESIGN VERIFIED: Tested at 390x844 viewport on https://justice-shield-6.preview.emergentagent.com. All requirements passed: (1) Mobile menu button visible and functional (data-testid='mobile-menu-btn') ✓, (2) Mobile sidebar opens correctly when menu button clicked (data-testid='sidebar') ✓, (3) Spacing verified - proper padding and margins on mobile (responsive classes like 'p-4', 'px-4', 'gap-3') ✓, (4) Landing page renders correctly on mobile with hero image, CTA buttons, and calm microcopy ✓, (5) Auth page renders correctly on mobile with light card UI and larger inputs ✓, (6) Dashboard renders correctly on mobile with mobile header (lg:hidden classes) ✓. Screenshots captured for mobile landing, auth, dashboard, and sidebar. MINOR ISSUE: Close sidebar button has overlay issue from mobile header (z-index conflict) but sidebar can be closed by clicking outside overlay. Implementation uses responsive Tailwind classes (lg:hidden, lg:translate-x-0, etc.) for mobile/desktop switching. Feature is PRODUCTION-READY with excellent mobile UX and proper spacing."
 
 
 frontend:
@@ -377,6 +488,9 @@ agent_communication:
   - agent: "testing"
     message: "✅ LAW LIBRARY SAVE TO NOTEPAD - COMPLETE SUCCESS! All review request requirements verified and working correctly on https://justice-shield-6.preview.emergentagent.com. FULL TEST RESULTS: (1) Login with cpsvhuntingjustice@gmail.com/cpssuxass ✓, (2) Navigate to Law Library tab ✓, (3) Click CA state button ✓, (4) California CPS Law Guide content loads successfully ✓, (5) Click Save to Notepad button ✓, (6) API POST /api/notepad/save-from-library returns 200 OK ✓, (7) Success toast 'California CPS Law saved to your Legal Notepad!' displays ✓, (8) No console errors ✓. The STATES_INFO backend error that was previously reported has been FIXED. The import statement in community_routes.py line 12 is working correctly. Notepad entry created successfully with full CA CPS law content. Feature is PRODUCTION-READY and all functionality working as expected."
   - agent: "testing"
+  - agent: "testing"
+    message: "✅ CALM REDESIGN FLOWS - COMPREHENSIVE TEST COMPLETED (2026-04-10). Tested all calm redesign requirements on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com/cpssuxass. ALL 8 REQUIREMENTS VERIFIED: (1) Landing Page ✓ - Light background (bg-slate-50, rgb(248,250,252)), calm microcopy ('We're here to help you protect your family — one step at a time'), CTA 'Create Free Account', hero image loads (Unsplash calm family support image). (2) Auth Page ✓ - Light card UI (bg-white border border-slate-200), supportive microcopy ('Welcome back. We'll keep everything organized for you.'), larger inputs/buttons (py-3 text-lg classes). (3) Login ✓ - Successful authentication with provided credentials. (4) Sidebar Sections ✓ - All 5 sections (Core, Case Data, AI Tools, Research & Law, Community) collapse/expand correctly with ChevronDown animation. Minor overlay issue with admin button but functionality works. (5) Cases Wizard ✓ - 'Start a New Case' opens wizard with progress indicator (Step 1 of 3), step navigation works (Describe → Review → Generate), example placeholder text present, all data-testids verified, cancel functionality works. (6) Immediate Help Panel ✓ - Opens from bottom-right, displays supportive content, all 3 buttons navigate correctly (Chat, Documents, Violations). (7) Research/Smart Doc/Court Opinions ✓ - All tabs render in light theme (bg-white, bg-slate-50) without layout issues. (8) Mobile View ✓ - Tested at 390x844, mobile menu button works, sidebar opens, proper spacing verified. Screenshots captured: landing-verified.png, auth-verified.png, wizard-step-1.png, immediate-help-panel.png, mobile-view.png, mobile-sidebar.png. MINOR ISSUES: (1) Sidebar community toggle has overlay from admin button (z-index issue, does not prevent functionality), (2) Mobile close sidebar button has overlay from mobile header (can close by clicking outside). Overall: CALM REDESIGN IS PRODUCTION-READY with excellent supportive UX, light theme throughout, and gentle guidance for users."
+
     message: "✅ HOW TO USE TAB + ESSENTIAL PRICE UPDATE - COMPLETE SUCCESS! All review request requirements verified on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com/cpssuxass. TEST RESULTS: (1) Login successful ✓, (2) How to Use tab accessible from sidebar (marked with NEW badge) ✓, (3) How to Use page renders correctly with header 'How to Use THE CPS PUNISHER' ✓, (4) All 6 quick start steps visible: Create your case, Upload documents, Review AI analysis, Use the Law Library, Build your defense, Get help when needed ✓, (5) Daily Workflow section present with 4 workflow steps ✓, (6) Troubleshooting Tips section present with 4 tips ✓, (7) Pricing tab accessible from sidebar ✓, (8) Essential tier monthly price displays $19 ✓, (9) Essential tier annual price displays $190 ✓, (10) Billing toggle (Monthly/Annual) works correctly ✓, (11) PasscodeRedemption component renders correctly ✓, (12) No console errors ✓. CRITICAL BUG FIXED: Missing import for PasscodeRedemption component in PricingTab.jsx was causing runtime error preventing Pricing tab from rendering. Added import statement: 'import PasscodeRedemption from './PasscodeRedemption';' at line 14. Both features are PRODUCTION-READY."
   - agent: "testing"
     message: "✅ LAW LIBRARY RE-TEST COMPLETED SUCCESSFULLY! The main review request requirement (Law Library navigation and content loading) is now WORKING. All steps verified: (1) Login ✓, (2) Click Law Library in sidebar ✓, (3) Law Library tab renders with state grid ✓, (4) Click CA ✓, (5) Content loads (2320 chars of CA CPS law) ✓. API call GET /api/law-library/CA returns 200 OK. Navigation issue has been FIXED by main agent. SEPARATE ISSUE FOUND: Save to Notepad button returns 500 error due to backend bug (NameError: STATES_INFO not defined in community_routes.py line 201). This is a minor issue that doesn't affect the core functionality tested in the review request."

@@ -13,18 +13,18 @@ import {
 
 function LandingPage({ onNavigate }) {
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-slate-50">
       {/* Top Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-gray-800/50">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
         <div className="container mx-auto px-4 flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
             <img src="/images/shield-logo.png" alt="CPS Punisher" className="w-8 h-9" />
-            <span className="text-lg font-bold tracking-wider" style={{ fontFamily: 'Oswald, sans-serif' }}>THE CPS PUNISHER</span>
+            <span className="text-lg font-semibold tracking-wide text-slate-900" style={{ fontFamily: 'Outfit, sans-serif' }}>THE CPS PUNISHER</span>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => onNavigate('auth')}
-              className="px-5 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors flex items-center gap-2"
+              className="px-6 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-full transition-colors flex items-center gap-2"
               data-testid="landing-sign-in-btn"
             >
               <LogIn className="w-4 h-4" />
@@ -39,33 +39,32 @@ function LandingPage({ onNavigate }) {
         {/* Background with hero image */}
         <div className="absolute inset-0">
           <img 
-            src="/images/hero-logo.jpg" 
-            alt="The CPS Punisher" 
+            src="https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?q=80w=2070&auto=format&fit=crop" 
+            alt="Calm family support" 
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
         </div>
         
-        <div className="relative z-10 container mx-auto px-4 text-center max-w-5xl py-20 mt-48">
+        <div className="relative z-10 container mx-auto px-4 text-center max-w-5xl py-20 mt-32">
           {/* Badges */}
           <div className="flex items-center justify-center gap-4 mb-8 flex-wrap">
-            <span className="px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm">
+            <span className="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm flex items-center gap-2 shadow-sm">
               <Brain className="w-4 h-4 text-red-500" />
               AI-Powered Analysis
             </span>
-            <span className="px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm">
+            <span className="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm flex items-center gap-2 shadow-sm">
               <Shield className="w-4 h-4 text-red-500" />
               50 States Covered
             </span>
-            <span className="px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm">
+            <span className="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm flex items-center gap-2 shadow-sm">
               <Lock className="w-4 h-4 text-red-500" />
               100% Confidential
             </span>
           </div>
           
-          <p className="text-lg text-gray-300 mb-12 max-w-3xl mx-auto">
-            AI-powered case analysis, violation detection, and defense strategy generation. 
-            Fight for your family with the most advanced CPS defense platform available.
+          <p className="text-lg text-slate-600 mb-12 max-w-3xl mx-auto">
+            We’re here to help you protect your family — one step at a time. Get calm, guided support with AI-powered analysis, violation detection, and defense strategy generation.
           </p>
 
           {/* CTA Buttons */}
@@ -76,7 +75,7 @@ function LandingPage({ onNavigate }) {
               data-testid="get-started-btn"
             >
               <Shield className="w-5 h-5" />
-              Start Fighting Back
+              Create Free Account
               <ArrowRight className="w-5 h-5" />
             </button>
             <button 
@@ -89,7 +88,7 @@ function LandingPage({ onNavigate }) {
           </div>
 
           {/* Trust indicators */}
-          <div className="mt-12 flex items-center justify-center gap-6 text-sm text-gray-400">
+          <div className="mt-12 flex items-center justify-center gap-6 text-sm text-slate-500">
             <span className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-green-500" />
               No Credit Card Required
@@ -103,13 +102,13 @@ function LandingPage({ onNavigate }) {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-gradient-to-b from-black to-gray-900">
+      <section id="features" className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-4" style={{ fontFamily: 'Oswald, sans-serif' }}>
-            Powerful Defense Arsenal
+          <h2 className="text-4xl md:text-5xl font-semibold text-center mb-4 text-slate-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
+            Powerful Defense Support
           </h2>
-          <p className="text-xl text-gray-400 text-center mb-16 max-w-2xl mx-auto">
-            Everything you need to analyze your case and build an effective defense
+          <p className="text-xl text-slate-600 text-center mb-16 max-w-2xl mx-auto">
+            Everything you need to analyze your case and build an effective defense, presented in a calm, guided way.
           </p>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
@@ -121,10 +120,10 @@ function LandingPage({ onNavigate }) {
               { icon: Calendar, title: 'Case Timeline', desc: 'Build comprehensive timelines with automatic event extraction', color: 'text-green-500' },
               { icon: MessageSquare, title: 'AI Legal Chat', desc: 'Ask questions and get instant answers from your AI legal assistant', color: 'text-cyan-500' },
             ].map((feature, i) => (
-              <div key={i} className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 card-hover">
+              <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6 card-hover">
                 <feature.icon className={`w-10 h-10 ${feature.color} mb-4`} />
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-400 text-sm">{feature.desc}</p>
+                <h3 className="text-xl font-semibold mb-2 text-slate-900">{feature.title}</h3>
+                <p className="text-slate-600 text-sm">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -132,14 +131,14 @@ function LandingPage({ onNavigate }) {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-t from-black to-red-950/20">
+      <section className="py-20 bg-slate-50">
         <div className="container mx-auto px-4 text-center">
           <Shield className="w-16 h-16 mx-auto text-red-600 mb-6" />
-          <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: 'Oswald, sans-serif' }}>
-            Ready to Fight Back?
+          <h2 className="text-4xl md:text-5xl font-semibold mb-6 text-slate-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
+            Ready to feel supported?
           </h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Your children are counting on you. Start your defense today.
+          <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
+            Your children are counting on you. We’ll guide you through your first case gently.
           </p>
           <button 
             onClick={() => onNavigate('auth')}
@@ -153,12 +152,12 @@ function LandingPage({ onNavigate }) {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 py-8 bg-black">
+      <footer className="border-t border-slate-200 py-8 bg-white">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-slate-500">
             © 2024-2025 THE CPS PUNISHER. Educational tool - not legal advice.
           </p>
-          <p className="text-xs text-gray-600 mt-2">
+          <p className="text-xs text-slate-400 mt-2">
             Always consult with a licensed attorney for legal matters.
           </p>
         </div>
