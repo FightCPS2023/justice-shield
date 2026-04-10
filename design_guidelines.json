@@ -1,0 +1,109 @@
+{
+  "typography": {
+    "headings": {
+      "font": "Outfit, sans-serif",
+      "style": "Friendly but structural. Avoid aggressive all-caps. Use tracking-tight for sizes text-2xl and above.",
+      "weights": ["font-medium", "font-semibold"]
+    },
+    "body": {
+      "font": "Figtree, sans-serif",
+      "style": "Highly legible, slightly rounded for approachability. Use leading-relaxed for long-form text.",
+      "sizes": "Bump up default sizes for readability under stress. Use text-lg for standard body text, text-base for secondary."
+    },
+    "rules": [
+      "No aggressive ALL CAPS text blocks.",
+      "Use font-medium instead of font-bold for emphasis to soften the tone.",
+      "Never center-align paragraphs; maintain left-alignment for predictable reading patterns.",
+      "Ensure all text has a minimum contrast ratio of 4.5:1 against its background."
+    ]
+  },
+  "colors": {
+    "strategy": "The 'Diluted Intensity' Protocol",
+    "backgrounds": "Use massive amounts of calming neutrals: bg-slate-50, bg-gray-50, or pure bg-white. Zero dark mode or aggressive dark panels by default.",
+    "brand_colors": "CRITICAL: Keep the existing Tailwind color configuration exactly as is, but shift application. Do not use large solid blocks of the primary color if it is an intense red/black. Instead, use them as thin accents (border-l-4), text links (text-primary), or highly transparent backgrounds (bg-primary/5).",
+    "interactive": "Buttons can use the primary color, but soften them with rounded-full shapes and soft shadow-sm.",
+    "states": "Hover states should lighten (hover:bg-primary/90) or rely on subtle translations (-translate-y-0.5) rather than aggressive color changes.",
+    "borders": "Use ultra-light borders (border-slate-200 or border-border/40) to separate content without feeling 'caged'."
+  },
+  "visual_enhancers": {
+    "border_radius": "Extremely generous. Use rounded-2xl for cards and modals. Use rounded-full for primary action buttons and pills.",
+    "shadows": "Soft, diffuse ambient shadows. shadow-[0_8px_30px_rgb(0,0,0,0.04)] to make elements float gently rather than pop aggressively.",
+    "microcopy": "Inject reassuring text globally. Empty states must say things like: 'No cases yet. We are ready to help you build your defense whenever you need.' Add tooltips with contextual examples next to complex legal terms.",
+    "surfaces": "Glassmorphism for the Immediate Help Panel (bg-white/80 backdrop-blur-xl border border-white/20) to make it feel accessible and modern without blocking the underlying context."
+  },
+  "component_name": {
+    "ImmediateHelpPanel": "Floating or fixed right panel providing instant access to AI Chat and emergency steps.",
+    "GuidedCaseWizard": "Replaces all raw forms. A step-by-step calm interface with a soft progress indicator.",
+    "SupportiveEmptyState": "Illustration + reassuring micro-copy + clear single CTA.",
+    "CaseTimeline": "Vertical line with soft rounded nodes, showing clear progress and next steps without legal intimidation.",
+    "AI_Chat": "Conversational UI with generous padding, clear differentiation between AI and user, and suggested 'calm' prompt buttons."
+  },
+  "grids": {
+    "strategy": "Mobile-First 'Airy' Layouts",
+    "mobile": "Single column (grid-cols-1) with massive touch targets (min-h-[56px] for buttons and inputs). gap-6 between major sections.",
+    "desktop": "Dashboard uses a clean sidebar (w-64) with a massive main content area. Content max-width should be restricted (max-w-4xl) to prevent line-lengths from becoming exhausting.",
+    "wizard": "Use a central focused column (max-w-2xl) with generous horizontal padding. Do not span forms across the entire screen width."
+  },
+  "layouts": {
+    "landing": "Hero section -> Reassuring Value Props -> Seamless Signup. Heavy use of whitespace (py-24).",
+    "dashboard_shell": "Side navigation with soft active states (bg-slate-100 text-slate-900 rounded-xl mx-2). Top header includes the 'Immediate Help' trigger.",
+    "cards": "Cardless or 'Soft Card' approach. bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm.",
+    "forms": "Inputs must be tall (h-14) with text-lg text. Use floating labels or very clear, non-jargon labels above inputs."
+  },
+  "motion": {
+    "transitions": "Slow and deliberate. Use duration-300 or duration-500 ease-out. No snappy/aggressive animations.",
+    "entrance": "Staggered fade-up (opacity-0 translate-y-4 to opacity-100 translate-y-0) for list items and wizard steps.",
+    "loading": "Use reassuring text ('Analyzing documents...', 'Checking for violations...') instead of just spinners. Progress bars should move smoothly."
+  },
+  "accessibility": {
+    "touch_targets": "Minimum 48x48px for all interactive elements, preferably larger (56px) for high-stress mobile users.",
+    "contrast": "Strict adherence to WCAG AA. Ensure soft colors still pass contrast checks against white backgrounds.",
+    "test_ids": "MANDATORY: All interactive elements must have data-testid. E.g., data-testid='help-panel-trigger', data-testid='wizard-next-step'.",
+    "focus": "Clear focus rings (focus:ring-2 focus:ring-primary/50 focus:ring-offset-2) for keyboard navigation."
+  },
+  "media": {
+    "strategy": "Empathetic, organized, and calming. Avoid stock photos of stressed people or gavels.",
+    "usage": "Use sparingly. A soft hero image on the landing page, and maybe subtle icons/illustrations in empty states."
+  },
+  "3d_libraries": {
+    "usage": "None. Keep the interface flat, fast, and completely distraction-free to reduce cognitive load."
+  },
+  "image_urls": {
+    "hero_landing": [
+      {
+        "url": "https://images.unsplash.com/photo-1531984929664-2fb2be468d3e?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Boy hugging woman calmly during daytime. Use for the main emotional anchor on the landing page."
+      }
+    ],
+    "documents_organized": [
+      {
+        "url": "https://images.unsplash.com/photo-1589884629000-60c572c6ba7a?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Clean, organized workspace with a laptop on a wooden table. Use for the Document Generator or Case Files section to imply order and control."
+      }
+    ]
+  },
+  "component_path": "/app/frontend/src/components/ui",
+  "instructions_to_main_agent": [
+    "1. PRESERVE EXISTING LOGIC: You are overhauling the UI/UX. Do not delete existing backend integrations, state management, or AI routing logic.",
+    "2. COLOR MAPPING: Keep the existing tailwind.config.js color variables, but drastically change how they are applied. Remove solid dark backgrounds. Use pure white or very light grays (bg-slate-50) for the main application canvas.",
+    "3. GUIDED WIZARD: Locate the existing 'New Case' form. Break it down into a multi-step component (Wizard). Step 1: Upload/Describe. Step 2: Violation Review. Step 3: Defense Generation. Add a soft progress bar.",
+    "4. IMMEDIATE HELP PANEL: Implement a global floating action button (bottom right) that opens a Glassmorphic side panel containing emergency CPS response tips and a quick-link to the AI Legal Chat.",
+    "5. MICRO-COPY: Inject empathetic text globally. Replace 'Submit' with 'Continue to Next Step'. Add 'We are here to help.' to the empty states of the dashboard.",
+    "6. SPACING & SIZING: Increase all padding. If a card had p-4, make it p-6 or p-8. Increase base text size to text-lg and button heights to h-14 to accommodate stressed, shaking hands on mobile devices.",
+    "7. TEST IDS: Inject data-testid attributes into every single button, link, and form input you touch or create."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. Avoid this: make creative, distinctive frontends that surprise and delight.",
+    "Do not make generic centered layouts. Create depth through layered design elements with z-index hierarchy and glass-morphism.",
+    "DO NOT apply universal transition (`transition: all`). Always add transitions for specific interactive elements like button, input excluding transforms.",
+    "DO NOT center align the app container. Maintain left-alignment for predictable reading patterns.",
+    "Always use modern button styles like pill-shaped, with interaction animations.",
+    "NEVER use AI assistant Emoji characters (🤖🧠💡 etc.) for icons. Use proper icon libraries (Lucide React is default).",
+    "Every interaction needs micro-animations - hover states, transitions, and entrance animations.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, custom selection states, and loading animations separate good from extraordinary.",
+    "Components MUST use named exports. Pages MUST use default exports.",
+    "Use `sonner` for toast notifications.",
+    "All interactive and key informational elements MUST include a `data-testid` attribute (kebab-case, role-based)."
+  ]
+}
