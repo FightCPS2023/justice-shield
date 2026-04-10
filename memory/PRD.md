@@ -171,6 +171,13 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added explicit ChatError handling + timeouts in Smart Research and Smart Document endpoints to prevent unhandled crashes
 - Returns 402/502 with user-friendly messages when LLM budget/BadGateway errors occur
 
+### Session 26: Calm Mobile-First Redesign + Case Wizard - COMPLETE
+- Applied light, supportive design system (Figtree/Outfit fonts, soft spacing, rounded controls, white backgrounds)
+- Added guided 3-step case creation wizard with progress indicator, example placeholders, and supportive microcopy
+- Added Immediate Help panel with quick actions and gentle guidance
+- Reorganized sidebar for calm navigation and improved mobile close handling
+- Updated Landing + Auth for reassurance and seamless onboarding
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
