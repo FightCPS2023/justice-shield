@@ -296,12 +296,12 @@ frontend:
 metadata:
   created_by: "testing_agent"
   version: "1.0"
-  test_sequence: 16
-  last_updated: "2026-04-10T21:30:00Z"
+  test_sequence: 17
+  last_updated: "2026-04-10T21:35:00Z"
 
 test_plan:
   current_focus:
-    []
+    - "Calm Redesign - Mobile View (390x844)"
   stuck_tasks:
     - "Precedent Finder - LLM Library Timeout Issue"
   test_all: false
@@ -345,6 +345,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ SIDEBAR SECTIONS COLLAPSE/EXPAND VERIFIED: All 5 sidebar sections tested successfully on https://justice-shield-6.preview.emergentagent.com with credentials cpsvhuntingjustice@gmail.com/cpssuxass. RESULTS: (1) Core section - Toggle visible (data-testid='nav-section-core-toggle'), items expand/collapse correctly ✓, (2) Case Data section - Toggle visible (data-testid='nav-section-case-toggle'), items expand/collapse correctly ✓, (3) AI Tools section - Toggle visible (data-testid='nav-section-ai-toggle'), items expand/collapse correctly ✓, (4) Research & Law section - Toggle visible (data-testid='nav-section-research-toggle'), items expand/collapse correctly ✓, (5) Community & Support section - Toggle visible (data-testid='nav-section-community-toggle'), items expand/collapse correctly ✓. Implementation uses openSections state (lines 197-203 in App.js) with ChevronDown icon rotation animation. All sections default to expanded (true). MINOR ISSUE: In some cases, clicking community toggle encounters overlay from admin button at bottom of sidebar - this is a z-index/positioning issue but does not prevent functionality. Feature is PRODUCTION-READY with excellent organization."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TEST PASSED (2026-04-10): Sidebar Community toggle overlay fix VERIFIED. Comprehensive testing on desktop view (1920x1080) confirms: (1) Community toggle found at position y=2486.84375 (within scrollable sidebar area) ✓, (2) Bottom section (Admin/Settings) at y=892.328125 with height 187.671875 ✓, (3) Mathematical overlap detected (Community toggle extends beyond bottom section Y position), but this is EXPECTED behavior because sidebar is scrollable (overflow-y-auto) ✓, (4) Community toggle click works correctly - state changed from expanded (True) to collapsed (False) ✓, (5) Screenshots captured showing successful toggle operation ✓. The previous 'overlay issue' was a false concern - the sidebar's scrollable nature means the Community section can be positioned beyond the bottom section without causing clickability issues. The bottom section uses 'position: absolute' to stay fixed at bottom while nav content scrolls. FIX CONFIRMED WORKING AS DESIGNED."
 
   - task: "Calm Redesign - Cases Wizard (Start a New Case)"
     implemented: true
@@ -408,15 +411,18 @@ frontend:
 
   - task: "Calm Redesign - Mobile View (390x844)"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/App.js, frontend/src/components/LandingPage.jsx, frontend/src/components/AuthPage.jsx"
-    stuck_count: 0
-    priority: "high"
+    stuck_count: 1
+    priority: "critical"
     needs_retesting: false
     status_history:
       - working: true
         agent: "testing"
         comment: "✅ MOBILE VIEW CALM REDESIGN VERIFIED: Tested at 390x844 viewport on https://justice-shield-6.preview.emergentagent.com. All requirements passed: (1) Mobile menu button visible and functional (data-testid='mobile-menu-btn') ✓, (2) Mobile sidebar opens correctly when menu button clicked (data-testid='sidebar') ✓, (3) Spacing verified - proper padding and margins on mobile (responsive classes like 'p-4', 'px-4', 'gap-3') ✓, (4) Landing page renders correctly on mobile with hero image, CTA buttons, and calm microcopy ✓, (5) Auth page renders correctly on mobile with light card UI and larger inputs ✓, (6) Dashboard renders correctly on mobile with mobile header (lg:hidden classes) ✓. Screenshots captured for mobile landing, auth, dashboard, and sidebar. MINOR ISSUE: Close sidebar button has overlay issue from mobile header (z-index conflict) but sidebar can be closed by clicking outside overlay. Implementation uses responsive Tailwind classes (lg:hidden, lg:translate-x-0, etc.) for mobile/desktop switching. Feature is PRODUCTION-READY with excellent mobile UX and proper spacing."
+      - working: false
+        agent: "testing"
+        comment: "❌ RE-TEST FAILED (2026-04-10): Mobile close sidebar button is NOT WORKING. CRITICAL BUG FOUND: (1) Mobile viewport set to 390x844 ✓, (2) Mobile menu button clicked successfully ✓, (3) Sidebar opened correctly ✓, (4) Close button (data-testid='close-sidebar-btn') found at position x=235, y=16, width=36, height=56 ✓, (5) Mobile header found at position x=0, y=0, width=390, height=89 ✓, (6) CRITICAL ISSUE: Close button is positioned at y=16, which is WITHIN the mobile header area (0-89), causing overlay conflict ✗, (7) Element at close button center is SVG 'path' element (the X icon) ✓, (8) Close button clicked successfully BUT sidebar remains visible ✗, (9) onClick handler not firing or being intercepted by mobile header overlay ✗. ROOT CAUSE: The close button (line 387-389 in App.js) is positioned inside the sidebar header at y=16, but the mobile header (line 484-495) has z-40 while sidebar has z-[60]. Despite higher z-index, the close button's click is not working. The button's onClick={() => setSidebarOpen(false)} is not being triggered. This is a CRITICAL UX bug - users cannot close the sidebar on mobile using the X button. WORKAROUND: Users can click outside the sidebar to close it, but this is not intuitive. FIX REQUIRED: Investigate why onClick is not firing. Possible solutions: (1) Increase close button z-index explicitly, (2) Add pointer-events handling, (3) Reposition close button outside header overlap area, (4) Debug event propagation to ensure click reaches button handler."
 
 
 frontend:
@@ -736,4 +742,8 @@ agent_communication:
     message: "❌ SMART DOC GENERATOR - CRITICAL BACKEND TIMEOUT! Frontend UI is perfect - templates work correctly, loading state appears, error alert is properly implemented with data-testid='smartdoc-error-alert'. HOWEVER: Backend API /api/ai/smart-document/stream times out after 30+ seconds without returning any response. Likely same Pydantic v2 issue or LLM timeout. Error alert never appears because backend doesn't return error response. Users see infinite loading. FIX: (1) Debug backend endpoint for Pydantic v2 issues, (2) Add frontend-side timeout (30-45s) to show error even if backend doesn't respond, (3) Ensure backend returns proper error responses. URGENT: This blocks the entire Smart Doc Generator feature."
   - agent: "testing"
     message: "❌ COURT OPINIONS - CRITICAL API FAILURE! Frontend UI is perfect - search form, filters, all data-testids correctly implemented. HOWEVER: Backend API /api/courtlistener/search returns no results after 20s timeout. Console shows 502 Bad Gateway error. Likely causes: (1) CourtListener API key missing/invalid, (2) Backend endpoint failing, (3) Network timeout to external API. No error message shown to user. FIX: (1) Verify CourtListener API key in backend env, (2) Check backend logs for errors, (3) Add error handling to show user-friendly message when search fails, (4) Add loading timeout with error after 15-20s. URGENT: This blocks the entire Court Opinions feature. NOTE: Could not test Opinion/Analyze/Save/Source buttons because no results appeared."
+  - agent: "testing"
+    message: "✅ SIDEBAR COMMUNITY TOGGLE RE-TEST PASSED (2026-04-10): The previously reported 'overlay issue' with Community section toggle is NOT a bug. Comprehensive testing confirms the toggle works correctly. The sidebar is scrollable (overflow-y-auto) with bottom section positioned absolutely. When scrolled to bottom, Community toggle appears at y=2486 (outside viewport) but remains clickable within the scrollable area. Click successfully toggles section from expanded to collapsed. The mathematical 'overlap' detected is expected behavior due to scrollable design. No fix needed - working as designed."
+  - agent: "testing"
+    message: "❌ MOBILE CLOSE SIDEBAR BUTTON - CRITICAL BUG FOUND (2026-04-10): The close sidebar button (X button) on mobile view is NOT WORKING. Testing at 390x844 viewport shows: (1) Mobile menu opens sidebar correctly ✓, (2) Close button visible at position y=16 (within mobile header area 0-89) ✓, (3) Close button clicked successfully BUT sidebar remains open ✗, (4) onClick handler not firing or being intercepted ✗. ROOT CAUSE: Close button positioned inside sidebar header overlaps with mobile header (z-40 vs z-60). Despite higher z-index on sidebar, the click event is not reaching the button's onClick={() => setSidebarOpen(false)} handler. IMPACT: Users cannot close sidebar using X button on mobile - must click outside sidebar (not intuitive). FIX REQUIRED: (1) Debug why onClick is not firing despite successful click detection, (2) Consider adding explicit z-index to close button, (3) Check for pointer-events issues, (4) May need to reposition button or adjust mobile header z-index. URGENT: This is a critical mobile UX issue."
 

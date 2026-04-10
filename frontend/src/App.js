@@ -374,7 +374,7 @@ function Dashboard({ onNavigate }) {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} data-testid="sidebar">
+      <aside className={`fixed inset-y-0 left-0 z-[60] w-72 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} data-testid="sidebar">
         <div className="p-4 border-b border-slate-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -390,7 +390,7 @@ function Dashboard({ onNavigate }) {
           </div>
         </div>
 
-        <nav className="p-4 space-y-3 max-h-[calc(100vh-220px)] overflow-y-auto pb-4">
+        <nav className="p-4 space-y-3 max-h-[calc(100vh-220px)] overflow-y-auto pb-24">
           {menuSections.map((section) => (
             <div key={section.id} className="space-y-2">
               <button
@@ -481,7 +481,7 @@ function Dashboard({ onNavigate }) {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200 p-4 safe-area-top">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 p-4 safe-area-top">
         <div className="flex items-center justify-between">
           <button onClick={() => setSidebarOpen(true)} className="p-2 hover:bg-slate-100 rounded-full transition-colors" data-testid="mobile-menu-btn">
             <Menu className="w-6 h-6" />
