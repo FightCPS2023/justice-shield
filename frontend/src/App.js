@@ -384,7 +384,15 @@ function Dashboard({ onNavigate }) {
                 <p className="text-xs text-slate-500 truncate max-w-[140px]">{user?.email}</p>
               </div>
             </div>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2 hover:bg-slate-100 rounded-full" data-testid="close-sidebar-btn">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSidebarOpen(false);
+              }}
+              className="lg:hidden p-2 hover:bg-slate-100 rounded-full relative z-[70] pointer-events-auto"
+              data-testid="close-sidebar-btn"
+            >
               <X className="w-5 h-5" />
             </button>
           </div>
