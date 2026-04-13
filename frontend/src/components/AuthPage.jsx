@@ -32,7 +32,7 @@ function AuthPage({ onNavigate }) {
           setConnectionStatus('error');
           return;
         }
-        const response = await fetch(`${API_URL}/health`, {
+        const response = await fetch(`${API_URL}/api/health`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -90,7 +90,7 @@ function AuthPage({ onNavigate }) {
         setErrorMessage('Server configuration missing. Please refresh the page.');
         return;
       }
-      const response = await fetch(`${API_URL}/health`);
+      const response = await fetch(`${API_URL}/api/health`);
       if (response.ok) {
         setConnectionStatus('connected');
       } else {
