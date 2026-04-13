@@ -178,6 +178,9 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Reorganized sidebar for calm navigation and improved mobile close handling
 - Updated Landing + Auth for reassurance and seamless onboarding
 
+### Session 27: Auth Connection Fix - COMPLETE
+- Updated AuthPage health checks to use /api/health, restoring connection indicator and login flow in preview
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
