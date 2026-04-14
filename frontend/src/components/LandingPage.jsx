@@ -39,14 +39,15 @@ function LandingPage({ onNavigate }) {
         {/* Background with hero image */}
         <div className="absolute inset-0">
           <img 
-            src="https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?q=80w=2070&auto=format&fit=crop" 
-            alt="Calm family support" 
+            src="/images/hero-logo.jpg" 
+            alt="The CPS Punisher" 
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/30 to-white/90" />
         </div>
         
         <div className="relative z-10 container mx-auto px-4 text-center max-w-5xl py-20 mt-32">
+          <div className="bg-white/90 backdrop-blur-sm border border-slate-200 rounded-3xl p-8 md:p-12 shadow-[0_24px_80px_rgba(15,23,42,0.18)]" data-testid="landing-hero-card">
           {/* Badges */}
           <div className="flex items-center justify-center gap-4 mb-8 flex-wrap">
             <span className="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm flex items-center gap-2 shadow-sm">
@@ -63,7 +64,7 @@ function LandingPage({ onNavigate }) {
             </span>
           </div>
           
-          <p className="text-lg text-slate-600 mb-12 max-w-3xl mx-auto">
+          <p className="text-lg text-slate-600 mb-12 max-w-3xl mx-auto" data-testid="landing-hero-copy">
             We’re here to help you protect your family — one step at a time. Get calm, guided support with AI-powered analysis, violation detection, and defense strategy generation.
           </p>
 
@@ -99,6 +100,7 @@ function LandingPage({ onNavigate }) {
             </span>
           </div>
         </div>
+      </div>
       </section>
 
       {/* Features Section */}
