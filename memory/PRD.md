@@ -181,6 +181,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 ### Session 27: Auth Connection Fix - COMPLETE
 - Updated AuthPage health checks to use /api/health, restoring connection indicator and login flow in preview
 
+### Session 28: Original Graphics + Dark Palette Restoration - COMPLETE
+- Restored courthouse hero image and emphasized shield logo in landing hero
+- Reverted UI to red/black/silver/white palette while keeping larger readable text
+- Updated wizard, auth, and dashboards for high-contrast readability
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
