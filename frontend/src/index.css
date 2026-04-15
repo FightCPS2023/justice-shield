@@ -171,3 +171,18 @@
     padding-top: env(safe-area-inset-top);
   }
 }
+
+/* Shield animation */
+@keyframes shieldFadeIn {
+  0% { opacity: 0; transform: scale(0.96) rotate(0deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes shieldSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.shield-hero-anim {
+  animation: shieldFadeIn 1.4s ease-out both, shieldSpin 22s linear infinite;
+}

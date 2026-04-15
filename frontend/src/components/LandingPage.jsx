@@ -49,7 +49,7 @@ function LandingPage({ onNavigate }) {
         <div className="relative z-10 container mx-auto px-4 text-center max-w-5xl py-20 mt-32">
           <div className="bg-black/70 backdrop-blur-md border border-slate-700 rounded-3xl p-8 md:p-12 shadow-[0_30px_90px_rgba(0,0,0,0.55)]" data-testid="landing-hero-card">
             <div className="flex justify-center mb-6" data-testid="landing-shield-hero">
-              <img src="/images/shield-logo.png" alt="Punisher Shield" className="w-20 h-24 md:w-28 md:h-32 drop-shadow-[0_18px_35px_rgba(220,38,38,0.45)]" />
+              <img src="/images/shield-logo.png" alt="Punisher Shield" className="w-20 h-24 md:w-28 md:h-32 drop-shadow-[0_18px_35px_rgba(220,38,38,0.45)] shield-hero-anim" />
             </div>
             <h1 className="text-4xl md:text-5xl font-semibold text-white mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
               Protect your family with clarity and strength
