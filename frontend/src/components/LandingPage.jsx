@@ -39,9 +39,14 @@ function LandingPage({ onNavigate }) {
         {/* Background with hero image */}
         <div className="absolute inset-0">
           <img 
-            src="/images/hero-logo.jpg" 
+            src="/images/hero-logo-optimized.jpg" 
+            srcSet="/images/hero-logo-small.jpg 900w, /images/hero-logo-optimized.jpg 1600w, /images/hero-logo.jpg 2200w"
+            sizes="(max-width: 768px) 900px, 1600px"
             alt="The CPS Punisher" 
             className="w-full h-full object-cover"
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80" />
         </div>
@@ -49,7 +54,15 @@ function LandingPage({ onNavigate }) {
         <div className="relative z-10 container mx-auto px-4 text-center max-w-5xl py-20 mt-32">
           <div className="bg-black/70 backdrop-blur-md border border-slate-700 rounded-3xl p-8 md:p-12 shadow-[0_30px_90px_rgba(0,0,0,0.55)]" data-testid="landing-hero-card">
             <div className="flex justify-center mb-6" data-testid="landing-shield-hero">
-              <img src="/images/shield-logo.png" alt="Punisher Shield" className="w-20 h-24 md:w-28 md:h-32 drop-shadow-[0_18px_35px_rgba(220,38,38,0.45)] shield-hero-anim" />
+              <img
+                src="/images/shield-logo.png"
+                srcSet="/images/shield-logo-small.png 360w, /images/shield-logo.png 625w"
+                sizes="(max-width: 768px) 120px, 160px"
+                alt="Punisher Shield"
+                className="w-20 h-24 md:w-28 md:h-32 drop-shadow-[0_18px_35px_rgba(220,38,38,0.45)] shield-hero-anim"
+                loading="eager"
+                decoding="async"
+              />
             </div>
             <h1 className="text-4xl md:text-5xl font-semibold text-white mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
               Protect your family with clarity and strength
