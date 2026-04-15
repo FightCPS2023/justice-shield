@@ -6,24 +6,24 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --background: 0 0% 5%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
     --primary: 0 84% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
+    --secondary: 210 20% 18%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 210 18% 16%;
+    --muted-foreground: 210 14% 70%;
+    --accent: 210 18% 18%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
+    --border: 210 10% 24%;
+    --input: 210 10% 24%;
     --ring: 0 84% 60%;
     --radius: 1rem;
   }
@@ -50,14 +50,14 @@
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #0b0b0c;
 }
 ::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
+  background: #64748b;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #cbd5f5;
+  background: #94a3b8;
 }
 
 /* Animations */
@@ -72,7 +72,7 @@
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #0f172a 0%, #dc2626 50%, #0f172a 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #dc2626 50%, #f8fafc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -80,11 +80,11 @@
 
 /* Glow effects */
 .glow-red {
-  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.18);
+  box-shadow: 0 12px 28px rgba(220, 38, 38, 0.3);
 }
 
 .text-glow {
-  text-shadow: 0 0 12px rgba(220, 38, 38, 0.3);
+  text-shadow: 0 0 14px rgba(248, 250, 252, 0.4);
 }
 
 /* Card hover effect */
@@ -98,11 +98,11 @@
 
 /* Button styles */
 .btn-punisher {
-  @apply bg-red-600 text-white font-semibold py-4 px-6 rounded-full transition-colors duration-300 shadow-[0_10px_24px_rgba(220,38,38,0.16)] hover:bg-red-700;
+  @apply bg-red-600 text-white font-semibold py-4 px-6 rounded-full transition-colors duration-300 shadow-[0_12px_28px_rgba(220,38,38,0.35)] hover:bg-red-700;
 }
 
 .btn-outline-punisher {
-  @apply border-2 border-red-600 text-red-600 hover:bg-red-50 font-semibold py-4 px-6 rounded-full transition-colors duration-300;
+  @apply border-2 border-slate-200 text-slate-100 hover:bg-slate-800 font-semibold py-4 px-6 rounded-full transition-colors duration-300;
 }
 
 /* Mobile-specific styles */

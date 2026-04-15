@@ -160,10 +160,10 @@ function App() {
 
   if (loading || processingOAuth) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center">
         <img src="/images/shield-logo.png" alt="Loading" className="w-24 h-28 animate-pulse mb-4" />
         <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
-        {processingOAuth && <p className="text-slate-600 mt-4">Signing you in gently...</p>}
+        {processingOAuth && <p className="text-slate-300 mt-4">Signing you in gently...</p>}
       </div>
     );
   }
@@ -172,11 +172,11 @@ function App() {
 
   return (
     <AuthContext.Provider value={{ user, setUser, login, signup, logout, api, token }}>
-      <div className="min-h-screen bg-slate-50 text-slate-900">
+      <div className="min-h-screen bg-black text-white">
         {currentView === 'landing' && <LandingPage onNavigate={setCurrentView} />}
         {currentView === 'auth' && <AuthPage onNavigate={setCurrentView} />}
         {currentView === 'dashboard' && <Dashboard onNavigate={setCurrentView} />}
-        <Toaster position="top-right" theme="light" richColors />
+        <Toaster position="top-right" theme="dark" richColors />
       </div>
     </AuthContext.Provider>
   );
@@ -334,13 +334,13 @@ function Dashboard({ onNavigate }) {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-black flex">
       {showTermsGate && (
-        <div className="fixed inset-0 bg-slate-900/40 z-[60] flex items-center justify-center p-4" data-testid="terms-gate-modal">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 md:p-8 overflow-y-auto max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4" data-testid="terms-gate-modal">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 md:p-8 overflow-y-auto max-h-[90vh]">
             <h2 className="text-2xl font-bold mb-2">Terms of Service & Privacy Policy</h2>
-            <p className="text-sm text-slate-500 mb-4">Effective Date: {effectiveDate}</p>
-            <div className="space-y-3 text-sm text-slate-600">
+            <p className="text-sm text-slate-300 mb-4">Effective Date: {effectiveDate}</p>
+            <div className="space-y-3 text-sm text-slate-200">
               <p><strong>Acceptance:</strong> By using “The CPS Punisher,” you agree to these Terms.</p>
               <p><strong>Intellectual Property:</strong> All content, features, and functionalities are owned by Darren Guay and protected by IP laws. Users are granted a limited, non-exclusive license for personal use only. No reproduction, modification, or reverse engineering is permitted.</p>
               <p><strong>User Conduct:</strong> Users must not copy, distribute, or use the app for illegal purposes.</p>
@@ -349,7 +349,7 @@ function Dashboard({ onNavigate }) {
               <p><strong>Governing Law:</strong> State of Maine.</p>
               <p><strong>Privacy:</strong> Data is used solely for app functionality and analysis; users may request access or deletion via <span className="text-purple-300">punisher@cpsbreakingnews.com</span>.</p>
             </div>
-            <label className="flex items-start gap-2 text-sm text-slate-600 mt-6">
+            <label className="flex items-start gap-2 text-sm text-slate-200 mt-6">
               <input
                 type="checkbox"
                 checked={termsGateChecked}
@@ -374,14 +374,14 @@ function Dashboard({ onNavigate }) {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-[60] w-72 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} data-testid="sidebar">
-        <div className="p-4 border-b border-slate-200">
+      <aside className={`fixed inset-y-0 left-0 z-[60] w-72 bg-black border-r border-slate-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} data-testid="sidebar">
+        <div className="p-4 border-b border-slate-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img src="/images/shield-logo.png" alt="Logo" className="w-10 h-12 object-contain" />
               <div>
-                <h1 className="font-semibold text-slate-900" style={{ fontFamily: 'Outfit, sans-serif' }}>CPS PUNISHER</h1>
-                <p className="text-xs text-slate-500 truncate max-w-[140px]">{user?.email}</p>
+                <h1 className="font-semibold text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>CPS PUNISHER</h1>
+                <p className="text-xs text-slate-400 truncate max-w-[140px]">{user?.email}</p>
               </div>
             </div>
             <button
@@ -390,7 +390,7 @@ function Dashboard({ onNavigate }) {
                 e.stopPropagation();
                 setSidebarOpen(false);
               }}
-              className="lg:hidden p-2 hover:bg-slate-100 rounded-full relative z-[70] pointer-events-auto"
+              className="lg:hidden p-2 hover:bg-slate-800 rounded-full relative z-[70] pointer-events-auto"
               data-testid="close-sidebar-btn"
             >
               <X className="w-5 h-5" />
@@ -404,7 +404,7 @@ function Dashboard({ onNavigate }) {
               <button
                 type="button"
                 onClick={() => setOpenSections((prev) => ({ ...prev, [section.id]: !prev[section.id] }))}
-                className="w-full flex items-center justify-between px-3 py-2 text-xs uppercase tracking-wider text-slate-500 hover:text-slate-700"
+                className="w-full flex items-center justify-between px-3 py-2 text-xs uppercase tracking-wider text-slate-400 hover:text-white"
                 data-testid={`nav-section-${section.id}-toggle`}
               >
                 <span>{section.label}</span>
@@ -432,22 +432,22 @@ function Dashboard({ onNavigate }) {
                         }}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                           isLocked 
-                            ? 'text-slate-400 hover:bg-slate-100 cursor-not-allowed opacity-60'
+                            ? 'text-slate-500 hover:bg-slate-900 cursor-not-allowed opacity-60'
                             : activeTab === item.id 
-                              ? 'bg-red-50 text-red-600 border border-red-200' 
+                              ? 'bg-red-600/20 text-red-200 border border-red-500/40' 
                               : item.highlight 
-                                ? 'text-red-600 hover:bg-red-50 border border-red-100'
-                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                                ? 'text-slate-100 hover:bg-slate-900/60 border border-slate-700'
+                                : 'text-slate-300 hover:bg-slate-900 hover:text-white'
                         }`}
                         data-testid={`nav-${item.id}`}
                       >
                         {isLocked ? <Lock className="w-4 h-4 text-slate-400 flex-shrink-0" /> : <item.icon className={`w-5 h-5 flex-shrink-0 ${item.highlight && !isLocked ? 'text-red-500' : ''}`} />}
                         <span className="truncate">{item.label}</span>
                         {isLocked && tierLabel && (
-                          <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded ml-auto flex-shrink-0">{tierLabel}</span>
+                          <span className="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded ml-auto flex-shrink-0">{tierLabel}</span>
                         )}
                         {!isLocked && item.highlight && (
-                          <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full ml-auto flex-shrink-0">NEW</span>
+                          <span className="text-xs bg-red-600/30 text-red-100 px-2 py-0.5 rounded-full ml-auto flex-shrink-0">NEW</span>
                         )}
                       </button>
                     );
@@ -458,11 +458,11 @@ function Dashboard({ onNavigate }) {
           ))}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-200 space-y-1 bg-white">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-800 space-y-1 bg-black">
           {isAdmin && (
             <button
               onClick={() => { setActiveTab('admin'); setSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors ${activeTab === 'admin' ? 'bg-red-50 text-red-600 border border-red-100' : 'text-red-600 hover:bg-red-50 hover:text-red-700'}`}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors ${activeTab === 'admin' ? 'bg-red-600/20 text-red-200 border border-red-500/40' : 'text-red-200 hover:bg-red-900/40 hover:text-red-100'}`}
               data-testid="nav-admin"
             >
               <Shield className="w-5 h-5" />
@@ -471,7 +471,7 @@ function Dashboard({ onNavigate }) {
           )}
           <button
             onClick={() => { setActiveTab('settings'); setSidebarOpen(false); }}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors ${activeTab === 'settings' ? 'bg-red-50 text-red-600 border border-red-100' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors ${activeTab === 'settings' ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-900 hover:text-white'}`}
             data-testid="nav-settings"
           >
             <Settings className="w-5 h-5" />
@@ -479,7 +479,7 @@ function Dashboard({ onNavigate }) {
           </button>
           <button
             onClick={logout}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-red-600"
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-red-200"
             data-testid="logout-btn"
           >
             <LogOut className="w-5 h-5" />
@@ -489,21 +489,21 @@ function Dashboard({ onNavigate }) {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 p-4 safe-area-top">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-black border-b border-slate-800 p-4 safe-area-top">
         <div className="flex items-center justify-between">
-          <button onClick={() => setSidebarOpen(true)} className="p-2 hover:bg-slate-100 rounded-full transition-colors" data-testid="mobile-menu-btn">
+          <button onClick={() => setSidebarOpen(true)} className="p-2 hover:bg-slate-800 rounded-full transition-colors" data-testid="mobile-menu-btn">
             <Menu className="w-6 h-6" />
           </button>
           <div className="flex items-center gap-2">
             <img src="/images/shield-logo.png" alt="Logo" className="w-8 h-10 object-contain" />
-            <span className="font-semibold text-slate-900" style={{ fontFamily: 'Outfit, sans-serif' }}>CPS PUNISHER</span>
+            <span className="font-semibold text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>CPS PUNISHER</span>
           </div>
           <div className="w-10" />
         </div>
       </div>
 
       {/* Main content */}
-      <main className="flex-1 lg:ml-72 pt-20 lg:pt-8 bg-slate-50">
+      <main className="flex-1 lg:ml-72 pt-20 lg:pt-8 bg-black">
         <div className="p-6 md:p-10 max-w-6xl mx-auto">
           {activeTab === 'overview' && <OverviewTab cases={cases} setActiveTab={setActiveTab} prefetchedData={prefetchedData} />}
           {activeTab === 'howto' && <HowToTab setActiveTab={setActiveTab} />}
@@ -554,21 +554,21 @@ function Dashboard({ onNavigate }) {
 
       <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3" data-testid="immediate-help-container">
         {helpPanelOpen && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 w-80 shadow-[0_20px_50px_rgba(15,23,42,0.12)]" data-testid="immediate-help-panel">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-5 w-80 shadow-[0_20px_50px_rgba(0,0,0,0.45)]" data-testid="immediate-help-panel">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h4 className="text-lg font-semibold">Immediate Help</h4>
-                <p className="text-sm text-slate-600 mt-1">You are not alone. Take one small step at a time.</p>
+                <h4 className="text-lg font-semibold text-white">Immediate Help</h4>
+                <p className="text-sm text-slate-200 mt-1">You are not alone. Take one small step at a time.</p>
               </div>
               <button
                 onClick={() => setHelpPanelOpen(false)}
-                className="p-2 rounded-full hover:bg-slate-100"
+                className="p-2 rounded-full hover:bg-slate-800"
                 data-testid="immediate-help-close"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <ul className="mt-4 space-y-2 text-sm text-slate-600">
+            <ul className="mt-4 space-y-2 text-sm text-slate-200">
               <li>1) Write down the latest CPS action or court date.</li>
               <li>2) Upload any documents you have to keep them safe.</li>
               <li>3) Ask the AI for next steps and a calm plan.</li>
@@ -583,14 +583,14 @@ function Dashboard({ onNavigate }) {
               </button>
               <button
                 onClick={() => { setActiveTab('documents'); setHelpPanelOpen(false); }}
-                className="w-full px-4 py-3 border border-slate-200 rounded-full text-sm text-slate-700"
+                className="w-full px-4 py-3 border border-slate-700 rounded-full text-sm text-slate-200 hover:bg-slate-800"
                 data-testid="help-upload-docs"
               >
                 Upload Documents
               </button>
               <button
                 onClick={() => { setActiveTab('violations'); setHelpPanelOpen(false); }}
-                className="w-full px-4 py-3 border border-slate-200 rounded-full text-sm text-slate-700"
+                className="w-full px-4 py-3 border border-slate-700 rounded-full text-sm text-slate-200 hover:bg-slate-800"
                 data-testid="help-review-violations"
               >
                 Review Violations
@@ -610,7 +610,7 @@ function Dashboard({ onNavigate }) {
       <HelpBot />
 
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-slate-900/30 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 bg-black/70 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
     </div>
   );

@@ -13,13 +13,13 @@ import {
 
 function LandingPage({ onNavigate }) {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-black">
       {/* Top Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-slate-800">
         <div className="container mx-auto px-4 flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
             <img src="/images/shield-logo.png" alt="CPS Punisher" className="w-8 h-9" />
-            <span className="text-lg font-semibold tracking-wide text-slate-900" style={{ fontFamily: 'Outfit, sans-serif' }}>THE CPS PUNISHER</span>
+            <span className="text-lg font-semibold tracking-wide text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>THE CPS PUNISHER</span>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -43,28 +43,34 @@ function LandingPage({ onNavigate }) {
             alt="The CPS Punisher" 
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/30 to-white/90" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80" />
         </div>
         
         <div className="relative z-10 container mx-auto px-4 text-center max-w-5xl py-20 mt-32">
-          <div className="bg-white/90 backdrop-blur-sm border border-slate-200 rounded-3xl p-8 md:p-12 shadow-[0_24px_80px_rgba(15,23,42,0.18)]" data-testid="landing-hero-card">
+          <div className="bg-black/70 backdrop-blur-md border border-slate-700 rounded-3xl p-8 md:p-12 shadow-[0_30px_90px_rgba(0,0,0,0.55)]" data-testid="landing-hero-card">
+            <div className="flex justify-center mb-6" data-testid="landing-shield-hero">
+              <img src="/images/shield-logo.png" alt="Punisher Shield" className="w-20 h-24 md:w-28 md:h-32 drop-shadow-[0_18px_35px_rgba(220,38,38,0.45)]" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-semibold text-white mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              Protect your family with clarity and strength
+            </h1>
           {/* Badges */}
           <div className="flex items-center justify-center gap-4 mb-8 flex-wrap">
-            <span className="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm flex items-center gap-2 shadow-sm">
+            <span className="px-4 py-2 bg-slate-900/70 border border-slate-700 rounded-full text-sm text-slate-200 flex items-center gap-2 shadow-sm">
               <Brain className="w-4 h-4 text-red-500" />
               AI-Powered Analysis
             </span>
-            <span className="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm flex items-center gap-2 shadow-sm">
+            <span className="px-4 py-2 bg-slate-900/70 border border-slate-700 rounded-full text-sm text-slate-200 flex items-center gap-2 shadow-sm">
               <Shield className="w-4 h-4 text-red-500" />
               50 States Covered
             </span>
-            <span className="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm flex items-center gap-2 shadow-sm">
+            <span className="px-4 py-2 bg-slate-900/70 border border-slate-700 rounded-full text-sm text-slate-200 flex items-center gap-2 shadow-sm">
               <Lock className="w-4 h-4 text-red-500" />
               100% Confidential
             </span>
           </div>
           
-          <p className="text-lg text-slate-600 mb-12 max-w-3xl mx-auto" data-testid="landing-hero-copy">
+          <p className="text-lg text-slate-200 mb-12 max-w-3xl mx-auto" data-testid="landing-hero-copy">
             We’re here to help you protect your family — one step at a time. Get calm, guided support with AI-powered analysis, violation detection, and defense strategy generation.
           </p>
 
@@ -89,7 +95,7 @@ function LandingPage({ onNavigate }) {
           </div>
 
           {/* Trust indicators */}
-          <div className="mt-12 flex items-center justify-center gap-6 text-sm text-slate-500">
+          <div className="mt-12 flex items-center justify-center gap-6 text-sm text-slate-300">
             <span className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-green-500" />
               No Credit Card Required
@@ -104,12 +110,12 @@ function LandingPage({ onNavigate }) {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
+      <section id="features" className="py-20 bg-black">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl md:text-5xl font-semibold text-center mb-4 text-slate-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
+          <h2 className="text-4xl md:text-5xl font-semibold text-center mb-4 text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Powerful Defense Support
           </h2>
-          <p className="text-xl text-slate-600 text-center mb-16 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-300 text-center mb-16 max-w-2xl mx-auto">
             Everything you need to analyze your case and build an effective defense, presented in a calm, guided way.
           </p>
 
@@ -122,10 +128,10 @@ function LandingPage({ onNavigate }) {
               { icon: Calendar, title: 'Case Timeline', desc: 'Build comprehensive timelines with automatic event extraction', color: 'text-green-500' },
               { icon: MessageSquare, title: 'AI Legal Chat', desc: 'Ask questions and get instant answers from your AI legal assistant', color: 'text-cyan-500' },
             ].map((feature, i) => (
-              <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6 card-hover">
+              <div key={i} className="bg-slate-900/70 border border-slate-700 rounded-2xl p-6 card-hover">
                 <feature.icon className={`w-10 h-10 ${feature.color} mb-4`} />
-                <h3 className="text-xl font-semibold mb-2 text-slate-900">{feature.title}</h3>
-                <p className="text-slate-600 text-sm">{feature.desc}</p>
+                <h3 className="text-xl font-semibold mb-2 text-white">{feature.title}</h3>
+                <p className="text-slate-300 text-sm">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -133,13 +139,13 @@ function LandingPage({ onNavigate }) {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-20 bg-black">
         <div className="container mx-auto px-4 text-center">
           <Shield className="w-16 h-16 mx-auto text-red-600 mb-6" />
-          <h2 className="text-4xl md:text-5xl font-semibold mb-6 text-slate-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
+          <h2 className="text-4xl md:text-5xl font-semibold mb-6 text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Ready to feel supported?
           </h2>
-          <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
             Your children are counting on you. We’ll guide you through your first case gently.
           </p>
           <button 
@@ -154,12 +160,12 @@ function LandingPage({ onNavigate }) {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 py-8 bg-white">
+      <footer className="border-t border-slate-800 py-8 bg-black">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-400">
             © 2024-2025 THE CPS PUNISHER. Educational tool - not legal advice.
           </p>
-          <p className="text-xs text-slate-400 mt-2">
+          <p className="text-xs text-slate-500 mt-2">
             Always consult with a licensed attorney for legal matters.
           </p>
         </div>

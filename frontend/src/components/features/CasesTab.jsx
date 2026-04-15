@@ -89,8 +89,8 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
     <div className="space-y-8 animate-fadeIn" data-testid="cases-tab">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-semibold" style={{ fontFamily: 'Outfit, sans-serif' }}>Your Case Home</h1>
-          <p className="text-slate-600 mt-2 text-lg">
+          <h1 className="text-3xl md:text-4xl font-semibold text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>Your Case Home</h1>
+          <p className="text-slate-300 mt-2 text-lg">
             We’re here to help you protect your family — one step at a time.
           </p>
         </div>
@@ -106,18 +106,18 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
 
       {/* Guided Case Wizard */}
       {showCreate && (
-        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50 p-4" data-testid="case-wizard-modal">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 w-full max-w-2xl shadow-[0_20px_60px_rgba(15,23,42,0.15)]">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" data-testid="case-wizard-modal">
+          <div className="bg-slate-900/70 border border-slate-700 rounded-2xl p-6 md:p-8 w-full max-w-2xl shadow-[0_20px_60px_rgba(15,23,42,0.15)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-2xl md:text-3xl font-semibold" style={{ fontFamily: 'Outfit, sans-serif' }}>Let’s start your case gently</h2>
-                <p className="text-slate-600 mt-2">
+                <p className="text-slate-300 mt-2">
                   Take a breath. We’ll guide you step-by-step and save everything so you can come back anytime.
                 </p>
               </div>
               <button
                 onClick={() => { setShowCreate(false); handleCancel(); }}
-                className="p-2 rounded-full hover:bg-slate-100"
+                className="p-2 rounded-full hover:bg-slate-800 text-slate-200"
                 data-testid="wizard-close-btn"
               >
                 <X className="w-5 h-5" />
@@ -125,11 +125,11 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
             </div>
 
             <div className="mt-6" data-testid="case-wizard-progress">
-              <div className="flex items-center justify-between text-sm text-slate-500">
+              <div className="flex items-center justify-between text-sm text-slate-400">
                 <span>Step {wizardStep} of 3</span>
                 <span>Describe → Review → Generate</span>
               </div>
-              <div className="mt-3 h-2 rounded-full bg-slate-100">
+              <div className="mt-3 h-2 rounded-full bg-slate-800">
                 <div
                   className="h-2 rounded-full bg-red-500 transition-all duration-300"
                   style={{ width: `${(wizardStep / 3) * 100}%` }}
@@ -139,28 +139,28 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
 
             {wizardStep === 1 && (
               <div className="mt-6 space-y-5">
-                <div className="bg-red-50 border border-red-100 rounded-2xl p-4 text-sm text-red-700" data-testid="wizard-reassurance">
+                <div className="bg-red-600/20 border-red-500/40 rounded-2xl p-4 text-sm text-red-100" data-testid="wizard-reassurance">
                   We’re here to help you protect your family — one step at a time.
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Case Title*</label>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">Case Title*</label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg focus:outline-none focus:border-red-400 h-14"
+                    className="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-lg text-white placeholder:text-slate-400 focus:outline-none focus:border-red-400 h-14"
                     placeholder="Example: NH CPS Removal — December 2024"
                     required
                     data-testid="case-title-input"
                   />
-                  <p className="text-xs text-slate-500 mt-2">Example: “NH CPS Removal — December 2024”</p>
+                  <p className="text-xs text-slate-400 mt-2">Example: “NH CPS Removal — December 2024”</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">State*</label>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">State*</label>
                   <select
                     value={formData.state}
                     onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg focus:outline-none focus:border-red-400 h-14"
+                    className="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-lg text-white placeholder:text-slate-400 focus:outline-none focus:border-red-400 h-14"
                     required
                     data-testid="case-state-select"
                   >
@@ -171,43 +171,43 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Case Number (Optional)</label>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">Case Number (Optional)</label>
                   <input
                     type="text"
                     value={formData.case_number}
                     onChange={(e) => setFormData({ ...formData, case_number: e.target.value })}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg focus:outline-none focus:border-red-400 h-14"
+                    className="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-lg text-white placeholder:text-slate-400 focus:outline-none focus:border-red-400 h-14"
                     placeholder="If you know it, add the court case number"
                     data-testid="case-number-input"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Describe the situation</label>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">Describe the situation</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg focus:outline-none focus:border-red-400 min-h-[140px]"
+                    className="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-lg text-white placeholder:text-slate-400 focus:outline-none focus:border-red-400 min-h-[140px]"
                     placeholder="Example: In New Hampshire, CPS removed my two children on Dec 19, 2024 without a warrant. They did not give me notice or a chance to respond..."
                     data-testid="case-description-input"
                   />
-                  <p className="text-xs text-slate-500 mt-2">Share as much as you feel comfortable. You can edit later.</p>
+                  <p className="text-xs text-slate-400 mt-2">Share as much as you feel comfortable. You can edit later.</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Upload documents (optional)</label>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">Upload documents (optional)</label>
                   <input
                     type="file"
                     multiple
                     onChange={(e) => setCaseFiles(Array.from(e.target.files || []))}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm"
+                    className="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200"
                     data-testid="case-documents-upload"
                   />
-                  <p className="text-xs text-slate-500 mt-2">Example uploads: court orders, CPS letters, police reports.</p>
+                  <p className="text-xs text-slate-400 mt-2">Example uploads: court orders, CPS letters, police reports.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     type="button"
                     onClick={() => { handleCancel(); setShowCreate(false); }}
-                    className="flex-1 px-4 py-3 border border-slate-200 rounded-full text-slate-700 hover:bg-slate-50"
+                    className="flex-1 px-4 py-3 border border-slate-700 rounded-full text-slate-200 hover:bg-slate-900/50"
                     data-testid="wizard-cancel-btn"
                   >
                     Cancel
@@ -228,13 +228,13 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
               <div className="mt-6 space-y-5">
                 <div>
                   <h3 className="text-xl font-semibold">Review possible violations</h3>
-                  <p className="text-slate-600 mt-2">
+                  <p className="text-slate-300 mt-2">
                     Select anything that feels relevant. We’ll help you confirm these later.
                   </p>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-3">
                   {violationOptions.map((option) => (
-                    <label key={option.id} className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4" data-testid={`wizard-violation-${option.id}`}>
+                    <label key={option.id} className="flex items-center gap-3 bg-slate-900/50 border border-slate-700 rounded-xl p-4" data-testid={`wizard-violation-${option.id}`}>
                       <input
                         type="checkbox"
                         checked={selectedViolations.includes(option.id)}
@@ -248,18 +248,18 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
                         className="h-5 w-5"
                         data-testid={`wizard-violation-checkbox-${option.id}`}
                       />
-                      <span className="text-slate-700">{option.label}</span>
+                      <span className="text-slate-200">{option.label}</span>
                     </label>
                   ))}
                 </div>
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-600" data-testid="wizard-violation-tip">
+                <div className="bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-sm text-slate-300" data-testid="wizard-violation-tip">
                   Tip: If you’re unsure, leave it blank — we’ll guide you with the AI analysis once your case is created.
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     type="button"
                     onClick={() => setWizardStep(1)}
-                    className="flex-1 px-4 py-3 border border-slate-200 rounded-full text-slate-700 hover:bg-slate-50"
+                    className="flex-1 px-4 py-3 border border-slate-700 rounded-full text-slate-200 hover:bg-slate-900/50"
                     data-testid="wizard-back-step-btn"
                   >
                     Back to Details
@@ -280,25 +280,25 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
               <div className="mt-6 space-y-5">
                 <div>
                   <h3 className="text-xl font-semibold">Generate your defense path</h3>
-                  <p className="text-slate-600 mt-2">
+                  <p className="text-slate-300 mt-2">
                     We’ll create your case and guide you to violations, documents, and next steps.
                   </p>
                 </div>
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-2" data-testid="wizard-summary">
-                  <p className="text-sm text-slate-500">Case Summary</p>
+                <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-5 space-y-2" data-testid="wizard-summary">
+                  <p className="text-sm text-slate-400">Case Summary</p>
                   <p className="text-lg font-medium">{formData.title || 'Untitled Case'}</p>
-                  <p className="text-sm text-slate-600">State: {formData.state || 'Not selected'}</p>
-                  <p className="text-sm text-slate-600">Violations selected: {selectedViolations.length}</p>
-                  <p className="text-sm text-slate-600">Documents attached: {caseFiles.length}</p>
+                  <p className="text-sm text-slate-300">State: {formData.state || 'Not selected'}</p>
+                  <p className="text-sm text-slate-300">Violations selected: {selectedViolations.length}</p>
+                  <p className="text-sm text-slate-300">Documents attached: {caseFiles.length}</p>
                 </div>
-                <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-sm text-red-700" data-testid="wizard-next-steps-copy">
+                <div className="bg-red-600/20 border border-red-500/40 rounded-xl p-4 text-sm text-red-100" data-testid="wizard-next-steps-copy">
                   After creation, open “Violations” and “Defense Strategy” to build your plan with AI support.
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     type="button"
                     onClick={() => setWizardStep(2)}
-                    className="flex-1 px-4 py-3 border border-slate-200 rounded-full text-slate-700 hover:bg-slate-50"
+                    className="flex-1 px-4 py-3 border border-slate-700 rounded-full text-slate-200 hover:bg-slate-900/50"
                     data-testid="wizard-back-review-btn"
                   >
                     Back to Review
@@ -321,10 +321,10 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
 
       {/* Cases List */}
       {cases.length === 0 ? (
-        <div className="text-center py-12 bg-white border border-slate-200 rounded-2xl shadow-sm" data-testid="cases-empty-state">
+        <div className="text-center py-12 bg-slate-900/70 border border-slate-700 rounded-2xl shadow-sm" data-testid="cases-empty-state">
           <FileText className="w-12 h-12 mx-auto text-slate-400 mb-4" />
           <h3 className="text-2xl font-semibold mb-2">No cases yet</h3>
-          <p className="text-slate-600 mb-6 max-w-md mx-auto">
+          <p className="text-slate-300 mb-6 max-w-md mx-auto">
             No worries — we’ll walk you through everything. Start your first case and we’ll guide you step by step.
           </p>
           <button onClick={() => { setShowCreate(true); setWizardStep(1); }} className="btn-punisher h-14 px-8" data-testid="cases-empty-create-btn">
@@ -339,21 +339,21 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
               key={caseItem.id}
               className={`p-6 rounded-2xl transition-all border shadow-sm ${
                 selectedCase?.id === caseItem.id
-                  ? 'bg-red-50 border-red-200'
-                  : 'bg-white border-slate-200 hover:border-red-200'
+                  ? 'bg-red-600/20 border-red-500/40'
+                  : 'bg-slate-900/70 border-slate-700 hover:border-red-500/40'
               }`}
             >
               <div className="flex items-start justify-between">
                 <div className="cursor-pointer flex-1" onClick={() => setSelectedCase(caseItem)}>
-                  <h3 className="text-xl font-semibold text-slate-900">{caseItem.title}</h3>
-                  <p className="text-slate-600 text-sm mt-1">State: {caseItem.state}</p>
+                  <h3 className="text-xl font-semibold text-white">{caseItem.title}</h3>
+                  <p className="text-slate-300 text-sm mt-1">State: {caseItem.state}</p>
                   {caseItem.case_number && (
-                    <p className="text-slate-500 text-sm">Case #: {caseItem.case_number}</p>
+                    <p className="text-slate-400 text-sm">Case #: {caseItem.case_number}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`px-3 py-1 rounded-full text-xs ${
-                    caseItem.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                    caseItem.status === 'active' ? 'bg-emerald-600/20 text-emerald-200' : 'bg-slate-800 text-slate-300'
                   }`}>
                     {caseItem.status || 'Active'}
                   </span>
@@ -368,9 +368,9 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
                 </div>
               </div>
               {caseItem.description && (
-                <p className="text-slate-600 mt-3 text-sm line-clamp-2">{caseItem.description}</p>
+                <p className="text-slate-300 mt-3 text-sm line-clamp-2">{caseItem.description}</p>
               )}
-              <div className="flex gap-4 mt-3 text-xs text-slate-500">
+              <div className="flex gap-4 mt-3 text-xs text-slate-400">
                 <span>{caseItem.violation_count || 0} violations</span>
                 <span>{caseItem.document_count || 0} documents</span>
                 <span>{caseItem.event_count || 0} events</span>
@@ -390,8 +390,8 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
       )}
 
       {selectedCase && !viewingCase && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4" data-testid="selected-case-banner">
-          <p className="text-emerald-700 text-sm">
+        <div className="bg-emerald-600/20 border border-emerald-500/40 rounded-2xl p-4" data-testid="selected-case-banner">
+          <p className="text-emerald-200 text-sm">
             <CheckCircle2 className="w-4 h-4 inline mr-2" />
             <strong>Selected Case:</strong> {selectedCase.title} — use the sidebar to access your next steps.
           </p>

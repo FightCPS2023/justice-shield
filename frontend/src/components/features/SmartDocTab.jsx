@@ -164,7 +164,7 @@ function SmartDocTab({ selectedCase }) {
           <Zap className="w-8 h-8 text-amber-500" />
           Smart Document Generator
         </h1>
-        <p className="text-slate-600 mt-1">
+        <p className="text-slate-300 mt-1">
           Describe what you need in plain English — get a complete, court-ready legal document with citations
           {selectedCase && <span className="text-red-400 font-medium"> — Auto-linked to: {selectedCase.title}</span>}
         </p>
@@ -172,13 +172,13 @@ function SmartDocTab({ selectedCase }) {
 
       {/* Template Quick Buttons */}
       <div>
-        <p className="text-xs text-slate-500 mb-2 uppercase tracking-wider">One-Click Templates</p>
+        <p className="text-xs text-slate-400 mb-2 uppercase tracking-wider">One-Click Templates</p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
           {templates.map((t, i) => (
             <button
               key={i}
               onClick={() => setPrompt(t.prompt)}
-              className="px-4 py-3 bg-slate-100 hover:bg-slate-100 border border-slate-200/50 rounded-xl text-sm text-left transition-colors"
+              className="px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700/50 rounded-xl text-sm text-left transition-colors text-slate-200"
               data-testid={`template-${i}`}
             >
               <FileText className="w-4 h-4 text-amber-500 mb-1" />
@@ -189,26 +189,26 @@ function SmartDocTab({ selectedCase }) {
       </div>
 
       {/* Input Area */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4">
+      <div className="bg-slate-900/70 border border-slate-700 rounded-xl p-5 space-y-4">
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Describe the document you need in plain English... e.g., 'Write a motion to dismiss the CPS case because they violated my 4th Amendment rights during the home investigation'"
-          className="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 min-h-[120px] focus:outline-none focus:border-red-600 text-base resize-y"
+          className="w-full bg-slate-900/70 border border-slate-700 rounded-lg px-4 py-3 min-h-[120px] focus:outline-none focus:border-red-600 text-base text-white placeholder:text-slate-400 resize-y"
           data-testid="smartdoc-input"
         />
         <div className="flex items-center gap-3">
           <select
             value={state}
             onChange={(e) => setState(e.target.value)}
-            className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-sm"
+            className="bg-slate-900/70 border border-slate-700 rounded-lg px-4 py-2.5 text-sm"
             data-testid="smartdoc-state"
           >
             <option value="">Select State</option>
             {states.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
           {selectedCase && (
-            <span className="text-xs text-slate-500 bg-white px-3 py-2 rounded-lg flex items-center gap-1">
+            <span className="text-xs text-slate-400 bg-slate-900/70 px-3 py-2 rounded-lg flex items-center gap-1">
               <FileText className="w-3.5 h-3.5" /> Case: {selectedCase.title}
             </span>
           )}
@@ -236,13 +236,13 @@ function SmartDocTab({ selectedCase }) {
 
       {/* Loading */}
       {loading && (
-        <div className="bg-white border border-slate-200 rounded-xl p-8 text-center" data-testid="smartdoc-loading">
+        <div className="bg-slate-900/70 border border-slate-700 rounded-xl p-8 text-center" data-testid="smartdoc-loading">
           <Loader2 className="w-10 h-10 text-amber-500 animate-spin mx-auto mb-3" />
           <p className="text-lg font-semibold">Generating your legal document...</p>
-          <p className="text-sm text-slate-600 mt-1">Pulling case data, statutes, and precedents for your jurisdiction</p>
+          <p className="text-sm text-slate-300 mt-1">Pulling case data, statutes, and precedents for your jurisdiction</p>
           {streamingContent && (
-            <div className="mt-4 bg-slate-50 border border-slate-200 rounded-lg p-4 text-left" data-testid="smartdoc-streaming-output">
-              <pre className="whitespace-pre-wrap text-sm text-slate-600 leading-relaxed font-sans">{streamingContent}<span className="animate-pulse">▊</span></pre>
+            <div className="mt-4 bg-black/40 border border-slate-700 rounded-lg p-4 text-left" data-testid="smartdoc-streaming-output">
+              <pre className="whitespace-pre-wrap text-sm text-slate-300 leading-relaxed font-sans">{streamingContent}<span className="animate-pulse">▊</span></pre>
             </div>
           )}
         </div>
@@ -250,13 +250,13 @@ function SmartDocTab({ selectedCase }) {
 
       {/* Generated Document */}
       {document && !loading && (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden" data-testid="smartdoc-result">
-          <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+        <div className="bg-slate-900/70 border border-slate-700 rounded-xl overflow-hidden" data-testid="smartdoc-result">
+          <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between bg-slate-900/70">
             <div>
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-green-500" /> Document Generated
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5">
                 {state && `${state} Jurisdiction — `}Court-ready with citations
                 {genTime && ` — ${genTime}s`}
               </p>
@@ -269,7 +269,7 @@ function SmartDocTab({ selectedCase }) {
             <div className="flex gap-2">
               <button
                 onClick={() => { navigator.clipboard.writeText(document); toast.success('Document copied'); }}
-                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm flex items-center gap-1.5 text-slate-200"
                 data-testid="copy-doc-btn"
               >
                 <Copy className="w-4 h-4" /> Copy
@@ -293,15 +293,15 @@ function SmartDocTab({ selectedCase }) {
             </div>
           </div>
           <div className="p-6">
-            <pre className="whitespace-pre-wrap text-sm text-slate-600 leading-relaxed font-sans">{document}</pre>
+            <pre className="whitespace-pre-wrap text-sm text-slate-300 leading-relaxed font-sans">{document}</pre>
           </div>
         </div>
       )}
 
       {nextSteps.length > 0 && !loading && (
-        <div className="bg-white border border-slate-200 rounded-xl p-6" data-testid="smartdoc-next-steps">
+        <div className="bg-slate-900/70 border border-slate-700 rounded-xl p-6" data-testid="smartdoc-next-steps">
           <h3 className="text-lg font-semibold mb-3">Next Steps & Strategy</h3>
-          <ul className="list-disc list-inside space-y-2 text-sm text-slate-600">
+          <ul className="list-disc list-inside space-y-2 text-sm text-slate-300">
             {nextSteps.map((step, idx) => (
               <li key={idx}>{step}</li>
             ))}

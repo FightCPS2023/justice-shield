@@ -143,11 +143,11 @@ function CourtListenerTab({ selectedCase }) {
           <Scale className="w-8 h-8 text-red-500" />
           Court Opinions Database
         </h1>
-        <p className="text-slate-600">Search 50+ million court opinions from CourtListener</p>
+        <p className="text-slate-300">Search 50+ million court opinions from CourtListener</p>
       </div>
 
       {/* Search Form */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6">
+      <div className="bg-slate-900/70 border border-slate-700 rounded-xl p-6">
         <div className="space-y-4">
           <div className="flex gap-4">
             <input
@@ -155,7 +155,7 @@ function CourtListenerTab({ selectedCase }) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search for cases (e.g., 'CPS removal fourth amendment')"
-              className="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-lg focus:border-red-500 focus:outline-none"
+              className="flex-1 px-4 py-3 bg-slate-900/70 border border-slate-700 rounded-lg text-white placeholder:text-slate-400 focus:border-red-500 focus:outline-none"
               onKeyPress={(e) => e.key === 'Enter' && searchCases()}
               data-testid="courtlistener-search-input"
             />
@@ -175,7 +175,7 @@ function CourtListenerTab({ selectedCase }) {
             <select
               value={filters.court}
               onChange={(e) => setFilters({...filters, court: e.target.value})}
-              className="px-4 py-2 bg-white border border-slate-200 rounded-lg"
+              className="px-4 py-2 bg-slate-900/70 border border-slate-700 rounded-lg text-white placeholder:text-slate-400"
               data-testid="courtlistener-filter-court"
             >
               {courts.map(c => (
@@ -186,7 +186,7 @@ function CourtListenerTab({ selectedCase }) {
               type="text"
               value={filters.judge}
               onChange={(e) => setFilters({...filters, judge: e.target.value})}
-              className="px-4 py-2 bg-white border border-slate-200 rounded-lg"
+              className="px-4 py-2 bg-slate-900/70 border border-slate-700 rounded-lg text-white placeholder:text-slate-400"
               placeholder="Judge name"
               data-testid="courtlistener-filter-judge"
             />
@@ -194,7 +194,7 @@ function CourtListenerTab({ selectedCase }) {
               type="text"
               value={filters.docket_number}
               onChange={(e) => setFilters({...filters, docket_number: e.target.value})}
-              className="px-4 py-2 bg-white border border-slate-200 rounded-lg"
+              className="px-4 py-2 bg-slate-900/70 border border-slate-700 rounded-lg text-white placeholder:text-slate-400"
               placeholder="Docket number"
               data-testid="courtlistener-filter-docket"
             />
@@ -202,7 +202,7 @@ function CourtListenerTab({ selectedCase }) {
               type="text"
               value={filters.citation}
               onChange={(e) => setFilters({...filters, citation: e.target.value})}
-              className="px-4 py-2 bg-white border border-slate-200 rounded-lg"
+              className="px-4 py-2 bg-slate-900/70 border border-slate-700 rounded-lg text-white placeholder:text-slate-400"
               placeholder="Citation"
               data-testid="courtlistener-filter-citation"
             />
@@ -210,7 +210,7 @@ function CourtListenerTab({ selectedCase }) {
               type="date"
               value={filters.date_after}
               onChange={(e) => setFilters({...filters, date_after: e.target.value})}
-              className="px-4 py-2 bg-white border border-slate-200 rounded-lg"
+              className="px-4 py-2 bg-slate-900/70 border border-slate-700 rounded-lg text-white placeholder:text-slate-400"
               placeholder="Filed After"
               data-testid="courtlistener-filter-after"
             />
@@ -218,14 +218,14 @@ function CourtListenerTab({ selectedCase }) {
               type="date"
               value={filters.date_before}
               onChange={(e) => setFilters({...filters, date_before: e.target.value})}
-              className="px-4 py-2 bg-white border border-slate-200 rounded-lg"
+              className="px-4 py-2 bg-slate-900/70 border border-slate-700 rounded-lg text-white placeholder:text-slate-400"
               placeholder="Filed Before"
               data-testid="courtlistener-filter-before"
             />
             <select
               value={filters.order_by}
               onChange={(e) => setFilters({...filters, order_by: e.target.value})}
-              className="px-4 py-2 bg-white border border-slate-200 rounded-lg"
+              className="px-4 py-2 bg-slate-900/70 border border-slate-700 rounded-lg text-white placeholder:text-slate-400"
               data-testid="courtlistener-filter-order"
             >
               <option value="score desc">Relevance</option>
@@ -240,15 +240,15 @@ function CourtListenerTab({ selectedCase }) {
       {/* Results */}
       {results.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-slate-600">{results.length} Results Found</h3>
+          <h3 className="text-lg font-semibold text-slate-300">{results.length} Results Found</h3>
           {results.map((result, idx) => (
-            <div key={idx} className="bg-white border border-slate-200 rounded-xl p-6 hover:border-red-600/50 transition-all">
+            <div key={idx} className="bg-slate-900/70 border border-slate-700 rounded-xl p-6 hover:border-red-600/50 transition-all">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <h4 className="text-lg font-bold text-red-400 mb-2">
                     {result.caseName || result.case_name || 'Unnamed Case'}
                   </h4>
-                  <div className="flex flex-wrap gap-3 text-sm text-slate-600 mb-3">
+                  <div className="flex flex-wrap gap-3 text-sm text-slate-300 mb-3">
                     <span className="flex items-center gap-1">
                       <Gavel className="w-4 h-4" />
                       {result.court || result.court_id || 'Unknown Court'}
@@ -258,19 +258,19 @@ function CourtListenerTab({ selectedCase }) {
                       {result.dateFiled || result.date_filed || 'Unknown Date'}
                     </span>
                     {result.citation && (
-                      <span className="px-2 py-1 bg-slate-100 rounded text-xs">
+                      <span className="px-2 py-1 bg-slate-800 rounded text-xs">
                         {result.citation}
                       </span>
                     )}
                   </div>
                   {result.snippet && (
-                    <p className="text-slate-600 text-sm line-clamp-3">{result.snippet}</p>
+                    <p className="text-slate-300 text-sm line-clamp-3">{result.snippet}</p>
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
                   <button
                     onClick={() => openOpinion(result)}
-                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm flex items-center gap-1"
+                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm flex items-center gap-1"
                     data-testid={`courtlistener-opinion-${idx}`}
                   >
                     <Eye className="w-4 h-4" />
@@ -298,7 +298,7 @@ function CourtListenerTab({ selectedCase }) {
                       href={result.absolute_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-2 bg-slate-100 hover:bg-slate-100 rounded-lg text-sm flex items-center gap-1"
+                      className="px-3 py-2 bg-slate-800 hover:bg-slate-800 rounded-lg text-sm flex items-center gap-1"
                       data-testid={`courtlistener-view-${idx}`}
                     >
                       <ArrowRight className="w-4 h-4" />
@@ -313,22 +313,22 @@ function CourtListenerTab({ selectedCase }) {
       )}
 
       {analysisData && (
-        <div className="bg-white border border-slate-200 rounded-xl p-6" data-testid="courtlistener-analysis-panel">
+        <div className="bg-slate-900/70 border border-slate-700 rounded-xl p-6" data-testid="courtlistener-analysis-panel">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold">AI Analysis & Strategy</h3>
             <button
               onClick={() => setAnalysisData(null)}
-              className="text-xs text-slate-600 hover:text-slate-700"
+              className="text-xs text-slate-300 hover:text-white"
               data-testid="courtlistener-analysis-close"
             >
               Close
             </button>
           </div>
-          <pre className="whitespace-pre-wrap text-sm text-slate-600 leading-relaxed font-sans">{analysisData.analysis}</pre>
+          <pre className="whitespace-pre-wrap text-sm text-slate-300 leading-relaxed font-sans">{analysisData.analysis}</pre>
           {analysisData.next_steps?.length > 0 && (
             <div className="mt-4">
               <h4 className="text-sm font-semibold text-emerald-300 mb-2">Next Steps</h4>
-              <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+              <ul className="list-disc list-inside text-sm text-slate-300 space-y-1">
                 {analysisData.next_steps.map((step, idx) => (
                   <li key={idx}>{step}</li>
                 ))}
@@ -340,19 +340,19 @@ function CourtListenerTab({ selectedCase }) {
 
       {opinionModalOpen && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" data-testid="courtlistener-opinion-modal">
-          <div className="bg-white border border-slate-200 rounded-xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+          <div className="bg-slate-900/70 border border-slate-700 rounded-xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
               <div>
                 <h3 className="text-lg font-semibold" data-testid="courtlistener-opinion-title">
                   {opinionDetail?.case_name || selectedResult?.caseName || 'Court Opinion'}
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   {opinionDetail?.citation || selectedResult?.citation || 'Citation unavailable'}
                 </p>
               </div>
               <button
                 onClick={() => setOpinionModalOpen(false)}
-                className="text-slate-600 hover:text-slate-700"
+                className="text-slate-300 hover:text-white"
                 data-testid="courtlistener-opinion-close"
               >
                 <X className="w-5 h-5" />
@@ -360,17 +360,17 @@ function CourtListenerTab({ selectedCase }) {
             </div>
             <div className="p-6 overflow-y-auto max-h-[60vh]">
               {opinionLoading && (
-                <div className="flex items-center gap-2 text-sm text-slate-600">
+                <div className="flex items-center gap-2 text-sm text-slate-300">
                   <Loader2 className="w-4 h-4 animate-spin" /> Loading full opinion...
                 </div>
               )}
               {!opinionLoading && (
-                <pre className="whitespace-pre-wrap text-sm text-slate-600 leading-relaxed font-sans" data-testid="courtlistener-opinion-text">
+                <pre className="whitespace-pre-wrap text-sm text-slate-300 leading-relaxed font-sans" data-testid="courtlistener-opinion-text">
                   {opinionDetail?.plain_text || 'Full opinion text not available for this result.'}
                 </pre>
               )}
             </div>
-            <div className="px-6 py-4 border-t border-slate-200 flex flex-wrap gap-2 justify-end">
+            <div className="px-6 py-4 border-t border-slate-700 flex flex-wrap gap-2 justify-end">
               <button
                 onClick={() => selectedResult && analyzeOpinion(selectedResult)}
                 disabled={analysisLoading || !selectedCase}
@@ -385,7 +385,7 @@ function CourtListenerTab({ selectedCase }) {
                   href={opinionDetail.absolute_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-100 rounded-lg text-sm flex items-center gap-2"
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-800 rounded-lg text-sm flex items-center gap-2"
                   data-testid="courtlistener-opinion-source"
                 >
                   <ArrowRight className="w-4 h-4" /> Source
@@ -397,24 +397,24 @@ function CourtListenerTab({ selectedCase }) {
       )}
 
       {!loading && results.length === 0 && query && (
-        <div className="text-center py-12 bg-white border border-slate-200 rounded-xl">
-          <Search className="w-16 h-16 mx-auto text-slate-500 mb-4" />
+        <div className="text-center py-12 bg-slate-900/70 border border-slate-700 rounded-xl">
+          <Search className="w-16 h-16 mx-auto text-slate-400 mb-4" />
           <h3 className="text-xl font-semibold mb-2">No Results Found</h3>
-          <p className="text-slate-600">Try different search terms or adjust your filters.</p>
+          <p className="text-slate-300">Try different search terms or adjust your filters.</p>
         </div>
       )}
 
       {!query && (
-        <div className="text-center py-12 bg-white border border-slate-200 rounded-xl">
-          <Scale className="w-16 h-16 mx-auto text-slate-500 mb-4" />
+        <div className="text-center py-12 bg-slate-900/70 border border-slate-700 rounded-xl">
+          <Scale className="w-16 h-16 mx-auto text-slate-400 mb-4" />
           <h3 className="text-xl font-semibold mb-2">Search Court Opinions</h3>
-          <p className="text-slate-600">Enter keywords to search millions of court opinions. Try searches like:</p>
+          <p className="text-slate-300">Enter keywords to search millions of court opinions. Try searches like:</p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             {['CPS constitutional rights', 'parental rights due process', 'fourth amendment home entry', 'qualified immunity CPS'].map((term, idx) => (
               <button
                 key={term}
                 onClick={() => { setQuery(term); }}
-                className="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-full text-sm"
+                className="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-full text-sm"
                 data-testid={`courtlistener-suggestion-${idx}`}
               >
                 {term}
