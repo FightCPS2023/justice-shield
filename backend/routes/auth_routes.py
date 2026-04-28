@@ -79,7 +79,8 @@ async def login(user_data: UserLogin):
         state=user.get("state"),
         accepted_terms=user.get("accepted_terms"),
         accepted_privacy=user.get("accepted_privacy"),
-        accepted_at=user.get("accepted_at")
+        accepted_at=user.get("accepted_at"),
+        is_admin=user.get("is_admin", False)
     )
 
 @router.get("/api/auth/me")
@@ -312,7 +313,8 @@ async def process_google_session(request: Request):
         "email": email,
         "name": name,
         "picture": picture,
-        "tier": user_tier
+        "tier": user_tier,
+        "is_admin": existing_user.get("is_admin", False) if existing_user else False
     }
     
     response = JSONResponse(content=response_data)

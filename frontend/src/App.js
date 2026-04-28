@@ -205,18 +205,19 @@ function Dashboard({ onNavigate }) {
   const effectiveDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   useEffect(() => {
+    setIsAdmin(!!user?.is_admin);
+  }, [user]);
+
+  useEffect(() => {
     const prefetch = async () => {
       try {
-        const [casesData, tierData, creditsData, adminCheck] = await Promise.all([
+        const [casesData, tierData, creditsData] = await Promise.all([
           api.get('/api/cases').catch(() => ({ cases: [] })),
           api.get('/api/auth/tier-status').catch(() => null),
           api.get('/api/credits/balance').catch(() => null),
-          api.get('/api/admin/stats').catch(() => null),
         ]);
         setCases(casesData.cases || []);
         setPrefetchedData({ tierStatus: tierData, creditBalance: creditsData });
-        const isAdminUser = adminCheck && typeof adminCheck.total_users === 'number';
-        setIsAdmin(isAdminUser);
       } catch (error) {
         console.error('Prefetch error:', error);
       } finally {

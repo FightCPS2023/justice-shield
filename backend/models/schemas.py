@@ -29,6 +29,7 @@ class TokenResponse(BaseModel):
     accepted_terms: Optional[bool] = None
     accepted_privacy: Optional[bool] = None
     accepted_at: Optional[str] = None
+    is_admin: Optional[bool] = False
 
 class PasscodeRequest(BaseModel):
     passcode: str

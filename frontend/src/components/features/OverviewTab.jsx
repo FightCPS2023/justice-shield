@@ -315,6 +315,54 @@ function OverviewTab({ cases, setActiveTab, prefetchedData = {} }) {
         </div>
       )}
 
+      {/* Guided Path */}
+      <div className="bg-slate-900/70 border border-slate-700 rounded-2xl p-6" data-testid="overview-guided-path">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold text-white">Start Here: 3-Step Path</h2>
+            <p className="text-slate-300 mt-2">
+              Keep it simple. Start a case, upload documents, then review violations to get a clear plan.
+            </p>
+          </div>
+          <button
+            onClick={() => setActiveTab('cases')}
+            className="btn-punisher h-12 px-6 text-base"
+            data-testid="overview-start-case-btn"
+          >
+            Start a Case
+          </button>
+        </div>
+        <div className="mt-6 grid md:grid-cols-3 gap-4">
+          <button
+            onClick={() => setActiveTab('cases')}
+            className="text-left bg-black/60 border border-slate-700 rounded-xl p-4 hover:border-red-500/40 transition"
+            data-testid="overview-step-case"
+          >
+            <p className="text-xs text-slate-400">Step 1</p>
+            <h3 className="text-lg font-semibold text-white mt-2">Describe the situation</h3>
+            <p className="text-sm text-slate-300 mt-1">Create your case and capture what happened.</p>
+          </button>
+          <button
+            onClick={() => setActiveTab('documents')}
+            className="text-left bg-black/60 border border-slate-700 rounded-xl p-4 hover:border-red-500/40 transition"
+            data-testid="overview-step-docs"
+          >
+            <p className="text-xs text-slate-400">Step 2</p>
+            <h3 className="text-lg font-semibold text-white mt-2">Upload documents</h3>
+            <p className="text-sm text-slate-300 mt-1">Keep court letters, CPS notes, and reports safe.</p>
+          </button>
+          <button
+            onClick={() => setActiveTab('violations')}
+            className="text-left bg-black/60 border border-slate-700 rounded-xl p-4 hover:border-red-500/40 transition"
+            data-testid="overview-step-violations"
+          >
+            <p className="text-xs text-slate-400">Step 3</p>
+            <h3 className="text-lg font-semibold text-white mt-2">Review violations</h3>
+            <p className="text-sm text-slate-300 mt-1">Let the AI flag issues and guide next steps.</p>
+          </button>
+        </div>
+      </div>
+
       {/* Quick Actions */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {quickActions.map((action, i) => (
