@@ -193,6 +193,10 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Generated optimized hero and shield image assets with responsive srcSet to reduce load time
 - Added responsive sizing + fetch priority for faster first paint
 
+### Session 31: Deployment Auth Service Fix - COMPLETE
+- Removed hardcoded Emergent auth URL; now reads AUTH_SERVICE_URL from environment
+- Added explicit missing-config error to fail fast in production
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment

@@ -14,8 +14,9 @@ DB_NAME = os.environ.get("DB_NAME")
 # API Keys
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
 STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY")
-COURTLISTENER_API_KEY = os.environ.get("COURTLISTENER_API_KEY", "")
-FULL_ACCESS_PASSCODE = os.environ.get("FULL_ACCESS_PASSCODE", "PUNISHER2024")
+COURTLISTENER_API_KEY = os.environ.get("COURTLISTENER_API_KEY")
+AUTH_SERVICE_URL = os.environ.get("AUTH_SERVICE_URL")
+FULL_ACCESS_PASSCODE = os.environ.get("FULL_ACCESS_PASSCODE")
 
 # JWT Configuration
 SECRET_KEY = os.environ.get("SECRET_KEY")

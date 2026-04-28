@@ -9,7 +9,7 @@ from pydantic import BaseModel, EmailStr
 
 from database import get_db
 from auth import get_current_user, create_access_token, verify_password, get_password_hash
-from config import TIER_LEVELS, TIER_FEATURES, VALID_PASSCODES, EMERGENT_LLM_KEY
+from config import TIER_LEVELS, TIER_FEATURES, VALID_PASSCODES, EMERGENT_LLM_KEY, AUTH_SERVICE_URL
 from models.schemas import UserCreate, UserLogin, TokenResponse
 
 
@@ -225,7 +225,9 @@ async def process_google_session(request: Request):
     # Exchange session_id for user data from Emergent Auth
     async with httpx.AsyncClient(timeout=30.0) as client:
         try:
-            auth_url = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
+            if not AUTH_SERVICE_URL:
+                raise HTTPException(status_code=500, detail="Auth service URL not configured")
+            auth_url = f"{AUTH_SERVICE_URL}/auth/v1/env/oauth/session-data"
             print(f"Google OAuth: Calling {auth_url}")
             response = await client.get(
                 auth_url,
