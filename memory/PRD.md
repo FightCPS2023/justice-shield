@@ -197,6 +197,12 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Removed hardcoded Emergent auth URL; now reads AUTH_SERVICE_URL from environment
 - Added explicit missing-config error to fail fast in production
 
+### Session 32: UX Review + Performance Improvements - COMPLETE
+- Added “Start Here: 3-Step Path” in Overview for guided navigation and faster onboarding
+- Reduced initial API prefetch load; admin status now comes from auth response
+- Added is_admin to auth responses for faster, clearer admin routing
+- Fixed fetchpriority attribute warning on landing hero image
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
