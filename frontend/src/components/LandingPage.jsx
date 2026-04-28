@@ -46,7 +46,7 @@ function LandingPage({ onNavigate }) {
             className="w-full h-full object-cover"
             loading="eager"
             decoding="async"
-            fetchPriority="high"
+            fetchpriority="high"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80" />
         </div>
