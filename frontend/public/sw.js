@@ -1,11 +1,14 @@
 /* eslint-disable no-restricted-globals */
 
-const CACHE_NAME = 'cps-punisher-v1';
+const CACHE_NAME = 'cps-punisher-v2';
 const urlsToCache = [
   '/',
   '/index.html',
   '/images/shield-logo.png',
+  '/images/shield-logo-small.png',
   '/images/hero-logo.jpg',
+  '/images/hero-logo-optimized.jpg',
+  '/images/hero-logo-small.jpg',
   '/manifest.json'
 ];
 
@@ -41,26 +44,38 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - network-first for navigation, cache-first for assets
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests and API calls
   if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
     return;
   }
 
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put('/index.html', responseToCache);
+          });
+          return response;
+        })
+        .catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Return cached version or fetch from network
         if (response) {
           return response;
         }
         return fetch(event.request).then((response) => {
-          // Don't cache non-successful responses
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
-          // Clone and cache the response
           const responseToCache = response.clone();
           caches.open(CACHE_NAME)
             .then((cache) => {
@@ -68,12 +83,6 @@ self.addEventListener('fetch', (event) => {
             });
           return response;
         });
-      })
-      .catch(() => {
-        // Offline fallback for navigation requests
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
       })
   );
 });
