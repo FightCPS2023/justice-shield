@@ -203,6 +203,10 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added is_admin to auth responses for faster, clearer admin routing
 - Fixed fetchpriority attribute warning on landing hero image
 
+### Session 33: Preview Cache/Service Worker Refresh - COMPLETE
+- Bumped service worker cache version and added network-first navigation to prevent stale preview assets
+- Added optimized hero assets to cache list for faster loads
+
 ## Remaining Tasks
 
 ### P0 - Production Deployment
