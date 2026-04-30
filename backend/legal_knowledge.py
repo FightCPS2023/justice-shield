@@ -151,6 +151,300 @@ CIRCUIT_COURT_CASES = {
 }
 
 # ============================================================================
+# CHILD-RELATED COURT RULINGS (FROM USER PDF)
+# ============================================================================
+
+CHILD_RELATED_COURT_RULINGS = [
+    {
+        "citation": "Roska v. Peterson, 328 F.3d 1230 (10 Cir. 2003)",
+        "holding": "Social workers may not enter a home for protective custody without probable cause, a warrant, or exigent circumstances.",
+        "application": "Confirms the constitutional protection of family integrity and limits warrantless CPS entry.",
+        "use_for": ["warrantless_entry", "emergency_removal", "family_integrity", "fourth_amendment"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Doe et al. v. Heck et al., 7th Cir. Ct. App. 2003",
+        "holding": "Interviewing a child without parental consent on private property is a search/seizure absent probable cause or exigent circumstances.",
+        "application": "Supports Fourth and Fourteenth Amendment challenges to warrantless child interviews.",
+        "use_for": ["warrantless_search", "fourth_amendment", "due_process"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Walsh v. Erie County Dep't of Job & Family Servs., 240 F. Supp. 2d 731 (N.D. Ohio 2003)",
+        "holding": "Fourth Amendment protections apply to child welfare agencies; lack of training does not excuse violations.",
+        "application": "Rejects qualified immunity defenses based on ignorance of constitutional limits.",
+        "use_for": ["warrantless_entry", "fourth_amendment", "qualified_immunity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Nicholson v. Williams, 203 F.Supp.2d 153 (2002)",
+        "holding": "Removing children from battered mothers solely because they witnessed abuse was unconstitutional.",
+        "application": "Requires individualized assessment before removal in domestic violence contexts.",
+        "use_for": ["due_process", "family_integrity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "North Hudson DYFS v. Koehler Family (2001)",
+        "holding": "Courts will not authorize fishing expeditions without tangible evidence of abuse or neglect.",
+        "application": "Best-interest claims alone do not justify invasive investigations.",
+        "use_for": ["warrantless_entry", "due_process"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Brokaw v. Mercer County, 7th Cir. 2000",
+        "holding": "Child removals are Fourth Amendment seizures; false information used to obtain orders violates the Constitution.",
+        "application": "Supports challenges to removals based on fabricated evidence.",
+        "use_for": ["emergency_removal", "fabricated_evidence", "fourth_amendment"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Wooley v. City of Baton Rouge, 5th Cir. 2000",
+        "holding": "Seizing a child without a warrant or probable cause of imminent danger is unlawful.",
+        "application": "Limits emergency removal authority absent immediate danger.",
+        "use_for": ["emergency_removal", "fourth_amendment"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Malik v. Arapahoe Cty. Department of Social Services, 10th Cir. 1999",
+        "holding": "Removal orders must be based on facts and legal basis, not just 'best interest' assertions.",
+        "application": "Requires evidence-based findings for custody deprivations.",
+        "use_for": ["due_process", "family_integrity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Morris v. Dearborne, 5th Cir. 1999",
+        "holding": "Using fraudulent evidence to remove a child violates due process.",
+        "application": "Supports claims challenging falsified reports and perjury.",
+        "use_for": ["fabricated_evidence", "due_process"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Aponte Matos v. Toledo Davilla, 1st Cir. 1998",
+        "holding": "Material false statements to obtain a warrant can create liability; searches cannot exceed warrant scope.",
+        "application": "Challenges warrants based on misrepresentation in CPS investigations.",
+        "use_for": ["fabricated_evidence", "warrantless_entry", "fourth_amendment"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "J.B. v. Washington County, 10th Cir. 1997",
+        "holding": "Forced separation of parent and child is a serious infringement on protected rights.",
+        "application": "Supports family integrity and due process arguments.",
+        "use_for": ["family_integrity", "due_process"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Ram v. Rubin, 9th Cir. 1997",
+        "holding": "Children cannot be removed without notice and a hearing unless there is imminent danger.",
+        "application": "Reinforces procedural protections for removals.",
+        "use_for": ["emergency_removal", "procedural_due_process"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Whisman v. Rinehart, 8th Cir. 1997",
+        "holding": "Parents have a right to a prompt post-deprivation hearing; delays violate due process.",
+        "application": "Supports challenges to delayed hearings and continued detention.",
+        "use_for": ["procedural_due_process", "family_integrity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "K.H. through Murphy v. Morgan, 7th Cir. 1990",
+        "holding": "Even emergency removals require prompt judicial proceedings.",
+        "application": "Requires quick post-removal hearings.",
+        "use_for": ["procedural_due_process", "family_integrity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Weller v. Department of Social Services for Baltimore, 4th Cir. 1990",
+        "holding": "Familial integrity is a fundamental liberty interest.",
+        "application": "Supports claims defending parent-child custody rights.",
+        "use_for": ["family_integrity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Germany v. Vance, 1st Cir. 1989",
+        "holding": "Withholding potentially exculpatory information can defeat qualified immunity.",
+        "application": "Supports discovery requests and Brady-type arguments.",
+        "use_for": ["qualified_immunity", "due_process"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Good v. Daupin County Social Services, 3rd Cir. 1989",
+        "holding": "Warrantless searches in child abuse investigations require exigent circumstances.",
+        "application": "Supports Fourth Amendment suppression of unlawful entry.",
+        "use_for": ["warrantless_entry", "fourth_amendment"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "White v. Pierce County, 9th Cir. 1986",
+        "holding": "Officials cannot coerce entry into a home without a warrant or established exception.",
+        "application": "Limits warrantless CPS home entries.",
+        "use_for": ["warrantless_entry", "fourth_amendment"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Doe v. Irwin, U.S. D. C. of Michigan 1985",
+        "holding": "Parents' custody and nurture rights are fundamental and constitutionally protected.",
+        "application": "Supports substantive due process challenges.",
+        "use_for": ["family_integrity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Kelson v. Springfield, US Ct. App 9th Cir. 1985",
+        "holding": "The parent-child relationship is a constitutionally protected liberty interest.",
+        "application": "Supports family integrity claims.",
+        "use_for": ["family_integrity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Bell v. City of Milwaukee, 7th Cir. 1984",
+        "holding": "State severance of parent-child relationships requires rigorous due process protections.",
+        "application": "Supports procedural challenges to removal proceedings.",
+        "use_for": ["procedural_due_process", "family_integrity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Langton v. Maloney, 527 F Supp 538, D.C. Conn. 1981",
+        "holding": "State interference with custodial rights requires due process protections.",
+        "application": "Supports due process objections to removal orders.",
+        "use_for": ["procedural_due_process", "family_integrity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "In the Interest of Cooper (Kansas 1980)",
+        "holding": "Custody deprivation causes grievous loss and requires extensive due process protections.",
+        "application": "Supports elevated procedural safeguards in custody cases.",
+        "use_for": ["procedural_due_process", "family_integrity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Quilloin v. Walcott, 434 U.S. 246, 255 (1978)",
+        "holding": "State breakup of a natural family cannot rest solely on best-interest analysis without proof of unfitness.",
+        "application": "Supports challenges to removals lacking fitness findings.",
+        "use_for": ["family_integrity", "due_process"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Carson v. Elrod, 411 F Supp 645, 649; DC E.D. VA (1976)",
+        "holding": "The parent-child bond is precious and should be zealously protected.",
+        "application": "Supports family integrity and custody preservation arguments.",
+        "use_for": ["family_integrity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Griswold v. Connecticut, 381 US 479 (1965)",
+        "holding": "The Constitution protects familial privacy and personal decision-making.",
+        "application": "Supports privacy-based challenges to intrusive CPS actions.",
+        "use_for": ["family_integrity", "fourth_amendment"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "May v. Anderson, 73 S. Ct. 840 (1952)",
+        "holding": "Parental custody rights are far more precious than property rights.",
+        "application": "Supports heightened protection for custody rights.",
+        "use_for": ["family_integrity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Florida v. Bostick, 501 U.S. 429 (1991)",
+        "holding": "Consent obtained through intimidation or harassment is not valid.",
+        "application": "Challenges coerced consent in CPS investigations.",
+        "use_for": ["coerced_consent", "fourth_amendment"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Hafer v. Melo, S. Ct. 1991",
+        "holding": "Government employees can be sued under 42 USC 1983 in their official and individual capacities.",
+        "application": "Supports individual liability for CPS officials.",
+        "use_for": ["qualified_immunity", "section_1983"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "McCord v. Maggio, 5th Cir. 1991",
+        "holding": "Immunity can be lost when officials violate clearly established rights.",
+        "application": "Supports defeating qualified immunity when rights are clear.",
+        "use_for": ["qualified_immunity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Grossman v. City of Portland, 9th Cir. 1994",
+        "holding": "Officials enforcing unconstitutional statutes are not entitled to qualified immunity.",
+        "application": "Supports challenges to unconstitutional agency policies.",
+        "use_for": ["qualified_immunity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Kalina v. Fletcher, S. Ct. 1997",
+        "holding": "Prosecutors lack absolute immunity for false statements in warrant affidavits.",
+        "application": "Supports claims against officials who submit false affidavits.",
+        "use_for": ["qualified_immunity", "fabricated_evidence"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Forrester v. White, S. Ct. 1988",
+        "holding": "Judges lack absolute immunity when acting in an administrative capacity.",
+        "application": "Supports limits on immunity defenses for administrative acts.",
+        "use_for": ["qualified_immunity"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "H.R. v. State Department of Human Resources, Ala. Ct. App. 1992",
+        "holding": "An anonymous tip alone does not establish probable cause.",
+        "application": "Challenges investigations and removals based on uncorroborated tips.",
+        "use_for": ["warrantless_entry", "fourth_amendment"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "California v. Hobari D., 499 U.S. 621 (1991)",
+        "holding": "A seizure occurs when a reasonable person is not free to leave and yields to authority.",
+        "application": "Defines seizure standards for child removals and interviews.",
+        "use_for": ["fourth_amendment", "seizure"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Cassady v. Tackett, 938 F.2d 693 (1991)",
+        "holding": "Coercive or intimidating behavior can compel compliance and violate due process.",
+        "application": "Supports challenges to coerced cooperation in investigations.",
+        "use_for": ["coerced_consent", "due_process"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Chrissy v. Miss Department of Public Welfare, 5th Cir. 1991",
+        "holding": "Officials can lose immunity for failing to investigate or disclose relevant reports.",
+        "application": "Supports accountability for procedural failures.",
+        "use_for": ["qualified_immunity", "due_process"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "United States v. Becker, 9th Cir. 1991",
+        "holding": "Fourth Amendment protections include knock-and-announce requirements.",
+        "application": "Supports challenges to improper entry methods.",
+        "use_for": ["warrantless_entry", "fourth_amendment"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Gross v. State of Illinois, 312 F 2d 257 (1963)",
+        "holding": "State judges must protect individuals from federal constitutional violations.",
+        "application": "Supports due process and constitutional oversight arguments.",
+        "use_for": ["due_process"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Blackburn v. Alabama, 361 U.S. 199, 206 (1960)",
+        "holding": "Coercion can be mental as well as physical.",
+        "application": "Supports challenges to coerced statements or consent.",
+        "use_for": ["coerced_consent", "due_process"],
+        "source": "Child-Related Court Rulings PDF"
+    },
+    {
+        "citation": "Elrod v. Burns, 96 S. Ct. 1976",
+        "holding": "Fundamental rights can be curtailed only by interests of vital importance.",
+        "application": "Sets a high bar for state interference with family rights.",
+        "use_for": ["family_integrity"],
+        "source": "Child-Related Court Rulings PDF"
+    }
+]
+
+# ============================================================================
 # ROOKER-FELDMAN DOCTRINE & AVOIDANCE
 # ============================================================================
 
@@ -901,34 +1195,72 @@ USEFUL_CASE_LAW_INDEX = {
 def get_relevant_case_law(violation_type: str) -> dict:
     """Get relevant case law for a specific violation type."""
     case_law = []
-    
-    if violation_type in ["fourth_amendment", "warrantless_entry", "warrantless_search"]:
+    normalized = (violation_type or "").lower()
+    key = normalized.replace(" ", "_")
+
+    def matches(terms) -> bool:
+        return any(term in normalized for term in terms)
+
+    if key in ["fourth_amendment", "warrantless_entry", "warrantless_search"] or matches([
+        "fourth amendment", "warrantless", "search", "entry", "seizure", "home visit"
+    ]):
         case_law.extend([
             CIRCUIT_COURT_CASES["calabretta_v_floyd"],
             CIRCUIT_COURT_CASES["wallis_v_spencer"],
             SUPREME_COURT_CASES["camara"]
         ])
     
-    if violation_type in ["fourteenth_amendment", "due_process", "procedural_due_process"]:
+    if key in ["fourteenth_amendment", "due_process", "procedural_due_process", "substantive_due_process"] or matches([
+        "due process", "fourteenth amendment", "procedural", "substantive"
+    ]):
         case_law.extend([
             SUPREME_COURT_CASES["stanley"],
             SUPREME_COURT_CASES["santosky"],
             CIRCUIT_COURT_CASES["duchesne_v_sugarman"]
         ])
     
-    if violation_type in ["emergency_removal", "imminent_danger"]:
+    if key in ["emergency_removal", "imminent_danger"] or matches([
+        "emergency", "imminent danger", "removal"
+    ]):
         case_law.extend([
             CIRCUIT_COURT_CASES["gates_v_texas"],
             CIRCUIT_COURT_CASES["duchesne_v_sugarman"]
         ])
     
-    if violation_type in ["fabricated_evidence", "falsified_reports"]:
+    if key in ["fabricated_evidence", "falsified_reports"] or matches([
+        "fabricated", "falsified", "false report", "perjury"
+    ]):
         case_law.append({
             "citation": "Devereaux v. Abbey, 263 F.3d 1070 (9th Cir. 2001)",
             "holding": "Deliberate fabrication of evidence violates due process",
             "qualified_immunity": "Defeated"
         })
-    
+
+    if key in ["family_integrity", "parental_rights", "custody_rights"] or matches([
+        "family integrity", "parental rights", "custody", "family separation", "parent-child"
+    ]):
+        case_law.extend([
+            SUPREME_COURT_CASES["troxel"],
+            SUPREME_COURT_CASES["stanley"],
+            SUPREME_COURT_CASES["santosky"]
+        ])
+
+    if key in ["coerced_consent", "consent"] or matches([
+        "coercion", "coerced consent", "intimidation", "duress"
+    ]):
+        case_law.extend([
+            {
+                "citation": "Florida v. Bostick, 501 U.S. 429 (1991)",
+                "holding": "Consent obtained through official intimidation or harassment is not valid consent.",
+                "application": "Consent in CPS investigations must be voluntary and free from coercion."
+            }
+        ])
+
+    for ruling in CHILD_RELATED_COURT_RULINGS:
+        use_for = ruling.get("use_for", [])
+        if key in use_for or any(term.replace("_", " ") in normalized for term in use_for) or any(term in normalized for term in use_for):
+            case_law.append(ruling)
+
     return {
         "violation_type": violation_type,
         "relevant_cases": case_law,
@@ -948,11 +1280,16 @@ def get_constitutional_basis(violation_type: str) -> str:
         "due_process": "Fourteenth Amendment - Due Process Clause",
         "procedural_due_process": "Fourteenth Amendment - Procedural Due Process",
         "substantive_due_process": "Fourteenth Amendment - Substantive Due Process",
+        "family_integrity": "Fourteenth Amendment - Family integrity and parental rights",
+        "parental_rights": "Fourteenth Amendment - Parental rights",
+        "custody_rights": "Fourteenth Amendment - Custody and care of children",
         "emergency_removal": "Fourth and Fourteenth Amendments",
         "inadequate_investigation": "Fourteenth Amendment - Due Process",
         "fabricated_evidence": "Fourteenth Amendment - Due Process",
         "fifth_amendment": "Fifth Amendment - Self-incrimination",
-        "equal_protection": "Fourteenth Amendment - Equal Protection"
+        "equal_protection": "Fourteenth Amendment - Equal Protection",
+        "seizure": "Fourth Amendment - Seizure of person",
+        "section_1983": "42 U.S.C. § 1983 - Civil Rights"
     }
     return mapping.get(violation_type, "Constitutional violation")
 
