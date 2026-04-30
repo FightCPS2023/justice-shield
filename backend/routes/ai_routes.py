@@ -161,7 +161,14 @@ OUTPUT RULES (STRICT):
 - Return ONLY a valid JSON object. No markdown, no extra commentary.
 - Use double quotes for all keys/strings.
 - If a field is unknown, use null or an empty array.
+- NEVER fabricate personal data. Only include addresses/phones/emails if explicitly provided in the input or additional_info.
 - Never claim access to live/paid databases. Treat findings as investigative leads that require verification.
+
+REQUIRED QUALITY (MINIMUM):
+- summary.narrative must include at least 6 bullet lines (use \n- in the string).
+- recommendations_next_steps must include 6+ actionable steps.
+- verification_gaps must include 5+ items when data is missing.
+- Use confidence_label and confidence_score on every item in arrays.
 
 Return this JSON schema with ALL top-level keys present:
 {
@@ -189,6 +196,9 @@ Return this JSON schema with ALL top-level keys present:
   "red_flags": [],
   "recommendations_next_steps": [],
   "verification_gaps": [],
+  "records_to_request": [],
+  "search_plan": [],
+  "search_queries": [],
   "report_metadata": { "lookup_type": "", "focus": "", "jurisdiction_context": "" },
   "disclaimer": ""
 }
@@ -205,6 +215,8 @@ Entry object guidance (include source_type + confidence on every item):
 - cps_related items: { "issue": "", "details": "", "jurisdiction": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
 - online presence items: { "platform": "", "handle_or_url": "", "notes": "", "source_type": "", "confidence_label": "", "confidence_score": 0 }
 - red_flags items: { "flag": "", "reason": "", "severity": "low|medium|high", "source_type": "", "confidence_label": "", "confidence_score": 0 }
+- records_to_request items: { "record_type": "", "agency": "", "jurisdiction": "", "why": "", "access_notes": "" }
+- search_plan items: { "step": "", "source": "", "purpose": "", "expected_output": "" }
 
 Make the report detailed and practical. If data is limited, leave arrays empty and explain gaps in verification_gaps and recommendations_next_steps. Always include a strong disclaimer about verification requirements.""" + ADA_CROSS_REFERENCE + ULTIMATE_CPS_STRUCTURED_GUIDANCE
 
@@ -241,12 +253,19 @@ Additional Identifiers: {request.additional_info or 'None'}
 Lookup Type: {request.lookup_type.upper()}
 Focus: {focus_instruction}
 
+Metadata Requirements:
+- report_metadata.lookup_type = "{request.lookup_type}"
+- report_metadata.focus = "{focus_instruction}"
+- report_metadata.jurisdiction_context = "{location_info.strip() if location_info else 'Not provided'}"
+
 Instructions:
 - Return ONLY the JSON object defined in the system message.
-- Populate every relevant section with specific, structured findings.
+- Populate every relevant section with specific, structured findings or leave empty if unknown.
+- Do not fabricate personal data; only use details provided in input.
 - Every item must include source_type and confidence fields.
-- If no data is available, leave arrays empty and explain gaps in verification_gaps.
-- If the subject appears to be a CPS caseworker or government employee, prioritize professional history, complaints, disciplinary actions, and recurring patterns.
+- If no data is available, leave arrays empty and explain gaps in verification_gaps and recommendations_next_steps.
+- Include search_queries, records_to_request, and search_plan with actionable leads.
+- If the subject appears to be a CPS caseworker or government employee, prioritize professional history, complaints, disciplinary actions, and oversight channels.
 """
 
     user_message = UserMessage(text=prompt)
