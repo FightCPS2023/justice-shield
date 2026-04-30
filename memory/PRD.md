@@ -203,6 +203,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added is_admin to auth responses for faster, clearer admin routing
 - Fixed fetchpriority attribute warning on landing hero image
 
+### Session 35: Paywall Stability + Pricing UI Test IDs - COMPLETE
+- Fixed Stripe checkout request model (origin_url + billing_period) and backend billing_period handling
+- Added pricing/passcode UI test IDs for paywall controls
+- Verified Stripe checkout redirects for subscriptions and credits
+
 ### Session 34: Child-Related Court Rulings Knowledge Base - COMPLETE
 - Ingested user PDF rulings into legal_knowledge.py (41 case entries)
 - Expanded get_relevant_case_law to use keyword matching and include new rulings
