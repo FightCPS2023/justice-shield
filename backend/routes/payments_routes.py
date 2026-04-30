@@ -42,7 +42,9 @@ class CreditPurchaseRequest(BaseModel):
 
 class CheckoutRequest(BaseModel):
     tier: str
-    billing_cycle: str = "monthly"
+    billing_period: str = "monthly"
+    billing_cycle: Optional[str] = None
+    origin_url: str
     success_url: Optional[str] = None
     cancel_url: Optional[str] = None
 
@@ -150,13 +152,14 @@ async def create_checkout_session(request: CheckoutRequest, http_request: Reques
     tier_pricing = TIER_PRICING.get(request.tier)
     if not tier_pricing:
         raise HTTPException(status_code=400, detail="Invalid tier")
-    
-    amount = tier_pricing.get(request.billing_period)
+
+    billing_period = request.billing_period or request.billing_cycle or "monthly"
+    amount = tier_pricing.get(billing_period)
     if not amount:
         raise HTTPException(status_code=400, detail="Invalid billing period")
-    
+
     tier_name = tier_pricing.get("name", request.tier.title())
-    
+
     success_url = f"{request.origin_url}/payment-success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{request.origin_url}/pricing"
     
@@ -174,7 +177,7 @@ async def create_checkout_session(request: CheckoutRequest, http_request: Reques
             "user_id": current_user["user_id"],
             "tier": request.tier,
             "tier_name": tier_name,
-            "billing_period": request.billing_period
+            "billing_period": billing_period
         }
     )
     

@@ -145,7 +145,7 @@ function PricingTab() {
       <div className="text-center">
         <img src="/images/chrome-logo.jpg" alt="CPS Punisher" className="w-48 mx-auto mb-4" />
         <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Oswald, sans-serif' }}>Upgrade Your Plan</h1>
-        <p className="text-gray-400">Current plan: <span className="text-red-500 font-semibold">{user?.tier?.toUpperCase() || 'FREE'}</span></p>
+        <p className="text-gray-400">Current plan: <span className="text-red-500 font-semibold" data-testid="pricing-current-plan">{user?.tier?.toUpperCase() || 'FREE'}</span></p>
       </div>
 
       {/* Free Tier Banner */}
@@ -169,12 +169,14 @@ function PricingTab() {
           <button
             onClick={() => setBillingPeriod('monthly')}
             className={`px-6 py-2 rounded-full transition-colors ${billingPeriod === 'monthly' ? 'bg-red-600 text-white' : 'text-gray-400'}`}
+            data-testid="pricing-billing-monthly-btn"
           >
             Monthly
           </button>
           <button
             onClick={() => setBillingPeriod('annual')}
             className={`px-6 py-2 rounded-full transition-colors ${billingPeriod === 'annual' ? 'bg-red-600 text-white' : 'text-gray-400'}`}
+            data-testid="pricing-billing-annual-btn"
           >
             Annual <span className="text-green-400 text-xs ml-1">Save 17%</span>
           </button>
@@ -187,6 +189,7 @@ function PricingTab() {
           <div
             key={tier.id}
             className={`relative bg-gray-800/50 border rounded-xl p-6 ${tier.popular ? 'border-purple-500 border-2' : 'border-gray-700'}`}
+            data-testid={`pricing-tier-${tier.id}`}
           >
             {tier.popular && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-purple-600 rounded-full text-xs font-bold">
@@ -202,7 +205,7 @@ function PricingTab() {
             <p className="text-gray-400 text-sm mb-4">{tier.description}</p>
             
             <div className="mb-4">
-              <span className="text-4xl font-bold">${billingPeriod === 'monthly' ? tier.monthly : tier.annual}</span>
+              <span className="text-4xl font-bold" data-testid={`pricing-tier-${tier.id}-price`}>${billingPeriod === 'monthly' ? tier.monthly : tier.annual}</span>
               <span className="text-gray-400">/{billingPeriod === 'monthly' ? 'mo' : 'yr'}</span>
             </div>
 
@@ -216,6 +219,7 @@ function PricingTab() {
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white'
                   : 'bg-red-600 hover:bg-red-700 text-white'
               }`}
+              data-testid={`pricing-subscribe-${tier.id}-btn`}
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 
                user?.tier === tier.id ? 'Current Plan' : 'Subscribe'}
@@ -249,7 +253,7 @@ function PricingTab() {
             { id: 'credits_100', credits: 100, price: 34.99, label: '100 Credits' },
             { id: 'credits_250', credits: 250, price: 74.99, label: '250 Credits' },
           ].map((pkg) => (
-            <div key={pkg.id} className={`relative bg-gray-800/80 border rounded-xl p-5 text-center ${pkg.popular ? 'border-amber-500 border-2' : 'border-gray-700'}`}>
+            <div key={pkg.id} className={`relative bg-gray-800/80 border rounded-xl p-5 text-center ${pkg.popular ? 'border-amber-500 border-2' : 'border-gray-700'}`} data-testid={`credit-package-${pkg.id}`}>
               {pkg.popular && (
                 <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-amber-600 rounded-full text-xs font-bold">
                   BEST VALUE

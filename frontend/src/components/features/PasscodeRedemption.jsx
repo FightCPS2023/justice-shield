@@ -59,6 +59,7 @@ function PasscodeRedemption() {
         <button
           onClick={() => setShowInput(true)}
           className="px-6 py-2 bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-500 hover:to-amber-500 rounded-lg font-semibold transition-all"
+          data-testid="passcode-show-input-btn"
         >
           Enter Passcode
         </button>
