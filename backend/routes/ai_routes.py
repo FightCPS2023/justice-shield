@@ -224,7 +224,7 @@ Make the report detailed and practical. If data is limited, leave arrays empty a
         api_key=EMERGENT_LLM_KEY,
         session_id=f"person-lookup-{uuid.uuid4()}",
         system_message=system_message
-    ).with_model("openai", "gpt-5.2")
+    ).with_model("openai", "gpt-5.2").with_params(timeout=25)
     
     # Build the lookup query
     location_info = ""
@@ -269,51 +269,83 @@ Instructions:
 """
 
     user_message = UserMessage(text=prompt)
-    
-    try:
-        raw_response = await chat.send_message(user_message)
-        
-        parsed_report = None
-        normalized_report = raw_response
+
+    async def _send_with_timeout(active_chat: LlmChat) -> str:
+        def _run():
+            return asyncio.run(active_chat.send_message(user_message))
+        return await asyncio.wait_for(asyncio.to_thread(_run), timeout=25)
+
+    max_retries = 1
+    raw_response = None
+    error_text = ""
+    retry_delays = [2, 4]
+
+    for attempt in range(max_retries + 1):
         try:
-            json_start = raw_response.find("{")
-            json_end = raw_response.rfind("}")
-            if json_start != -1 and json_end != -1 and json_end > json_start:
-                parsed_report = json.loads(raw_response[json_start:json_end + 1])
-                normalized_report = json.dumps(parsed_report, indent=2)
-        except Exception:
-            parsed_report = None
-        
-        # Parse and structure the response
-        results = {
-            "raw_report": normalized_report,
-            "structured_report": parsed_report,
-            "name_searched": request.name,
-            "location_searched": f"{request.city or 'Any'}, {request.state or 'Any'}",
-            "lookup_type": request.lookup_type,
-        }
-        
-        sources_checked = [
-            "AI Knowledge Base",
-            "Public Records Analysis",
-            "Court Record Patterns",
-            "Professional License Databases",
-            "Social Media Intelligence",
-            "News & Media Archives"
-        ]
-        
-        return PersonLookupResponse(
-            name=request.name,
-            lookup_type=request.lookup_type,
-            results=results,
-            sources_checked=sources_checked,
-            disclaimer="This report is generated using AI analysis of public information patterns. All findings should be verified through official channels and paid background check services before use in legal proceedings. This is not a substitute for official NCIC or law enforcement databases.",
-            timestamp=datetime.now(timezone.utc).isoformat()
-        )
-        
-    except Exception as e:
-        print(f"Person lookup error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Lookup failed: {str(e)}")
+            raw_response = await _send_with_timeout(chat)
+            break
+        except asyncio.TimeoutError:
+            error_text = "timeout"
+            if attempt == max_retries:
+                raise HTTPException(status_code=504, detail="Background check timed out. Please try again.")
+        except (ChatError, Exception) as e:
+            error_text = str(e)
+            if "budget" in error_text.lower() or "insufficient" in error_text.lower():
+                raise HTTPException(status_code=402, detail="AI budget exceeded. Please add balance to your Universal Key and retry.")
+            if attempt == max_retries:
+                raise HTTPException(status_code=502, detail="AI service temporarily unavailable. Please try again in a few minutes.")
+
+        wait_seconds = retry_delays[min(attempt, len(retry_delays) - 1)]
+        if "rate limit" in error_text.lower() or "429" in error_text:
+            wait_seconds = max(wait_seconds, 8)
+        await asyncio.sleep(wait_seconds)
+
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"person-lookup-{uuid.uuid4()}-retry{attempt}",
+            system_message=system_message
+        ).with_model("openai", "gpt-5.2").with_params(timeout=25)
+
+    if not raw_response:
+        raise HTTPException(status_code=502, detail="AI service unavailable. Please try again.")
+
+    parsed_report = None
+    normalized_report = raw_response
+    try:
+        json_start = raw_response.find("{")
+        json_end = raw_response.rfind("}")
+        if json_start != -1 and json_end != -1 and json_end > json_start:
+            parsed_report = json.loads(raw_response[json_start:json_end + 1])
+            normalized_report = json.dumps(parsed_report, indent=2)
+    except Exception:
+        parsed_report = None
+
+    # Parse and structure the response
+    results = {
+        "raw_report": normalized_report,
+        "structured_report": parsed_report,
+        "name_searched": request.name,
+        "location_searched": f"{request.city or 'Any'}, {request.state or 'Any'}",
+        "lookup_type": request.lookup_type,
+    }
+
+    sources_checked = [
+        "AI Knowledge Base",
+        "Public Records Analysis",
+        "Court Record Patterns",
+        "Professional License Databases",
+        "Social Media Intelligence",
+        "News & Media Archives"
+    ]
+
+    return PersonLookupResponse(
+        name=request.name,
+        lookup_type=request.lookup_type,
+        results=results,
+        sources_checked=sources_checked,
+        disclaimer="This report is generated using AI analysis of public information patterns. All findings should be verified through official channels and paid background check services before use in legal proceedings. This is not a substitute for official NCIC or law enforcement databases.",
+        timestamp=datetime.now(timezone.utc).isoformat()
+    )
 
 @router.post("/api/ai/court-records-search")
 async def court_records_search(

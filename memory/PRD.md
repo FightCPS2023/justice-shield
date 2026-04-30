@@ -1,4 +1,5 @@
 # THE CPS PUNISHER - Product Requirements Document
+_Last Updated: 2026-04-30_
 
 ## Original Problem Statement
 Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable defender of the family" with features superior to commercial legal tools. Focused on CPS (Child Protective Services) case defense with AI-powered analysis, document generation, and legal research.
@@ -63,11 +64,10 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Frontend updated with polling for background analysis completion
 - Testing: 100% pass rate (12/12 backend, all frontend)
 
-### Session 3: Background Check Report Quality - COMPLETE
-- Upgraded person-lookup prompt to require strict JSON structured reports
-- Added per-section confidence + data availability guidance and red flag structure
-- Added JSON parsing with formatted output for consistent UI display
-- Disabled automatic saving of background check results to case notes (per user preference)
+### Session 3: Background Check Report Quality - IN PROGRESS
+- Expanded person-lookup prompt with stricter JSON schema, search plan, and verification gaps
+- Added timeout/retry/error handling for LLM 502/budget failures
+- Pending: LLM service stability / Universal Key balance; re-test full report output
 
 ### Session 4: Document Analysis Reliability Hardening - COMPLETE
 - Added concurrency throttling for background analysis to reduce LLM rate-limit failures
@@ -208,6 +208,10 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added optimized hero assets to cache list for faster loads
 
 ## Remaining Tasks
+
+### P0 - Background Check Reliability
+- LLM 502/budget failures can cause timeouts; top up Universal Key and re-test person lookup
+- If timeouts persist, consider background job + polling flow
 
 ### P0 - Production Deployment
 - User needs to redeploy to push all fixes to production (thecpspunisher.com)
