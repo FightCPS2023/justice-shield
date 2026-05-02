@@ -203,6 +203,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added is_admin to auth responses for faster, clearer admin routing
 - Fixed fetchpriority attribute warning on landing hero image
 
+### Session 36: Export Center (PDF/DOCX) - COMPLETE
+- Added Document + Case Prep (All Data) export endpoints for PDF and DOCX
+- Added Export Center UI with editable court templates and correction notes
+- Made case prep export available to all tiers
+
 ### Session 35: Paywall Stability + Pricing UI Test IDs - COMPLETE
 - Fixed Stripe checkout request model (origin_url + billing_period) and backend billing_period handling
 - Added pricing/passcode UI test IDs for paywall controls
