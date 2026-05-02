@@ -68,6 +68,51 @@ function DocumentsTab({ selectedCase }) {
     { id: 'complaint_1983', name: 'Section 1983 Civil Rights Complaint' },
   ];
 
+  const exportTemplates = [
+    {
+      id: 'general_filing',
+      label: 'General Filing Cover',
+      body: 'Court: [COURT NAME]\nCase No.: [CASE NUMBER]\nParties: [PARTY NAMES]\nTitle: [FILING TITLE]\n\nCOMES NOW the [Parent/Respondent], and respectfully submits this filing in support of their rights and the best interests of the child(ren).'
+    },
+    {
+      id: 'motion_dismiss',
+      label: 'Motion to Dismiss',
+      body: 'COMES NOW the [Parent/Respondent], and moves this Court to dismiss the petition due to constitutional violations, lack of jurisdiction, and insufficiency of evidence.\n\nGrounds:\n1. [Ground One]\n2. [Ground Two]\n3. [Ground Three]\n\nWHEREFORE, the parent respectfully requests dismissal and all just relief.'
+    },
+    {
+      id: 'motion_discovery',
+      label: 'Motion for Discovery',
+      body: 'COMES NOW the [Parent/Respondent] and requests full discovery of all CPS records, communications, investigative notes, audio/video, and witness statements related to this case.\n\nRequested Categories:\n1. [Category One]\n2. [Category Two]\n3. [Category Three]'
+    },
+    {
+      id: 'due_process',
+      label: 'Motion for Due Process Hearing',
+      body: 'COMES NOW the [Parent/Respondent] and requests an immediate due process hearing regarding the removal and ongoing restrictions in this matter.\n\nBasis:\n- [Constitutional/Statutory Basis]\n- [Lack of Notice/Hearing]\n- [Emergency Exception Not Met]'
+    },
+    {
+      id: 'emergency_motion',
+      label: 'Emergency Motion',
+      body: 'COMES NOW the [Parent/Respondent] and moves for emergency relief due to imminent harm and ongoing constitutional violations.\n\nEmergency Facts:\n- [Fact One]\n- [Fact Two]\n- [Fact Three]'
+    },
+    {
+      id: 'affidavit',
+      label: 'Affidavit / Declaration',
+      body: 'I, [NAME], declare under penalty of perjury:\n\n1. [Statement One]\n2. [Statement Two]\n3. [Statement Three]\n\nExecuted on [DATE] in [CITY, STATE].'
+    }
+  ];
+
+  const [exportTemplateId, setExportTemplateId] = useState(exportTemplates[0].id);
+  const [exportTemplateText, setExportTemplateText] = useState(exportTemplates[0].body);
+  const [exportNotes, setExportNotes] = useState('');
+  const [exporting, setExporting] = useState(false);
+
+  useEffect(() => {
+    const template = exportTemplates.find((item) => item.id === exportTemplateId);
+    if (template) {
+      setExportTemplateText(template.body);
+    }
+  }, [exportTemplateId]);
+
   useEffect(() => {
     if (!selectedCase) return;
     loadDocuments();
@@ -158,6 +203,64 @@ function DocumentsTab({ selectedCase }) {
     
     if (file.size > maxSize) return `File too large (max ${maxSizeMB}MB)`;
     return null;
+  };
+
+  const handleExport = async (exportType, format) => {
+    if (!selectedCase) {
+      toast.error('Please select a case first');
+      return;
+    }
+    setExporting(true);
+    const token = api.getToken ? api.getToken() : localStorage.getItem('cps_token');
+    if (!token) {
+      toast.error('Session expired. Please log in again.');
+      setExporting(false);
+      return;
+    }
+
+    const endpoint = exportType === 'documents'
+      ? `/api/export/case/${selectedCase.id}/documents/${format}`
+      : `/api/export/case/${selectedCase.id}/preparation-kit/${format}`;
+
+    const payload = {
+      template_name: exportTemplateId,
+      template_text: exportTemplateText,
+      editor_notes: exportNotes
+    };
+
+    const apiBase = (API_URL || '').replace(/\/+$/, '');
+    const url = apiBase ? `${apiBase}${endpoint}` : endpoint;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Export failed' }));
+        throw new Error(error.detail || 'Export failed');
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `cps_${exportType}_${selectedCase.id.slice(0, 8)}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+      toast.success('Export ready for download');
+    } catch (error) {
+      toast.error(error.message || 'Export failed');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const uploadSingleFile = async (file) => {
@@ -504,6 +607,90 @@ function DocumentsTab({ selectedCase }) {
           Document Analysis Center
         </h1>
         <p className="text-gray-400">Upload CPS documents for AI-powered analysis - {selectedCase.title}</p>
+      </div>
+
+      <div className="bg-gradient-to-br from-gray-900 via-black to-red-950/40 border border-red-800/40 rounded-2xl p-6" data-testid="export-center-card">
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-2xl font-semibold flex items-center gap-2" data-testid="export-center-title">
+              <Download className="w-6 h-6 text-red-500" /> Export Center
+            </h2>
+            <p className="text-sm text-gray-400" data-testid="export-center-subtitle">Export Documents + Case Prep (All Data) to PDF or DOCX with editable templates.</p>
+          </div>
+          <div className="text-xs text-gray-500" data-testid="export-center-case">Case: {selectedCase.title}</div>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-1" data-testid="export-template-label">Court Template</label>
+            <select
+              value={exportTemplateId}
+              onChange={(e) => setExportTemplateId(e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2"
+              data-testid="export-template-select"
+            >
+              {exportTemplates.map((template) => (
+                <option key={template.id} value={template.id}>{template.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-1" data-testid="export-template-text-label">Template Text (Editable)</label>
+            <textarea
+              value={exportTemplateText}
+              onChange={(e) => setExportTemplateText(e.target.value)}
+              rows={6}
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm"
+              data-testid="export-template-textarea"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-1" data-testid="export-notes-label">Edits / Corrections to Add</label>
+            <textarea
+              value={exportNotes}
+              onChange={(e) => setExportNotes(e.target.value)}
+              rows={6}
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm"
+              placeholder="Add corrections, facts, or notes to include in the export..."
+              data-testid="export-notes-textarea"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3 mt-4">
+          <button
+            onClick={() => handleExport('documents', 'pdf')}
+            disabled={exporting}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold"
+            data-testid="export-documents-pdf-btn"
+          >
+            Export Documents (PDF)
+          </button>
+          <button
+            onClick={() => handleExport('documents', 'docx')}
+            disabled={exporting}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold"
+            data-testid="export-documents-docx-btn"
+          >
+            Export Documents (DOCX)
+          </button>
+          <button
+            onClick={() => handleExport('prep', 'pdf')}
+            disabled={exporting}
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-lg font-semibold"
+            data-testid="export-prep-pdf-btn"
+          >
+            Case Prep (All Data) PDF
+          </button>
+          <button
+            onClick={() => handleExport('prep', 'docx')}
+            disabled={exporting}
+            className="px-4 py-2 bg-amber-700 hover:bg-amber-800 rounded-lg font-semibold"
+            data-testid="export-prep-docx-btn"
+          >
+            Case Prep (All Data) DOCX
+          </button>
+        </div>
       </div>
 
       {/* Sub-tabs */}

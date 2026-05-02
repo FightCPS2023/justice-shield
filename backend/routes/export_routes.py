@@ -1,16 +1,118 @@
 """Export routes - PDF generation"""
 import uuid
 import io
+import json
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, List, Dict
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 
 from database import get_db
 from auth import get_current_user
-from utils.credits import get_case_with_ownership, require_tier
 
 router = APIRouter()
+
+COURT_TEMPLATES: Dict[str, Dict[str, str]] = {
+    "general_filing": {
+        "name": "General Filing Cover",
+        "body": "Court: [COURT NAME]\nCase No.: [CASE NUMBER]\nParties: [PARTY NAMES]\nTitle: [FILING TITLE]\n\nCOMES NOW the [Parent/Respondent], and respectfully submits this filing in support of their rights and the best interests of the child(ren)."
+    },
+    "motion_dismiss": {
+        "name": "Motion to Dismiss",
+        "body": "COMES NOW the [Parent/Respondent], and moves this Court to dismiss the petition due to constitutional violations, lack of jurisdiction, and insufficiency of evidence.\n\nGrounds:\n1. [Ground One]\n2. [Ground Two]\n3. [Ground Three]\n\nWHEREFORE, the parent respectfully requests dismissal and all just relief."
+    },
+    "motion_discovery": {
+        "name": "Motion for Discovery",
+        "body": "COMES NOW the [Parent/Respondent] and requests full discovery of all CPS records, communications, investigative notes, audio/video, and witness statements related to this case.\n\nRequested Categories:\n1. [Category One]\n2. [Category Two]\n3. [Category Three]"
+    },
+    "due_process": {
+        "name": "Motion for Due Process Hearing",
+        "body": "COMES NOW the [Parent/Respondent] and requests an immediate due process hearing regarding the removal and ongoing restrictions in this matter.\n\nBasis:\n- [Constitutional/Statutory Basis]\n- [Lack of Notice/Hearing]\n- [Emergency Exception Not Met]"
+    },
+    "emergency_motion": {
+        "name": "Emergency Motion",
+        "body": "COMES NOW the [Parent/Respondent] and moves for emergency relief due to imminent harm and ongoing constitutional violations.\n\nEmergency Facts:\n- [Fact One]\n- [Fact Two]\n- [Fact Three]"
+    },
+    "affidavit": {
+        "name": "Affidavit / Declaration",
+        "body": "I, [NAME], declare under penalty of perjury:\n\n1. [Statement One]\n2. [Statement Two]\n3. [Statement Three]\n\nExecuted on [DATE] in [CITY, STATE]."
+    }
+}
+
+class ExportPayload(BaseModel):
+    template_name: Optional[str] = "general_filing"
+    template_text: Optional[str] = None
+    editor_notes: Optional[str] = None
+    include_analysis: Optional[bool] = True
+
+
+def _get_template_content(template_name: Optional[str], template_text: Optional[str]) -> str:
+    if template_text:
+        return template_text
+    template = COURT_TEMPLATES.get(template_name or "", COURT_TEMPLATES["general_filing"])
+    return template.get("body", "")
+
+
+def _normalize_text(value) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, (dict, list)):
+        try:
+            return json.dumps(value, indent=2)
+        except Exception:
+            return str(value)
+    return str(value)
+
+
+async def _fetch_case_export_data(db, case_id: str, user_id: str) -> dict:
+    case = await db.cases.find_one({"_id": case_id, "user_id": user_id})
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+
+    violations = []
+    async for v in db.violations.find({"case_id": case_id}):
+        violations.append(v)
+
+    timeline = []
+    async for t in db.timeline_events.find({"case_id": case_id}).sort("event_date", 1):
+        timeline.append(t)
+
+    evidence = []
+    async for e in db.evidence_items.find({"case_id": case_id}):
+        evidence.append(e)
+
+    documents = []
+    async for d in db.documents.find({"case_id": case_id}):
+        documents.append(d)
+
+    notes = []
+    async for n in db.notepad_entries.find({"case_id": case_id, "user_id": user_id}):
+        notes.append(n)
+
+    strategies = []
+    async for s in db.strategies.find({"case_id": case_id}):
+        strategies.append(s)
+
+    communications = []
+    async for c in db.communications.find({"case_id": case_id}):
+        communications.append(c)
+
+    court_filings = []
+    async for f in db.court_filings.find({"case_id": case_id}):
+        court_filings.append(f)
+
+    return {
+        "case": case,
+        "violations": violations,
+        "timeline": timeline,
+        "evidence": evidence,
+        "documents": documents,
+        "notes": notes,
+        "strategies": strategies,
+        "communications": communications,
+        "court_filings": court_filings
+    }
 
 @router.get("/api/export/notepad/all/pdf")
 async def export_all_notes_to_pdf(
@@ -233,10 +335,268 @@ async def export_case_to_pdf(case_id: str, current_user: dict = Depends(get_curr
     )
 
 
+@router.post("/api/export/case/{case_id}/documents/pdf")
+async def export_case_documents_pdf(case_id: str, payload: ExportPayload, current_user: dict = Depends(get_current_user)):
+    """Export all uploaded documents for a case as PDF."""
+    db = get_db()
+    data = await _fetch_case_export_data(db, case_id, current_user["user_id"])
+    documents = data["documents"]
+    case = data["case"]
+
+    if not documents:
+        raise HTTPException(status_code=404, detail="No documents found for this case")
+
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+    from reportlab.lib.units import inch
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('DocTitle', parent=styles['Heading1'], fontSize=18, spaceAfter=16)
+    section_style = ParagraphStyle('DocSection', parent=styles['Heading2'], fontSize=12, spaceBefore=12, spaceAfter=6)
+    body_style = ParagraphStyle('DocBody', parent=styles['Normal'], fontSize=10, leading=14)
+
+    template_content = _get_template_content(payload.template_name, payload.template_text)
+    editor_notes = _normalize_text(payload.editor_notes).strip()
+    include_analysis = payload.include_analysis if payload.include_analysis is not None else True
+
+    story = []
+    story.append(Paragraph("THE CPS PUNISHER", title_style))
+    story.append(Paragraph("DOCUMENT EXPORT", styles['Heading2']))
+    story.append(Paragraph(f"Case: {case.get('title', 'Untitled')}", styles['Normal']))
+    story.append(Spacer(1, 12))
+
+    if template_content:
+        story.append(Paragraph("COURT TEMPLATE", section_style))
+        story.append(Paragraph(template_content.replace("\n", "<br/>") , body_style))
+        story.append(Spacer(1, 10))
+
+    if editor_notes:
+        story.append(Paragraph("USER EDITS / CORRECTIONS", section_style))
+        story.append(Paragraph(editor_notes.replace("\n", "<br/>") , body_style))
+        story.append(Spacer(1, 10))
+
+    for idx, doc_item in enumerate(documents, 1):
+        if idx > 1:
+            story.append(PageBreak())
+        story.append(Paragraph(f"Document {idx}: {doc_item.get('title', doc_item.get('filename', 'Document'))}", section_style))
+        story.append(Paragraph(f"Filename: {doc_item.get('filename', 'N/A')}", body_style))
+        story.append(Paragraph(f"Uploaded: {doc_item.get('created_at', 'N/A')[:10] if doc_item.get('created_at') else 'N/A'}", body_style))
+        story.append(Paragraph(f"Status: {doc_item.get('analysis_status', 'pending').upper()}", body_style))
+        story.append(Paragraph(f"Type: {doc_item.get('file_type', 'N/A')}", body_style))
+        story.append(Spacer(1, 6))
+
+        if include_analysis and doc_item.get("analysis"):
+            analysis = doc_item.get("analysis")
+            summary = None
+            if isinstance(analysis, dict):
+                summary = analysis.get("summary") or analysis.get("overall_summary") or analysis.get("executive_summary")
+            summary_text = _normalize_text(summary or analysis)
+            story.append(Paragraph("Analysis Summary", section_style))
+            story.append(Paragraph(summary_text[:2000].replace("\n", "<br/>") , body_style))
+
+    doc.build(story)
+    buffer.seek(0)
+
+    filename = f"cps_case_{case_id[:8]}_documents.pdf"
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+@router.post("/api/export/case/{case_id}/documents/docx")
+async def export_case_documents_docx(case_id: str, payload: ExportPayload, current_user: dict = Depends(get_current_user)):
+    """Export all uploaded documents for a case as DOCX."""
+    db = get_db()
+    data = await _fetch_case_export_data(db, case_id, current_user["user_id"])
+    documents = data["documents"]
+    case = data["case"]
+
+    if not documents:
+        raise HTTPException(status_code=404, detail="No documents found for this case")
+
+    from docx import Document
+
+    template_content = _get_template_content(payload.template_name, payload.template_text)
+    editor_notes = _normalize_text(payload.editor_notes).strip()
+    include_analysis = payload.include_analysis if payload.include_analysis is not None else True
+
+    docx_file = Document()
+    docx_file.add_heading("THE CPS PUNISHER - DOCUMENT EXPORT", level=1)
+    docx_file.add_paragraph(f"Case: {case.get('title', 'Untitled')}")
+
+    if template_content:
+        docx_file.add_heading("Court Template", level=2)
+        docx_file.add_paragraph(template_content)
+
+    if editor_notes:
+        docx_file.add_heading("User Edits / Corrections", level=2)
+        docx_file.add_paragraph(editor_notes)
+
+    for idx, doc_item in enumerate(documents, 1):
+        docx_file.add_heading(f"Document {idx}: {doc_item.get('title', doc_item.get('filename', 'Document'))}", level=2)
+        docx_file.add_paragraph(f"Filename: {doc_item.get('filename', 'N/A')}")
+        docx_file.add_paragraph(f"Uploaded: {doc_item.get('created_at', 'N/A')[:10] if doc_item.get('created_at') else 'N/A'}")
+        docx_file.add_paragraph(f"Status: {doc_item.get('analysis_status', 'pending').upper()}")
+        docx_file.add_paragraph(f"Type: {doc_item.get('file_type', 'N/A')}")
+        if include_analysis and doc_item.get("analysis"):
+            analysis = doc_item.get("analysis")
+            summary = None
+            if isinstance(analysis, dict):
+                summary = analysis.get("summary") or analysis.get("overall_summary") or analysis.get("executive_summary")
+            summary_text = _normalize_text(summary or analysis)
+            docx_file.add_heading("Analysis Summary", level=3)
+            docx_file.add_paragraph(summary_text[:3000])
+
+    buffer = io.BytesIO()
+    docx_file.save(buffer)
+    buffer.seek(0)
+
+    filename = f"cps_case_{case_id[:8]}_documents.docx"
+    return StreamingResponse(
+        buffer,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+@router.post("/api/export/case/{case_id}/preparation-kit/pdf")
+async def export_case_preparation_kit_pdf(case_id: str, payload: ExportPayload, current_user: dict = Depends(get_current_user)):
+    """Export case preparation kit (all data) as PDF."""
+    db = get_db()
+    data = await _fetch_case_export_data(db, case_id, current_user["user_id"])
+    case = data["case"]
+
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+    from reportlab.lib.units import inch
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('KitTitle', parent=styles['Heading1'], fontSize=18, spaceAfter=16)
+    section_style = ParagraphStyle('KitSection', parent=styles['Heading2'], fontSize=12, spaceBefore=12, spaceAfter=6)
+    body_style = ParagraphStyle('KitBody', parent=styles['Normal'], fontSize=10, leading=14)
+
+    template_content = _get_template_content(payload.template_name, payload.template_text)
+    editor_notes = _normalize_text(payload.editor_notes).strip()
+
+    story = []
+    story.append(Paragraph("THE CPS PUNISHER", title_style))
+    story.append(Paragraph("CASE PREPARATION - ALL DATA", styles['Heading2']))
+    story.append(Paragraph(f"Case: {case.get('title', 'Untitled')}", styles['Normal']))
+    story.append(Spacer(1, 12))
+
+    if template_content:
+        story.append(Paragraph("COURT TEMPLATE", section_style))
+        story.append(Paragraph(template_content.replace("\n", "<br/>") , body_style))
+        story.append(Spacer(1, 10))
+
+    if editor_notes:
+        story.append(Paragraph("USER EDITS / CORRECTIONS", section_style))
+        story.append(Paragraph(editor_notes.replace("\n", "<br/>") , body_style))
+        story.append(Spacer(1, 10))
+
+    story.append(Paragraph("CASE INFORMATION", section_style))
+    story.append(Paragraph(f"State: {case.get('state', 'N/A')} | County: {case.get('county', 'N/A')} | Case No.: {case.get('case_number', 'N/A')}", body_style))
+    story.append(Spacer(1, 6))
+
+    sections = [
+        ("VIOLATIONS", data["violations"], lambda v: f"{v.get('violation_type', 'Unknown')}: {v.get('description', '')[:200]}") ,
+        ("TIMELINE", data["timeline"], lambda t: f"{t.get('event_date', 'N/A')[:10] if t.get('event_date') else 'N/A'} - {t.get('title', 'Untitled')}") ,
+        ("EVIDENCE", data["evidence"], lambda e: f"{e.get('title', 'Evidence')} ({e.get('evidence_type', 'document')})") ,
+        ("DOCUMENTS", data["documents"], lambda d: f"{d.get('filename', 'Document')} ({d.get('analysis_status', 'pending')})") ,
+        ("LEGAL NOTES", data["notes"], lambda n: f"{n.get('title', 'Untitled')} - {n.get('category', 'general')}") ,
+        ("STRATEGIES", data["strategies"], lambda s: f"{s.get('title', 'Strategy')} - {s.get('description', '')[:150]}") ,
+        ("COMMUNICATIONS", data["communications"], lambda c: f"{c.get('contact_name', 'Contact')} - {c.get('summary', '')[:150]}") ,
+        ("COURT FILINGS", data["court_filings"], lambda f: f"{f.get('title', 'Filing')} - {f.get('status', 'pending')}")
+    ]
+
+    for title, items, formatter in sections:
+        story.append(PageBreak())
+        story.append(Paragraph(title, section_style))
+        if not items:
+            story.append(Paragraph("No records available.", body_style))
+            continue
+        for item in items:
+            story.append(Paragraph(f"• {formatter(item)}", body_style))
+
+    doc.build(story)
+    buffer.seek(0)
+
+    filename = f"cps_case_{case_id[:8]}_all_data.pdf"
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+@router.post("/api/export/case/{case_id}/preparation-kit/docx")
+async def export_case_preparation_kit_docx(case_id: str, payload: ExportPayload, current_user: dict = Depends(get_current_user)):
+    """Export case preparation kit (all data) as DOCX."""
+    db = get_db()
+    data = await _fetch_case_export_data(db, case_id, current_user["user_id"])
+    case = data["case"]
+
+    from docx import Document
+
+    template_content = _get_template_content(payload.template_name, payload.template_text)
+    editor_notes = _normalize_text(payload.editor_notes).strip()
+
+    docx_file = Document()
+    docx_file.add_heading("THE CPS PUNISHER - CASE PREPARATION (ALL DATA)", level=1)
+    docx_file.add_paragraph(f"Case: {case.get('title', 'Untitled')}")
+    docx_file.add_paragraph(f"State: {case.get('state', 'N/A')} | County: {case.get('county', 'N/A')} | Case No.: {case.get('case_number', 'N/A')}")
+
+    if template_content:
+        docx_file.add_heading("Court Template", level=2)
+        docx_file.add_paragraph(template_content)
+
+    if editor_notes:
+        docx_file.add_heading("User Edits / Corrections", level=2)
+        docx_file.add_paragraph(editor_notes)
+
+    sections = [
+        ("Violations", data["violations"], lambda v: f"{v.get('violation_type', 'Unknown')}: {v.get('description', '')[:200]}"),
+        ("Timeline", data["timeline"], lambda t: f"{t.get('event_date', 'N/A')[:10] if t.get('event_date') else 'N/A'} - {t.get('title', 'Untitled')}"),
+        ("Evidence", data["evidence"], lambda e: f"{e.get('title', 'Evidence')} ({e.get('evidence_type', 'document')})"),
+        ("Documents", data["documents"], lambda d: f"{d.get('filename', 'Document')} ({d.get('analysis_status', 'pending')})"),
+        ("Legal Notes", data["notes"], lambda n: f"{n.get('title', 'Untitled')} - {n.get('category', 'general')}"),
+        ("Strategies", data["strategies"], lambda s: f"{s.get('title', 'Strategy')} - {s.get('description', '')[:150]}"),
+        ("Communications", data["communications"], lambda c: f"{c.get('contact_name', 'Contact')} - {c.get('summary', '')[:150]}"),
+        ("Court Filings", data["court_filings"], lambda f: f"{f.get('title', 'Filing')} - {f.get('status', 'pending')}")
+    ]
+
+    for title, items, formatter in sections:
+        docx_file.add_heading(title, level=2)
+        if not items:
+            docx_file.add_paragraph("No records available.")
+            continue
+        for item in items:
+            docx_file.add_paragraph(formatter(item), style='List Bullet')
+
+    buffer = io.BytesIO()
+    docx_file.save(buffer)
+    buffer.seek(0)
+
+    filename = f"cps_case_{case_id[:8]}_all_data.docx"
+    return StreamingResponse(
+        buffer,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
 # ============== CASE PREPARATION KIT ==============
 
 @router.get("/api/export/case/{case_id}/preparation-kit")
-async def export_case_preparation_kit(case_id: str, current_user: dict = Depends(require_tier("attorney", feature_key="case_prep_kit"))):
+async def export_case_preparation_kit(case_id: str, current_user: dict = Depends(get_current_user)):
     """
     Generate comprehensive Court Preparation Kit PDF
     Includes: Case info, violations, timeline, evidence, documents, notes, strategies
