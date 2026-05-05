@@ -203,6 +203,10 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added is_admin to auth responses for faster, clearer admin routing
 - Fixed fetchpriority attribute warning on landing hero image
 
+### Session 38: Overview Walkthrough Placement + RRC Label - COMPLETE
+- Moved onboarding checklist (Start Walkthrough) to top of Overview for visibility
+- Renamed Real Estate module label to “Toll & Rollin!” badge and sidebar label
+
 ### Session 37: Real Estate Law Attorney Agent (RRC) - COMPLETE
 - Added Revenant Realty Counsel AI endpoint with CPS-real-estate strategy framework
 - Added Real Estate Law (RRC) tab with focus areas (torts, deeds/titles, wills/probate, etc.) and response panel
