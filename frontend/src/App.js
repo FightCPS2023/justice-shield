@@ -303,7 +303,7 @@ function Dashboard({ onNavigate }) {
         { id: 'argumentgen', icon: Scale, label: 'Argument Generator', minTier: 'professional', highlight: true },
         { id: 'evidencemapper', icon: Eye, label: 'Evidence Mapper', minTier: 'professional', highlight: true },
         { id: 'expert', icon: Brain, label: 'Expert Legal AI', minTier: 'professional', highlight: true },
-        { id: 'realestate', icon: Building2, label: 'Real Estate Law (RRC)', minTier: 'free', highlight: true },
+        { id: 'realestate', icon: Building2, label: 'Real Estate Law — Toll & Rollin!', minTier: 'free', highlight: true },
         { id: 'personlookup', icon: Search, label: 'Background Check', minTier: 'professional', highlight: true },
         { id: 'section1983', icon: Gavel, label: 'Section 1983 Lawsuit', minTier: 'attorney', highlight: true },
         { id: 'criminal', icon: AlertTriangle, label: 'Criminal Case', minTier: 'attorney' }

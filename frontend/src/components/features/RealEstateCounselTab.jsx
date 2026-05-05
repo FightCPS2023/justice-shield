@@ -98,6 +98,7 @@ function RealEstateCounselTab({ selectedCase }) {
         <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
           <Building2 className="w-8 h-8 text-red-500" />
           Revenant Realty Counsel (RRC)
+          <span className="ml-2 text-sm px-2 py-1 rounded-full bg-red-600/30 text-red-100" data-testid="real-estate-toll-rollin">Toll & Rollin!</span>
         </h1>
         <p className="text-gray-400">Aggressive real estate defense for CPS-related property battles — {selectedCase.title}</p>
       </div>

@@ -220,17 +220,6 @@ function OverviewTab({ cases, setActiveTab, prefetchedData = {} }) {
         </div>
       )}
 
-      {/* Header with Chrome Logo */}
-      <div className="flex items-center gap-6">
-        <img src="/images/chrome-logo.jpg" alt="CPS Punisher" className="w-32 h-auto hidden md:block" />
-        <div>
-          <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Oswald, sans-serif' }}>
-            Welcome Back, Punisher
-          </h1>
-          <p className="text-gray-400">Continue your fight for your family</p>
-        </div>
-      </div>
-
       <div className="bg-gray-800/40 border border-gray-700 rounded-xl p-6" data-testid="onboarding-checklist">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -268,6 +257,17 @@ function OverviewTab({ cases, setActiveTab, prefetchedData = {} }) {
               </button>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Header with Chrome Logo */}
+      <div className="flex items-center gap-6">
+        <img src="/images/chrome-logo.jpg" alt="CPS Punisher" className="w-32 h-auto hidden md:block" />
+        <div>
+          <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Oswald, sans-serif' }}>
+            Welcome Back, Punisher
+          </h1>
+          <p className="text-gray-400">Continue your fight for your family</p>
         </div>
       </div>
 
