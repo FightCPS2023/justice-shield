@@ -203,6 +203,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added is_admin to auth responses for faster, clearer admin routing
 - Fixed fetchpriority attribute warning on landing hero image
 
+### Session 37: Real Estate Law Attorney Agent (RRC) - COMPLETE
+- Added Revenant Realty Counsel AI endpoint with CPS-real-estate strategy framework
+- Added Real Estate Law (RRC) tab with focus areas (torts, deeds/titles, wills/probate, etc.) and response panel
+- Verified UI + API response from RRC module
+
 ### Session 36: Export Center (PDF/DOCX) - COMPLETE
 - Added Document + Case Prep (All Data) export endpoints for PDF and DOCX
 - Added Export Center UI with editable court templates and correction notes
