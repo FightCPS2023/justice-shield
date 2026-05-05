@@ -154,6 +154,7 @@ FEATURE_CREDIT_COSTS = {
     "person_lookup": 5,
     "court_records_search": 3,
     "forensic_analysis": 5,
+    "real_estate_counsel": 3,
 }
 
 # Admin emails

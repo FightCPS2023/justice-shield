@@ -4,7 +4,7 @@ import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, Menu, X, LogOut,
   Home, Settings, Lock, Loader2, Clock, Eye, CheckCircle2,
-  CreditCard, Zap, Mic, HelpCircle, ChevronDown
+  CreditCard, Zap, Mic, HelpCircle, ChevronDown, Building2
 } from 'lucide-react';
 
 import api, { API_URL } from './lib/api';
@@ -41,6 +41,7 @@ import ServicesTab from './components/features/ServicesTab';
 import ForumTab from './components/features/ForumTab';
 import AdvocatesTab from './components/features/AdvocatesTab';
 import ExpertLegalAITab from './components/features/ExpertLegalAITab';
+import RealEstateCounselTab from './components/features/RealEstateCounselTab';
 import Section1983Tab from './components/features/Section1983Tab';
 import PodcastCreatorTab from './components/features/PodcastCreatorTab';
 import CaseLawAnalysisTab from './components/features/CaseLawAnalysisTab';
@@ -302,6 +303,7 @@ function Dashboard({ onNavigate }) {
         { id: 'argumentgen', icon: Scale, label: 'Argument Generator', minTier: 'professional', highlight: true },
         { id: 'evidencemapper', icon: Eye, label: 'Evidence Mapper', minTier: 'professional', highlight: true },
         { id: 'expert', icon: Brain, label: 'Expert Legal AI', minTier: 'professional', highlight: true },
+        { id: 'realestate', icon: Building2, label: 'Real Estate Law (RRC)', minTier: 'free', highlight: true },
         { id: 'personlookup', icon: Search, label: 'Background Check', minTier: 'professional', highlight: true },
         { id: 'section1983', icon: Gavel, label: 'Section 1983 Lawsuit', minTier: 'attorney', highlight: true },
         { id: 'criminal', icon: AlertTriangle, label: 'Criminal Case', minTier: 'attorney' }
@@ -512,6 +514,7 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'cases' && <CasesTab cases={cases} setCases={setCases} selectedCase={selectedCase} setSelectedCase={setSelectedCase} />}
           {activeTab === 'chat' && <ChatTab selectedCase={selectedCase} />}
           {activeTab === 'expert' && <ExpertLegalAITab selectedCase={selectedCase} />}
+          {activeTab === 'realestate' && <RealEstateCounselTab selectedCase={selectedCase} />}
           {activeTab === 'strategybuilder' && <LegalStrategyBuilderTab selectedCase={selectedCase} />}
           {activeTab === 'argumentgen' && <ArgumentGeneratorTab selectedCase={selectedCase} />}
           {activeTab === 'evidencemapper' && <EvidenceMapperTab selectedCase={selectedCase} />}

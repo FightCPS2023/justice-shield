@@ -60,6 +60,13 @@ class ForensicAnalysisRequest(BaseModel):
     document_ids: Optional[List[str]] = []
     analysis_focus: Optional[str] = None
 
+class RealEstateCounselRequest(BaseModel):
+    case_id: str
+    question: str
+    focus_area: Optional[str] = None
+    property_details: Optional[str] = None
+    state: Optional[str] = None
+
 router = APIRouter()
 
 ADA_CROSS_REFERENCE = """
@@ -84,7 +91,39 @@ ULTIMATE_CPS_STRUCTURED_GUIDANCE = """
 Identity directive (structured output): You are the Ultimate CPS Defense AI. Because output must be structured, include the opening statement inside the appropriate narrative/disclaimer field and ask for jurisdiction there if missing. Return only the required structured format.
 """
 
+REAL_ESTATE_COUNSEL_SYSTEM_PROMPT = """
+You are Revenant Realty Counsel (RRC) — a relentless, razor-sharp real estate law attorney and constitutional property-rights specialist. You are aggressive, uncompromising, and deeply strategic. You defend families against bureaucratic overreach, wrongful property actions, and any attempt to weaponize real estate law against parents in CPS or related proceedings.
 
+Primary domain coverage:
+- Property ownership, deeds, titles, liens, quiet title, adverse possession
+- Foreclosure defense, redemption rights, and wrongful foreclosure claims
+- Homestead exemptions and statutory protections
+- Landlord-tenant disputes, evictions, habitability (especially when CPS is involved)
+- Partition actions and co-ownership conflicts in family matters
+- Eminent domain and government takings challenges
+- Zoning, building codes, and regulatory enforcement abuse
+- Mortgage disputes, predatory lending, TILA/RESPA claims, servicing errors
+- Real estate contracts, transactions, fraud, and tort claims
+- Bankruptcy effects on real property in CPS contexts
+- Wills, probate, and property transfers that affect family stability
+
+Behavioral directives:
+- Commanding, precise, and professionally aggressive tone.
+- Cite specific statutes, regulations, and case law (federal + state) when possible.
+- Identify constitutional violations (4th, 5th, 14th Amendments), due process defects, and improper governmental conduct.
+- Provide step-by-step tactical guidance, sample motions, discovery requests, affidavits, and demand letters.
+- Coordinate with CPS defense strategy: prevent housing instability from being used as a pretext for removal.
+
+Response Framework (ALWAYS follow this order):
+1) Issue Summary (1-3 concise sentences)
+2) Controlling Law & Key Precedents (federal + state citations)
+3) Strategy Options (ranked by aggressiveness + likelihood of success)
+4) Draft Language / Templates (ready-to-adapt clauses)
+5) Risks & Counter-Moves (what agencies or opposing parties may do)
+6) Next Actions (clear checklist)
+
+If jurisdiction is missing, explicitly ask for state/county and any property address details. Do NOT provide generic advice; tailor to facts provided. Provide legal education, not legal advice.
+"""
 def extract_next_steps(text: str, max_items: int = 8) -> List[str]:
     if not text:
         return []
@@ -1854,6 +1893,101 @@ async def get_forensic_analyses(case_id: str, current_user: dict = Depends(get_c
     async for a in db.forensic_analyses.find({"case_id": case_id, "user_id": current_user["user_id"]}, {"_id": 0}).sort("created_at", -1):
         analyses.append(a)
     return {"analyses": analyses}
+
+
+# ============== COURTLISTENER INTEGRATION ==============
+
+
+@router.post("/api/ai/real-estate-counsel")
+async def real_estate_counsel(request: RealEstateCounselRequest, current_user: dict = Depends(get_current_user)):
+    """Revenant Realty Counsel - Real estate law strategist for CPS-related property issues."""
+    db = get_db()
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ChatError
+
+    user_tier = await get_user_tier(current_user["user_id"])
+    if not await check_ai_credits(current_user["user_id"], user_tier):
+        has_purchased = await spend_purchased_credits(
+            current_user["user_id"],
+            FEATURE_CREDIT_COSTS.get("real_estate_counsel", 3),
+            "real_estate_counsel"
+        )
+        if not has_purchased:
+            raise HTTPException(status_code=403, detail="AI credits exhausted. Purchase more credits or upgrade your plan.")
+    else:
+        await increment_ai_credits(current_user["user_id"])
+
+    case = await get_case_with_ownership(request.case_id, current_user["user_id"])
+    state = request.state or case.get("state") or "Unknown"
+    state_name = STATES_INFO.get(state, state)
+    memory_context = await get_case_memory_context(request.case_id, current_user["user_id"])
+
+    system_message = f"""{REAL_ESTATE_COUNSEL_SYSTEM_PROMPT}
+
+{ADA_CROSS_REFERENCE}
+
+Coordinate with CPS defense strategies when housing or property is being used against a parent."""
+
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"rrc-{request.case_id}-{uuid.uuid4().hex[:8]}",
+        system_message=system_message
+    ).with_model("openai", "gpt-5.2")
+
+    prompt = f"""RRC REAL ESTATE COUNSEL REQUEST
+
+CASE CONTEXT:
+- Case Title: {case.get('title', 'Untitled')}
+- State: {state_name}
+- County: {case.get('county', 'N/A')}
+- Case Number: {case.get('case_number', 'N/A')}
+- CPS Case Description: {case.get('description', 'N/A')}
+
+PROPERTY DETAILS:
+{request.property_details or 'Not provided'}
+
+FOCUS AREA:
+{request.focus_area or 'General real estate law + CPS intersection'}
+
+CASE MEMORY:
+{memory_context or 'No stored memory yet'}
+
+USER QUESTION:
+{request.question}
+
+Provide the response using the required framework. Include citations and tactical steps.
+"""
+
+    try:
+        response = await asyncio.wait_for(
+            chat.send_message(UserMessage(text=prompt)),
+            timeout=90
+        )
+    except asyncio.TimeoutError:
+        raise HTTPException(status_code=504, detail="Real estate analysis timed out. Please try again.")
+    except (ChatError, Exception) as e:
+        error_text = str(e)
+        if "budget" in error_text.lower() or "insufficient" in error_text.lower():
+            raise HTTPException(status_code=402, detail="AI budget exceeded. Please add balance to your Universal Key and retry.")
+        if "502" in error_text or "badgateway" in error_text.lower() or "bad gateway" in error_text.lower():
+            raise HTTPException(status_code=502, detail="AI service temporarily unavailable. Please retry.")
+        raise HTTPException(status_code=502, detail="AI service error. Please retry.")
+
+    await save_ai_response_to_case(
+        case_id=request.case_id,
+        user_id=current_user["user_id"],
+        feature_type="real_estate_counsel",
+        prompt=request.question,
+        response=response,
+        metadata={"focus_area": request.focus_area, "state": state_name}
+    )
+
+    return {
+        "analysis": response,
+        "case_context": {
+            "state": state_name,
+            "case_id": request.case_id
+        }
+    }
 
 
 # ============== COURTLISTENER INTEGRATION ==============
