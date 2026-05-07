@@ -4,7 +4,7 @@ import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, Menu, X, LogOut,
   Home, Settings, Lock, Loader2, Clock, Eye, CheckCircle2,
-  CreditCard, Zap, Mic, HelpCircle, ChevronDown, Building2
+  CreditCard, Zap, Mic, HelpCircle, ChevronDown, Building2, FlaskConical
 } from 'lucide-react';
 
 import api, { API_URL } from './lib/api';
@@ -42,6 +42,7 @@ import ForumTab from './components/features/ForumTab';
 import AdvocatesTab from './components/features/AdvocatesTab';
 import ExpertLegalAITab from './components/features/ExpertLegalAITab';
 import RealEstateCounselTab from './components/features/RealEstateCounselTab';
+import AnalyzerTestLabTab from './components/features/AnalyzerTestLabTab';
 import Section1983Tab from './components/features/Section1983Tab';
 import PodcastCreatorTab from './components/features/PodcastCreatorTab';
 import CaseLawAnalysisTab from './components/features/CaseLawAnalysisTab';
@@ -200,7 +201,8 @@ function Dashboard({ onNavigate }) {
     case: true,
     ai: true,
     research: true,
-    community: true
+    community: true,
+    'admin-tools': true
   });
   const [helpPanelOpen, setHelpPanelOpen] = useState(false);
   const effectiveDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -333,6 +335,14 @@ function Dashboard({ onNavigate }) {
         { id: 'services', icon: Users, label: 'Services', minTier: 'essential' },
         { id: 'podcast', icon: Mic, label: 'Podcast Creator', minTier: 'attorney' }
       ]
+    },
+    {
+      id: 'admin-tools',
+      label: 'Admin Tools',
+      requiresAdmin: true,
+      items: [
+        { id: 'analyzerlab', icon: FlaskConical, label: 'Analyzer Test Lab', minTier: 'free', highlight: true, requiresAdmin: true }
+      ]
     }
   ];
 
@@ -402,7 +412,7 @@ function Dashboard({ onNavigate }) {
         </div>
 
         <nav className="p-4 space-y-3 max-h-[calc(100vh-220px)] overflow-y-auto pb-24">
-          {menuSections.map((section) => (
+          {menuSections.filter(section => !section.requiresAdmin || isAdmin).map((section) => (
             <div key={section.id} className="space-y-2">
               <button
                 type="button"
@@ -415,7 +425,7 @@ function Dashboard({ onNavigate }) {
               </button>
               {openSections[section.id] && (
                 <div className="space-y-1" data-testid={`nav-section-${section.id}-items`}>
-                  {section.items.map((item) => {
+                  {section.items.filter(item => !item.requiresAdmin || isAdmin).map((item) => {
                     const itemTierLevel = TIER_LEVELS[item.minTier] || 0;
                     const isLocked = itemTierLevel > userTierLevel;
                     const tierLabel = item.minTier === 'essential' ? 'ESS' : item.minTier === 'professional' ? 'PRO' : item.minTier === 'attorney' ? 'ATT' : null;
@@ -540,6 +550,12 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'courtfilings' && <CourtFilingsTab selectedCase={selectedCase} />}
           {activeTab === 'judgewatch' && <JudgeWatchTab selectedCase={selectedCase} />}
           {activeTab === 'personlookup' && <PersonLookupTab selectedCase={selectedCase} />}
+          {activeTab === 'analyzerlab' && isAdmin && (
+            <AnalyzerTestLabTab
+              selectedCase={selectedCase}
+              onNavigateToDocuments={() => setActiveTab('documents')}
+            />
+          )}
           {activeTab === 'strategy' && <DefenseStrategyTab selectedCase={selectedCase} />}
           {activeTab === 'criminal' && <CriminalCaseTab selectedCase={selectedCase} />}
           {activeTab === 'services' && <ServicesTab selectedCase={selectedCase} />}

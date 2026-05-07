@@ -34,6 +34,28 @@ function DocumentAnalysisView({ document, onReanalyze, analyzing, queueInfo, onR
             )}
           </div>
         )}
+        {document.processing_log && document.processing_log.length > 0 && (
+          <div className="mb-4 text-left bg-gray-900/60 border border-gray-700 rounded-xl p-4" data-testid="document-processing-log-empty">
+            <h4 className="text-sm font-semibold mb-2">Processing Log</h4>
+            <ul className="space-y-1 text-xs text-gray-300 max-h-40 overflow-auto">
+              {document.processing_log.slice(-6).map((entry, idx) => (
+                <li key={idx} data-testid={`processing-log-empty-${idx}`}>
+                  {new Date(entry.timestamp).toLocaleString()} — {entry.message}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {document.archive_children && document.archive_children.length > 0 && (
+          <div className="mb-4 text-left bg-gray-900/60 border border-gray-700 rounded-xl p-4" data-testid="archive-children-empty">
+            <h4 className="text-sm font-semibold mb-2">Archive Contents</h4>
+            <ul className="space-y-1 text-xs text-gray-300">
+              {document.archive_children.map((child) => (
+                <li key={child.doc_id}>{child.filename}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div className="flex flex-wrap items-center justify-center gap-3">
           <button 
             onClick={onReanalyze}
@@ -279,6 +301,27 @@ function DocumentAnalysisView({ document, onReanalyze, analyzing, queueInfo, onR
               </span>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Processing Log */}
+      {document.processing_log && document.processing_log.length > 0 && (
+        <div className="bg-gray-900/60 border border-gray-700 rounded-xl p-6" data-testid="document-processing-log">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-blue-400" />
+            Processing Log
+          </h3>
+          <ul className="space-y-2 text-sm text-gray-300 max-h-60 overflow-auto">
+            {document.processing_log.slice(-10).map((entry, idx) => (
+              <li key={idx} className="flex items-start gap-2" data-testid={`processing-log-item-${idx}`}>
+                <span className="text-gray-500">{new Date(entry.timestamp).toLocaleString()}</span>
+                <span className={`px-2 py-0.5 rounded text-xs ${entry.level === 'error' ? 'bg-red-600/30 text-red-200' : entry.level === 'warn' ? 'bg-yellow-600/30 text-yellow-200' : 'bg-blue-600/30 text-blue-200'}`}>
+                  {entry.level || 'info'}
+                </span>
+                <span>{entry.message}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

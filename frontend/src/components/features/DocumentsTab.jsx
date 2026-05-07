@@ -8,7 +8,7 @@ import {
   Loader2, Upload, Clock, Eye, Download, Plus, Trash2, Edit2, Send,
   CreditCard, Crown, Building2, Zap, Mic, Radio, Volume2, Copy, Key,
   MapPin, Coins, BarChart3, User, ChevronRight, HelpCircle, Bot, RefreshCw,
-  Save
+  Save, Archive, Table
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import DocumentAnalysisView from './DocumentAnalysisView';
@@ -36,21 +36,31 @@ function DocumentsTab({ selectedCase }) {
   const fileInputRef = React.useRef(null);
   const folderInputRef = React.useRef(null);
   const queuePollRef = useRef(null);
-  const ALLOWED_EXTENSIONS = ['.pdf', '.txt', '.png', '.jpg', '.jpeg', '.doc', '.docx', '.rtf', '.gif', '.webp', '.heic', '.mp3', '.wav', '.m4a', '.aac', '.ogg', '.mp4', '.mov', '.avi', '.mkv', '.webm'];
-  const MAX_FILE_SIZE = 10 * 1024 * 1024;  // 10MB for documents/images
-  const MAX_MEDIA_SIZE = 50 * 1024 * 1024; // 50MB for audio/video
+  const ALLOWED_EXTENSIONS = ['.pdf', '.txt', '.md', '.html', '.htm', '.odt', '.doc', '.docx', '.rtf', '.csv', '.xls', '.xlsx', '.ppt', '.pptx', '.png', '.jpg', '.jpeg', '.tif', '.tiff', '.gif', '.webp', '.heic', '.zip', '.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.wma', '.aiff', '.aif', '.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v', '.mpg', '.mpeg'];
+  const MAX_FILE_SIZE = 100 * 1024 * 1024;  // 100MB for documents/images
+  const MAX_MEDIA_SIZE = 500 * 1024 * 1024; // 500MB for audio/video
+  const MAX_ARCHIVE_SIZE = 500 * 1024 * 1024; // 500MB for ZIP
 
   // Helper to get icon for file type
   const getFileIcon = (fileType, category) => {
     const ext = fileType?.toLowerCase();
-    if (category === 'audio' || ['.mp3', '.wav', '.m4a', '.aac', '.ogg'].includes(ext)) {
+    if (category === 'archive' || ext === '.zip') {
+      return <Archive className="w-8 h-8 text-amber-500" />;
+    }
+    if (category === 'spreadsheet' || ['.csv', '.xls', '.xlsx'].includes(ext)) {
+      return <Table className="w-8 h-8 text-teal-500" />;
+    }
+    if (category === 'audio' || ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.wma', '.aiff', '.aif'].includes(ext)) {
       return <Volume2 className="w-8 h-8 text-purple-500" />;
     }
-    if (category === 'video' || ['.mp4', '.mov', '.avi', '.mkv', '.webm'].includes(ext)) {
+    if (category === 'video' || ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v', '.mpg', '.mpeg'].includes(ext)) {
       return <Play className="w-8 h-8 text-red-500" />;
     }
-    if (category === 'image' || ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.heic'].includes(ext)) {
+    if (category === 'image' || ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.heic', '.tif', '.tiff'].includes(ext)) {
       return <Eye className="w-8 h-8 text-green-500" />;
+    }
+    if (category === 'presentation' || ['.ppt', '.pptx'].includes(ext)) {
+      return <FileText className="w-8 h-8 text-indigo-400" />;
     }
     return <FileText className="w-8 h-8 text-blue-500" />;
   };
@@ -196,11 +206,13 @@ function DocumentsTab({ selectedCase }) {
     const ext = '.' + file.name.split('.').pop().toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(ext)) return `Unsupported type: ${ext}`;
     
-    // Different size limits for media files
-    const mediaExtensions = ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.mp4', '.mov', '.avi', '.mkv', '.webm'];
-    const maxSize = mediaExtensions.includes(ext) ? MAX_MEDIA_SIZE : MAX_FILE_SIZE;
+    const mediaExtensions = ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.wma', '.aiff', '.aif', '.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v', '.mpg', '.mpeg'];
+    const archiveExtensions = ['.zip'];
+    let maxSize = MAX_FILE_SIZE;
+    if (archiveExtensions.includes(ext)) maxSize = MAX_ARCHIVE_SIZE;
+    if (mediaExtensions.includes(ext)) maxSize = MAX_MEDIA_SIZE;
+
     const maxSizeMB = maxSize / (1024 * 1024);
-    
     if (file.size > maxSize) return `File too large (max ${maxSizeMB}MB)`;
     return null;
   };
@@ -795,7 +807,7 @@ function DocumentsTab({ selectedCase }) {
                   Upload petitions, safety plans, court orders, letters, or any CPS documents
                 </p>
                 <p className="text-sm text-gray-500 mb-5">
-                  Drag & drop files or folders • Documents (PDF, DOC, TXT) • Images (JPG, PNG) • Audio (MP3, WAV) • Video (MP4, MOV) • Max 50MB
+                  Drag & drop files or folders • Documents (PDF, DOC/DOCX, RTF, ODT, HTML, MD) • Spreadsheets (CSV, XLS/XLSX) • Presentations (PPT/PPTX) • Images (JPG, PNG, TIFF) • Audio/Video (MP3, WAV, MP4) • ZIP archives • Max 500MB
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-3">
                   <label className="btn-punisher cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors" data-testid="select-files-btn">
@@ -803,7 +815,7 @@ function DocumentsTab({ selectedCase }) {
                       ref={fileInputRef}
                       type="file"
                       className="hidden"
-                      accept=".pdf,.txt,.png,.jpg,.jpeg,.doc,.docx,.rtf,.gif,.webp,.heic,.mp3,.wav,.m4a,.aac,.ogg,.mp4,.mov,.avi,.mkv,.webm"
+                      accept=".pdf,.txt,.md,.html,.htm,.odt,.doc,.docx,.rtf,.csv,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.tif,.tiff,.gif,.webp,.heic,.zip,.mp3,.wav,.m4a,.aac,.ogg,.flac,.wma,.aiff,.aif,.mp4,.mov,.avi,.mkv,.webm,.m4v,.mpg,.mpeg"
                       multiple
                       onChange={(e) => {
                         if (e.target.files.length > 0) handleBatchUpload(e.target.files);
@@ -943,6 +955,21 @@ function DocumentsTab({ selectedCase }) {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
+                        {doc.file_category === 'archive' && (
+                          <span className="px-2 py-1 bg-amber-600/20 text-amber-400 text-xs rounded" data-testid={`doc-status-archive-${doc.id}`}>
+                            Archive
+                          </span>
+                        )}
+                        {doc.extraction_status === 'processing' && (
+                          <span className="px-2 py-1 bg-indigo-600/20 text-indigo-300 text-xs rounded" data-testid={`doc-status-extracting-${doc.id}`}>
+                            Extracting
+                          </span>
+                        )}
+                        {doc.extraction_status === 'error' && (
+                          <span className="px-2 py-1 bg-red-600/20 text-red-400 text-xs rounded" data-testid={`doc-status-extract-error-${doc.id}`}>
+                            Extraction Failed
+                          </span>
+                        )}
                         {doc.analysis_status === 'queued' && (
                           <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded" data-testid={`doc-status-queued-${doc.id}`}>
                             Queued

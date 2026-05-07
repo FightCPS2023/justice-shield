@@ -6,9 +6,15 @@ import uuid
 import base64
 import asyncio
 import io
+import csv
+import zipfile
+import shutil
+import tempfile
+from pathlib import Path
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, List, Dict
 from fastapi import APIRouter, HTTPException, Depends, File, UploadFile, Form, BackgroundTasks
+from fastapi.responses import StreamingResponse
 
 from database import get_db
 from auth import get_current_user
@@ -39,11 +45,24 @@ TRANSIENT_ERROR_KEYWORDS = [
     "gateway"
 ]
 
-DOCUMENT_EXTENSIONS = {'.pdf', '.txt', '.doc', '.docx', '.rtf'}
-IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.heic'}
-AUDIO_EXTENSIONS = {'.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.wma'}
-VIDEO_EXTENSIONS = {'.mp4', '.mov', '.avi', '.mkv', '.wmv', '.webm', '.m4v'}
-ALLOWED_EXTENSIONS = DOCUMENT_EXTENSIONS | IMAGE_EXTENSIONS | AUDIO_EXTENSIONS | VIDEO_EXTENSIONS
+DOCUMENT_EXTENSIONS = {'.pdf', '.doc', '.docx', '.rtf', '.odt'}
+TEXT_EXTENSIONS = {'.txt', '.md', '.html', '.htm'}
+SPREADSHEET_EXTENSIONS = {'.csv', '.xls', '.xlsx'}
+PRESENTATION_EXTENSIONS = {'.ppt', '.pptx'}
+ARCHIVE_EXTENSIONS = {'.zip'}
+IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.heic', '.tif', '.tiff'}
+AUDIO_EXTENSIONS = {'.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.wma', '.aiff', '.aif'}
+VIDEO_EXTENSIONS = {'.mp4', '.mov', '.avi', '.mkv', '.wmv', '.webm', '.m4v', '.mpg', '.mpeg'}
+ALLOWED_EXTENSIONS = (
+    DOCUMENT_EXTENSIONS
+    | TEXT_EXTENSIONS
+    | SPREADSHEET_EXTENSIONS
+    | PRESENTATION_EXTENSIONS
+    | ARCHIVE_EXTENSIONS
+    | IMAGE_EXTENSIONS
+    | AUDIO_EXTENSIONS
+    | VIDEO_EXTENSIONS
+)
 
 ADA_CROSS_REFERENCE = """
 ADA CROSS-REFERENCE REQUIREMENT:
@@ -54,6 +73,72 @@ ADA CROSS-REFERENCE REQUIREMENT:
 ULTIMATE_CPS_STRUCTURED_GUIDANCE = """
 Identity directive (structured output): You are the Ultimate CPS Defense AI. Because output must be structured JSON, include the opening statement inside the summary or disclaimer fields and ask for jurisdiction there if missing. Return only the required JSON format.
 """
+
+MAX_UPLOAD_SIZE = 500 * 1024 * 1024  # 500MB max upload
+MAX_DOC_SIZE = 100 * 1024 * 1024
+MAX_ARCHIVE_FILES = 75
+MAX_SPREADSHEET_ROWS = 2000
+MAX_SPREADSHEET_COLS = 50
+MAX_PRESENTATION_SLIDES = 120
+
+
+def get_file_category(file_ext: str) -> str:
+    if file_ext in IMAGE_EXTENSIONS:
+        return "image"
+    if file_ext in AUDIO_EXTENSIONS:
+        return "audio"
+    if file_ext in VIDEO_EXTENSIONS:
+        return "video"
+    if file_ext in SPREADSHEET_EXTENSIONS:
+        return "spreadsheet"
+    if file_ext in PRESENTATION_EXTENSIONS:
+        return "presentation"
+    if file_ext in ARCHIVE_EXTENSIONS:
+        return "archive"
+    if file_ext in TEXT_EXTENSIONS:
+        return "text"
+    return "document"
+
+
+def _safe_filename(name: str) -> str:
+    safe = re.sub(r"[^a-zA-Z0-9._-]", "_", name)
+    return safe[:120] if safe else "file"
+
+
+async def log_doc_event(doc_id: str, message: str, level: str = "info"):
+    db = get_db()
+    await db.documents.update_one(
+        {"_id": doc_id},
+        {"$push": {
+            "processing_log": {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "level": level,
+                "message": message
+            }
+        }}
+    )
+
+
+def get_max_size_for_ext(file_ext: str) -> int:
+    if file_ext in ARCHIVE_EXTENSIONS or file_ext in VIDEO_EXTENSIONS or file_ext in AUDIO_EXTENSIONS:
+        return MAX_UPLOAD_SIZE
+    if file_ext in SPREADSHEET_EXTENSIONS or file_ext in PRESENTATION_EXTENSIONS or file_ext in DOCUMENT_EXTENSIONS or file_ext in TEXT_EXTENSIONS or file_ext in IMAGE_EXTENSIONS:
+        return MAX_DOC_SIZE
+    return MAX_DOC_SIZE
+
+
+async def save_upload_to_disk(file: UploadFile, dest_path: str, max_size: int) -> int:
+    size = 0
+    with open(dest_path, 'wb') as out_file:
+        while True:
+            chunk = await file.read(1024 * 1024)
+            if not chunk:
+                break
+            size += len(chunk)
+            if size > max_size:
+                raise HTTPException(status_code=400, detail=f"File too large. Maximum {max_size // (1024*1024)}MB for this file type.")
+            out_file.write(chunk)
+    return size
 
 
 async def run_document_analysis_bg(doc_id, case_id, case, content, filename, user_id):
@@ -151,6 +236,7 @@ async def _process_analysis_job(doc_id: str):
         {"doc_id": doc_id},
         {"$set": {"status": "processing", "started_at": datetime.now(timezone.utc).isoformat(), "error": None}}
     )
+    await log_doc_event(doc_id, "Analysis job started")
 
     doc = await db.documents.find_one({"_id": doc_id})
     if not doc:
@@ -180,6 +266,7 @@ async def _process_analysis_job(doc_id: str):
             {"_id": doc_id},
             {"$set": {"extraction_status": "processing", "extraction_error": None}}
         )
+        await log_doc_event(doc_id, "Text extraction started")
         extracted_text, extraction_error = await extract_text_from_file(
             doc.get("file_path", ""),
             doc.get("file_type", ""),
@@ -195,9 +282,24 @@ async def _process_analysis_job(doc_id: str):
                 "extraction_error": extraction_error
             }}
         )
+        await log_doc_event(
+            doc_id,
+            "Text extraction complete" if not extraction_error else f"Text extraction error: {extraction_error}",
+            "error" if extraction_error else "info"
+        )
         content = extracted_text
+        try:
+            if doc.get("file_path") and os.path.exists(doc.get("file_path")):
+                os.remove(doc.get("file_path"))
+                await db.documents.update_one(
+                    {"_id": doc_id},
+                    {"$set": {"file_deleted": True}}
+                )
+        except Exception:
+            pass
 
     try:
+        await log_doc_event(doc_id, "AI analysis started")
         result = await run_document_analysis_bg(
             doc_id,
             doc.get("case_id"),
@@ -209,6 +311,7 @@ async def _process_analysis_job(doc_id: str):
 
         if result and result.get("error"):
             error_text = result.get("error", "")
+            await log_doc_event(doc_id, f"AI analysis error: {error_text}", "error")
             retry_count = int(doc.get("analysis_retry_count", 0) or 0)
             if _is_transient_error(error_text) and retry_count < MAX_ANALYSIS_RETRIES:
                 retry_count += 1
@@ -240,13 +343,23 @@ async def _process_analysis_job(doc_id: str):
                 {"doc_id": doc_id},
                 {"$set": {"status": "error", "error": error_text, "completed_at": datetime.now(timezone.utc).isoformat()}}
             )
+            await db.documents.update_one(
+                {"_id": doc_id},
+                {"$set": {"analysis_status": "error", "analysis_error": error_text}}
+            )
             return
 
+        await log_doc_event(doc_id, "AI analysis complete")
         await db.analysis_queue.update_one(
             {"doc_id": doc_id},
             {"$set": {"status": "complete", "completed_at": datetime.now(timezone.utc).isoformat()}}
         )
     except Exception as e:
+        await log_doc_event(doc_id, f"Unexpected analysis error: {str(e)}", "error")
+        await db.documents.update_one(
+            {"_id": doc_id},
+            {"$set": {"analysis_status": "error", "analysis_error": str(e)}}
+        )
         await db.analysis_queue.update_one(
             {"doc_id": doc_id},
             {"$set": {"status": "error", "error": str(e), "completed_at": datetime.now(timezone.utc).isoformat()}}
@@ -310,6 +423,114 @@ async def _enqueue_analysis_job(doc_id: str, case_id: str, user_id: str, reason:
     })
 
     return queue_position
+
+
+async def process_zip_archive(parent_doc_id: str, case_id: str, user_id: str, file_path: str, filename: str, doc_type: str, auto_analyze: bool):
+    db = get_db()
+    await log_doc_event(parent_doc_id, "Archive extraction started")
+    extracted_files = []
+    skipped_files = []
+    errors = []
+
+    extract_dir = Path(tempfile.mkdtemp(prefix="cps_zip_"))
+    try:
+        with zipfile.ZipFile(file_path, 'r') as zip_ref:
+            members = [m for m in zip_ref.infolist() if not m.is_dir()]
+            for member in members[:MAX_ARCHIVE_FILES]:
+                try:
+                    original_name = Path(member.filename).name
+                    file_ext = Path(original_name).suffix.lower()
+                    if not file_ext or file_ext not in ALLOWED_EXTENSIONS:
+                        skipped_files.append(original_name)
+                        continue
+
+                    safe_name = _safe_filename(original_name)
+                    extracted_id = str(uuid.uuid4())
+                    extracted_path = extract_dir / f"{extracted_id}{file_ext}"
+                    with zip_ref.open(member) as source, open(extracted_path, 'wb') as target:
+                        shutil.copyfileobj(source, target)
+
+                    file_size = extracted_path.stat().st_size
+                    extracted_text = f"[File: {safe_name}]\n\nExtraction queued for background processing."
+                    file_category = get_file_category(file_ext)
+                    extraction_status = "queued"
+
+                    doc_id = str(uuid.uuid4())
+                    doc = {
+                        "_id": doc_id,
+                        "case_id": case_id,
+                        "user_id": user_id,
+                        "title": f"{safe_name}",
+                        "filename": safe_name,
+                        "file_path": str(extracted_path),
+                        "file_size": file_size,
+                        "file_type": file_ext,
+                        "file_category": file_category,
+                        "doc_type": doc_type,
+                        "content": extracted_text,
+                        "extraction_status": extraction_status,
+                        "extraction_error": None,
+                        "source": "archive",
+                        "parent_doc_id": parent_doc_id,
+                        "analysis": None,
+                        "analysis_status": "queued" if auto_analyze and EMERGENT_LLM_KEY else None,
+                        "analysis_error": None,
+                        "analysis_retry_count": 0,
+                        "extracted_violations": [],
+                        "extracted_timeline": [],
+                        "processing_log": [],
+                        "created_at": datetime.now(timezone.utc).isoformat()
+                    }
+                    await db.documents.insert_one(doc)
+                    extracted_files.append({"doc_id": doc_id, "filename": safe_name})
+                    await log_doc_event(doc_id, "Extracted from archive", "info")
+
+                    if auto_analyze and EMERGENT_LLM_KEY and file_ext not in ARCHIVE_EXTENSIONS:
+                        await _enqueue_analysis_job(doc_id, case_id, user_id, "archive")
+                except Exception as member_err:
+                    errors.append(f"{member.filename}: {str(member_err)}")
+                    continue
+
+        summary_lines = [
+            f"Archive: {filename}",
+            f"Extracted files: {len(extracted_files)}",
+            f"Skipped files: {len(skipped_files)}",
+            f"Errors: {len(errors)}"
+        ]
+        summary_text = "\n".join(summary_lines)
+        if skipped_files:
+            summary_text += "\nSkipped: " + ", ".join(skipped_files[:10])
+        if errors:
+            summary_text += "\nErrors: " + "; ".join(errors[:5])
+
+        await db.documents.update_one(
+            {"_id": parent_doc_id},
+            {"$set": {
+                "content": summary_text,
+                "extraction_status": "complete",
+                "extraction_error": None,
+                "analysis_status": None,
+                "analysis_error": None,
+                "archive_children": extracted_files
+            }}
+        )
+        await log_doc_event(parent_doc_id, "Archive extraction complete")
+    except Exception as e:
+        await db.documents.update_one(
+            {"_id": parent_doc_id},
+            {"$set": {"extraction_status": "error", "extraction_error": str(e)}}
+        )
+        await log_doc_event(parent_doc_id, f"Archive extraction failed: {str(e)}", "error")
+    finally:
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        except Exception:
+            pass
+        try:
+            shutil.rmtree(extract_dir)
+        except Exception:
+            pass
 
 
 # ============== DOCUMENTS ENDPOINTS ==============
@@ -414,12 +635,35 @@ async def transcribe_audio_video(content: bytes, filename: str, file_ext: str, f
             file=audio_file,
             model="whisper-1",
             response_format="verbose_json",
-            language="en",  # Default to English for legal proceedings
+            language="en",
+            temperature=0,
+            timestamp_granularities=["segment"],
             prompt="This is a recording related to a CPS (Child Protective Services) case. It may include conversations with caseworkers, attorneys, court proceedings, or family discussions."
         )
-        
-        transcription_text = response.text if hasattr(response, 'text') else str(response)
-        
+
+        transcription_text = None
+        segments = None
+        if isinstance(response, dict):
+            transcription_text = response.get("text")
+            segments = response.get("segments")
+        else:
+            transcription_text = response.text if hasattr(response, "text") else None
+            segments = response.segments if hasattr(response, "segments") else None
+
+        if segments:
+            formatted_segments = []
+            for seg in segments:
+                try:
+                    start = seg.get("start", 0)
+                    end = seg.get("end", 0)
+                    text = seg.get("text", "").strip()
+                    if text:
+                        formatted_segments.append(f"[{start:.2f}-{end:.2f}] {text}")
+                except Exception:
+                    continue
+            if formatted_segments:
+                transcription_text = "\n".join(formatted_segments)
+
         if transcription_text and transcription_text.strip():
             print(f"Transcription successful for {filename}: {len(transcription_text)} characters")
             return transcription_text.strip()
@@ -433,14 +677,44 @@ async def transcribe_audio_video(content: bytes, filename: str, file_ext: str, f
 
 
 async def extract_text_from_file(file_path: str, file_ext: str, filename: str, file_size: int):
+    truncated = False
     try:
         with open(file_path, 'rb') as f:
-            content = f.read()
+            if file_size and file_size > MAX_DOC_SIZE:
+                content = f.read(MAX_DOC_SIZE)
+                truncated = True
+            else:
+                content = f.read()
     except Exception as e:
         return f"[File: {filename}]\n\nFile uploaded successfully. Text extraction failed due to a read error.", f"Failed to read file: {str(e)}"
 
-    if file_ext == '.txt':
-        return content.decode('utf-8', errors='ignore'), None
+    if file_ext in TEXT_EXTENSIONS:
+        text = content.decode('utf-8', errors='ignore')
+        if file_ext in {'.html', '.htm'}:
+            try:
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(text, 'html.parser')
+                for tag in soup(['script', 'style', 'noscript']):
+                    tag.decompose()
+                extracted = soup.get_text(separator='\n')
+                extracted = "\n".join([line.strip() for line in extracted.splitlines() if line.strip()])
+                return f"[HTML Document: {filename}]\n\n{extracted}", None
+            except Exception as e:
+                return f"[HTML Document: {filename}]\n\n{text}", f"HTML parse error: {str(e)}"
+        if file_ext == '.md':
+            try:
+                import markdown as md
+                from bs4 import BeautifulSoup
+                html = md.markdown(text)
+                soup = BeautifulSoup(html, 'html.parser')
+                extracted = soup.get_text(separator='\n')
+                extracted = "\n".join([line.strip() for line in extracted.splitlines() if line.strip()])
+                return f"[Markdown Document: {filename}]\n\n{extracted}", None
+            except Exception:
+                return f"[Markdown Document: {filename}]\n\n{text}", None
+        label = "Text Document" if file_ext == '.txt' else "Text Document"
+        suffix = "\n\nNote: content truncated for analysis." if truncated else ""
+        return f"[{label}: {filename}]\n\n{text}{suffix}", None
 
     if file_ext == '.docx':
         try:
@@ -463,6 +737,93 @@ async def extract_text_from_file(file_path: str, file_ext: str, filename: str, f
             return f"[RTF Document: {filename}]\n\nNo readable text found in the RTF.", "No text extracted"
         except Exception as e:
             return f"[RTF Document: {filename}]\n\nDocument uploaded. Text extraction failed.", str(e)
+
+    if file_ext == '.odt':
+        try:
+            from odf.opendocument import load
+            from odf import text as odf_text
+            doc = load(file_path)
+            paragraphs = []
+            for p in doc.getElementsByType(odf_text.P):
+                paragraphs.append(''.join([node.data for node in p.childNodes if hasattr(node, 'data')]))
+            extracted = "\n".join([p for p in paragraphs if p.strip()])
+            if extracted:
+                return f"[ODT Document: {filename}]\n\n{extracted}", None
+            return f"[ODT Document: {filename}]\n\nNo readable text found in the ODT.", "No text extracted"
+        except Exception as e:
+            return f"[ODT Document: {filename}]\n\nDocument uploaded. Text extraction failed.", str(e)
+
+    if file_ext == '.csv':
+        try:
+            text = content.decode('utf-8', errors='ignore')
+            reader = csv.reader(text.splitlines())
+            rows = []
+            row_count = 0
+            for row in reader:
+                rows.append(" | ".join([cell.strip() for cell in row]))
+                row_count += 1
+                if row_count >= MAX_SPREADSHEET_ROWS:
+                    break
+            extracted = "\n".join(rows)
+            suffix = "\n\nNote: CSV truncated for analysis." if row_count >= MAX_SPREADSHEET_ROWS else ""
+            return f"[CSV Spreadsheet: {filename}]\n\n{extracted}{suffix}", None
+        except Exception as e:
+            return f"[CSV Spreadsheet: {filename}]\n\nDocument uploaded. Text extraction failed.", str(e)
+
+    if file_ext in {'.xlsx', '.xls'}:
+        try:
+            extracted_lines = []
+            if file_ext == '.xlsx':
+                from openpyxl import load_workbook
+                wb = load_workbook(io.BytesIO(content), read_only=True, data_only=True)
+                for sheet in wb.sheetnames[:5]:
+                    ws = wb[sheet]
+                    extracted_lines.append(f"-- Sheet: {sheet} --")
+                    row_count = 0
+                    for row in ws.iter_rows(values_only=True):
+                        row_count += 1
+                        if row_count > MAX_SPREADSHEET_ROWS:
+                            extracted_lines.append("[Truncated rows]")
+                            break
+                        row_values = [str(cell) if cell is not None else "" for cell in row[:MAX_SPREADSHEET_COLS]]
+                        extracted_lines.append(" | ".join(row_values))
+            else:
+                import xlrd
+                wb = xlrd.open_workbook(file_contents=content)
+                for sheet in wb.sheets()[:5]:
+                    extracted_lines.append(f"-- Sheet: {sheet.name} --")
+                    for row_idx in range(min(sheet.nrows, MAX_SPREADSHEET_ROWS)):
+                        row_values = [str(sheet.cell_value(row_idx, col_idx)) for col_idx in range(min(sheet.ncols, MAX_SPREADSHEET_COLS))]
+                        extracted_lines.append(" | ".join(row_values))
+            extracted = "\n".join(extracted_lines)
+            return f"[Spreadsheet: {filename}]\n\n{extracted}", None
+        except Exception as e:
+            return f"[Spreadsheet: {filename}]\n\nDocument uploaded. Text extraction failed.", str(e)
+
+    if file_ext in {'.pptx', '.ppt'}:
+        try:
+            extracted_lines = []
+            if file_ext == '.pptx':
+                from pptx import Presentation
+                prs = Presentation(io.BytesIO(content))
+                for idx, slide in enumerate(prs.slides[:MAX_PRESENTATION_SLIDES], 1):
+                    extracted_lines.append(f"-- Slide {idx} --")
+                    for shape in slide.shapes:
+                        if hasattr(shape, 'text') and shape.text:
+                            extracted_lines.append(shape.text.strip())
+            else:
+                try:
+                    import textract
+                    extracted_text = textract.process(file_path).decode('utf-8', errors='ignore')
+                    extracted_lines.append(extracted_text)
+                except Exception as doc_err:
+                    return f"[PowerPoint: {filename}]\n\nLegacy .ppt extraction unavailable. Convert to .pptx for best results.", str(doc_err)
+            extracted = "\n".join([line for line in extracted_lines if line])
+            if extracted:
+                return f"[Presentation: {filename}]\n\n{extracted}", None
+            return f"[Presentation: {filename}]\n\nNo readable text found in the presentation.", "No text extracted"
+        except Exception as e:
+            return f"[Presentation: {filename}]\n\nDocument uploaded. Text extraction failed.", str(e)
 
     if file_ext == '.pdf':
         try:
@@ -527,8 +888,39 @@ async def extract_text_from_file(file_path: str, file_ext: str, filename: str, f
             return f"[PDF Document: {filename}]\n\nPDF uploaded successfully. Text extraction encountered an issue.", str(e)
 
     if file_ext in IMAGE_EXTENSIONS:
+        try:
+            from PIL import Image, ImageOps, ImageSequence
+            import pytesseract
+
+            images = []
+            with Image.open(io.BytesIO(content)) as img:
+                for frame in ImageSequence.Iterator(img):
+                    img_frame = frame.convert('RGB')
+                    img_frame = ImageOps.grayscale(img_frame)
+                    images.append(img_frame)
+                    if len(images) >= 3:  # limit frames
+                        break
+
+            ocr_parts = []
+            for idx, image in enumerate(images, 1):
+                try:
+                    ocr_text = await asyncio.to_thread(
+                        pytesseract.image_to_string,
+                        image,
+                        config="--oem 3 --psm 6"
+                    )
+                    if ocr_text and ocr_text.strip():
+                        ocr_parts.append(f"--- Image {idx} ---\n{ocr_text.strip()}")
+                except Exception:
+                    continue
+
+            if ocr_parts:
+                return f"[Image: {filename}] (OCR)\n\n" + "\n\n".join(ocr_parts), None
+        except Exception as ocr_err:
+            print(f"[UPLOAD] OCR error for {filename}: {str(ocr_err)}")
+
         if not EMERGENT_LLM_KEY:
-            return f"[Image: {filename}]\n\nImage uploaded. AI Vision is not available.", "AI Vision unavailable: missing API key"
+            return f"[Image: {filename}]\n\nImage uploaded. OCR could not extract text.", "OCR unavailable and AI Vision missing API key"
         try:
             import base64 as _b64
             from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
@@ -581,19 +973,36 @@ async def extract_text_from_file(file_path: str, file_ext: str, filename: str, f
             return f"[Image: {filename}]\n\nImage uploaded. AI Vision could not extract text.", str(vision_err)
 
     if file_ext in AUDIO_EXTENSIONS:
+        if file_size > WHISPER_MAX_SIZE:
+            return f"[Audio Recording: {filename}]\n\nAudio file uploaded ({file_size // (1024*1024)}MB). Automatic transcription is limited to 25MB; please split the file for full transcription.", None
         transcription_text = await transcribe_audio_video(content, filename, file_ext, file_size)
         if transcription_text:
             return f"[Audio Recording: {filename}] (Transcribed)\n\n{transcription_text}", None
         return f"[Audio Recording: {filename}]\n\nAudio file uploaded ({file_size // 1024}KB). Transcription was not available.", None
 
     if file_ext in VIDEO_EXTENSIONS:
+        if file_size > WHISPER_MAX_SIZE:
+            return f"[Video Recording: {filename}]\n\nVideo file uploaded ({file_size // (1024*1024)}MB). Automatic transcription is limited to 25MB; please split the file for full transcription.", None
         transcription_text = await transcribe_audio_video(content, filename, file_ext, file_size)
         if transcription_text:
             return f"[Video Recording: {filename}] (Audio Transcribed)\n\n{transcription_text}", None
         return f"[Video Recording: {filename}]\n\nVideo file uploaded ({file_size // (1024*1024)}MB). Audio transcription was not available.", None
 
-    if file_ext in {'.doc', '.docx', '.rtf'}:
-        return f"[Word Document: {filename}]\n\nDocument uploaded. For best text extraction, consider converting to PDF.", None
+    if file_ext in ARCHIVE_EXTENSIONS:
+        return f"[Archive: {filename}]\n\nArchive uploaded. Use the archive extraction workflow to analyze contents.", None
+
+    if file_ext == '.doc':
+        try:
+            import textract
+            extracted = textract.process(file_path).decode('utf-8', errors='ignore')
+            if extracted and extracted.strip():
+                return f"[Word Document (DOC): {filename}]\n\n{extracted.strip()}", None
+            return f"[Word Document (DOC): {filename}]\n\nNo readable text found in the .doc.", "No text extracted"
+        except Exception as e:
+            return f"[Word Document (DOC): {filename}]\n\nLegacy .doc extraction unavailable. Convert to .docx or PDF for best results.", str(e)
+
+    if file_ext in {'.docx', '.rtf'}:
+        return f"[Document: {filename}]\n\nDocument uploaded. For best text extraction, consider converting to PDF.", None
 
     return f"[File: {filename}]\n\nFile uploaded successfully.", None
 
@@ -610,7 +1019,8 @@ async def upload_document(
 ):
     """
     Upload a document file and optionally run AI analysis.
-    Supports: PDF, TXT, images, audio, video files
+    Supports: PDF, DOC/DOCX, RTF, ODT, HTML, MD, CSV/XLS/XLSX, PPT/PPTX,
+    images, audio, video, and ZIP archives.
     Returns: Document record with extracted text and optional AI analysis
     """
     db = get_db()
@@ -623,68 +1033,48 @@ async def upload_document(
     # Verify case ownership
     await get_case_with_ownership(case_id, current_user["user_id"])
     
-    # Validate file type - expanded to include audio/video
+    # Validate file type
     allowed_extensions = ALLOWED_EXTENSIONS
     file_ext = os.path.splitext(file.filename)[1].lower()
     if file_ext not in allowed_extensions:
-        raise HTTPException(status_code=400, detail=f"File type {file_ext} not supported. Allowed: PDF, TXT, DOC, images, audio (MP3, WAV, etc), video (MP4, MOV, etc)")
-    
-    # Read file content
-    content = await file.read()
-    file_size = len(content)
-    
-    # Larger limit for video/audio files (50MB)
-    max_size = 50 * 1024 * 1024 if file_ext in {'.mp4', '.mov', '.avi', '.mkv', '.wmv', '.webm', '.m4v', '.mp3', '.wav', '.m4a'} else 10 * 1024 * 1024
-    if file_size > max_size:
-        raise HTTPException(status_code=400, detail=f"File too large. Maximum {max_size // (1024*1024)}MB for this file type.")
-    
-    # Determine file category
-    image_extensions = IMAGE_EXTENSIONS
-    audio_extensions = AUDIO_EXTENSIONS
-    video_extensions = VIDEO_EXTENSIONS
-    
-    # Extract text based on file type
-    extracted_text = ""
-    file_category = "document"
-    extraction_status = "queued"
-    extraction_error = None
+        raise HTTPException(status_code=400, detail=f"File type {file_ext} not supported. Allowed: PDF, DOC/DOCX, RTF, ODT, HTML, MD, CSV, XLS/XLSX, PPT/PPTX, images, audio, video, ZIP")
 
-    if file_ext == '.txt':
-        extracted_text = content.decode('utf-8', errors='ignore')
-        file_category = "document"
-        extraction_status = "complete"
-    elif file_ext == '.pdf':
-        file_category = "document"
-        extracted_text = f"[PDF Document: {file.filename}]\n\nText extraction queued for background processing."
-    elif file_ext in image_extensions:
-        file_category = "image"
-        extracted_text = f"[Image: {file.filename}]\n\nAI Vision extraction queued for background processing."
-    elif file_ext in audio_extensions:
-        file_category = "audio"
-        extracted_text = f"[Audio Recording: {file.filename}]\n\nTranscription queued for background processing."
-    elif file_ext in video_extensions:
-        file_category = "video"
-        extracted_text = f"[Video Recording: {file.filename}]\n\nTranscription queued for background processing."
-    elif file_ext in {'.docx', '.rtf'}:
-        file_category = "document"
-        extracted_text = f"[Document: {file.filename}]\n\nText extraction queued for background processing."
-    elif file_ext == '.doc':
-        file_category = "document"
-        extracted_text = f"[Word Document: {file.filename}]\n\nDocument uploaded. Please convert .doc to PDF or .docx for reliable text extraction."
-        extraction_status = "complete"
-    else:
-        extracted_text = f"[File: {file.filename}]\n\nFile uploaded successfully."
-        extraction_status = "complete"
-    
-    # Save file
+    # Save file to disk (streamed)
     print(f"[UPLOAD] Saving file: {file.filename}")
     file_id = str(uuid.uuid4())
     file_path = os.path.join(UPLOAD_DIR, f"{file_id}{file_ext}")
-    with open(file_path, 'wb') as f:
-        f.write(content)
-    
-    # Create document record
-    print("[UPLOAD] Creating DB record...")
+    max_size = get_max_size_for_ext(file_ext)
+    try:
+        file_size = await save_upload_to_disk(file, file_path, max_size)
+    except HTTPException:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        raise
+
+    file_category = get_file_category(file_ext)
+    extracted_text = ""
+    extraction_status = "queued"
+    extraction_error = None
+
+    if file_ext in ARCHIVE_EXTENSIONS:
+        extracted_text = f"[Archive: {file.filename}]\n\nArchive extraction queued."
+        extraction_status = "processing"
+    elif file_ext in AUDIO_EXTENSIONS:
+        extracted_text = f"[Audio Recording: {file.filename}]\n\nTranscription queued for background processing."
+    elif file_ext in VIDEO_EXTENSIONS:
+        extracted_text = f"[Video Recording: {file.filename}]\n\nTranscription queued for background processing."
+    elif file_ext in IMAGE_EXTENSIONS:
+        extracted_text = f"[Image: {file.filename}]\n\nOCR queued for background processing."
+    elif file_ext in SPREADSHEET_EXTENSIONS:
+        extracted_text = f"[Spreadsheet: {file.filename}]\n\nExtraction queued for background processing."
+    elif file_ext in PRESENTATION_EXTENSIONS:
+        extracted_text = f"[Presentation: {file.filename}]\n\nExtraction queued for background processing."
+    elif file_ext in TEXT_EXTENSIONS or file_ext in DOCUMENT_EXTENSIONS:
+        extracted_text = f"[Document: {file.filename}]\n\nText extraction queued for background processing."
+    else:
+        extracted_text = f"[File: {file.filename}]\n\nFile uploaded successfully."
+        extraction_status = "complete"
+
     doc_id = str(uuid.uuid4())
     doc = {
         "_id": doc_id,
@@ -695,28 +1085,45 @@ async def upload_document(
         "file_path": file_path,
         "file_size": file_size,
         "file_type": file_ext,
-        "file_category": file_category,  # document, image, audio, video
+        "file_category": file_category,
         "doc_type": doc_type,
         "content": extracted_text,
         "extraction_status": extraction_status,
         "extraction_error": extraction_error,
         "source": "upload",
         "analysis": None,
-        "analysis_status": "queued" if auto_analyze and EMERGENT_LLM_KEY else None,
+        "analysis_status": "queued" if (auto_analyze and EMERGENT_LLM_KEY and file_ext not in ARCHIVE_EXTENSIONS) else None,
         "analysis_error": None,
         "analysis_retry_count": 0,
         "extracted_violations": [],
         "extracted_timeline": [],
+        "processing_log": [],
         "created_at": datetime.now(timezone.utc).isoformat()
     }
-    
+
     print("[UPLOAD] Inserting doc into DB...")
     await db.documents.insert_one(doc)
+    await log_doc_event(doc_id, "Upload received")
     print(f"[UPLOAD] DB insert done for {doc_id}")
     
     # Run AI analysis in background if requested (don't block upload response)
     analysis_result = None
-    if auto_analyze:
+    if file_ext in ARCHIVE_EXTENSIONS:
+        background_tasks.add_task(
+            process_zip_archive,
+            doc_id,
+            case_id,
+            current_user["user_id"],
+            file_path,
+            file.filename,
+            doc_type,
+            auto_analyze
+        )
+        analysis_result = {
+            "status": "archive_processing",
+            "message": "Archive extraction started. Contained files will be analyzed automatically."
+        }
+    elif auto_analyze:
         if not EMERGENT_LLM_KEY:
             analysis_result = {
                 "status": "error",
@@ -781,12 +1188,16 @@ Respond ONLY with valid JSON matching this structure:
         system_message=system_message
     ).with_model("openai", "gpt-5.2")
     
+    content_excerpt = content
+    if len(content) > 18000:
+        content_excerpt = content[:14000] + "\n\n[...content truncated...]\n\n" + content[-3000:]
+
     prompt = f"""Analyze this CPS document uploaded by a parent in {state}:
 
 FILENAME: {filename}
 
 DOCUMENT CONTENT:
-{content[:15000]}
+{content_excerpt}
 
 Provide your complete analysis in JSON format. Be thorough - this parent's family is at stake."""
 
@@ -1086,6 +1497,131 @@ Provide your complete analysis in JSON format. Be thorough - this parent's famil
         "timeline_events_created": len(created_timeline),
         "notes_created": len(created_notes)
     }
+
+
+@router.get("/api/documents/test-samples/bundle")
+async def download_document_test_samples(current_user: dict = Depends(get_current_user)):
+    """Download a ZIP bundle of sample files for analyzer testing."""
+    db = get_db()
+    user_record = await db.users.find_one({"_id": current_user.get("user_id")})
+    if not user_record or not user_record.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    temp_dir = Path(tempfile.mkdtemp(prefix="cps_samples_"))
+    try:
+        # Text-based samples
+        (temp_dir / "sample.txt").write_text("CPS Sample Text Document\nDate: 2026-05-05\nThis is a test file for analyzer verification.")
+        (temp_dir / "sample.md").write_text("# CPS Sample Markdown\n\n- Test item 1\n- Test item 2\n\n**Important:** Verify extraction.")
+        (temp_dir / "sample.html").write_text("<html><body><h1>Sample HTML</h1><p>Test extraction content.</p></body></html>")
+        (temp_dir / "sample.rtf").write_text(r"{\\rtf1\\ansi Sample RTF document for CPS analyzer testing.}")
+        (temp_dir / "sample.doc").write_text(r"{\\rtf1\\ansi Legacy DOC placeholder for analyzer testing.}")
+
+        # PDF
+        try:
+            from reportlab.pdfgen import canvas
+            pdf_path = temp_dir / "sample.pdf"
+            c = canvas.Canvas(str(pdf_path))
+            c.drawString(72, 720, "CPS Sample PDF Document")
+            c.drawString(72, 700, "Test extraction and analysis pipeline.")
+            c.save()
+        except Exception:
+            pass
+
+        # DOCX
+        try:
+            from docx import Document
+            docx = Document()
+            docx.add_heading("CPS Sample DOCX", level=1)
+            docx.add_paragraph("Test extraction for DOCX.")
+            docx.save(str(temp_dir / "sample.docx"))
+        except Exception:
+            pass
+
+        # ODT
+        try:
+            from odf.opendocument import OpenDocumentText
+            from odf import text as odf_text
+            odt = OpenDocumentText()
+            odt.addElement(odf_text.P(text="CPS Sample ODT Document"))
+            odt.save(str(temp_dir / "sample.odt"))
+        except Exception:
+            pass
+
+        # CSV
+        try:
+            csv_path = temp_dir / "sample.csv"
+            with open(csv_path, "w", newline="") as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(["Date", "Event", "Notes"])
+                writer.writerow(["2026-05-05", "CPS Visit", "Test CSV entry"])
+        except Exception:
+            pass
+
+        # XLSX
+        try:
+            from openpyxl import Workbook
+            wb = Workbook()
+            ws = wb.active
+            ws.append(["Date", "Event", "Notes"])
+            ws.append(["2026-05-05", "CPS Visit", "Test XLSX entry"])
+            wb.save(str(temp_dir / "sample.xlsx"))
+        except Exception:
+            pass
+
+        # PPTX
+        try:
+            from pptx import Presentation
+            prs = Presentation()
+            slide = prs.slides.add_slide(prs.slide_layouts[0])
+            slide.shapes.title.text = "CPS Sample PPTX"
+            slide.placeholders[1].text = "Test extraction from slides"
+            prs.save(str(temp_dir / "sample.pptx"))
+        except Exception:
+            pass
+
+        # PNG + TIFF
+        try:
+            from PIL import Image, ImageDraw
+            img = Image.new("RGB", (800, 400), color=(20, 20, 20))
+            draw = ImageDraw.Draw(img)
+            draw.text((20, 40), "CPS Sample Image\nOCR Test", fill=(255, 255, 255))
+            img.save(str(temp_dir / "sample.png"))
+            img.save(str(temp_dir / "sample.tiff"))
+        except Exception:
+            pass
+
+        # WAV
+        try:
+            import wave
+            import struct
+            wav_path = temp_dir / "sample.wav"
+            with wave.open(str(wav_path), 'w') as wav_file:
+                wav_file.setnchannels(1)
+                wav_file.setsampwidth(2)
+                wav_file.setframerate(16000)
+                for _ in range(16000):
+                    wav_file.writeframes(struct.pack('<h', 0))
+        except Exception:
+            pass
+
+        # Package samples
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for path in temp_dir.iterdir():
+                if path.is_file():
+                    zipf.write(path, arcname=path.name)
+        zip_buffer.seek(0)
+
+        return StreamingResponse(
+            zip_buffer,
+            media_type="application/zip",
+            headers={"Content-Disposition": "attachment; filename=cps_analyzer_test_samples.zip"}
+        )
+    finally:
+        try:
+            shutil.rmtree(temp_dir)
+        except Exception:
+            pass
 
 
 @router.post("/api/documents/{doc_id}/reanalyze")

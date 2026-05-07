@@ -203,6 +203,12 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added is_admin to auth responses for faster, clearer admin routing
 - Fixed fetchpriority attribute warning on landing hero image
 
+### Session 39: Document Analyzer Reliability Overhaul - COMPLETE
+- Expanded file support: ODT/HTML/MD/CSV/XLS/XLSX/PPT/PPTX/ZIP/TIFF plus larger media limits
+- Added ZIP archive extraction with child document creation and background analysis
+- Added OCR-first image pipeline (Tesseract + AI Vision fallback) and timestamped transcription
+- Added Processing Log + Analyzer Test Lab (admin) with sample bundle download
+
 ### Session 38: Overview Walkthrough Placement + RRC Label - COMPLETE
 - Moved onboarding checklist (Start Walkthrough) to top of Overview for visibility
 - Renamed Real Estate module label to “Toll & Rollin!” badge and sidebar label
