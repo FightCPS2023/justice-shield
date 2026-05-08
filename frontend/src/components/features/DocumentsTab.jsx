@@ -40,6 +40,7 @@ function DocumentsTab({ selectedCase }) {
   const MAX_FILE_SIZE = 100 * 1024 * 1024;  // 100MB for documents/images
   const MAX_MEDIA_SIZE = 500 * 1024 * 1024; // 500MB for audio/video
   const MAX_ARCHIVE_SIZE = 500 * 1024 * 1024; // 500MB for ZIP
+  const UPLOAD_TIMEOUT_MS = 180000;
 
   // Helper to get icon for file type
   const getFileIcon = (fileType, category) => {
@@ -293,18 +294,46 @@ function DocumentsTab({ selectedCase }) {
       ? (apiBase.endsWith('/api') ? `${apiBase}/documents/upload` : `${apiBase}/api/documents/upload`)
       : '/api/documents/upload';
 
+    const attemptUpload = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+      try {
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData,
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        return response;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
+      }
+    };
+
     let response;
-    try {
-      response = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData
-      });
-    } catch (error) {
-      throw new Error('Connection error. Please check your internet and try again.');
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        response = await attemptUpload();
+        break;
+      } catch (error) {
+        if (attempt === 1) {
+          if (error.name === 'AbortError') {
+            throw new Error('Upload timed out. Please retry or use a smaller file.');
+          }
+          try {
+            await api.get('/api/health');
+            throw new Error('Upload failed due to a network interruption. Please retry.');
+          } catch (healthError) {
+            throw new Error('Server unreachable. Please try again in a few minutes.');
+          }
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+      }
     }
 
-    if (!response.ok) {
+    if (!response || !response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Upload failed' }));
       throw new Error(error.detail || 'Upload failed');
     }
