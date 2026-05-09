@@ -203,6 +203,10 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added is_admin to auth responses for faster, clearer admin routing
 - Fixed fetchpriority attribute warning on landing hero image
 
+### Session 40: Smart Document Generator Reliability - COMPLETE
+- Increased streaming timeout and added retry logic + improved error messaging for network/timeouts
+- Verified streaming generation completes successfully in preview
+
 ### Session 39: Document Analyzer Reliability Overhaul - COMPLETE
 - Expanded file support: ODT/HTML/MD/CSV/XLS/XLSX/PPT/PPTX/ZIP/TIFF plus larger media limits
 - Added ZIP archive extraction with child document creation and background analysis
