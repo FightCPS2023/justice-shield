@@ -73,8 +73,8 @@ function SmartDocTab({ selectedCase }) {
     setGenTime(null);
     const startTime = Date.now();
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000);
-    try {
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
+    const startRequest = async () => {
       const response = await fetch(`${API_URL}/api/ai/smart-document/stream`, {
         method: 'POST',
         headers: {
@@ -88,8 +88,21 @@ function SmartDocTab({ selectedCase }) {
         }),
         signal: controller.signal
       });
-
       if (!response.ok) throw new Error('Document generation stream failed');
+      return response;
+    };
+
+    try {
+      let response;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+          response = await startRequest();
+          break;
+        } catch (err) {
+          if (attempt === 1) throw err;
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+      }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -129,9 +142,16 @@ function SmartDocTab({ selectedCase }) {
       setStreamingContent('');
       setGenTime(((Date.now() - startTime) / 1000).toFixed(1));
     } catch (error) {
-      const message = error.name === 'AbortError'
-        ? 'Document generation timed out. Please try again.'
-        : (error.message || 'Document generation failed');
+      let message = 'Document generation failed';
+      if (error.name === 'AbortError') {
+        message = 'Document generation timed out. Please try again or shorten the request.';
+      } else if ((error.message || '').includes('Failed to fetch') || (error.message || '').includes('NetworkError')) {
+        message = 'Server unreachable. Please try again in a few minutes.';
+      } else if ((error.message || '').includes('stream failed')) {
+        message = 'Connection dropped during document generation. Please retry.';
+      } else if (error.message) {
+        message = error.message;
+      }
       toast.error(message);
       setErrorMessage(message);
     } finally {
