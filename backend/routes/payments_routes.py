@@ -7,7 +7,7 @@ from typing import Optional
 
 from database import get_db
 from auth import get_current_user
-from config import STRIPE_API_KEY, TIER_PRICING, TIER_FEATURES, CREDIT_PACKAGES, FEATURE_CREDIT_COSTS
+from config import STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET, TIER_PRICING, TIER_FEATURES, CREDIT_PACKAGES, FEATURE_CREDIT_COSTS
 
 
 router = APIRouter()
@@ -228,6 +228,64 @@ async def get_checkout_status(session_id: str, http_request: Request, current_us
         )
     
     return {"status": status.status, "payment_status": status.payment_status}
+
+
+@router.post("/api/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Stripe webhook handler for checkout completion."""
+    db = get_db()
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout
+
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+
+    payload = await request.body()
+    signature = request.headers.get("Stripe-Signature")
+    host_url = str(request.base_url)
+    webhook_url = f"{host_url}api/webhook/stripe"
+    stripe_checkout = StripeCheckout(
+        api_key=STRIPE_API_KEY,
+        webhook_secret=STRIPE_WEBHOOK_SECRET,
+        webhook_url=webhook_url
+    )
+
+    try:
+        webhook_event = await stripe_checkout.handle_webhook(payload, signature)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    event_type = webhook_event.event_type
+    session_id = webhook_event.session_id
+    payment_status = webhook_event.payment_status
+    metadata = webhook_event.metadata or {}
+
+    if session_id:
+        transaction = await db.payment_transactions.find_one({"session_id": session_id})
+        if transaction and transaction.get("payment_status") == "paid":
+            return {"status": "ok"}
+
+        if payment_status == "paid" or event_type == "checkout.session.completed":
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {"$set": {"payment_status": "paid", "updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+
+            user_id = metadata.get("user_id")
+            if user_id:
+                if metadata.get("type") == "credit_purchase":
+                    credits = int(metadata.get("credits", 0) or 0)
+                    if credits:
+                        await db.users.update_one(
+                            {"_id": user_id},
+                            {"$inc": {"purchased_credits": credits}}
+                        )
+                elif metadata.get("tier"):
+                    await db.users.update_one(
+                        {"_id": user_id},
+                        {"$set": {"tier": metadata.get("tier"), "subscription_status": "active"}}
+                    )
+
+    return {"status": "ok"}
 
 
 # ============== LEGAL KNOWLEDGE BASE API ==============

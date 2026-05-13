@@ -203,6 +203,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added is_admin to auth responses for faster, clearer admin routing
 - Fixed fetchpriority attribute warning on landing hero image
 
+### Session 41: Stripe Webhook Endpoint - COMPLETE
+- Added /api/webhook/stripe endpoint with StripeCheckout.handle_webhook and payment transaction updates
+- Added STRIPE_WEBHOOK_SECRET config support for signature verification
+- Verified webhook endpoint returns 200 with test payload
+
 ### Session 40: Smart Document Generator Reliability - COMPLETE
 - Increased streaming timeout and added retry logic + improved error messaging for network/timeouts
 - Verified streaming generation completes successfully in preview
