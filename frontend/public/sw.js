@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 
-const CACHE_NAME = 'cps-punisher-v2';
+const CACHE_NAME = 'cps-punisher-v3';
 const urlsToCache = [
   '/',
   '/index.html',
