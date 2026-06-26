@@ -16,6 +16,8 @@ from .caselaw_routes import router as caselaw_router
 from .ada_routes import router as ada_router
 from .strategy_routes import router as strategy_router
 from .case_memory_routes import router as case_memory_router
+from .porch_mode_routes import router as porch_mode_router
+from .foia_routes import router as foia_router
 
 all_routers = [
     auth_router,
@@ -36,4 +38,6 @@ all_routers = [
     ada_router,
     strategy_router,
     case_memory_router,
+    porch_mode_router,
+    foia_router,
 ]

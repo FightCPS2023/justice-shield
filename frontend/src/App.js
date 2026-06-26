@@ -43,6 +43,8 @@ import AdvocatesTab from './components/features/AdvocatesTab';
 import ExpertLegalAITab from './components/features/ExpertLegalAITab';
 import RealEstateCounselTab from './components/features/RealEstateCounselTab';
 import AnalyzerTestLabTab from './components/features/AnalyzerTestLabTab';
+import PorchModeTab from './components/features/PorchModeTab';
+import FoiaRequestsTab from './components/features/FoiaRequestsTab';
 import Section1983Tab from './components/features/Section1983Tab';
 import PodcastCreatorTab from './components/features/PodcastCreatorTab';
 import CaseLawAnalysisTab from './components/features/CaseLawAnalysisTab';
@@ -301,6 +303,7 @@ function Dashboard({ onNavigate }) {
         { id: 'smartdoc', icon: Zap, label: 'Smart Doc Generator', minTier: 'free', highlight: true },
         { id: 'incidents', icon: AlertTriangle, label: 'Incident Analyzer', minTier: 'essential' },
         { id: 'strategy', icon: Shield, label: 'Defense Strategy', minTier: 'essential' },
+        { id: 'porchmode', icon: Shield, label: 'Porch Mode', minTier: 'free', highlight: true },
         { id: 'strategybuilder', icon: Shield, label: 'Strategy Builder', minTier: 'professional', highlight: true },
         { id: 'argumentgen', icon: Scale, label: 'Argument Generator', minTier: 'professional', highlight: true },
         { id: 'evidencemapper', icon: Eye, label: 'Evidence Mapper', minTier: 'professional', highlight: true },
@@ -321,6 +324,7 @@ function Dashboard({ onNavigate }) {
         { id: 'caselaw', icon: BookOpen, label: 'Case Law Analysis', minTier: 'professional', highlight: true },
         { id: 'precedentfinder', icon: Search, label: 'Precedent Finder', minTier: 'professional', highlight: true },
         { id: 'courtlistener', icon: Scale, label: 'Court Opinions', minTier: 'attorney', highlight: true },
+        { id: 'foia', icon: FileText, label: 'FOIA Requests', minTier: 'free', highlight: true },
         { id: 'rights', icon: Shield, label: 'Know Your Rights', minTier: 'free' },
         { id: 'ada', icon: Scale, label: 'ADA Compliance', minTier: 'professional', highlight: true },
         { id: 'judgewatch', icon: Scale, label: 'Judge Watch', minTier: 'professional' }
@@ -537,6 +541,8 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'violations' && <ViolationsTab selectedCase={selectedCase} />}
           {activeTab === 'documents' && <DocumentsTab selectedCase={selectedCase} />}
           {activeTab === 'smartdoc' && <SmartDocTab selectedCase={selectedCase} />}
+          {activeTab === 'porchmode' && <PorchModeTab selectedCase={selectedCase} />}
+          {activeTab === 'foia' && <FoiaRequestsTab selectedCase={selectedCase} />}
           {activeTab === 'ainotes' && <AICaseNotesTab selectedCase={selectedCase} />}
           {activeTab === 'memory' && <CaseMemoryTab selectedCase={selectedCase} />}
           {activeTab === 'timeline' && <TimelineTab selectedCase={selectedCase} />}

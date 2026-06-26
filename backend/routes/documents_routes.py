@@ -915,7 +915,8 @@ async def extract_text_from_file(file_path: str, file_ext: str, filename: str, f
                     continue
 
             if ocr_parts:
-                return f"[Image: {filename}] (OCR)\n\n" + "\n\n".join(ocr_parts), None
+                joined_parts = "\n\n".join(ocr_parts)
+                return f"[Image: {filename}] (OCR)\n\n{joined_parts}", None
         except Exception as ocr_err:
             print(f"[UPLOAD] OCR error for {filename}: {str(ocr_err)}")
 
