@@ -203,6 +203,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added is_admin to auth responses for faster, clearer admin routing
 - Fixed fetchpriority attribute warning on landing hero image
 
+### Session 45: Porch Mode + FOIA Engines - COMPLETE
+- Added Porch Mode violation engine + API endpoint with case note saving
+- Added FOIA Requests engine + endpoints (states + generate) with case note saving
+- Added Porch Mode + FOIA Requests tabs in frontend navigation
+
 ### Session 44: Stripe Webhook Secret Updated (Preview) - COMPLETE
 - Added STRIPE_WEBHOOK_SECRET to backend .env and restarted backend
 
