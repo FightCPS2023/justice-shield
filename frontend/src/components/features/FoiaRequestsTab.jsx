@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FileText, Download, Copy, Mail, MapPin } from 'lucide-react';
+import { FileText, Download, Copy, Mail, MapPin, Send, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 
@@ -13,7 +13,10 @@ function FoiaRequestsTab({ selectedCase }) {
     agency_name: ''
   });
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
   const [packageData, setPackageData] = useState(null);
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [gmailConnected, setGmailConnected] = useState(false);
 
   useEffect(() => {
     const loadStates = async () => {
@@ -24,11 +27,34 @@ function FoiaRequestsTab({ selectedCase }) {
         toast.error('Failed to load FOIA states');
       }
     };
+    const loadStatus = async () => {
+      try {
+        const status = await api.get('/api/foia/email/status');
+        setGmailConnected(status.connected);
+      } catch (err) {
+        setGmailConnected(false);
+      }
+    };
     loadStates();
+    loadStatus();
+    if (selectedCase?.id) {
+      api.post('/api/foia/reminders/dispatch', {}).catch(() => {});
+    }
   }, []);
 
   const handleChange = (field) => (e) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const connectGmail = async () => {
+    try {
+      const data = await api.get('/api/oauth/gmail/login');
+      if (data.auth_url) {
+        window.location.href = data.auth_url;
+      }
+    } catch (err) {
+      toast.error('Unable to start Gmail authorization');
+    }
   };
 
   const handleGenerate = async (e) => {
@@ -44,23 +70,34 @@ function FoiaRequestsTab({ selectedCase }) {
         case_id: selectedCase?.id || undefined
       });
       setPackageData(data);
+      setRecipientEmail(data.target_email || '');
       toast.success('FOIA request generated');
-      if (selectedCase?.id) {
-        try {
-          await api.post('/api/notepad', {
-            case_id: selectedCase.id,
-            title: `FOIA Request — ${data.caseworker_name}`,
-            content: data.document_markdown,
-            category: 'foia-request'
-          });
-        } catch (err) {
-          // non-blocking
-        }
-      }
     } catch (error) {
       toast.error(error.message || 'FOIA generation failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSend = async () => {
+    if (!packageData) return;
+    if (!recipientEmail) {
+      toast.error('Recipient email is required');
+      return;
+    }
+    setSending(true);
+    try {
+      const payload = {
+        ...form,
+        recipient_email: recipientEmail,
+        case_id: selectedCase?.id || undefined
+      };
+      await api.post('/api/foia/send', payload);
+      toast.success('FOIA request sent');
+    } catch (error) {
+      toast.error(error.message || 'FOIA send failed');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -114,6 +151,21 @@ function FoiaRequestsTab({ selectedCase }) {
         <p className="text-gray-400">Generate bond & oath-of-office requests with one click.</p>
       </div>
 
+      <div className="bg-gray-900/60 border border-gray-700 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm text-gray-300">Gmail status: <span className={gmailConnected ? 'text-emerald-400' : 'text-red-400'}>{gmailConnected ? 'Connected' : 'Not connected'}</span></p>
+          <p className="text-xs text-gray-500">Connect Gmail to send FOIA requests directly from the app.</p>
+        </div>
+        <button
+          onClick={connectGmail}
+          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center gap-2"
+          data-testid="foia-connect-gmail"
+        >
+          <Link2 className="w-4 h-4" />
+          Connect Gmail
+        </button>
+      </div>
+
       <form onSubmit={handleGenerate} className="grid md:grid-cols-2 gap-4">
         <input
           className="bg-gray-900/60 border border-gray-700 rounded-lg p-3 text-sm"
@@ -164,6 +216,29 @@ function FoiaRequestsTab({ selectedCase }) {
             <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-red-400" /> {packageData.target_email}</div>
             <div className="flex items-center gap-2"><FileText className="w-4 h-4 text-red-400" /> {packageData.statute}</div>
           </div>
+
+          <div className="grid md:grid-cols-2 gap-3">
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-gray-400" />
+              <input
+                className="flex-1 bg-black/40 border border-gray-700 rounded-lg p-2 text-sm"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                placeholder="Recipient email"
+                data-testid="foia-recipient-email"
+              />
+            </div>
+            <button
+              onClick={handleSend}
+              disabled={sending || !gmailConnected}
+              className="py-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-semibold flex items-center justify-center gap-2"
+              data-testid="foia-send-btn"
+            >
+              <Send className="w-4 h-4" />
+              {sending ? 'Sending...' : 'Send via Gmail'}
+            </button>
+          </div>
+
           <div className="flex gap-2">
             <button onClick={copyText} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" data-testid="foia-copy-btn"><Copy className="w-4 h-4" /> Copy</button>
             <button onClick={downloadPdf} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" data-testid="foia-download-btn"><Download className="w-4 h-4" /> Download PDF</button>
