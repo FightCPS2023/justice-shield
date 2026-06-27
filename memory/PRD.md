@@ -203,6 +203,10 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Added is_admin to auth responses for faster, clearer admin routing
 - Fixed fetchpriority attribute warning on landing hero image
 
+### Session 46: FOIA Gmail Send + Reminders - COMPLETE
+- Added Gmail OAuth flow + send endpoints and reminder scheduling for FOIA requests
+- Added FOIA UI controls for Gmail connect + send and recipient email field
+
 ### Session 45: Porch Mode + FOIA Engines - COMPLETE
 - Added Porch Mode violation engine + API endpoint with case note saving
 - Added FOIA Requests engine + endpoints (states + generate) with case note saving
