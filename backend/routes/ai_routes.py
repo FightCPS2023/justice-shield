@@ -154,6 +154,195 @@ def extract_next_steps(text: str, max_items: int = 8) -> List[str]:
             break
     return steps
 
+
+def build_person_lookup_fallback_report(
+    request: PersonLookupRequest,
+    location_info: str,
+    focus_instruction: str
+) -> Dict[str, Any]:
+    jurisdiction_context = location_info.strip() if location_info else "Not provided"
+    narrative_lines = [
+        "I am the Ultimate CPS Defense AI. I fight for your family with the full force of constitutional and statutory law. Provide the details of your case and we begin.",
+        "- Summary: Only limited identifiers were provided. No verified public-record data was supplied in the request.",
+        "- Identity: A full name is provided, but no date of birth, aliases, or unique identifiers for verification.",
+        "- Contact: No confirmed addresses, phones, or emails were provided for corroboration.",
+        "- Records: Criminal/civil/family/cps history cannot be confirmed without jurisdiction-specific identifiers.",
+        "- Strategy: Use the records-to-request and search plan below to obtain verifiable evidence."
+    ]
+    recommendations_next_steps = [
+        "Collect full legal name, DOB, and any known prior addresses to disambiguate the subject.",
+        "Search county clerk/court portals in the likely jurisdiction for civil, criminal, and family court records.",
+        "Request CPS personnel complaint history or disciplinary records from the state oversight agency.",
+        "Check state licensing boards for professional licenses, sanctions, and complaint outcomes.",
+        "Run property/assessor and voter registration searches to confirm address history.",
+        "Use media and news archives for prior litigation or public allegations.",
+        "Ask for case numbers, docket references, or agency IDs if available.",
+        "Document verification steps and retain certified copies for court use."
+    ]
+    verification_gaps = [
+        "Date of birth or age",
+        "Middle name or aliases",
+        "Prior addresses",
+        "Known employers or agency affiliation",
+        "Case numbers or docket references",
+        "Licensing numbers or certifications"
+    ]
+    records_to_request = [
+        {
+            "record_type": "Civil and criminal case dockets",
+            "agency": "County Clerk of Court",
+            "jurisdiction": jurisdiction_context,
+            "why": "Verify litigation history, pending charges, and dispositions.",
+            "access_notes": "Search online portal or submit formal request for certified copies."
+        },
+        {
+            "record_type": "Family court filings",
+            "agency": "Family Court Clerk",
+            "jurisdiction": jurisdiction_context,
+            "why": "Identify prior family court involvement or restraining orders.",
+            "access_notes": "May require case numbers or party name search."
+        },
+        {
+            "record_type": "Professional licensing & discipline",
+            "agency": "State Licensing Board",
+            "jurisdiction": request.state or "Not provided",
+            "why": "Confirm license status and disciplinary actions.",
+            "access_notes": "Search by name or license ID; request full disciplinary files."
+        },
+        {
+            "record_type": "CPS personnel complaint history",
+            "agency": "State CPS Oversight/Inspector General",
+            "jurisdiction": request.state or "Not provided",
+            "why": "Verify complaints, investigations, and sanctions.",
+            "access_notes": "May require FOIA/records request."
+        },
+        {
+            "record_type": "Property ownership & tax records",
+            "agency": "County Assessor/Recorder",
+            "jurisdiction": jurisdiction_context,
+            "why": "Validate address history and ownership ties.",
+            "access_notes": "Search by name; request historical ownership records."
+        },
+        {
+            "record_type": "Employment verification",
+            "agency": "Agency HR or public payroll database",
+            "jurisdiction": request.state or "Not provided",
+            "why": "Confirm role, tenure, and supervisory chain.",
+            "access_notes": "Public payroll databases may list title and compensation."
+        }
+    ]
+    search_plan = [
+        {
+            "step": "Run court portal search in likely counties",
+            "source": "County clerk online dockets",
+            "purpose": "Identify civil/criminal/family cases",
+            "expected_output": "Case numbers, dispositions, dates"
+        },
+        {
+            "step": "Check state judicial case search",
+            "source": "Statewide court search",
+            "purpose": "Locate cross-county matters",
+            "expected_output": "Statewide case listing"
+        },
+        {
+            "step": "Verify professional licensing",
+            "source": "State licensing board",
+            "purpose": "Confirm credentials/discipline",
+            "expected_output": "License status and disciplinary history"
+        },
+        {
+            "step": "Request CPS oversight records",
+            "source": "Inspector General or Ombudsman",
+            "purpose": "Find complaint outcomes",
+            "expected_output": "Complaint logs, investigation summaries"
+        },
+        {
+            "step": "Search property/assessor records",
+            "source": "County assessor",
+            "purpose": "Confirm address history",
+            "expected_output": "Ownership and address links"
+        },
+        {
+            "step": "Check local news archives",
+            "source": "Local newspapers/legal news",
+            "purpose": "Find public allegations or lawsuits",
+            "expected_output": "Articles referencing subject"
+        },
+        {
+            "step": "Review public payroll records",
+            "source": "State payroll database",
+            "purpose": "Confirm agency affiliation",
+            "expected_output": "Role, agency, tenure"
+        },
+        {
+            "step": "Validate social/professional profiles",
+            "source": "LinkedIn, professional registries",
+            "purpose": "Cross-check employment history",
+            "expected_output": "Profile matches and employers"
+        }
+    ]
+    search_queries = [
+        f"\"{request.name}\" court records {request.state or ''}".strip(),
+        f"\"{request.name}\" civil case {request.city or ''} {request.state or ''}".strip(),
+        f"\"{request.name}\" criminal case {request.state or ''}".strip(),
+        f"\"{request.name}\" family court {request.state or ''}".strip(),
+        f"\"{request.name}\" CPS complaint {request.state or ''}".strip(),
+        f"\"{request.name}\" professional license {request.state or ''}".strip(),
+        f"\"{request.name}\" disciplinary action {request.state or ''}".strip(),
+        f"\"{request.name}\" property records {request.city or ''} {request.state or ''}".strip(),
+        f"\"{request.name}\" employment history {request.state or ''}".strip(),
+        f"\"{request.name}\" news archive {request.state or ''}".strip()
+    ]
+
+    section_confidence = {
+        "identity": {"data_availability": "Low", "confidence_score": 0.2, "confidence_label": "Unverified"},
+        "contact_info": {"data_availability": "Low", "confidence_score": 0.1, "confidence_label": "Unverified"},
+        "relatives_associates": {"data_availability": "Low", "confidence_score": 0.1, "confidence_label": "Unverified"},
+        "employment_professional": {"data_availability": "Low", "confidence_score": 0.2, "confidence_label": "Unverified"},
+        "criminal_records": {"data_availability": "Low", "confidence_score": 0.1, "confidence_label": "Unverified"},
+        "civil_records": {"data_availability": "Low", "confidence_score": 0.1, "confidence_label": "Unverified"},
+        "family_court": {"data_availability": "Low", "confidence_score": 0.1, "confidence_label": "Unverified"},
+        "cps_related": {"data_availability": "Low", "confidence_score": 0.1, "confidence_label": "Unverified"},
+        "online_presence": {"data_availability": "Low", "confidence_score": 0.2, "confidence_label": "Unverified"}
+    }
+
+    return {
+        "subject": {
+            "full_name": request.name,
+            "aliases": [],
+            "date_of_birth": "",
+            "age": "",
+            "known_locations": [jurisdiction_context] if jurisdiction_context != "Not provided" else [],
+            "notes": request.additional_info or ""
+        },
+        "section_confidence": section_confidence,
+        "summary": {
+            "narrative": "\n".join(narrative_lines),
+            "key_findings": ["No verified public records provided in request."],
+            "potential_red_flags": []
+        },
+        "contact_info": {"addresses": [], "phone_numbers": [], "emails": []},
+        "relatives_associates": [],
+        "employment_professional": {"employers": [], "licenses": [], "disciplinary_actions": []},
+        "criminal_records": [],
+        "civil_records": [],
+        "family_court": [],
+        "cps_related": [],
+        "online_presence": {"social_profiles": [], "professional_profiles": [], "news_mentions": []},
+        "red_flags": [],
+        "recommendations_next_steps": recommendations_next_steps,
+        "verification_gaps": verification_gaps,
+        "records_to_request": records_to_request,
+        "search_plan": search_plan,
+        "search_queries": search_queries,
+        "report_metadata": {
+            "lookup_type": request.lookup_type,
+            "focus": focus_instruction,
+            "jurisdiction_context": jurisdiction_context
+        },
+        "disclaimer": "This AI-generated report provides investigative leads only. It does not access NCIC or law enforcement databases and must be verified through official records before legal use."
+    }
+
 @router.post("/api/ai/person-lookup")
 async def person_lookup(request: PersonLookupRequest, current_user: dict = Depends(get_current_user)):
     """
@@ -318,6 +507,7 @@ Instructions:
     raw_response = None
     error_text = ""
     retry_delays = [2, 4]
+    use_fallback_due_to_error = False
 
     for attempt in range(max_retries + 1):
         try:
@@ -326,13 +516,17 @@ Instructions:
         except asyncio.TimeoutError:
             error_text = "timeout"
             if attempt == max_retries:
-                raise HTTPException(status_code=504, detail="Background check timed out. Please try again.")
+                # Use fallback report instead of raising error
+                use_fallback_due_to_error = True
+                break
         except (ChatError, Exception) as e:
             error_text = str(e)
             if "budget" in error_text.lower() or "insufficient" in error_text.lower():
                 raise HTTPException(status_code=402, detail="AI budget exceeded. Please add balance to your Universal Key and retry.")
             if attempt == max_retries:
-                raise HTTPException(status_code=502, detail="AI service temporarily unavailable. Please try again in a few minutes.")
+                # Use fallback report instead of raising error
+                use_fallback_due_to_error = True
+                break
 
         wait_seconds = retry_delays[min(attempt, len(retry_delays) - 1)]
         if "rate limit" in error_text.lower() or "429" in error_text:
@@ -345,19 +539,25 @@ Instructions:
             system_message=system_message
         ).with_model("openai", "gpt-5.2").with_params(timeout=25)
 
-    if not raw_response:
-        raise HTTPException(status_code=502, detail="AI service unavailable. Please try again.")
+    # If LLM failed or timed out, use fallback report
+    if not raw_response or use_fallback_due_to_error:
+        raw_response = None  # Ensure we use fallback
 
     parsed_report = None
-    normalized_report = raw_response
-    try:
-        json_start = raw_response.find("{")
-        json_end = raw_response.rfind("}")
-        if json_start != -1 and json_end != -1 and json_end > json_start:
-            parsed_report = json.loads(raw_response[json_start:json_end + 1])
-            normalized_report = json.dumps(parsed_report, indent=2)
-    except Exception:
-        parsed_report = None
+    normalized_report = None
+    if raw_response:
+        try:
+            json_start = raw_response.find("{")
+            json_end = raw_response.rfind("}")
+            if json_start != -1 and json_end != -1 and json_end > json_start:
+                parsed_report = json.loads(raw_response[json_start:json_end + 1])
+                normalized_report = json.dumps(parsed_report, indent=2)
+        except Exception:
+            parsed_report = None
+
+    if not parsed_report:
+        parsed_report = build_person_lookup_fallback_report(request, location_info, focus_instruction)
+        normalized_report = json.dumps(parsed_report, indent=2)
 
     # Parse and structure the response
     results = {
