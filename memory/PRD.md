@@ -260,6 +260,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Ingested user PDF rulings into legal_knowledge.py (41 case entries)
 - Expanded get_relevant_case_law to use keyword matching and include new rulings
 
+### Session 47: Background Check Fallback Reliability - COMPLETE
+- Added deterministic fallback report for person-lookup when LLM times out or returns invalid JSON
+- Ensures structured report fields (summary, recommendations, verification gaps, search plan/queries, records to request) are always populated
+- Improved prompt schema consistency for person lookup output
+
 ## Remaining Tasks
 
 ### P0 - Background Check Reliability
