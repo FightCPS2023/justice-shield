@@ -265,6 +265,12 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Ensures structured report fields (summary, recommendations, verification gaps, search plan/queries, records to request) are always populated
 - Improved prompt schema consistency for person lookup output
 
+### Session 48: Google Sign-In + Cookie Auth - COMPLETE
+- Added Emergent-managed Google sign-in redirect and callback flow
+- Backend now sets httpOnly session_token cookies on login/signup and validates /api/auth/me via cookies
+- Frontend API calls now send credentials for cookie-based auth
+- Tested: auto_frontend_testing_agent (UI) + testing_agent_v3 (backend auth cookie flow)
+
 ## Remaining Tasks
 
 ### P0 - Background Check Reliability
