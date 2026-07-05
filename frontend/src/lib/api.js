@@ -4,20 +4,13 @@ const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 // API Helper with mobile-friendly token handling
 const api = {
   getToken() {
-    try {
-      return localStorage.getItem('cps_token');
-    } catch (e) {
-      console.error('localStorage access error:', e);
-      return null;
-    }
+    return null;
   },
   
   async request(endpoint, options = {}, retryCount = 0) {
     const { timeoutMs, retryable = true, ...fetchOptions } = options;
-    const token = this.getToken();
     const headers = {
       'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
       ...fetchOptions.headers,
     };
     
@@ -28,18 +21,13 @@ const api = {
       const response = await fetch(`${API_URL}${endpoint}`, {
         ...fetchOptions,
         headers,
+        credentials: 'include',
         signal: controller.signal,
       });
       
       clearTimeout(timeoutId);
       
       if (response.status === 401) {
-        try {
-          localStorage.removeItem('cps_token');
-          localStorage.removeItem('cps_user');
-        } catch (e) {
-          console.error('Failed to clear auth:', e);
-        }
         throw new Error('Session expired. Please log in again.');
       }
       

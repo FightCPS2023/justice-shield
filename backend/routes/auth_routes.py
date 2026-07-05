@@ -9,13 +9,13 @@ from pydantic import BaseModel, EmailStr
 
 from database import get_db
 from auth import get_current_user, create_access_token, verify_password, get_password_hash
-from config import TIER_LEVELS, TIER_FEATURES, VALID_PASSCODES, EMERGENT_LLM_KEY, AUTH_SERVICE_URL
+from config import TIER_LEVELS, TIER_FEATURES, VALID_PASSCODES, AUTH_SERVICE_URL, ACCESS_TOKEN_EXPIRE_DAYS
 from models.schemas import UserCreate, UserLogin, TokenResponse
 
 
 router = APIRouter()
 
-@router.post("/api/auth/signup", response_model=TokenResponse)
+@router.post("/api/auth/signup")
 async def signup(user_data: UserCreate):
     """Register a new user"""
     db = get_db()
@@ -26,10 +26,11 @@ async def signup(user_data: UserCreate):
     if not user_data.accepted_terms or not user_data.accepted_privacy:
         raise HTTPException(status_code=400, detail="You must accept the Terms of Service and Privacy Policy")
 
-    user_id = str(uuid.uuid4())
+    user_id = f"user_{uuid.uuid4().hex[:12]}"
     accepted_at = datetime.now(timezone.utc).isoformat()
     user_doc = {
         "_id": user_id,
+        "user_id": user_id,
         "email": user_data.email,
         "password_hash": get_password_hash(user_data.password),
         "name": user_data.name,
@@ -48,7 +49,7 @@ async def signup(user_data: UserCreate):
     
     access_token = create_access_token({"user_id": user_id, "email": user_data.email})
     
-    return TokenResponse(
+    response_data = TokenResponse(
         access_token=access_token,
         user_id=user_id,
         email=user_data.email,
@@ -60,19 +61,39 @@ async def signup(user_data: UserCreate):
         accepted_at=accepted_at
     )
 
-@router.post("/api/auth/login", response_model=TokenResponse)
+    response = JSONResponse(content=response_data.model_dump())
+    response.set_cookie(
+        key="session_token",
+        value=access_token,
+        max_age=ACCESS_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="none"
+    )
+
+    return response
+
+@router.post("/api/auth/login")
 async def login(user_data: UserLogin):
     """Login and get access token"""
     db = get_db()
     user = await db.users.find_one({"email": user_data.email})
     if not user or not verify_password(user_data.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    
-    access_token = create_access_token({"user_id": user["_id"], "email": user["email"]})
-    
-    return TokenResponse(
+
+    user_id = user.get("user_id") or user.get("_id")
+    if not user_id:
+        raise HTTPException(status_code=500, detail="User record missing identifier")
+
+    if not user.get("user_id"):
+        await db.users.update_one({"_id": user_id}, {"$set": {"user_id": user_id}})
+
+    access_token = create_access_token({"user_id": user_id, "email": user["email"]})
+
+    response_data = TokenResponse(
         access_token=access_token,
-        user_id=user["_id"],
+        user_id=user_id,
         email=user["email"],
         name=user.get("name", "User"),
         tier=user.get("tier", "free"),
@@ -83,14 +104,29 @@ async def login(user_data: UserLogin):
         is_admin=user.get("is_admin", False)
     )
 
+    response = JSONResponse(content=response_data.model_dump())
+    response.set_cookie(
+        key="session_token",
+        value=access_token,
+        max_age=ACCESS_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="none"
+    )
+
+    return response
+
 @router.get("/api/auth/me")
 async def get_me(current_user: dict = Depends(get_current_user)):
     """Get current user profile"""
     db = get_db()
-    user = await db.users.find_one({"_id": current_user["user_id"]}, {"password_hash": 0})
+    user = await db.users.find_one(
+        {"$or": [{"user_id": current_user["user_id"]}, {"_id": current_user["user_id"]}]},
+        {"_id": 0, "password_hash": 0}
+    )
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    user["id"] = user.pop("_id")
     return user
 
 @router.put("/api/auth/profile")
@@ -102,7 +138,7 @@ async def update_profile(update_data: dict, current_user: dict = Depends(get_cur
     update_doc["updated_at"] = datetime.now(timezone.utc).isoformat()
     
     await db.users.update_one(
-        {"_id": current_user["user_id"]},
+        {"$or": [{"user_id": current_user["user_id"]}, {"_id": current_user["user_id"]}]},
         {"$set": update_doc}
     )
     return {"message": "Profile updated"}
@@ -114,7 +150,7 @@ async def accept_terms(current_user: dict = Depends(get_current_user)):
     db = get_db()
     accepted_at = datetime.now(timezone.utc).isoformat()
     await db.users.update_one(
-        {"_id": current_user["user_id"]},
+        {"$or": [{"user_id": current_user["user_id"]}, {"_id": current_user["user_id"]}]},
         {"$set": {"accepted_terms": True, "accepted_privacy": True, "accepted_at": accepted_at, "updated_at": accepted_at}}
     )
     return {"accepted_terms": True, "accepted_privacy": True, "accepted_at": accepted_at}
@@ -124,7 +160,7 @@ async def accept_terms(current_user: dict = Depends(get_current_user)):
 async def get_tier_status(current_user: dict = Depends(get_current_user)):
     """Get user's tier info, usage, and limits"""
     db = get_db()
-    user = await db.users.find_one({"_id": current_user["user_id"]}, {"password_hash": 0})
+    user = await db.users.find_one({"$or": [{"user_id": current_user["user_id"]}, {"_id": current_user["user_id"]}]}, {"_id": 0, "password_hash": 0})
     user_tier = user.get("tier", "free") if user else "free"
     tier_limits = TIER_FEATURES.get(user_tier, TIER_FEATURES["free"])
 
@@ -179,7 +215,7 @@ async def redeem_passcode(request: PasscodeRequest, current_user: dict = Depends
     
     # Upgrade user to enterprise tier
     await db.users.update_one(
-        {"_id": current_user["user_id"]},
+        {"$or": [{"user_id": current_user["user_id"]}, {"_id": current_user["user_id"]}]},
         {"$set": {
             "tier": "enterprise",
             "tier_source": "passcode",
@@ -262,23 +298,26 @@ async def process_google_session(request: Request):
     existing_user = await db.users.find_one({"email": email})
     
     if existing_user:
-        user_id = existing_user["_id"]
+        user_id = existing_user.get("user_id") or existing_user.get("_id")
         user_tier = existing_user.get("tier", "free")
-        # Update user info if needed
+        update_doc = {
+            "name": name,
+            "picture": picture,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        if not existing_user.get("user_id"):
+            update_doc["user_id"] = user_id
         await db.users.update_one(
-            {"_id": user_id},
-            {"$set": {
-                "name": name,
-                "picture": picture,
-                "updated_at": datetime.now(timezone.utc).isoformat()
-            }}
+            {"$or": [{"_id": user_id}, {"user_id": user_id}]},
+            {"$set": update_doc}
         )
     else:
         # Create new user
-        user_id = str(uuid.uuid4())
+        user_id = f"user_{uuid.uuid4().hex[:12]}"
         user_tier = "free"
         await db.users.insert_one({
             "_id": user_id,
+            "user_id": user_id,
             "email": email,
             "name": name,
             "picture": picture,

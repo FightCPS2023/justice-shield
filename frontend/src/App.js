@@ -7,7 +7,7 @@ import {
   CreditCard, Zap, Mic, HelpCircle, ChevronDown, Building2, FlaskConical
 } from 'lucide-react';
 
-import api, { API_URL } from './lib/api';
+import api from './lib/api';
 import AuthContext, { useAuth } from './context/AuthContext';
 
 // Import all page/tab components
@@ -85,52 +85,51 @@ function App() {
 
   useEffect(() => {
     const sessionId = getSessionIdFromUrl();
-    if (sessionId && !hasProcessedOAuth.current) {
-      hasProcessedOAuth.current = true;
-      setProcessingOAuth(true);
-      processGoogleAuth(sessionId);
+    if (sessionId) {
+      if (!hasProcessedOAuth.current) {
+        hasProcessedOAuth.current = true;
+        setProcessingOAuth(true);
+        handleOAuthCallback(sessionId);
+      }
       return;
     }
-    if (!sessionId) {
-      const token = localStorage.getItem('cps_token');
-      const userData = localStorage.getItem('cps_user');
-      if (token && userData) {
-        setUser(JSON.parse(userData));
-        setCurrentView('dashboard');
-      }
-      setLoading(false);
-    }
+    checkAuth();
   }, []);
 
-  const processGoogleAuth = async (sessionId) => {
+  const checkAuth = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/google/session`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: sessionId })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || 'Google authentication failed');
-      localStorage.setItem('cps_token', data.access_token);
-      localStorage.setItem('cps_user', JSON.stringify(data));
-      setUser(data);
+      const userData = await api.get('/api/auth/me');
+      setUser(userData);
       setCurrentView('dashboard');
-      window.history.replaceState(null, '', window.location.pathname);
-      toast.success(`Welcome, ${data.name}! Signed in with Google.`);
     } catch (error) {
-      toast.error(error.message || 'Google sign-in failed. Please try again.');
-      setCurrentView('auth');
+      setUser(null);
+      setCurrentView('landing');
     } finally {
-      setProcessingOAuth(false);
       setLoading(false);
+    }
+  };
+
+  const handleOAuthCallback = async (sessionId) => {
+    if (sessionId) {
+      try {
+        const response = await api.post('/api/auth/google/session', { session_id: sessionId });
+        setUser(response);
+        setCurrentView('dashboard');
+        window.history.replaceState(null, '', window.location.pathname);
+        toast.success('Welcome back!');
+      } catch (error) {
+        toast.error('Google login failed');
+        setCurrentView('auth');
+      } finally {
+        setProcessingOAuth(false);
+        setLoading(false);
+      }
     }
   };
 
   const login = async (email, password) => {
     try {
       const data = await api.post('/api/auth/login', { email, password });
-      localStorage.setItem('cps_token', data.access_token);
-      localStorage.setItem('cps_user', JSON.stringify(data));
       setUser(data);
       setCurrentView('dashboard');
       toast.success('Welcome back to THE CPS PUNISHER!');
@@ -143,8 +142,6 @@ function App() {
   const signup = async (name, email, password, policyData = {}) => {
     try {
       const data = await api.post('/api/auth/signup', { name, email, password, ...policyData });
-      localStorage.setItem('cps_token', data.access_token);
-      localStorage.setItem('cps_user', JSON.stringify(data));
       setUser(data);
       setCurrentView('dashboard');
       toast.success('Account created! Welcome to THE CPS PUNISHER!');
@@ -154,9 +151,12 @@ function App() {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('cps_token');
-    localStorage.removeItem('cps_user');
+  const logout = async () => {
+    try {
+      await api.post('/api/auth/google/logout', {});
+    } catch (e) {
+      // ignore logout errors
+    }
     setUser(null);
     setCurrentView('landing');
     toast.success('Logged out successfully');
@@ -172,10 +172,8 @@ function App() {
     );
   }
 
-  const token = localStorage.getItem('cps_token');
-
   return (
-    <AuthContext.Provider value={{ user, setUser, login, signup, logout, api, token }}>
+    <AuthContext.Provider value={{ user, setUser, login, signup, logout, api }}>
       <div className="min-h-screen bg-black text-white">
         {currentView === 'landing' && <LandingPage onNavigate={setCurrentView} />}
         {currentView === 'auth' && <AuthPage onNavigate={setCurrentView} />}
@@ -254,7 +252,6 @@ function Dashboard({ onNavigate }) {
         accepted_at: response.accepted_at
       };
       setUser(updatedUser);
-      localStorage.setItem('cps_user', JSON.stringify(updatedUser));
       setShowTermsGate(false);
     } catch (error) {
       toast.error('Unable to save acceptance. Please try again.');

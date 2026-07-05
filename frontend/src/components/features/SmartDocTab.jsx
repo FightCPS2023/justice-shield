@@ -10,10 +10,8 @@ import {
   MapPin, Coins, BarChart3, User, ChevronRight, HelpCircle, Bot, RefreshCw,
   Save
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
 
 function SmartDocTab({ selectedCase }) {
-  const { token } = useAuth();
   const [prompt, setPrompt] = useState('');
   const [state, setState] = useState(selectedCase?.state || '');
   const [document, setDocument] = useState('');
@@ -78,9 +76,9 @@ function SmartDocTab({ selectedCase }) {
       const response = await fetch(`${API_URL}/api/ai/smart-document/stream`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           prompt,
           case_id: selectedCase?.id || null,

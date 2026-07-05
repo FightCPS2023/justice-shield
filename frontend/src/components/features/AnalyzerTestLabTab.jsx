@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Download, FlaskConical, UploadCloud } from 'lucide-react';
 import { toast } from 'sonner';
-import api, { API_URL } from '../../lib/api';
+import { API_URL } from '../../lib/api';
 
 function AnalyzerTestLabTab({ selectedCase, onNavigateToDocuments }) {
   const [downloading, setDownloading] = useState(false);
@@ -9,13 +9,8 @@ function AnalyzerTestLabTab({ selectedCase, onNavigateToDocuments }) {
   const handleDownloadSamples = async () => {
     setDownloading(true);
     try {
-      const token = api.getToken ? api.getToken() : localStorage.getItem('cps_token');
-      if (!token) throw new Error('Session expired. Please log in again.');
-
       const response = await fetch(`${API_URL}/api/documents/test-samples/bundle`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        credentials: 'include'
       });
 
       if (!response.ok) {

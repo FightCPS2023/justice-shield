@@ -100,9 +100,8 @@ function NotepadTab({ selectedCase }) {
 
   const exportToPdf = async (entryId) => {
     try {
-      const token = localStorage.getItem('cps_token');
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/export/notepad/${entryId}/pdf`, {
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       });
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -118,13 +117,12 @@ function NotepadTab({ selectedCase }) {
 
   const exportAllToPdf = async () => {
     try {
-      const token = localStorage.getItem('cps_token');
       let url = `${process.env.REACT_APP_BACKEND_URL}/api/export/notepad/all/pdf`;
       if (viewMode === 'case' && selectedCase) {
         url += `?case_id=${selectedCase.id}`;
       }
       const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       });
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);

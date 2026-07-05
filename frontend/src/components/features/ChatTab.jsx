@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import api, { API_URL } from '../../lib/api';
+import { API_URL } from '../../lib/api';
 import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut, LogIn,
@@ -10,10 +10,8 @@ import {
   MapPin, Coins, BarChart3, User, ChevronRight, HelpCircle, Bot, RefreshCw,
   Save
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
 
 function ChatTab({ selectedCase }) {
-  const { api, token } = useAuth();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,12 +30,12 @@ function ChatTab({ selectedCase }) {
 
     try {
       // Use streaming endpoint for real-time response
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai/chat/stream`, {
+      const response = await fetch(`${API_URL}/api/ai/chat/stream`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           message: userMessage,
           session_id: sessionId,

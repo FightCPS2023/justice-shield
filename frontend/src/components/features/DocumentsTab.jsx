@@ -224,12 +224,6 @@ function DocumentsTab({ selectedCase }) {
       return;
     }
     setExporting(true);
-    const token = api.getToken ? api.getToken() : localStorage.getItem('cps_token');
-    if (!token) {
-      toast.error('Session expired. Please log in again.');
-      setExporting(false);
-      return;
-    }
 
     const endpoint = exportType === 'documents'
       ? `/api/export/case/${selectedCase.id}/documents/${format}`
@@ -248,9 +242,9 @@ function DocumentsTab({ selectedCase }) {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(payload)
       });
 
@@ -284,12 +278,6 @@ function DocumentsTab({ selectedCase }) {
     formData.append('doc_type', 'cps_document');
     formData.append('auto_analyze', 'true');
 
-    const token = api.getToken ? api.getToken() : localStorage.getItem('cps_token');
-    if (!token) {
-      throw new Error('Session expired. Please log in again.');
-    }
-
-    const apiBase = (API_URL || '').replace(/\/+$/, '');
     const uploadUrl = apiBase
       ? (apiBase.endsWith('/api') ? `${apiBase}/documents/upload` : `${apiBase}/api/documents/upload`)
       : '/api/documents/upload';
@@ -300,7 +288,7 @@ function DocumentsTab({ selectedCase }) {
       try {
         const response = await fetch(uploadUrl, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
+          credentials: 'include',
           body: formData,
           signal: controller.signal
         });
@@ -539,13 +527,12 @@ function DocumentsTab({ selectedCase }) {
   const reanalyzeDocument = async (docId) => {
     setAnalyzing(true);
     try {
-      const token = localStorage.getItem('cps_token');
       const response = await fetch(`${API_URL}/api/documents/${docId}/reanalyze`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        credentials: 'include'
       });
       
       if (!response.ok) throw new Error('Reanalysis failed');

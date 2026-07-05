@@ -71,7 +71,7 @@ function PersonLookupTab({ selectedCase }) {
       
       const result = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai/court-records-search`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('cps_token')}` },
+        credentials: 'include',
         body: formPayload
       }).then(r => r.json());
       

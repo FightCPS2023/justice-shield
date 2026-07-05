@@ -10,10 +10,8 @@ import {
   MapPin, Coins, BarChart3, User, ChevronRight, HelpCircle, Bot, RefreshCw,
   Save
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
 
 function ResearchTab({ selectedCase }) {
-  const { token } = useAuth();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState('');
   const [loading, setLoading] = useState(false);
@@ -84,9 +82,9 @@ function ResearchTab({ selectedCase }) {
       const response = await fetch(`${API_URL}/api/ai/smart-research/stream`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           query,
           state: state || null,

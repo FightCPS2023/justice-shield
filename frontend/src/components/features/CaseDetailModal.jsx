@@ -74,9 +74,8 @@ function CaseDetailModal({ caseData, onClose, api }) {
             <button 
               onClick={async () => {
                 try {
-                  const token = localStorage.getItem('cps_token');
                   const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/export/case/${caseData.id}/preparation-kit`, {
-                    headers: { Authorization: `Bearer ${token}` }
+                    credentials: 'include'
                   });
                   if (response.ok) {
                     const blob = await response.blob();
