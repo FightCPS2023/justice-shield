@@ -271,6 +271,12 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Frontend API calls now send credentials for cookie-based auth
 - Tested: auto_frontend_testing_agent (UI) + testing_agent_v3 (backend auth cookie flow)
 
+### Session 49: Object Storage for Uploads - COMPLETE
+- Integrated Emergent object storage for all uploads (docs/audio/video/images) with private access
+- Uploads now stored in object storage with storage_path; local file_path unused
+- 100MB max upload enforced
+- Tested: backend object storage upload flow (testing_agent_v3)
+
 ## Remaining Tasks
 
 ### P0 - Background Check Reliability
