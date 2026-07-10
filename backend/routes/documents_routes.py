@@ -12,9 +12,10 @@ import shutil
 import tempfile
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, HTTPException, Depends, File, UploadFile, Form, BackgroundTasks
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
+import requests
 
 from database import get_db
 from auth import get_current_user
@@ -24,6 +25,65 @@ from models.schemas import DocumentCreate
 
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+def _build_storage_path(user_id: str, filename: str) -> str:
+    ext = os.path.splitext(filename)[1].lower().lstrip('.') if filename else ''
+    ext = ext or 'bin'
+    return f"{APP_NAME}/uploads/{user_id}/{uuid.uuid4()}.{ext}"
+
+
+def _soft_delete_path(file_path: str):
+    if not file_path:
+        return
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+    except Exception:
+        pass
+
+STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
+EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
+APP_NAME = "cps-punisher"
+storage_key = None
+
+
+def init_storage():
+    global storage_key
+    if storage_key:
+        return storage_key
+    if not EMERGENT_KEY:
+        raise HTTPException(status_code=500, detail="Storage key not configured")
+    resp = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_KEY}, timeout=30)
+    resp.raise_for_status()
+    storage_key = resp.json().get("storage_key")
+    if not storage_key:
+        raise HTTPException(status_code=500, detail="Storage init failed")
+    return storage_key
+
+
+def put_object(path: str, data: bytes, content_type: str) -> Dict[str, Any]:
+    key = init_storage()
+    resp = requests.put(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key, "Content-Type": content_type or "application/octet-stream"},
+        data=data,
+        timeout=120
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
+def get_object(path: str) -> tuple[bytes, str]:
+    key = init_storage()
+    resp = requests.get(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key},
+        timeout=60
+    )
+    resp.raise_for_status()
+    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
+
 
 router = APIRouter()
 
@@ -74,7 +134,7 @@ ULTIMATE_CPS_STRUCTURED_GUIDANCE = """
 Identity directive (structured output): You are the Ultimate CPS Defense AI. Because output must be structured JSON, include the opening statement inside the summary or disclaimer fields and ask for jurisdiction there if missing. Return only the required JSON format.
 """
 
-MAX_UPLOAD_SIZE = 500 * 1024 * 1024  # 500MB max upload
+MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100MB max upload
 MAX_DOC_SIZE = 100 * 1024 * 1024
 MAX_ARCHIVE_FILES = 75
 MAX_SPREADSHEET_ROWS = 2000
@@ -261,6 +321,26 @@ async def _process_analysis_job(doc_id: str):
     await db.documents.update_one({"_id": doc_id}, {"$set": {"analysis_status": "analyzing", "analysis_error": None}})
 
     content = doc.get("content", "")
+    temp_dir = None
+    if doc.get("storage_path"):
+        try:
+            stored_content, _ = get_object(doc.get("storage_path"))
+            temp_dir = tempfile.mkdtemp(prefix="cps_upload_")
+            safe_name = _safe_filename(doc.get("filename", "document"))
+            ext = doc.get("file_type") or os.path.splitext(safe_name)[1]
+            if ext and not safe_name.lower().endswith(ext):
+                safe_name = f"{safe_name}{ext}"
+            file_path = os.path.join(temp_dir, safe_name)
+            with open(file_path, "wb") as temp_file:
+                temp_file.write(stored_content)
+            doc["file_path"] = file_path
+        except Exception as fetch_err:
+            await db.documents.update_one(
+                {"_id": doc_id},
+                {"$set": {"analysis_status": "error", "analysis_error": f"Storage fetch failed: {fetch_err}"}}
+            )
+            return
+
     if doc.get("source") == "upload" and doc.get("extraction_status") != "complete":
         await db.documents.update_one(
             {"_id": doc_id},
@@ -297,6 +377,11 @@ async def _process_analysis_job(doc_id: str):
                 )
         except Exception:
             pass
+        if temp_dir:
+            try:
+                shutil.rmtree(temp_dir)
+            except Exception:
+                pass
 
     try:
         await log_doc_event(doc_id, "AI analysis started")
@@ -433,8 +518,18 @@ async def process_zip_archive(parent_doc_id: str, case_id: str, user_id: str, fi
     errors = []
 
     extract_dir = Path(tempfile.mkdtemp(prefix="cps_zip_"))
+    temp_file_path = None
     try:
-        with zipfile.ZipFile(file_path, 'r') as zip_ref:
+        if file_path and file_path.startswith(f"{APP_NAME}/"):
+            stored_content, _ = get_object(file_path)
+            temp_file_path = extract_dir / f"{uuid.uuid4()}.zip"
+            with open(temp_file_path, "wb") as temp_file:
+                temp_file.write(stored_content)
+            zip_source = temp_file_path
+        else:
+            zip_source = file_path
+
+        with zipfile.ZipFile(zip_source, 'r') as zip_ref:
             members = [m for m in zip_ref.infolist() if not m.is_dir()]
             for member in members[:MAX_ARCHIVE_FILES]:
                 try:
@@ -450,7 +545,10 @@ async def process_zip_archive(parent_doc_id: str, case_id: str, user_id: str, fi
                     with zip_ref.open(member) as source, open(extracted_path, 'wb') as target:
                         shutil.copyfileobj(source, target)
 
-                    file_size = extracted_path.stat().st_size
+                    file_bytes = extracted_path.read_bytes()
+                    storage_path = _build_storage_path(user_id, safe_name)
+                    put_result = put_object(storage_path, file_bytes, "application/octet-stream")
+                    file_size = int(put_result.get("size", len(file_bytes)))
                     extracted_text = f"[File: {safe_name}]\n\nExtraction queued for background processing."
                     file_category = get_file_category(file_ext)
                     extraction_status = "queued"
@@ -462,7 +560,8 @@ async def process_zip_archive(parent_doc_id: str, case_id: str, user_id: str, fi
                         "user_id": user_id,
                         "title": f"{safe_name}",
                         "filename": safe_name,
-                        "file_path": str(extracted_path),
+                        "file_path": None,
+                        "storage_path": storage_path,
                         "file_size": file_size,
                         "file_type": file_ext,
                         "file_category": file_category,
@@ -523,8 +622,8 @@ async def process_zip_archive(parent_doc_id: str, case_id: str, user_id: str, fi
         await log_doc_event(parent_doc_id, f"Archive extraction failed: {str(e)}", "error")
     finally:
         try:
-            if os.path.exists(file_path):
-                os.remove(file_path)
+            if temp_file_path and os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
         except Exception:
             pass
         try:
@@ -583,9 +682,6 @@ async def delete_document(doc_id: str, current_user: dict = Depends(get_current_
 
 
 # ============== DOCUMENT UPLOAD & AI ANALYSIS ==============
-
-UPLOAD_DIR = "/tmp/cps_uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Maximum file size for Whisper transcription (from config)
 
@@ -1040,17 +1136,20 @@ async def upload_document(
     if file_ext not in allowed_extensions:
         raise HTTPException(status_code=400, detail=f"File type {file_ext} not supported. Allowed: PDF, DOC/DOCX, RTF, ODT, HTML, MD, CSV, XLS/XLSX, PPT/PPTX, images, audio, video, ZIP")
 
-    # Save file to disk (streamed)
-    print(f"[UPLOAD] Saving file: {file.filename}")
-    file_id = str(uuid.uuid4())
-    file_path = os.path.join(UPLOAD_DIR, f"{file_id}{file_ext}")
+    # Upload file to object storage
+    print(f"[UPLOAD] Uploading file to object storage: {file.filename}")
     max_size = get_max_size_for_ext(file_ext)
     try:
-        file_size = await save_upload_to_disk(file, file_path, max_size)
+        content = await file.read()
+        if len(content) > max_size:
+            raise HTTPException(status_code=400, detail=f"File too large. Maximum {max_size // (1024*1024)}MB for this file type.")
+        storage_path = _build_storage_path(current_user["user_id"], file.filename)
+        put_result = put_object(storage_path, content, file.content_type or "application/octet-stream")
+        file_size = int(put_result.get("size", len(content)))
     except HTTPException:
-        if os.path.exists(file_path):
-            os.remove(file_path)
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
     file_category = get_file_category(file_ext)
     extracted_text = ""
@@ -1083,7 +1182,8 @@ async def upload_document(
         "user_id": current_user["user_id"],
         "title": title,
         "filename": file.filename,
-        "file_path": file_path,
+        "file_path": None,
+        "storage_path": storage_path,
         "file_size": file_size,
         "file_type": file_ext,
         "file_category": file_category,
@@ -1104,18 +1204,16 @@ async def upload_document(
 
     print("[UPLOAD] Inserting doc into DB...")
     await db.documents.insert_one(doc)
-    await log_doc_event(doc_id, "Upload received")
+    await log_doc_event(doc_id, "Upload received (object storage)")
     print(f"[UPLOAD] DB insert done for {doc_id}")
-    
-    # Run AI analysis in background if requested (don't block upload response)
-    analysis_result = None
+
     if file_ext in ARCHIVE_EXTENSIONS:
         background_tasks.add_task(
             process_zip_archive,
             doc_id,
             case_id,
             current_user["user_id"],
-            file_path,
+            storage_path,
             file.filename,
             doc_type,
             auto_analyze
@@ -1141,12 +1239,14 @@ async def upload_document(
                 "message": "Document queued for AI analysis...",
                 "queue_position": queue_position
             }
-    
+    else:
+        analysis_result = None
+
     doc["id"] = doc.pop("_id")
     if analysis_result and analysis_result.get("status"):
         doc["analysis_status"] = analysis_result.get("status")
     doc["analysis_result"] = analysis_result
-    
+
     print(f"[UPLOAD] Returning response for {doc['id']}")
     return doc
 

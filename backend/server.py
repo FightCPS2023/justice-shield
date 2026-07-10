@@ -28,6 +28,11 @@ ENCODERS_BY_TYPE[ObjectId] = str
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    try:
+        from routes.documents_routes import init_storage
+        init_storage()
+    except Exception as e:
+        print(f"[Startup] Storage init failed: {e}")
     yield
     await close_db()
 

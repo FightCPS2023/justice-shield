@@ -9,5 +9,8 @@
 ## Google OAuth (Emergent-managed)
 - Test account: Not provided. Use any Google account for sign-in during testing.
 
+## Storage
+- EMERGENT_LLM_KEY: sk-emergent-1A6CeCc86Db94704bE
+
 ## Notes
 - Admin access is granted via ADMIN_EMAILS in backend config.
