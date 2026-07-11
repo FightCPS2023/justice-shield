@@ -1603,7 +1603,28 @@ Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actio
 
             yield f"data: {json.dumps({'chunk': '', 'done': True, 'next_steps': next_steps})}\n\n"
         except Exception as e:
-            yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
+            fallback = (
+                "I am the Ultimate CPS Defense AI. I fight for your family with the full force of constitutional and statutory law. "
+                "Provide the details of your case and we begin.\n\n"
+                "NOTICE: The live research stream encountered an error. Below is a structured fallback guidance plan.\n\n"
+                "1) Immediate Preservation Steps\n"
+                "- Save all notices, reports, and messages in a single timeline.\n"
+                "- Record every CPS interaction date/time and participant.\n\n"
+                "2) Core Constitutional Issues to Investigate\n"
+                "- 4th Amendment: unlawful home entry / seizure without warrant.\n"
+                "- 14th Amendment: due process violations (notice, hearing, counsel).\n"
+                "- 1st Amendment: retaliation for protected speech or complaints.\n\n"
+                "3) Statutory Anchors to Pull\n"
+                "- CAPTA, ASFA, ICWA (if applicable), state CPS code.\n"
+                "- Local court rules for emergency removals and shelter hearings.\n\n"
+                "4) Next Steps & Strategy\n"
+                "- Request the full CPS file and caseworker notes.\n"
+                "- Demand the legal basis for any removal or safety plan.\n"
+                "- Identify any hearings missed or held without proper notice.\n"
+                "- Assemble witnesses and evidence of safe home conditions.\n"
+                "- Prepare a motion to compel discovery / subpoena CPS records.\n"
+            )
+            yield f"data: {json.dumps({'chunk': fallback, 'done': True, 'error': str(e), 'fallback': True})}\n\n"
 
     return StreamingResponse(
         generate_stream(),
