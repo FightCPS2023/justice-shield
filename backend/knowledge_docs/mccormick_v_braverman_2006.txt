@@ -1,0 +1,392 @@
+No. 04-1708United States Court of Appeals, Sixth Circuit
+McCormickv.Braverman
+451 F.3d 382 (6th Cir. 2006)Decided Jun 20, 2006
+No. 04-1708.
+Submitted: February 2, 2006.
+Decided and Filed: June 20, 2006. Petition forRehearing Denied En Banc, October 13, 2006.
+CLAY, Circuit Judge.
+Appeal from the United States District Court forthe Eastern District of Michigan, Victoria A.Roberts, J. *383383
+ON BRIEF: Eric A. Braverman, Lincoln Park,Michigan, Margaret A. Nelson, Office of theAttorney General, Lansing, Michigan, David M.Findling, Findling Law Firm, Royal Oak,Michigan, for Appellees. Linda McCormick,Livonia, Michigan, pro se.
+Before: COLE, CLAY, and GIBBONS, CircuitJudges.
+*384384
+OPINION
+Plaintiff Linda McCormick appeals the March 17,2004 order of the United States District Court forthe Eastern District of Michigan dismissingPlaintiff's cases against Defendants Eric A.Braverman ("Braverman"), et al. and CitizensInsurance Company of America ("CitizensInsurance"), et al. for lack of subject matterjurisdiction. Plaintiff claims violations of 42U.S.C. § 1983, the First, Fourth, Fifth, andFourteenth Amendments of the United StatesConstitution, Michigan common and statutory law,
+and the Michigan constitution. Although Plaintiffsets forth a myriad of claims, her underlyingcontention is that she is the owner of certain realproperty, and that Defendants have acted illegallyin interfering with her ownership. For thefollowing reasons, we AFFIRM the district courtorder. *385385
+I. BACKGROUND
+In 1976, Mary G. McCormick ("Mary") filed acomplaint of divorce against her husband EdwardJ. McCormick ("Edward"). On July 19, 1976,Mary and Edward entered into a reconciliationagreement. In consideration of Mary's promise towithdraw her complaint of divorce and to attempta reconciliation for a period of one year, Edwardconveyed his interest in marital real propertylocated at Henry Ruff Road in Livonia, Michigan("Henry Ruff Property") to Mary. On July 19,1976, Edward conveyed his interest in the HenryRuff Property via quitclaim deed to Mary. Plaintiffalleges that on July 19, 1976, as a result of thereconciliation agreement, Judge Colombo of theWayne County Circuit Court dismissed thecomplaint of divorce with the consent of theparties.
+On July 20, 1977 Mary entered into an agreementwith her daughter Linda McCormick, Plaintiff inthe instant case. Mary promised Plaintiff that shewould repay Plaintiff for any house payments,taxes, maintenance costs, and any other paymentsconcerning the Henry Ruff Property that Plaintiffmade. The agreement secured the indebtedness bypromising to pay Plaintiff for all sums provided ifand when the Henry Ruff Property was sold.
+1
+
+Plaintiff alleges that after July 1976, Plaintiffmade all of the mortgage payments on the HenryRuff Property.
+On March 21, 1980, Mary conveyed the HenryRuff Property via quitclaim deed to herself and herdaughters Plaintiff, Nancy D. McCormick("Nancy"), and Frances S. McCormick("Frances"), in joint tenancy. On April 25, 1980,Frances conveyed her interest to the remainingjoint tenants. On July 26, 1984, Nancy conveyedher interest to the remaining joint tenants. OnMarch 19, 1986, Mary conveyed her interest viaquitclaim deed to Plaintiff. Plaintiff gave nominalconsideration for the conveyance. As of March 19,1986, Plaintiff was the sole title holder of the HuffRoad Property.1
+1The circuit court later determined that the
+conveyances by Frances and Nancy were
+fraudulent, as their signatures had been
+forged on the deeds. See infra.
+In 1984, Mary filed a second complaint of divorceagainst Edward. On August 3, 1987, the circuitcourt entered a default judgment of divorce.McCormick v. McCormick, No. 193967, 1997 WL33344872, at *1 (Mich.Ct.App. Aug.1, 1997)(unpublished opinion). The circuit court found thatthe Henry Ruff Property was marital property tobe divided between Mary and Edward. Maryappealed from the property provision of thedivorce judgment. Id. As a condition of theappeal, the circuit court issued an injunction whichfroze marital assets in certain bank accounts. Id.
+2
+2No party contested the validity of the
+divorce itself.
+On September 9, 1991, the Michigan court ofappeals affirmed in part and reversed in part thecircuit court's judgment of divorce between Maryand Edward. Specifically, the court of appealsreversed the circuit court's decision to distributethe Henry Ruff Property as marital property. Thecourt of appeals found that the circuit court hadfailed to make any findings with respect to Mary's
+property interest, if any, in the Henry RuffProperty. The circuit court failed to even addresswhether the 1976 reconciliation agreement wasvalid. The court of appeals remanded the case tothe circuit court to determine whether the 1976reconciliation agreement and any of thesubsequent transfers were valid, as there was aquestion of whether the transfers *386 were part ofa conspiracy to deprive Edward of his rightfulmarital property. The court of appeals also advisedthat third parties whose property rights might beaffected, such as Plaintiff, "usually must be addedto the action, and at a minimum, should have theopportunity to testify at trial. In most cases, thirdparties should also be represented by counsel."(J.A. at 38 (citation omitted).)
+386
+On October 24, 1992, before the remand hadoccurred, Edward died. McCormick, 1997 WL33344872, at *1.
+After Edward's death, Mary filed a motion todismiss the post-appeal proceeding withoutnotifying Edward's estate. Id. On March 15, 1993,Judge Gillis of the Wayne County Circuit Courtdismissed the post-appeal proceeding and liftedthe injunction on the marital bank accounts. Maryand Plaintiff subsequently withdrew money fromthose accounts.
+Upon learning of the dismissal, Edward's estatemoved for reinstatement of the post-appealproceeding. On May 21, 1993, Judge Talbot of theWayne County Circuit Court set aside the March15, 1993 dismissal and reinstated the post-appealproceeding, and he ordered the return of themoney withdrawn from the marital bankaccounts. Judge Talbot also transferred the case tothe Wayne County Probate Court.
+3
+3Mary refused to return the $21,000 that she
+and Plaintiff had removed from the
+accounts. McCormick, 1997 WL
+33344872, at *1. The circuit court held
+Mary in contempt, and she was jailed for
+five months. Id. Although she continued to
+2
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+refuse to return the money, the circuit court
+released Mary and dismissed the contempt
+proceedings. Id.
+On February 16, 1994, Judge Mack of the WayneCounty Probate Court entered an order of divorcebetween Mary and Edward. Judge Mack actedpursuant to the remand instructions of theSeptember 9, 1991 order of the Michigan court ofappeals. Judge Mack awarded the Henry RuffProperty to Edward's estate, on the grounds thatMary "refused to purge herself of the contempt ofthis Court, has willfully secreted assets of themarital estate, and has violated Orders of theWayne County Circuit Court." (J.A. at 43.) JudgeMack did not base his decision on an analysis ofthe validity of the 1976 reconciliation agreementor any of the subsequent transfers.
+4
+4This order is somewhat unclear, as Mary
+and Edward were uncontestedly divorced
+as of August 3, 1987; only the division of
+property remained at issue.
+In 1994, after the judgment of the probate court,Plaintiff filed a quiet title claim against Edward'sestate with respect to the Henry Ruff Property.McCormick v. McCormick, No. 84-422014-DO, at7 (Wayne County Circuit Court Jul. 13, 2004).The circuit court held that Plaintiff had noownership interest in the Henry Ruff Property. Id.at 8. The circuit court found that the 1976conveyance from Edward to Mary was voidbecause it lacked consideration and because it wasagainst public policy. Id. The circuit court foundthat the conveyances from Frances and Nancy tothe joint tenants were void because the signatureson those deeds were forged. Id. The circuit courtalso found that the March 19, 1986 transfer fromMary to Plaintiff was void because it "was anattempt to conceal the marital assets from thedivorce court and a violation of the injunctiveorders against the transfer *387 of maritalproperty." Id. Both the Michigan court of appealsand the Michigan Supreme Court denied Plaintiff'sappeal. Id. at Exhibit A.
+5
+387
+5Plaintiff's 1994 case is Linda McCormick v.
+Estate of Edward McCormick, No. 94-
+403973, filed in the Wayne County Circuit
+Court. The Joint Appendix does not
+contain any record of this decision; only a
+subsequent circuit court case explains what
+occurred at that proceeding.
+On February 21, 1997, the Michigan court ofappeals vacated the May 21, 1993 order to theextent it transferred the post-appeal proceeding tothe probate court. McCormick v. McCormick, 221Mich.App. 672, 562 N.W.2d 504, 508 (1997). Thecourt of appeals also vacated the judgment of theprobate court. Id. The court of appeals found thatJudge Talbot could properly reinstate the post-appeal proceeding, as the marriage was dissolvedand the divorce was final before Edward's death.Id. at 507. The court of appeals, however, foundthat Judge Talbot improperly transferred the caseto the probate court. The remand instructions fromthe September 9, 1991 order of the court ofappeals instructed the circuit court to determinethe ownership interests in the Henry RuffProperty, but instead of following this instruction,the circuit court passed the case on to the probatecourt. Id. at 507-08. The court of appealsremanded the case to the circuit court with theinstructions given in the September 9, 1991 order.Id. at 508-09. The court of appeals offered thefollowing guidance:
+[W]e note that [Mary's] continued refusalto answer questions about the funds sheremoved from bank accounts in violationof injunctive orders provides an equitableground for granting judgment against her.Thus, the circuit court would be permittedto award [the Henry Ruff Property] to[Edward's] estate, subject to the propertyinterest of . . . Linda McCormick. . . .
+Id. at 509.
+On remand, the circuit court found that the HenryRuff Property was the sole property of theEdward's estate, subject to a life estate for Mary,
+3
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+so long as Mary obeyed certain conditions, such asinsuring the property in the name of Edward'sestate. McCormick v. McCormick, No. 84-422014-DO, at 4 (Wayne County Circuit Court Sep. 10,1999). The Michigan court of appeals affirmed thedecision. McCormick v. Braverman, No. 222415,2002 WL 1065641, at *1 (Mich.Ct.App. May 24,2002) (unpublished opinion). On March 5, 2003,the Michigan Supreme Court affirmed the court ofappeals decision with respect to the Henry RuffProperty, but it vacated other portions of thedecision that have no bearing on the instant case.McCormick v. Braverman, 468 Mich. 858, 657N.W.2d 118, 118 (2003). The supreme court thenremanded the case to the circuit court to addressthose vacated portions. Id. Thus, after almosttwenty years of litigation, the state courts finallyagreed that Plaintiff had no property interest in theHenry Ruff Property, and that the Henry RuffProperty belonged to Edward's estate subject to alife estate for Mary.
+On December 18, 2003, a fire destroyed theinterior of the Henry Ruff Property. Edward'sestate moved the circuit court for appointment of areceiver, as Mary had failed to insure the propertyin the name of Edward's estate and had thusextinguished her life estate.
+On January 23, 2004, Judge Youngblood of theWayne County Circuit Court appointed DefendantDavid Findling ("Findling") as the receiver for theHenry Ruff Property. Judge Youngblood alsoappointed Defendant Findling as the receiver forthe proceeds of the insurance policy for the HenryRuff Property, as the property had suffereddamage from the fire, although the policy wasunder Plaintiff's name. In addition, JudgeYoungblood directed Defendant Findling to makesure that all necessary repairs were made to theHenry Ruff Property. *388388
+On February 19, 2004, Plaintiff filed suit in theUnited States District Court for the EasternDistrict of Michigan. The named Defendants wereEric A. Braverman ("Braverman"), the
+administrator of Edward's estate; Michael E.McCormick ("McCormick"), the son of Edwardand the former administrator of Edward's estate;and the justices of the Michigan Supreme Court("Michigan Justices"). In Count I, Plaintiff allegesthat Defendants Braverman and McCormickseized the Henry Ruff Property under color ofstate law through "fraud, fabricated information,withholding of relevant material, . . . falsetestimony, malicious, reckless unreasonable acts,"in violation of the First, Fifth, and FourteenthAmendment. Plaintiff seeks a declaratoryjudgment that she is the sole rightful owner of theHenry Ruff Property, and she seeks compensatoryand punitive damages. In Count II, Plaintiffalleges that she was not made a party to thelitigation that resulted in the January 23, 2004order of receivership. Plaintiff seeks a declaratoryjudgment that the January 23, 2004 order ofreceivership is void. In Count III, Plaintiff makesthe same allegations of fraud against DefendantsMcCormick and Braverman, but in greater detail.She alleges that Defendants McCormick andBraverman engaged in various frauds andmisrepresentations from 1993 onward in order tocontinue litigation with respect to the divorce ofMary and Edward. Plaintiff seeks the Henry RuffProperty, as well as compensatory and punitivedamages. In Count IV, Plaintiff makes the samefactual allegations of fraud and misrepresentationson the part of Defendants McCormick andBraverman in continuing litigation of the divorceof Mary and Edward, with a state common lawclaim of abuse of process. In Count V, Plaintiffclaims that MCL § 700.1303, a statute whichgives the Michigan probate court jurisdiction overcertain issues, is unconstitutionally vague andover-broad. This complaint was filed as Case No.04-70613.
+On the same day, Plaintiff filed a complaint in theUnited States District Court against DefendantFindling and Defendant Citizens InsuranceCompany of America. In Count I, Plaintiff allegesthat the order of receivership seizes the Henry
+4
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+Ruff Property in violation of the First, Fourth,Fifth, and Fourteenth Amendments. Plaintiff alsoalleges that the order illegally seizes the proceedsof the insurance policy on the Henry RuffProperty, because Plaintiff is the sole policyholder. In Count II, Plaintiff alleges thatDefendant Findling has scheduled a search of theHenry Ruff Property, and that the search would bein violation of the Fourth Amendment. In CountIII, Plaintiff alleges that the order of receivership,and Defendant Findling's resulting actions, arebased on fraud and misrepresentation, in violationof the Fifth and Fourteenth Amendments. Thiscomplaint was filed as Case No. 04-70622.
+6
+6Plaintiff does not allege who committed the
+fraud and misrepresentation.
+On March 16, 2004, the district court dismissedboth of Plaintiff's complaints due to lack of subjectmatter jurisdiction based on the Rooker-Feldmandoctrine. The court found that the Case No. 04-70613 complaint was an appeal of the state circuitcourt's order of receivership and thusimpermissibly before a federal district court. Thecourt also found that the state probate court orderof February 16, 1994 extinguished Mary's interestin the Henry Ruff Property and thus Plaintiff didnot have an interest in the Henry Ruff Property.With respect to Case No. 04-70622, *389 the courtconcluded that "the thrust of the Complaint is that[Plaintiff] is the sole title holder to [the HenryRuff Property] and that her claim to that titlecannot be attacked. The Rooker-Feldman doctrineprecludes this Court from reviewing decisions ofstate courts, and as such, dismissal of [Plaintiff'scomplaint] is appropriate as well." (J.A. at 77.)
+7
+389
+7We note that the state probate court's order
+did not extinguish Mary's, and therefore
+Plaintiff's, interest in the Henry Ruff
+Property, as that order was subsequently
+vacated. Instead, it was the circuit court's
+decision in Plaintiff's quiet title action that
+found that Plaintiff had no property interest
+in the Henry Ruff Property.
+Plaintiff timely filed a notice of appeal.
+II. DISCUSSION
+A. THE ROOKER-FELDMAN DOCTRINE 1.Standard of Review
+This Court reviews de novo the district courtruling that the Rooker-Feldman doctrine precludedsubject matter jurisdiction. Gilbert v. Ferry, 401F.3d 411, 416 (6th Cir. 2005) (citation omitted).
+2. Analysis
+The district court erred when it held that theRooker-Feldman doctrine precluded jurisdictionfor all counts in the Case No. 04-70613 complaintand for Count III in the Case No. 04-70622complaint. The district court did not err indismissing on Rooker-Feldman grounds Counts Iand II in the Case No. 04-70622 complaint.
+a. Legal Framework
+In Rooker v. Fidelity Trust Co., the plaintiff filedsuit in district court to have a state trial courtjudgment, which was affirmed by the statesupreme court, declared null and void. 263 U.S.413, 414, 44 S.Ct. 149, 68 L.Ed. 362 (1923). Theplaintiff alleged that the state court judgmentviolated the Contract Clause and the FourteenthAmendment's Due Process and Equal ProtectionClauses. Id. at 414-15, 44 S.Ct. 149. The districtcourt dismissed the complaint based on a lack ofsubject matter jurisdiction, and the Supreme Courtaffirmed. Id. at 415-16, 44 S.Ct. 149. The Courtfound that the plaintiff's complaint was in factrequesting the district court to exercise appellatereview of the state court's judgment. Id. The Courtnoted that the district court's jurisdiction wasstrictly original, and that only the Supreme Courtcould exercise appellate jurisdiction over statecourt decisions. Id. at 416.
+In District of Columbia Court of Appeals v.Feldman, 460 U.S. 462, 103 S.Ct. 1303, 75L.Ed.2d 206 (1983), the Supreme Court reiteratedthe holding that a district court could not exerciseappellate review of a state court decision. In that
+5
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+case, the plaintiff Feldman applied to the bar ofthe District of Columbia. Id. at 465, 103 S.Ct.1303. At the time of his application, the plaintiffwas already a member of the bars of Virginia andMaryland. Id. The bar admissions committeedenied the plaintiff's application, as the District ofColumbia Court of Appeals, pursuant to itsrulemaking authority, had previously adopted Rule46 I(b)(3), which stated that a bar applicant couldnot be admitted without having graduated from anapproved law school, and the plaintiff had notdone so. Id. at 464-65, 103 S.Ct. 1303. After thisdenial, the plaintiff petitioned the District ofColumbia Court of Appeals to be admitted to thebar without examination or, at the least, to beallowed to sit for the bar examination. Id. at 466,103 S.Ct. 1303. The plaintiff argued that he wasmore than adequately qualified for admission, andhe noted that the District of Columbia Court *390
+of Appeals had previously granted waivers of Rule46 I(b)(3). Id. at 467, 103 S.Ct. 1303. The courtdenied the plaintiff's petition. The plaintiff Hickeyhad a similar experience; the plaintiff did notgraduate from an approved law school andpetitioned the District of Columbia Court ofAppeals for a waiver of Rule 46 I(b)(3). Id. at 471,103 S.Ct. 1303. The plaintiff argued that hecontinued his education at his non-approved lawschool, as opposed to transferring to an approvedschool, because the state court had routinelygranted waivers of the rule to graduates of acertain non-approved school. Id. The plaintiff alsoargued that he was more than adequately qualifiedfor admission. Id. at 471-72, 103 S.Ct. 1303. Thecourt denied the plaintiff's petition.
+390
+The plaintiff Feldman filed suit in district court,alleging that the state court's refusal to waive Rule46 I(b)(3) and its failure to judge the plaintiff'sindividual qualifications violated the FifthAmendment and the Sherman Act. Id. at 468, 103S.Ct. 1303. The plaintiff Hickey filed an almostidentical suit in federal court, alleging that thestate court's decision was in violation of the FifthAmendment and federal antitrust laws. Id. at 472,
+103 S.Ct. 1303. The district courts in both casesdismissed the plaintiffs' suits, on the ground thatplaintiffs sought appellate review of the statecourt's decisions. Id. at 470, 473, 103 S.Ct. 1303.The D.C. Circuit, addressing both cases in a singleopinion, affirmed the dismissal of the antitrustclaims on the ground that they were insubstantial,but reversed the dismissal of the constitutionalclaims. Id. at 474, 103 S.Ct. 1303. The courtopined that the state court proceedings withrespect to the petitions for waiver were notjudicial, so that the district courts did havejurisdiction. Id. at 474-75, 103 S.Ct. 1303.
+The Supreme Court vacated the D.C. Circuit'sjudgment and remanded the case. The Court notedthat a district court was without jurisdiction toreview the final determinations of a state court injudicial proceedings, id. at 476, 103 S.Ct. 1303;the Court then found that the state courtproceedings with respect to the plaintiffs' petitionsfor waiver were judicial, as they "involved a`judicial inquiry' in which the court was calledupon to investigate, declare, and enforce`liabilities as they [stood] on present or past factsand under laws supposed already to exist,'" id. at479, 103 S.Ct. 1303 (alteration in original)(quoting Prentis v. Atlantic Coast Line Co., 211U.S. 210, 226, 29 S.Ct. 67, 53 L.Ed. 150 (1908)).The Court therefore ruled that to the extent theplaintiffs sought review of the denial of theirpetitions, the district courts lacked subject matterjurisdiction. Id. at 482, 103 S.Ct. 1303. On theother hand, to the extent the plaintiff challengedthe constitutionality of Rule 46 I(b)(3), the districtcourts had subject matter jurisdiction. Id. at 482-83, 103 S.Ct. 1303.
+Turning to the plaintiffs' complaints, the Courtheld that the district courts were withoutjurisdiction to hear the plaintiffs' claims that "theDistrict of Columbia Court of Appeals actedarbitrarily and capriciously in denying theirpetitions for waiver and that the court actedunreasonably and discriminatorily in denying theirpetitions." Id. at 486, 103 S.Ct. 1303. The Court
+6
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+reasoned that such claims were "inextricablyintertwined with the District of Columbia Court ofAppeals' decisions, in judicial proceedings, todeny the [plaintiffs'] petitions," such that theclaims called for the district courts to review thedecisions of the state court. Id. at 486-87, 103S.Ct. 1303. The Court held, however, that thedistrict courts did have subject matter jurisdictionover the plaintiffs' claims that Rule 46 I(b)(3) wasunconstitutional. *391391
+The Court mentioned the phrase "inextricablyintertwined" in one other portion of the Feldmanopinion; in footnote 16, the Court expresseddisapproval of the Fifth Circuit's analysis inDasher v. Supreme Court of Texas, 658 F.2d 1045(5th Cir. 1981). There, the Fifth Circuit held that aplaintiff, who in state proceedings had been deniedthe opportunity to take the Texas state barexamination, and who had not raised federalconstitutional arguments in those stateproceedings, could raise federal constitutionalarguments in district court to attack the judgmentof the state court. Id. at 1051. Importantly, theplaintiff in that case claimed that the state supremecourt violated the Fourteenth Amendment's EqualProtection and Due Process Clauses in denyingher application to take the bar examination. Id. at1048. In rejecting the Fifth Circuit's analysis, theSupreme Court noted:
+If the constitutional claims presented to aUnited States District Court areinextricably intertwined with the statecourt's denial in a judicial proceeding of aparticular plaintiff's application foradmission to the state bar, then the DistrictCourt is in essence being called upon toreview the state court decision. This theDistrict Court may not do.
+Feldman, 460 U.S. at 483 n. 16, 103 S.Ct. 1303.
+After Feldman, the courts of appeals took varyingapproaches in giving content to the phrase"inextricably intertwined" in applying the Rooker-Feldman doctrine. While the Supreme Court used
+that phrase in Feldman to twice describe aplaintiff's complaint of harm from a state courtdecision itself, many circuits, including this one,gave an expansive definition to that phrase. SeeExecutive Arts Studio, Inc. v. City of GrandRapids, 391 F.3d 783, 793 (6th Cir. 2004) ("[A]federal claim is inextricably intertwined with astate court judgment and thus implicates Rooker-Feldman when the federal claim succeeds only tothe extent that the state court wrongly decided theissues before it." (internal quotations and citationomitted).).
+Recognizing the inconsistency in application ofthe Rooker-Feldman doctrine amongst the lowercourts, the Supreme Court clarified the scope ofthe doctrine in Exxon Mobil Corp v. Saudi BasicIndus. Corp., 544 U.S. 280, 125 S.Ct. 1517, 161L.Ed.2d 454 (2005). There, Exxon and SaudiBasic were involved in joint ventures, and adispute arose as to certain royalties charged bySaudi Basic. Id. at 1524-25. Saudi Basic filed suitin state court, seeking a declaratory judgment thatthe royalties were valid, and, shortly after, Exxonfiled suit in federal district court, alleging thatSaudi Basic had overcharged Exxon. Id. at 1525.Saudi Basic filed a motion to dismiss in districtcourt, which the court denied. Id. Saudi Basicappealed the decision, and the Third Circuitdismissed Exxon's complaint on Rooker-Feldmangrounds. Id. The court found that the districtcourt's subject matter jurisdiction terminated whenthe state court entered a judgment. Id.
+The Supreme Court reversed. The Court began itsanalysis with these words:
+7
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+Rooker and Feldman exhibit the limitedcircumstances in which this Court'sappellate jurisdiction over state-courtjudgments . . . precludes a United Statesdistrict court from exercising subject-matter jurisdiction. . . . In both cases, thelosing party in state court filed suit infederal court after the state proceedingsended, complaining of an injury caused bythe state-court judgment and seekingreview and rejection of that judgment.Plaintiffs in both cases, alleging federal-question jurisdiction, called upon theDistrict Court to *392 overturn an injuriousstate-court judgment.
+392
+Id. at 1526 (emphasis supplied). The Court notedthat the concurrent jurisdiction of state and federalcourts had long been recognized, and that theentry of judgment by the state court before thefederal court in such a situation would not triggerRooker-Feldman. Id. at 1526-27. Instead,preclusion law would govern. Id. at 1527. TheCourt also addressed the circumstance where theplaintiff initiated a federal claim after a state courtdecision:
+Nor does § 1257 stop a district court fromexercising subject-matter jurisdictionsimply because a party attempts to litigatein federal court a matter previouslylitigated in state court. If a federal plaintiff"present[s] some independent claim, albeitone that denies a legal conclusion that astate court has reached in a case to whichhe was a party . . ., then there isjurisdiction and state law determineswhether the defendant prevails underprinciples of preclusion."
+Id. (alteration in the original) (quoting GASHAssoc. v. Village of Rosemont, 995 F.2d 726, 728(7th Cir. 1993)).
+b. Application to This Case
+The Rooker-Feldman doctrine does not precludesubject matter jurisdiction in this case of Counts Ithrough V. in Case No. 04-70613 and Count III inCase No. 04-70622. In these counts, Plaintiff doesnot complain of "injuries caused by the state courtjudgments," id. at 1521-22; she does not claim thatthe state court judgments, with respect to Mary'sdivorce and to the order of receivership, in and ofthemselves violate the federal Constitution orfederal law, unlike the plaintiffs in Rooker and inFeldman. Instead, Plaintiff claims that certainDefendants acted illegally and that a state statuteis unconstitutionally vague and overbroad. InCount I of Case No. 04-70613, Plaintiff claimsthat Defendants Braverman and McCormickcommitted fraud and misrepresentation in thedivorce proceedings between Mary and Edward'sestate. In Count II, Plaintiff claims thatDefendants Braverman and McCormickintentionally did not make Plaintiff a party to thelitigation concerning the order of receivership, sothat she did not have an opportunity to assert herproperty right over the Henry Ruff Property. InCount III, Plaintiff repeats her claim thatDefendants Braverman and McCormickcommitted fraud and misrepresentation in thedivorce proceedings between Mary and Edward'sestate. In Count IV, Plaintiff claims thatDefendants Braverman and McCormickcommitted an abuse of process in the divorceproceedings between Mary and Edward's estate. InCount V, Plaintiff claims that MCL § 700.1303 isunconstitutionally vague and overbroad. In CountIII of Case No. 04-70622, Plaintiff claims that theorder of receivership was obtained through fraudand misrepresentation, though she does notspecify who committed these actions.
+None of these claims assert an injury caused bythe state court judgments; Plaintiff does not claimthat the state court judgments themselves areunconstitutional or in violation of federal law.Instead, Plaintiff asserts independent claims thatthose state court judgments were procured bycertain Defendants through fraud,
+8
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+misrepresentation, or other improper means, andthat a state statute is vague and overbroad.Certainly, these independent claims may deny alegal conclusion of the state court, i.e., the HenryRuff Property is the sole property of Edward'sestate; however, this fact does not lead to adivestment of subject matter jurisdiction in thefederal courts. Instead, the Supreme Court hasinstructed that preclusion law is the appropriatesolution for these independent claims. It bearsrepeating that "[i]f a *393 federal plaintiff`present[s] some independent claim, albeit onethat denies a legal conclusion that a state court hasreached in a case to which he was a party . . ., thenthere is jurisdiction and state law determineswhether the defendant prevails under principles ofpreclusion.'" Id. at 1527 (citation omitted).
+393
+This Court recently addressed similar argumentsin Todd v. Weltman, Weinberg, Reis Co., L.P.A.,434 F.3d 432 (6th Cir. 2006). In that case, thedefendant debt collector sought to garnish thebank account of the plaintiff debtor. Id. at 435.The defendant filed an affidavit in state court,required by state law, stating that it had areasonable belief that the target assets were notexempt from garnishment. Id. The state courtfound that the affidavit was valid and froze theplaintiff's bank account. Id. At a subsequenthearing in state court, the plaintiff proved that theassets in the bank account were exempt, and thestate court released the account. Id. The plaintiffthen filed suit in federal court against thedefendant, alleging that the defendant had lied inits affidavit in violation of the Fair DebtCollection Practices Act. Id. at 434. The defendantargued, among other things, that the district courtdid not have jurisdiction over the claim because ofRooker-Feldman. This Court disagreed and heldthat Rooker-Feldman did not apply: "Plaintiff heredoes not complain of injuries caused by this statecourt judgment, as the plaintiffs did in Rooker andFeldman. Instead, after the state court judgment,Plaintiff filed an independent federal claim thatPlaintiff was injured by Defendant when he filed a
+false affidavit." Id. at 437. Likewise, the majorityof Plaintiff's claims in this case assert injuriescaused by Defendants Braverman's andMcCormick's alleged wrongdoing before the statecourt, or by a vague and overbroad state statute;these claims do not assert injuries from the statecourt judgments.
+The question naturally arises as how todifferentiate between a claim that attacks a statecourt judgment, which is within the scope of theRooker-Feldman doctrine, and an independentclaim, over which a district court may assertjurisdiction. We find an appropriate rule of thumbin the Fourth Circuit's decision in Davani v.Virginia Dep't of Transp., 434 F.3d 712 (4th Cir.2006). That court explained:
+The plaintiffs in Rooker and Feldmansought redress for an injury allegedlycaused by the state-court decision itself —in Rooker, the plaintiff sought to overturn astate-court judgment in federal districtcourt, and in Feldman, the plaintiffs soughtto overturn a judgment rendered by theDistrict of Columbia court in federaldistrict court. In Barefoot [a pre- ExxonMobil case], by contrast, we extended theRooker-Feldman doctrine to apply insituations where the plaintiff, after losingin state court, seeks redress for an injuryallegedly caused by the defendant'sactions.
+Id. at 717. The inquiry then is the source of theinjury the plaintiff alleges in the federal complaint.If the source of the injury is the state courtdecision, then the Rooker-Feldman doctrine wouldprevent the district court from assertingjurisdiction. If there is some other source of injury,such as a third party's actions, then the plaintiffasserts an independent claim. The Second Circuitemploys a similar inquiry. See Hoblock v. AlbanyCounty Bd. of Elections, 422 F.3d 77, 87-88 (2dCir. 2005) ("[F]ederal plaintiffs are not subject tothe Rooker-Feldman bar unless they complain of
+9
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+an injury caused by a state judgment."). Indifferentiating between a barred claim and a validclaim under Rooker-Feldman, the Second Circuitprovided two instructive examples: *394394
+Suppose a state court, based purely onstate law, terminates a father's parentalrights and orders the state to take custodyof his son. If the father sues in federalcourt for the return of his son on groundsthat the state judgment violates his federalsubstantive due-process rights as a parent,he is complaining of an injury caused bythe state judgment and seeking its reversal.This he may not do, regardless of whetherhe raised any constitutional claims in statecourt, because only the Supreme Courtmay hear appeals from state-courtjudgments.
+Further, by focusing on the requirementthat the state-court judgment be the sourceof the injury, we can see how a suit askinga federal court to "den[y] a legalconclusion" reached by a state court couldnonetheless be independent for Rooker-Feldman purposes. Suppose a plaintiffsues his employer in state court forviolating both state anti-discrimination lawand Title VII and loses. If the plaintiff thenbrings the same suit in federal court, hewill be seeking a decision from the federalcourt that denies the state court'sconclusion that the employer is not liable,but he will not be alleging injury from thestate judgment. Instead, he will be alleginginjury based on the employer'sdiscrimination. The fact that the state courtchose not to remedy the injury does nottransform the subsequent federal suit onthe same matter into an appeal, forbiddenby Rooker-Feldman, of the state-courtjudgment.
+Id. Of course, there are certain exceptions to thisrule of thumb. For example, if a third party'sactions are the product of a state court judgment,then a plaintiff's challenge to those actions are infact a challenge to the judgment itself. See id. at88 (finding that the plaintiffs' challenge to acounty board of election's refusal to tally certainabsentee ballots was in fact a challenge to the statecourt judgment that the ballots were invalid). Thekey point is that the source of the injury must befrom the state court judgment itself; a claimalleging another source of injury is an independentclaim. As explained previously, Counts I throughV. in Case No. 04-70613 and Count III in CaseNo. 04-70622 all assert injury from a source otherthan the state court judgments; they are thereforeindependent claims outside the scope of theRooker-Feldman doctrine.
+To the extent that Defendants argue that theseclaims, even though they do not assert injury fromthe state court judgments, are "inextricablyintertwined" with those judgments so as to fallwithin the reach of Rooker-Feldman, thatargument must fail. We first note that it was thisexact language that was the source of the pre-Exxon Mobil woes as to the application of Rooker-Feldman. In addition, the Supreme Court used thephrase "inextricably intertwined" in Feldman todescribe a claim where the plaintiff asserted aninjury from the state court judgment itself; theclaims of the plaintiffs Feldman and Hickey thatthe state court judgments were in violation of theFifth Amendment were inextricably intertwinedwith the state court judgments, Feldman, 460 U.S.at 486-87, 103 S.Ct. 1303; and the plaintiff's claimin Dasher that the state court judgment was inviolation of the Fourteenth Amendment wasinextricably intertwined with the state courtjudgment, id. at 483, 103 S.Ct. 1303 n. 16. InExxon, the Supreme Court implicitly repudiatedthe circuits' post- Feldman use of the phrase"inextricably intertwined" to extend Rooker-Feldman to situations were the source of theinjury was not the state court judgment. In short,
+10
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+the phrase "inextricably intertwined" onlydescribes the conclusion that a claim asserts aninjury whose source *395 is the state courtjudgment, a claim that is thus barred by Rooker-Feldman. See Davani, 434 F.3d at 719; Hoblock,422 F.3d at 86-87 ("But the phrase `inextricablyintertwined' has no independent content. It issimply a descriptive label attached to claims thatmeet the requirements outlined in Exxon Mobil.").
+395
+We stress that the Rooker-Feldman doctrine is nota panacea to be applied whenever state courtdecisions and federal court decisions potentially oractually overlap. The Supreme Court made clearin Exxon Mobil that the doctrine is confined tothose cases exemplified by Rooker and Feldmanthemselves: when a plaintiff asserts before afederal district court that a state court judgmentitself was unconstitutional or in violation offederal law. In such a situation, the plaintiff seeksappellate review of the state court judgment, andthe federal district court has no subject matterjurisdiction over such an action. Counts I throughV. in Case No. 04-70613 and Count III in CaseNo. 04-70622 do not fall within this category, sothat the district court had jurisdiction over theseclaims.
+On the other hand, in Counts I and II in Case No.04-70622, Plaintiff alleges that the order ofreceivership in and of itself is illegal and causesPlaintiff harm. In Count I, Plaintiff alleges that "[s]aid order [of receivership], under color of law,seizes Plaintiff's real estate . . . in violation ofPlaintiff's United States Constitutional rightsunder the First, Fourth, Fifth, and FourteenthAmendments." Under the same count, Plaintiffalleges that "[s]aid order, absent any jurisdiction,is also illegally seizing the proceed's of Plaintiff'shomeowners [sic] policy, of which Plaintiff is thesole policy holder and interfering with her rightsto have said premises repaired from a recent fire."Like the plaintiffs in Rooker and Feldman,Plaintiff "complain[s] of injuries caused by thestate court judgment rendered before the districtcourt proceeding commenced and inviting district
+court review and rejection of those judgments."Exxon Mobil, 125 S.Ct. at 1521-22. The countdoes not allege any independent claim; but rather,the count alleges that the state court order itselfwas illegal and harmed Plaintiff. Likewise, CountII alleges that a search authorized by the order ofreceivership would be illegal and would causeharm to Plaintiff. Thus, Plaintiff challenges thelegality of the order itself.
+The problem with applying Rooker-Feldman todivest jurisdiction of these two counts is that thedoctrine only applies to bar a federal plaintiff'sclaim when she was a party in the state courtaction. Johnson v. De Grandy, 512 U.S. 997, 1006,114 S.Ct. 2647, 129 L.Ed.2d 775 (1994). Plaintiffwas not a party to the litigation surrounding theorder of receivership; the parties involved wereMary, Defendant Braverman, and DefendantFindling. The question then becomes whether theRooker-Feldman doctrine should apply to afederal plaintiff in privity with a party in the statecourt proceeding. The Second and Third Circuitshave answered in the affirmative, although onlythe Second Circuit's *396 decision was filedsubsequent to the Supreme Court's decision inExxon Mobil. See Hoblock, 422 F.3d at 89-90;Marran v. Marran, 376 F.3d 143, 151-53 (3d Cir.2004). See also Bates v. Jones, 131 F.3d 843, 862(9th Cir. 1997) (en banc) (Fletcher, J., concurringin part and dissenting in part) ("Because it is adoctrine concerning the integrity of individualjudgments, Rooker-Feldman . . . is applicable onlywhen the parties in a second action were alsoparties, or in privity with parties, in a previousstate court proceeding.").
+8
+396
+8This Court has defined a privy as either (1)
+a successor in interest; (2) a nonparty who
+controlled the original suit; or (3) a
+nonparty who is adequately represented by
+a party in the original suit. Becherer v.
+Merrill Lynch, Pierce, Fenner, and Smith,
+Inc., 193 F.3d 415, 422 (6th Cir. 1999).
+Plaintiff's ownership interest and her
+consequent interest in the litigation is
+11
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+wholly dependent on the conveyance of the
+Henry Ruff Property from Mary to
+Plaintiff, so she is a successor in interest.
+Moreover, Plaintiff's interest was
+adequately represented by Mary, as the two
+parties' interests in the Henry Ruff Property
+completely overlap.
+This is admittedly a close issue. In Exxon Mobil,the Supreme Court stated that the Rooker-Feldmandoctrine barred federal claims of "state-courtlosers." 125 S.Ct. at 1521. Narrowly interpreted,this language could mean that only actual partiesin the state court proceeding may be affected bythe doctrine. Under a more moderateinterpretation, a person in privity with the actualparty who loses in state court may be deemed astate-court loser. We find that the latterinterpretation is appropriate. The Rooker-Feldmandoctrine prevents a party who loses in state courtfrom appealing that decision to the lower federalcourts, as only the Supreme Court has appellatejurisdiction over state court decisions. It would beinconsistent to disallow the party in the state suitto raise a federal claim but to allow his privy tobring the exact same claim. A state party may notcircumvent the Article III jurisdictional provisionssimply by substituting a privy's name for his ownin the federal claim. This is especially truebecause the source of the injury to the state courtloser and his privy would be one and the same: thestate court judgment. In other words, a federalclaim that alleged injury from a state courtjudgment would seek review of that state courtjudgment, regardless if the state court loser or hisprivy filed the federal claim. The district courtmay not entertain jurisdiction over a claim thatcalls for appellate review, no matter who raisesthat claim. We hold that Plaintiff is in privy withMary and is a state-court loser, so that the Rooker-Feldman doctrine bars jurisdiction over Counts Iand II in Case No. 04-70622.
+9
+9We note that although the general rule is
+that only a party to a case may seek
+appellate review of the judgment in that
+case, "it is widely recognized that in a
+proper case a nonparty may be sufficiently
+interested in a judgment to permit him or
+her to take an appeal from it. This
+requirement is satisfied by a showing of
+privity with a party to the case." 5
+Am.Jur.2d Appellate Review § 265. Thus,
+a federal claim filed by a privy of the state
+court loser that asserts an injury caused by
+the state court judgment could properly be
+characterized as an appeal from that
+judgment.
+B. COLLATERAL ESTOPPEL
+1. Preservation of the Issue
+This Court may affirm the decision of the districtcourt on any grounds, including one notconsidered by the district court. United StatesPostal Serv. v. Nat'l Ass'n of Letter Carriers, 330F.3d 747, 750 (6th Cir. 2003). That said, collateralestoppel is an affirmative defense which must beraised by the defendant. Smith v. Sushka, 117 F.3d965, 969 (6th Cir. 1997). Defendant Bravermanraised the affirmative defense in this case.  *397
+2. Standard of Review
+10397
+10We acknowledge that Defendant
+Braverman did not use the phrase
+"collateral estoppel" in his answer;
+however, this omission is not dispositive.
+Defendant Braverman asserted "That the
+Wayne County Circuit Court, The
+Michigan Court of Appeals and The
+Michigan Supreme Court have issued
+orders or opinions that have determined the
+title to the real estate in question," and
+"That your defendant, Eric A. Braverman,
+did not seize any property belonging to
+your plaintiff." (J.A. at 125.) These
+affirmative defenses assert that the state
+courts have already found that the Henry
+Ruff Property does not belong to Plaintiff;
+thus, the core of these defenses is that
+Plaintiff is estopped from relitigating her
+ownership interest in the Henry Ruff
+Property. The purpose in requiring a
+defendant to plead an affirmative defense is
+12
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+to give the plaintiff notice and a chance to
+respond. Sushka, 117 F.3d at 969. While
+Defendant Braverman's answer did not
+contain the phrase "collateral estoppel," his
+answer gave sufficient notice to Plaintiff of
+that defense.
+The district court did not address the issue ofcollateral estoppel, so there is no district courtanalysis to review on this issue.
+3. Analysis
+Plaintiff is collaterally estopped from raising all ofthe remaining claims. The Michigan state courtshave already determined that Plaintiff has noownership interest in the Henry Ruff Property.
+a. Legal Framework
+The Full Faith and Credit Act, 28 U.S.C. § 1738,requires the federal courts to give state courtjudgments the same preclusive effect that the statewould afford such judgments. Exxon Mobil, 125S.Ct. at 1527 (quoting Parsons Steel, Inc. v. FirstAlabama Bank, 474 U.S. 518, 523, 106 S.Ct. 768,88 L.Ed.2d 877 (1986)). Michigan has threerequirements for collateral estoppel: "(1) `aquestion of fact essential to the judgment musthave been actually litigated and determined by avalid and final judgment'; (2) `the same partiesmust have had a full [and fair] opportunity tolitigate the issue'; and (3) `there must be mutualityof estoppel.'" Monat v. State Farm Ins. Co., 469Mich. 679, 677 N.W.2d 843, 845-46 (2004)(alteration in the original) (quoting Storey v.Meijer, Inc., 431 Mich. 368, 429 N.W.2d 169, 172n. 3 (1988)). With respect to the third requirement,Michigan allows the defensive use of collateralestoppel against a prior plaintiff. Id. at 850-51.
+b. Application to This Case
+The Michigan state courts have alreadydetermined that Plaintiff does not have anownership interest in the Henry Ruff Property. In1994, in Case No. 94-403973, Plaintiff filed aquiet title action against Edward's estate toestablish her ownership interest in the Henry Ruff
+Property. The circuit court found that Plaintiff hadno ownership interest in the Henry Ruff Property,because the 1976 conveyance from Edward toMary was invalid, the conveyances from Nancyand Frances were invalid, and the conveyancefrom Mary to Plaintiff was invalid.  See *398
+supra. The state court of appeals and the supremecourt denied Plaintiff's appeals. See supra.
+11398
+11Contrary to Plaintiff's belief, the 1976
+dismissal of Mary's divorce complaint
+against Edward does not have any
+preclusive effect as to the ownership of the
+Henry Ruff Property. With respect to
+collateral estoppel, the issue of ownership
+was not actually litigated; there was no
+final judgment, as the divorce complaint
+was dismissed through the consent of the
+parties; and there was no full and fair
+opportunity to litigate the issue, as the
+issue was never litigated.  
+With respect to res judicata, under
+Michigan law, "a second action is barred
+when (1) the first action was decided on
+the merits, (2) the matter contested in the
+second action was or could have been
+resolved in the first, and (3) both actions
+involve the same parties or their privies."
+Sewell v. Clean Cut Mgmt., Inc., 463 Mich.
+569, 621 N.W.2d 222, 225 (2001). The
+1976 dismissal of Mary's divorce
+complaint has no res judicata effect
+because the case was not decided on the
+merits; instead, both Mary and Edward
+agreed to dismiss the case. Plaintiff
+repeatedly alleges that no appeal was taken
+from the 1976 decision; however, both
+parties agreed to dismiss the complaint, so
+an appeal from that decision would be most
+unlikely.  
+Likewise, the March 15, 1993 dismissal of
+Mary's post-appeal proceeding does not
+have any preclusive effect as to the
+ownership of the Henry Ruff Property.
+With respect to collateral estoppel, the
+issue of ownership was not actually
+litigated; there was no final judgment, as
+13
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+the divorce complaint was dismissed by
+Mary, the party who brought the appeal;
+and there was no full and fair opportunity
+to litigate the issue, as the issue was never
+litigated. With respect to res judicata, the
+1993 dismissal was not a decision on the
+merits, and the issue of ownership was not
+resolved by the 1993 dismissal.
+Collateral estoppel applies in the instant case.With respect to the aforementioned requirements,(1) Plaintiff's ownership interest in the Henry RuffProperty was an issue that was essential to thecircuit court's judgment, and the issue waslitigated and determined by a valid and finaljudgment; (2) Plaintiff had a full and fairopportunity to litigate the issue;  and (3)mutuality is not required, as parties not bound bythe prior judgment may use collateral estoppeldefensively against the prior plaintiff.  SeeMonat, 677 N.W.2d at 845-46, 850-51.
+12
+13
+12Plaintiff never alleges any fraud,
+misrepresentation, or other impropriety
+with respect to her quiet title action. Her
+complaints only allege such conduct in
+connection with the divorce proceedings
+between Mary and Edward's estate and
+with the order of receivership. Count V. of
+Case No. 04-70613, which alleges that
+MCL § 700.1303 is unconstitutional, does
+not specify in which proceeding the
+contested state statute was used; however,
+because Plaintiff never so much as
+mentions her quiet title action in either her
+complaint or brief, we assume that Count
+V addresses a proceeding other than the
+quiet title action.
+13Thus, Defendants who were not parties to
+the prior litigation, such as the Michigan
+Justices, could raise collateral estoppel
+defensively against Plaintiff.
+A factual predicate of all of Plaintiff's remainingclaims is that she has an ownership interest in theHenry Ruff Property.  The problem, however, is
+that the state courts have already decided that shehas no such interest. Thus, collateral estoppelprecludes all of Plaintiff's remaining claims.
+14
+14Count I of Case No. 04-70613 alleges that
+Defendants Braverman and McCormick
+committed fraud and misrepresentation to
+continue the divorce proceedings and to
+seize the Henry Ruff Property from
+Plaintiff; Count II alleges that Defendants
+Braverman and McCormick did not make
+Plaintiff a party to the litigation
+surrounding the order of receivership, so as
+to seize the Henry Ruff Property from
+Plaintiff; Count III duplicates the
+allegations of Count I; Count IV alleges
+that Defendants McCormick and
+Braverman committed an abuse of process
+in seizing the Henry Ruff Property from
+Plaintiff; and Count V alleges that an
+unconstitutionally vague and over-broad
+state statute impermissibly allowed
+interference with Plaintiff's ownership of
+the Henry Ruff Property. Count III of Case
+No. 04-70622 alleges that Defendant
+Findling seized the Henry Ruff Property
+from Plaintiff based upon an order of
+receivership that was obtained by fraud and
+misrepresentation.
+C. THE MICHIGAN SUPREMECOURT JUSTICES
+1. Preservation of the Issue
+This Court may affirm the decision of the districtcourt on any grounds, including one notconsidered by the district court. Nat'l Ass'n ofLetter Carriers, 330 F.3d at 750. DefendantsMichigan Justices raised a defense under FederalRule of Civil Procedure 12(b)(6).
+2. Standard of Review
+The district court made no findings with respect toDefendants Michigan Justices' 12(b)(6) motion, sothere is no district court analysis to review on thisissue. In analyzing a 12(b)(6) motion, this Courtaccepts as true all well-pleaded factual allegations,
+14
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+and this Court views the complaint in the lightmost favorable to the *399 plaintiff. Benzon v.Morgan Stanley Distributors, Inc., 420 F.3d 598,602 (6th Cir. 2005).
+399
+3. Analysis
+The Rooker-Feldman doctrine and collateralestoppel adequately dispose of Plaintiff's claims.We address the issue of Plaintiff's purported claimagainst Defendants Michigan Justices to note thatPlaintiff fails to state a claim against DefendantsMichigan Justices.
+Plaintiff mentions Defendants Michigan Justicesonly once in her complaint;  in the Parties andJurisdiction section, Plaintiff alleges, "Defendants[Michigan Justices] was [sic] at all times relevanthereto Justice's [sic] sitting for the MichiganSupreme Court, were state actors under color oflaw and acted wholly without subject matterjurisdiction. . . . Plaintiff seeks no monetarydamages against these defendant's [sic]." (J.A. at6-7).
+15
+15Plaintiff only lists Defendants Michigan
+Justices in her complaint in Case No. 04-
+70613.
+Plaintiff does not allege any action on the part ofDefendants Michigan Justices; she only allegesthat they were without subject matter jurisdiction,ostensibly in the divorce proceedings betweenMary and Edward. Assuming arguendo that theseDefendants were without jurisdiction, this factonly goes to whether these Defendants haveabsolute immunity when sued for their judicialacts.  See Stump, 435 U.S. at 356-57, 98 S.Ct.1099 (explaining that the common law absoluteimmunity for judges may be inapplicable when ajudge acts in the clear absence of all jurisdiction).Plaintiff still needs to allege that these Defendants,while without jurisdiction, engaged in conduct thatwas actionable. Plaintiff makes no suchallegations, either factual or legal. As a result,Plaintiff does not make any cognizable claim
+against Defendants Michigan Justices. Moreover,Plaintiff never mentions these Defendants in thecounts of her complaint; Counts I through IVspecifically address Defendants Braverman andMcCormick, and Count V addresses noDefendants at all. Finally, while Plaintiff statesthat she does not seek monetary damages fromthese Defendants, she never states what relief shedoes in fact seek from them. In short, Plaintiffonly alleges that Defendants Michigan Justiceswere without jurisdiction, and while this maynegate absolute immunity when these Defendantsare sued for their judicial acts, it does not state aclaim.
+16
+16A state judge has two potential forms of
+immunity. First, under the common law, all
+judges of superior or general jurisdiction
+are absolutely immune for their judicial
+acts. Stump v. Sparkman, 435 U.S. 349,
+355-56, 98 S.Ct. 1099, 55 L.Ed.2d 331
+(1978). Second, under the Eleventh
+Amendment, a state official has absolute
+immunity when sued in her official
+capacity. Will v. Michigan Dept. of State
+Police, 491 U.S. 58, 71, 109 S.Ct. 2304,
+105 L.Ed.2d 45 (1989). Both forms of
+absolute immunity are subject to certain
+exceptions. Because the issue of whether
+either form of immunity applies depends
+on the nature of the claim, and because
+Plaintiff makes no claim in her complaint,
+we will refrain from analyzing immunity.
+III. CONCLUSION
+For the foregoing reasons, we AFFIRM the orderof the district court.
+*400400
+15
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)
+
+16
+McCormick v. Braverman     451 F.3d 382 (6th Cir. 2006)

@@ -11,7 +11,7 @@ from fastapi.responses import StreamingResponse
 from database import get_db
 from auth import get_current_user
 from config import EMERGENT_LLM_KEY, COURTLISTENER_API_KEY, FEATURE_CREDIT_COSTS
-from legal_knowledge import get_relevant_case_law
+from legal_knowledge import get_relevant_case_law, get_knowledge_library_summary, get_knowledge_library_citations, get_knowledge_library_matches, get_knowledge_library_context
 from .courtlistener_routes import STATES_INFO, STATE_CPS_DATABASE
 from .caselaw_routes import CPS_EXPERT_SYSTEM_PROMPT
 from utils.credits import (
@@ -1081,6 +1081,15 @@ async def ai_generate_document(request: DocumentGeneratorRequest, current_user: 
     # Get user info
     user = await db.users.find_one({"_id": current_user["user_id"]})
     
+    knowledge_summary = get_knowledge_library_summary()
+    knowledge_citations = get_knowledge_library_citations()
+    knowledge_matches = get_knowledge_library_matches(request.document_type or "")
+    knowledge_match_block = ""
+    if knowledge_matches:
+        knowledge_match_block = "\n\nRelevant Library Matches:\n" + "\n".join([
+            f"- {item['title']} ({item['citation']}): {item['summary']}" for item in knowledge_matches
+        ])
+
     system_message = f"""{ULTIMATE_CPS_IDENTITY}
 
 You are THE CPS PUNISHER professional legal document generator. Generate court-ready legal documents for {case.get('state', 'the jurisdiction')}.
@@ -1106,6 +1115,12 @@ Defense Strategies:
 
 CASE MEMORY:
 {memory_context or 'No stored memory yet'}
+
+Internal Library Summary:
+{knowledge_summary}
+
+Internal Library Citations:
+{knowledge_citations}{knowledge_match_block}
 
 REQUIREMENTS:
 1. Use proper legal formatting for {case.get('state', 'the jurisdiction')}
@@ -1386,6 +1401,16 @@ Pre-loaded State Law ({request.state}):
         "defense_strategy": "Build a COMPREHENSIVE defense strategy including: Legal Arguments, Supporting Case Law, Counter-Arguments to CPS, Evidence Needed, Motions to File, and Step-by-Step Action Plan."
     }
 
+
+    knowledge_summary = get_knowledge_library_summary()
+    knowledge_citations = get_knowledge_library_citations()
+    knowledge_matches = get_knowledge_library_matches(request.query)
+    knowledge_match_block = ""
+    if knowledge_matches:
+        knowledge_match_block = "\n\nRelevant Library Matches:\n" + "\n".join([
+            f"- {item['title']} ({item['citation']}): {item['summary']}" for item in knowledge_matches
+        ])
+
     system_message = f"""{ULTIMATE_CPS_IDENTITY}
 
 You are THE CPS PUNISHER — the most advanced AI legal research engine for CPS defense, modeled after Cetient AI.
@@ -1398,6 +1423,13 @@ You have instant access to:
 - Section 1983 civil rights case law
 - ADA compliance requirements for CPS
 - Black's Law Dictionary definitions
+- Internal CPS Punisher Document Library (summarized + indexed)
+
+Internal Library Summary:
+{knowledge_summary}
+
+Internal Library Citations:
+{knowledge_citations}{knowledge_match_block}
 {state_law_context}{cases_context}{case_context}
 
 CRITICAL INSTRUCTIONS:
@@ -1406,7 +1438,8 @@ CRITICAL INSTRUCTIONS:
 - Structure output with clear headers and sections
 - Make it court-ready and professionally formatted
 - Include both federal and state-specific citations
-- Flag any time-sensitive deadlines or procedural requirements""" + ADA_CROSS_REFERENCE
+- Flag any time-sensitive deadlines or procedural requirements
+- Use the Internal Library to anchor arguments and cite supporting sources when applicable""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -1416,13 +1449,15 @@ CRITICAL INSTRUCTIONS:
 
     instruction = research_type_instructions.get(request.research_type, research_type_instructions["comprehensive"])
     state_note = f"\n\nJurisdiction: {request.state}" if request.state else "\n\nProvide federal law and note where state-specific research is needed."
+    knowledge_context = get_knowledge_library_context(request.query)
+    knowledge_block = "KNOWLEDGE LIBRARY CONTEXT:\n" + knowledge_context + "\n" if knowledge_context else ""
 
     prompt = f"""RESEARCH QUERY: {request.query}
 {state_note}
 
 {instruction}
 
-Format your response as a structured legal research brief with numbered sections, citations, and clear actionable recommendations.
+{knowledge_block}Format your response as a structured legal research brief with numbered sections, citations, and clear actionable recommendations.
 Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actions."""
 
     try:
@@ -1529,6 +1564,15 @@ Pre-loaded State Law ({request.state}):
         "defense_strategy": "Build a COMPREHENSIVE defense strategy including: Legal Arguments, Supporting Case Law, Counter-Arguments to CPS, Evidence Needed, Motions to File, and Step-by-Step Action Plan."
     }
 
+    knowledge_summary = get_knowledge_library_summary()
+    knowledge_citations = get_knowledge_library_citations()
+    knowledge_matches = get_knowledge_library_matches(request.query)
+    knowledge_match_block = ""
+    if knowledge_matches:
+        knowledge_match_block = "\n\nRelevant Library Matches:\n" + "\n".join([
+            f"- {item['title']} ({item['citation']}): {item['summary']}" for item in knowledge_matches
+        ])
+
     system_message = f"""{ULTIMATE_CPS_IDENTITY}
 
 You are THE CPS PUNISHER — the most advanced AI legal research engine for CPS defense, modeled after Cetient AI.
@@ -1541,6 +1585,13 @@ You have instant access to:
 - Section 1983 civil rights case law
 - ADA compliance requirements for CPS
 - Black's Law Dictionary definitions
+- Internal CPS Punisher Document Library (summarized + indexed)
+
+Internal Library Summary:
+{knowledge_summary}
+
+Internal Library Citations:
+{knowledge_citations}{knowledge_match_block}
 {state_law_context}{cases_context}{case_context}
 
 CRITICAL INSTRUCTIONS:
@@ -1550,7 +1601,8 @@ CRITICAL INSTRUCTIONS:
 - Make it court-ready and professionally formatted
 - Include both federal and state-specific citations
 - Flag any time-sensitive deadlines or procedural requirements
-- Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actions""" + ADA_CROSS_REFERENCE
+- Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actions
+- Use the Internal Library to anchor arguments and cite supporting sources when applicable""" + ADA_CROSS_REFERENCE
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -1560,13 +1612,15 @@ CRITICAL INSTRUCTIONS:
 
     instruction = research_type_instructions.get(request.research_type, research_type_instructions["comprehensive"])
     state_note = f"\n\nJurisdiction: {request.state}" if request.state else "\n\nProvide federal law and note where state-specific research is needed."
+    knowledge_context = get_knowledge_library_context(request.query)
+    knowledge_block = "KNOWLEDGE LIBRARY CONTEXT:\n" + knowledge_context + "\n" if knowledge_context else ""
 
     prompt = f"""RESEARCH QUERY: {request.query}
 {state_note}
 
 {instruction}
 
-Format your response as a structured legal research brief with numbered sections, citations, and clear actionable recommendations.
+{knowledge_block}Format your response as a structured legal research brief with numbered sections, citations, and clear actionable recommendations.
 Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actions."""
 
     async def generate_stream():
@@ -1702,6 +1756,15 @@ EVIDENCE ({len(evidence)} items):
         if sdata:
             state_law = f"\nState Law ({case_state}): Agency={sdata.get('agency','')}, Statutes={sdata.get('statutes','')}"
 
+    knowledge_summary = get_knowledge_library_summary()
+    knowledge_citations = get_knowledge_library_citations()
+    knowledge_matches = get_knowledge_library_matches(request.prompt or request.document_type or "")
+    knowledge_match_block = ""
+    if knowledge_matches:
+        knowledge_match_block = "\n\nRelevant Library Matches:\n" + "\n".join([
+            f"- {item['title']} ({item['citation']}): {item['summary']}" for item in knowledge_matches
+        ])
+
     system_message = f"""{ULTIMATE_CPS_IDENTITY}
 
 You are THE CPS PUNISHER — the most powerful AI legal document generator for CPS defense, inspired by Cetient AI.
@@ -1709,6 +1772,12 @@ You are THE CPS PUNISHER — the most powerful AI legal document generator for C
 You generate COMPLETE, COURT-READY legal documents instantly from natural language descriptions.
 
 {case_context}{state_law}
+
+Internal Library Summary:
+{knowledge_summary}
+
+Internal Library Citations:
+{knowledge_citations}{knowledge_match_block}
 
 DOCUMENT GENERATION RULES:
 1. Use proper legal formatting: caption, header, numbered paragraphs, signature block
@@ -1731,6 +1800,9 @@ DOCUMENT GENERATION RULES:
     doc_hint = f"\nDocument type hint: {request.document_type}" if request.document_type else ""
     state_hint = f"\nJurisdiction: {case_state}" if case_state else ""
 
+    knowledge_context = get_knowledge_library_context(request.prompt or request.document_type or "")
+    knowledge_block = "KNOWLEDGE LIBRARY CONTEXT:\n" + knowledge_context + "\n" if knowledge_context else ""
+
     prompt = f"""GENERATE THIS DOCUMENT: {request.prompt}{doc_hint}{state_hint}
 
 Create a COMPLETE, court-ready legal document. Include:
@@ -1742,7 +1814,7 @@ Create a COMPLETE, court-ready legal document. Include:
 - Signature block and certificate of service
 - Any required attachments list
 
-Use all available case data. The document should be ready to print and file.
+{knowledge_block}Use all available case data. The document should be ready to print and file.
 After the document, add a section titled "NEXT STEPS & STRATEGY (NOT PART OF FILING)" with 4-8 bullet actions."""
 
     try:
@@ -1858,6 +1930,15 @@ EVIDENCE ({len(evidence)} items):
         if sdata:
             state_law = f"\nState Law ({case_state}): Agency={sdata.get('agency','')}, Statutes={sdata.get('statutes','')}"
 
+    knowledge_summary = get_knowledge_library_summary()
+    knowledge_citations = get_knowledge_library_citations()
+    knowledge_matches = get_knowledge_library_matches(request.prompt or request.document_type or "")
+    knowledge_match_block = ""
+    if knowledge_matches:
+        knowledge_match_block = "\n\nRelevant Library Matches:\n" + "\n".join([
+            f"- {item['title']} ({item['citation']}): {item['summary']}" for item in knowledge_matches
+        ])
+
     system_message = f"""{ULTIMATE_CPS_IDENTITY}
 
 You are THE CPS PUNISHER — the most powerful AI legal document generator for CPS defense, inspired by Cetient AI.
@@ -1865,6 +1946,12 @@ You are THE CPS PUNISHER — the most powerful AI legal document generator for C
 You generate COMPLETE, COURT-READY legal documents instantly from natural language descriptions.
 
 {case_context}{state_law}
+
+Internal Library Summary:
+{knowledge_summary}
+
+Internal Library Citations:
+{knowledge_citations}{knowledge_match_block}
 
 DOCUMENT GENERATION RULES:
 1. Use proper legal formatting: caption, header, numbered paragraphs, signature block
@@ -1887,6 +1974,9 @@ DOCUMENT GENERATION RULES:
     doc_hint = f"\nDocument type hint: {request.document_type}" if request.document_type else ""
     state_hint = f"\nJurisdiction: {case_state}" if case_state else ""
 
+    knowledge_context = get_knowledge_library_context(request.prompt or request.document_type or "")
+    knowledge_block = "KNOWLEDGE LIBRARY CONTEXT:\n" + knowledge_context + "\n" if knowledge_context else ""
+
     prompt = f"""GENERATE THIS DOCUMENT: {request.prompt}{doc_hint}{state_hint}
 
 Create a COMPLETE, court-ready legal document. Include:
@@ -1898,8 +1988,8 @@ Create a COMPLETE, court-ready legal document. Include:
 - Signature block and certificate of service
 - Any required attachments list
 
-Use all available case data. The document should be ready to print and file.
-After the document, add a section titled "NEXT STEPS  STRATEGY (NOT PART OF FILING)" with 4-8 bullet actions."""
+{knowledge_block}Use all available case data. The document should be ready to print and file.
+After the document, add a section titled "NEXT STEPS & STRATEGY (NOT PART OF FILING)" with 4-8 bullet actions."""
 
     async def generate_stream():
         full_response = ""

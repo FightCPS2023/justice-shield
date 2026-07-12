@@ -1,10 +1,5 @@
-"""
-COMPREHENSIVE LEGAL KNOWLEDGE BASE FOR CPS DEFENSE
-Integrated from CPS Punisher original application
-
-This contains real case law, statutes, constitutional principles,
-Black's Law definitions, and sophisticated legal reasoning.
-"""
+import os
+import re
 
 # ============================================================================
 # LANDMARK SUPREME COURT CASES - CPS & FAMILY LAW
@@ -1293,28 +1288,235 @@ def get_constitutional_basis(violation_type: str) -> str:
     }
     return mapping.get(violation_type, "Constitutional violation")
 
+
 def analyze_qualified_immunity(violation_type: str) -> dict:
-    """Analyze whether qualified immunity can be defeated."""
-    clearly_established = [
-        "warrantless_entry",
-        "strip_search",
-        "fabricated_evidence",
-        "coerced_consent"
+    """Analyze qualified immunity for a given violation type."""
+    # Get relevant violation analysis
+    violation_info = VIOLATION_ANALYSIS.get(violation_type, {})
+    
+    # Default immunity analysis
+    immunity_analysis = {
+        "violation_type": violation_type,
+        "qualified_immunity_likely_defeated": False,
+        "clearly_established": False,
+        "key_cases": [],
+        "analysis": "Qualified immunity analysis requires case-specific facts.",
+        "recommendations": []
+    }
+    
+    # Check if this violation type has clear precedent
+    clearly_established_violations = [
+        "warrantless_entry", "strip_search", "fabricated_evidence",
+        "coerced_consent", "false_emergency", "procedural_due_process"
     ]
     
-    if violation_type in clearly_established:
-        return {
-            "likely_defeated": True,
-            "reasoning": f"The unconstitutionality of {violation_type} is clearly established by existing precedent.",
-            "key_cases": get_relevant_case_law(violation_type)["relevant_cases"]
-        }
-    else:
-        return {
-            "likely_defeated": False,
-            "reasoning": "Qualified immunity analysis is fact-dependent. Consult with attorney.",
-            "factors": [
-                "Specificity of existing precedent",
-                "Egregiousness of conduct",
-                "Whether reasonable official would know conduct unconstitutional"
-            ]
-        }
+    if violation_type in clearly_established_violations:
+        immunity_analysis["qualified_immunity_likely_defeated"] = True
+        immunity_analysis["clearly_established"] = True
+        immunity_analysis["analysis"] = f"The right against {violation_type.replace('_', ' ')} is clearly established. Qualified immunity is likely to be defeated."
+    
+    # Add key cases from violation analysis
+    if violation_info:
+        immunity_analysis["key_cases"].append(violation_info.get("key_case", ""))
+        immunity_analysis["section_1983_viable"] = violation_info.get("section_1983_viable", False)
+        if violation_info.get("qualified_immunity"):
+            immunity_analysis["qualified_immunity_notes"] = violation_info.get("qualified_immunity")
+    
+    # Add recommendations
+    immunity_analysis["recommendations"] = [
+        "Document all facts showing the violation was obvious",
+        "Cite cases from your circuit with similar facts",
+        "Show pattern of similar misconduct if applicable",
+        "Demonstrate intentional violation of known rights"
+    ]
+    
+    return immunity_analysis
+
+
+
+COMPREHENSIVE_LEGAL_DOC_LIBRARY = [
+    {
+        "id": "usdc_emergency_motion_quash_2025",
+        "title": "Emergency Motion to Quash (Evers v. Tennessee DCS)",
+        "source_type": "court_filing",
+        "citation": "Evers v. Tennessee Department of Children’s Services, Civil Case No. 3:25-cv-00199 (E.D. Tenn. 2025)",
+        "source_file": "knowledge_docs/usdc_emergency_motion_quash_2025.txt",
+        "summary": "Emergency motion seeking to quash CPS paperwork alleging failure to protect. Details alleged retaliation, lack of evidence, and Fourth/Fourteenth Amendment violations; requests TRO and emergency hearing.",
+        "tags": ["emergency motion", "retaliation", "failure_to_protect", "TRO", "Fourth Amendment", "Fourteenth Amendment"],
+        "key_takeaways": [
+            "Challenges CPS service based on lack of evidence and alleged bad faith.",
+            "Frames pattern of harassment and retaliatory enforcement.",
+            "Seeks TRO/preliminary injunction and emergency hearing timelines.",
+            "Alleges violations of Fourth and Fourteenth Amendment rights."
+        ],
+        "use_for": ["emergency_motion", "retaliation", "procedural_due_process", "warrantless_entry"],
+        "content_excerpt": "Emergency Motion to Quash... seeks TRO, preliminary injunction, and emergency hearing."
+    },
+    {
+        "id": "mccormick_v_braverman_2006",
+        "title": "McCormick v. Braverman",
+        "source_type": "case_law",
+        "citation": "McCormick v. Braverman, 451 F.3d 382 (6th Cir. 2006)",
+        "source_file": "knowledge_docs/mccormick_v_braverman_2006.txt",
+        "summary": "Sixth Circuit decision clarifying limits of Rooker-Feldman, distinguishing independent federal claims from state-court judgment injuries, and applying collateral estoppel.",
+        "tags": ["Rooker-Feldman", "collateral estoppel", "federal jurisdiction", "due process"],
+        "key_takeaways": [
+            "Rooker-Feldman applies only to injuries caused by state court judgments.",
+            "Independent claims based on third-party misconduct may proceed.",
+            "Preclusion (collateral estoppel) can bar relitigation of issues.",
+            "Discusses privity and limits on federal review of state orders."
+        ],
+        "use_for": ["jurisdiction", "rooker_feldman", "collateral_estoppel", "federal_claims"],
+        "content_excerpt": "Clarifies that federal claims alleging independent injury are not barred by Rooker-Feldman."
+    },
+    {
+        "id": "fjc_benchbook_2013",
+        "title": "Federal Judicial Center Benchbook (6th Ed.)",
+        "source_type": "benchbook",
+        "citation": "Benchbook for U.S. District Court Judges, 6th Ed. (Federal Judicial Center, 2013)",
+        "source_file": "knowledge_docs/bench_book_federal_judges.txt",
+        "summary": "Comprehensive judicial procedures guide covering criminal and civil proceedings, Brady obligations, case management, jury instructions, and motions.",
+        "tags": ["benchbook", "procedure", "motions", "Brady", "case management"],
+        "key_takeaways": [
+            "Provides procedural scripts and checklists for hearings and motions.",
+            "Outlines Brady/Giglio disclosure obligations.",
+            "Includes guidance on injunctions and contempt proceedings.",
+            "Emphasizes due process, notice, and jury instruction standards."
+        ],
+        "use_for": ["procedural_guidance", "injunctions", "motions", "brady"],
+        "content_excerpt": "Benchbook provides step-by-step guidance for federal court procedures and hearings."
+    },
+    {
+        "id": "child_welfare_reform_act_2024",
+        "title": "Comprehensive Child Welfare Reform and Accountability Act (Draft)",
+        "source_type": "draft_bill",
+        "citation": "Comprehensive Child Welfare Reform and Accountability Act of 2024 (Draft)",
+        "source_file": "knowledge_docs/child_welfare_reform_act_draft.txt",
+        "summary": "Draft legislative proposal to abolish CPS, create Department of Child Welfare, mandate family preservation, raise evidentiary standards, and remove immunity protections.",
+        "tags": ["policy", "legislation", "family_preservation", "accountability"],
+        "key_takeaways": [
+            "Establishes stringent evidentiary standards for removal (clear and convincing evidence).",
+            "Eliminates qualified immunity for child welfare employees.",
+            "Prioritizes family preservation and voluntary services.",
+            "Creates oversight bodies and public transparency mandates."
+        ],
+        "use_for": ["policy_advocacy", "legislative_reform", "family_preservation"],
+        "content_excerpt": "Calls for abolition of CPS and creation of a transparent, accountable DCW."
+    },
+    {
+        "id": "ncstn_trauma_core_concepts",
+        "title": "NCTSN Core Curriculum on Childhood Trauma (Ella Case)",
+        "source_type": "trauma_guide",
+        "citation": "NCTSN Core Curriculum on Childhood Trauma (2013–2020 materials)",
+        "source_file": "knowledge_docs/core_curriculum_childhood_trauma.txt",
+        "summary": "Trauma-informed care guidance using the Ella case study and 12 core concepts for understanding trauma responses in children.",
+        "tags": ["trauma_informed", "childhood_trauma", "core_concepts"],
+        "key_takeaways": [
+            "Defines 12 core concepts for trauma-informed practice.",
+            "Highlights caregiver distress and secondary traumatic stress.",
+            "Emphasizes safety, development, and family system impacts.",
+            "Provides case-based learning for child welfare practitioners."
+        ],
+        "use_for": ["trauma_informed_care", "child_impact", "family_support"],
+        "content_excerpt": "Provides a structured trauma-informed framework for child welfare contexts."
+    }
+]
+
+
+_KNOWLEDGE_TEXT_CACHE = {}
+
+
+def _load_knowledge_text(source_file: str) -> str:
+    if not source_file:
+        return ""
+    if source_file in _KNOWLEDGE_TEXT_CACHE:
+        return _KNOWLEDGE_TEXT_CACHE[source_file]
+    abs_path = os.path.join(os.path.dirname(__file__), source_file)
+    if not os.path.exists(abs_path):
+        return ""
+    try:
+        with open(abs_path, "r", encoding="utf-8") as f:
+            text = f.read()
+            _KNOWLEDGE_TEXT_CACHE[source_file] = text
+            return text
+    except Exception:
+        return ""
+
+
+def _extract_relevant_excerpt(text: str, keywords: list, max_chars: int = 1200) -> str:
+    if not text:
+        return ""
+    lowered = text.lower()
+    if not keywords:
+        return text[:max_chars]
+    paragraph_breaks = [p.strip() for p in text.split("\n\n") if p.strip()]
+    scored = []
+    for p in paragraph_breaks:
+        score = sum(1 for k in keywords if k and k in p.lower())
+        if score:
+            scored.append((score, p))
+    if not scored:
+        return text[:max_chars]
+    scored.sort(key=lambda x: (-x[0], len(x[1])))
+    excerpt_parts = []
+    total = 0
+    for _, para in scored:
+        if total + len(para) > max_chars:
+            remaining = max_chars - total
+            if remaining > 100:
+                excerpt_parts.append(para[:remaining])
+            break
+        excerpt_parts.append(para)
+        total += len(para)
+        if total >= max_chars:
+            break
+    return "\n\n".join(excerpt_parts)
+
+
+def get_knowledge_library_summary() -> str:
+    lines = []
+    for item in COMPREHENSIVE_LEGAL_DOC_LIBRARY:
+        lines.append(f"- {item['title']} ({item['citation']}) :: {item['summary']}")
+    return "\n".join(lines)
+
+
+def get_knowledge_library_citations() -> str:
+    lines = []
+    for item in COMPREHENSIVE_LEGAL_DOC_LIBRARY:
+        lines.append(f"- {item['title']}: {item['citation']}")
+    return "\n".join(lines)
+
+
+def get_knowledge_library_matches(query: str, max_items: int = 5) -> list:
+    if not query:
+        return []
+    text = query.lower()
+    results = []
+    for item in COMPREHENSIVE_LEGAL_DOC_LIBRARY:
+        tags = [t.lower() for t in item.get("tags", [])]
+        use_for = [t.lower() for t in item.get("use_for", [])]
+        if any(t in text for t in tags) or any(t in text for t in use_for):
+            results.append(item)
+    if not results:
+        for item in COMPREHENSIVE_LEGAL_DOC_LIBRARY:
+            haystack = f"{item.get('title','')} {item.get('summary','')} {item.get('content_excerpt','')}".lower()
+            if any(token in haystack for token in text.split() if len(token) > 4):
+                results.append(item)
+    return results[:max_items]
+
+
+def get_knowledge_library_context(query: str, max_items: int = 3, max_chars: int = 1600) -> str:
+    matches = get_knowledge_library_matches(query, max_items=max_items)
+    if not matches:
+        return ""
+    tokens = [t for t in re.findall(r"[a-zA-Z0-9]+", query.lower()) if len(t) > 3]
+    lines = []
+    for item in matches:
+        full_text = _load_knowledge_text(item.get("source_file", ""))
+        excerpt = _extract_relevant_excerpt(full_text, tokens, max_chars=max_chars)
+        lines.append(f"SOURCE: {item['title']} ({item['citation']})")
+        lines.append(f"SUMMARY: {item['summary']}")
+        if excerpt:
+            lines.append(f"EXCERPT:\n{excerpt}")
+        lines.append("---")
+    return "\n".join(lines)
