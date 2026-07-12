@@ -6,15 +6,15 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, EmailStr
 
 from database import get_db
-from auth import get_current_user, get_admin_user
+from auth import get_current_user
 from config import VALID_PASSCODES, ADMIN_EMAILS
 
 
 router = APIRouter()
 
 # ============== ADMIN SYSTEM ==============
-# Admin emails - these users have admin access
-ADMIN_EMAILS = [
+# Local override for admin emails (kept for backward compatibility)
+LOCAL_ADMIN_EMAILS = [
     "admin@thecpspunisher.com",
     "owner@thecpspunisher.com",
     "cpsvhuntingjustice@gmail.com",  # Primary admin
@@ -23,12 +23,13 @@ ADMIN_EMAILS = [
 async def get_admin_user(current_user: dict = Depends(get_current_user)):
     """Dependency to check if user is admin"""
     db = get_db()
-    user = await db.users.find_one({"_id": current_user["user_id"]})
+    user = await db.users.find_one({"$or": [{"_id": current_user["user_id"]}, {"user_id": current_user["user_id"]}]})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
     is_admin = (
         user.get("email") in ADMIN_EMAILS or 
+        user.get("email") in LOCAL_ADMIN_EMAILS or
         user.get("is_admin", False) or
         user.get("role") == "admin"
     )
@@ -97,15 +98,15 @@ async def get_all_users(admin: dict = Depends(get_admin_user), skip: int = 0, li
     """Get all users with pagination"""
     db = get_db()
     users = []
-    async for user in db.users.find({}, {"password_hash": 0}).sort("created_at", -1).skip(skip).limit(limit):
+    async for user in db.users.find({}, {"_id": 0, "password_hash": 0}).sort("created_at", -1).skip(skip).limit(limit):
         users.append({
-            "id": user["_id"],
+            "id": user.get("user_id") or user.get("id") or user.get("_id"),
             "email": user.get("email"),
             "name": user.get("name"),
             "tier": user.get("tier", "free"),
             "tier_source": user.get("tier_source"),
             "created_at": user.get("created_at"),
-            "is_admin": user.get("email") in ADMIN_EMAILS or user.get("is_admin", False)
+            "is_admin": user.get("email") in ADMIN_EMAILS or user.get("email") in LOCAL_ADMIN_EMAILS or user.get("is_admin", False)
         })
     
     total = await db.users.count_documents({})
@@ -124,7 +125,7 @@ async def update_user_tier(request: UserTierUpdateRequest, admin: dict = Depends
         raise HTTPException(status_code=400, detail=f"Invalid tier. Must be one of: {valid_tiers}")
     
     result = await db.users.update_one(
-        {"_id": request.user_id},
+        {"$or": [{"_id": request.user_id}, {"user_id": request.user_id}]},
         {"$set": {
             "tier": request.tier,
             "tier_source": "admin",
