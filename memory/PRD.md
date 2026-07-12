@@ -282,6 +282,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Stream now always ends with done=true and provides actionable guidance
 - Tested: backend smart-research stream (testing_agent_v3)
 
+### Session 51: Admin Table Access Fix - COMPLETE
+- Fixed admin lookup to accept user_id or _id for admin access checks
+- Admin endpoints now return data correctly for admin users
+- Tested: backend admin endpoints (testing_agent_v3)
+
 ## Remaining Tasks
 
 ### P0 - Background Check Reliability
