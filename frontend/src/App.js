@@ -4,7 +4,7 @@ import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, Menu, X, LogOut,
   Home, Settings, Lock, Loader2, Clock, Eye, CheckCircle2,
-  CreditCard, Zap, Mic, HelpCircle, ChevronDown, Building2, FlaskConical
+  CreditCard, Zap, Mic, HelpCircle, ChevronDown, Building2, FlaskConical, Megaphone
 } from 'lucide-react';
 
 import api from './lib/api';
@@ -27,6 +27,10 @@ import CalendarTab from './components/features/CalendarTab';
 import PricingTab from './components/features/PricingTab';
 import SettingsTab from './components/features/SettingsTab';
 import AdminBoardTab from './components/features/AdminBoardTab';
+import LawsuitArchitectTab from './components/features/LawsuitArchitectTab';
+import IntegrityDatabaseTab from './components/features/IntegrityDatabaseTab';
+import ImmutableVaultTab from './components/features/ImmutableVaultTab';
+import PoliticalStrikeTab from './components/features/PoliticalStrikeTab';
 import AICaseNotesTab from './components/features/AICaseNotesTab';
 import CaseMemoryTab from './components/features/CaseMemoryTab';
 import SmartDocTab from './components/features/SmartDocTab';
@@ -201,6 +205,7 @@ function Dashboard({ onNavigate }) {
     case: true,
     ai: true,
     research: true,
+    punishers: true,
     community: true,
     'admin-tools': true
   });
@@ -312,19 +317,13 @@ function Dashboard({ onNavigate }) {
       ]
     },
     {
-      id: 'research',
-      label: 'Research & Law',
+      id: 'punishers',
+      label: 'the punishers',
       items: [
-        { id: 'research', icon: Search, label: 'Legal Research', minTier: 'professional' },
-        { id: 'library', icon: BookOpen, label: 'Law Library', minTier: 'free' },
-        { id: 'legaldb', icon: BookOpen, label: 'Legal Knowledge Base', minTier: 'professional' },
-        { id: 'caselaw', icon: BookOpen, label: 'Case Law Analysis', minTier: 'professional', highlight: true },
-        { id: 'precedentfinder', icon: Search, label: 'Precedent Finder', minTier: 'professional', highlight: true },
-        { id: 'courtlistener', icon: Scale, label: 'Court Opinions', minTier: 'attorney', highlight: true },
-        { id: 'foia', icon: FileText, label: 'FOIA Requests', minTier: 'free', highlight: true },
-        { id: 'rights', icon: Shield, label: 'Know Your Rights', minTier: 'free' },
-        { id: 'ada', icon: Scale, label: 'ADA Compliance', minTier: 'professional', highlight: true },
-        { id: 'judgewatch', icon: Scale, label: 'Judge Watch', minTier: 'professional' }
+        { id: 'lawsuit-architect', icon: Gavel, label: 'Lawsuit Architect', minTier: 'attorney', highlight: true },
+        { id: 'integrity-db', icon: Shield, label: 'Integrity Database', minTier: 'professional', highlight: true },
+        { id: 'immutable-vault', icon: Lock, label: 'Immutable Vault', minTier: 'professional', highlight: true },
+        { id: 'political-strike', icon: Megaphone, label: 'Political Strike', minTier: 'attorney', highlight: true }
       ]
     },
     {
@@ -553,6 +552,10 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'courtfilings' && <CourtFilingsTab selectedCase={selectedCase} />}
           {activeTab === 'judgewatch' && <JudgeWatchTab selectedCase={selectedCase} />}
           {activeTab === 'personlookup' && <PersonLookupTab selectedCase={selectedCase} />}
+          {activeTab === 'lawsuit-architect' && <LawsuitArchitectTab selectedCase={selectedCase} />}
+          {activeTab === 'integrity-db' && <IntegrityDatabaseTab selectedCase={selectedCase} />}
+          {activeTab === 'immutable-vault' && <ImmutableVaultTab selectedCase={selectedCase} />}
+          {activeTab === 'political-strike' && <PoliticalStrikeTab selectedCase={selectedCase} />}
           {activeTab === 'analyzerlab' && isAdmin && (
             <AnalyzerTestLabTab
               selectedCase={selectedCase}
