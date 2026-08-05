@@ -115,7 +115,7 @@ function LawsuitArchitectTab({ selectedCase }) {
     <div className="space-y-6 animate-fadeIn" data-testid="lawsuit-architect-tab">
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
-          <Gavel className="w-8 h-8 text-red-500" /> The Executioner — 1983 Lawsuit Architect
+          <Gavel className="w-8 h-8 text-red-500" /> ⚔️ The Executioner — 1983 Lawsuit Architect
         </h1>
         <p className="text-gray-400">Forge court-ready federal §1983 complaints from documented violations.</p>
       </div>

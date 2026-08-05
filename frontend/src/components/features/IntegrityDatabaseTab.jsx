@@ -99,7 +99,7 @@ function IntegrityDatabaseTab() {
     <div className="space-y-6 animate-fadeIn" data-testid="integrity-db-tab">
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
-          <Shield className="w-8 h-8 text-red-500" /> The Blacklist — Integrity Database
+          <Shield className="w-8 h-8 text-red-500" /> ⚔️ The Blacklist — Integrity Database
         </h1>
         <p className="text-gray-400">Track caseworker misconduct, log violations, and compute risk scores.</p>
       </div>
@@ -107,15 +107,15 @@ function IntegrityDatabaseTab() {
       <div className="grid md:grid-cols-3 gap-4" data-testid="integrity-db-metrics">
         <div className="bg-gray-900/60 border border-gray-700 rounded-xl p-4">
           <p className="text-xs text-gray-400">Profiles</p>
-          <p className="text-2xl font-semibold">{profiles.length}</p>
+          <p className="text-2xl font-semibold data-metric">{profiles.length}</p>
         </div>
         <div className="bg-gray-900/60 border border-gray-700 rounded-xl p-4">
           <p className="text-xs text-gray-400">High Risk</p>
-          <p className="text-2xl font-semibold">{profiles.filter((p) => (p.violations || []).length >= 4).length}</p>
+          <p className="text-2xl font-semibold data-metric">{profiles.filter((p) => (p.violations || []).length >= 4).length}</p>
         </div>
         <div className="bg-gray-900/60 border border-gray-700 rounded-xl p-4">
           <p className="text-xs text-gray-400">Recent Violations</p>
-          <p className="text-2xl font-semibold">{profiles.reduce((acc, p) => acc + (p.violations || []).length, 0)}</p>
+          <p className="text-2xl font-semibold data-metric">{profiles.reduce((acc, p) => acc + (p.violations || []).length, 0)}</p>
         </div>
       </div>
 
@@ -161,7 +161,11 @@ function IntegrityDatabaseTab() {
                 <p className="text-xs text-gray-400">{p.agency || 'Agency'} • {p.badge_number || 'No badge'}</p>
               </button>
             ))}
-            {!profiles.length && <p className="text-sm text-gray-400">No profiles yet.</p>}
+            {!profiles.length && (
+              <div className="text-sm text-gray-400" data-testid="integrity-empty-state">
+                No profiles yet. Use the form to add your first profile.
+              </div>
+            )}
           </div>
         </div>
       </div>

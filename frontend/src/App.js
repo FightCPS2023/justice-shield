@@ -327,6 +327,22 @@ function Dashboard({ onNavigate }) {
       ]
     },
     {
+      id: 'research',
+      label: 'Research & Law',
+      items: [
+        { id: 'research', icon: Search, label: 'Legal Research', minTier: 'professional' },
+        { id: 'library', icon: BookOpen, label: 'Law Library', minTier: 'free' },
+        { id: 'legaldb', icon: BookOpen, label: 'Legal Knowledge Base', minTier: 'professional' },
+        { id: 'caselaw', icon: BookOpen, label: 'Case Law Analysis', minTier: 'professional', highlight: true },
+        { id: 'precedentfinder', icon: Search, label: 'Precedent Finder', minTier: 'professional', highlight: true },
+        { id: 'courtlistener', icon: Scale, label: 'Court Opinions', minTier: 'attorney', highlight: true },
+        { id: 'foia', icon: FileText, label: 'FOIA Requests', minTier: 'free', highlight: true },
+        { id: 'rights', icon: Shield, label: 'Know Your Rights', minTier: 'free' },
+        { id: 'ada', icon: Scale, label: 'ADA Compliance', minTier: 'professional', highlight: true },
+        { id: 'judgewatch', icon: Scale, label: 'Judge Watch', minTier: 'professional' }
+      ]
+    },
+    {
       id: 'community',
       label: 'Community & Support',
       items: [
@@ -393,7 +409,7 @@ function Dashboard({ onNavigate }) {
             <div className="flex items-center gap-3">
               <img src="/images/shield-logo.png" alt="Logo" className="w-10 h-12 object-contain" />
               <div>
-                <h1 className="font-semibold text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>CPS PUNISHER</h1>
+                <h1 className="font-semibold text-white tracking-widest uppercase">CPS PUNISHER</h1>
                 <p className="text-xs text-slate-400 truncate max-w-[140px]">{user?.email}</p>
               </div>
             </div>
@@ -447,14 +463,14 @@ function Dashboard({ onNavigate }) {
                           isLocked 
                             ? 'text-slate-500 hover:bg-slate-900 cursor-not-allowed opacity-60'
                             : activeTab === item.id 
-                              ? 'bg-red-600/20 text-red-200 border border-red-500/40' 
+                              ? 'bg-slate-900 text-slate-100 border-l-2 border-slate-300'
                               : item.highlight 
-                                ? 'text-slate-100 hover:bg-slate-900/60 border border-slate-700'
+                                ? 'text-slate-200 hover:bg-slate-900/60 border border-slate-700'
                                 : 'text-slate-300 hover:bg-slate-900 hover:text-white'
                         }`}
                         data-testid={`nav-${item.id}`}
                       >
-                        {isLocked ? <Lock className="w-4 h-4 text-slate-400 flex-shrink-0" /> : <item.icon className={`w-5 h-5 flex-shrink-0 ${item.highlight && !isLocked ? 'text-red-500' : ''}`} />}
+                        {isLocked ? <Lock className="w-4 h-4 text-slate-400 flex-shrink-0" /> : <item.icon className={`w-5 h-5 flex-shrink-0 ${item.highlight && !isLocked ? 'text-slate-200' : ''}`} />}
                         <span className="truncate">{item.label}</span>
                         {isLocked && tierLabel && (
                           <span className="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded ml-auto flex-shrink-0">{tierLabel}</span>

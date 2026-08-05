@@ -8,6 +8,7 @@ function PoliticalStrikeTab() {
   const [state, setState] = useState('TX');
   const [role, setRole] = useState('');
   const [contacts, setContacts] = useState([]);
+  const [loadingContacts, setLoadingContacts] = useState(false);
   const [selectedTargets, setSelectedTargets] = useState([]);
   const [dossiers, setDossiers] = useState([]);
   const [currentDossier, setCurrentDossier] = useState(null);
@@ -24,6 +25,7 @@ function PoliticalStrikeTab() {
   });
 
   const loadContacts = async () => {
+    setLoadingContacts(true);
     try {
       const params = new URLSearchParams();
       if (state) params.append('state', state);
@@ -32,6 +34,8 @@ function PoliticalStrikeTab() {
       setContacts(data.contacts || []);
     } catch (err) {
       toast.error('Failed to load contacts');
+    } finally {
+      setLoadingContacts(false);
     }
   };
 
@@ -97,7 +101,7 @@ function PoliticalStrikeTab() {
     <div className="space-y-6 animate-fadeIn" data-testid="political-strike-tab">
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
-          <Megaphone className="w-8 h-8 text-red-500" /> Mass Escalation — Political Strike
+          <Megaphone className="w-8 h-8 text-red-500" /> ⚔️ Mass Escalation — Political Strike
         </h1>
         <p className="text-gray-400">Generate systemic corruption dossiers and simulate dispatch to public officials.</p>
       </div>
@@ -131,13 +135,19 @@ function PoliticalStrikeTab() {
           <input className="bg-black/40 border border-gray-700 rounded-lg p-2" value={role} onChange={(e) => setRole(e.target.value)} data-testid="political-role" placeholder="Role filter" />
         </div>
         <div className="mt-3 grid md:grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-          {contacts.map((c) => (
+          {loadingContacts && (
+            <p className="text-sm text-gray-400" data-testid="political-contacts-loading">Loading contacts...</p>
+          )}
+          {!loadingContacts && contacts.map((c) => (
             <button key={c.contact_id} onClick={() => toggleTarget(c.contact_id)} className={`text-left border rounded-lg p-3 ${selectedTargets.includes(c.contact_id) ? 'border-red-500 bg-red-900/30' : 'border-gray-700 bg-black/40'}`} data-testid={`political-contact-${c.contact_id}`}>
               <p className="text-sm font-semibold">{c.name}</p>
               <p className="text-xs text-gray-400">{c.role} • {c.state}</p>
               <p className="text-xs text-gray-400">{c.email}</p>
             </button>
           ))}
+          {!loadingContacts && !contacts.length && (
+            <p className="text-sm text-gray-400" data-testid="political-contacts-empty">No contacts found.</p>
+          )}
         </div>
         <button onClick={handleDispatch} className="mt-3 px-3 py-2 bg-red-600/40 rounded flex items-center gap-2" data-testid="political-dispatch">
           <Send className="w-4 h-4" /> Dispatch (Simulated)
@@ -160,6 +170,9 @@ function PoliticalStrikeTab() {
               <p className="text-xs text-gray-400">{d.dossier_id}</p>
             </div>
           ))}
+          {!dossiers.length && (
+            <p className="text-sm text-gray-400" data-testid="political-dossiers-empty">No dossiers generated yet.</p>
+          )}
         </div>
       </div>
 

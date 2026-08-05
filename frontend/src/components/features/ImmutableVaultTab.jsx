@@ -80,7 +80,7 @@ function ImmutableVaultTab() {
     <div className="space-y-6 animate-fadeIn" data-testid="immutable-vault-tab">
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
-          <Lock className="w-8 h-8 text-red-500" /> Hardened Storage — Immutable Vault
+          <Lock className="w-8 h-8 text-red-500" /> ⚔️ Hardened Storage — Immutable Vault
         </h1>
         <p className="text-gray-400">Seal evidence with AES-256 and generate immutable proof-of-custody certificates.</p>
       </div>
@@ -116,6 +116,9 @@ function ImmutableVaultTab() {
               <p className="text-xs text-gray-400">Hash: {c.certificate_hash?.slice(0, 10)}...</p>
             </button>
           ))}
+          {!certificates.length && (
+            <p className="text-sm text-gray-400" data-testid="vault-empty-state">No evidence sealed yet.</p>
+          )}
         </div>
       </div>
 
