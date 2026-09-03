@@ -81,7 +81,7 @@ async def create_profile(payload: CaseworkerProfileCreate, current_user: dict = 
         "notes": payload.notes,
         "violations": []
     }
-    await db.caseworker_profiles.insert_one(doc)
+    await db.caseworker_profiles.insert_one(dict(doc))
     return {"profile_id": profile_id, "profile": doc}
 
 

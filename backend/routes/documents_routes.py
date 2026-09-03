@@ -187,20 +187,6 @@ def get_max_size_for_ext(file_ext: str) -> int:
     return MAX_DOC_SIZE
 
 
-async def save_upload_to_disk(file: UploadFile, dest_path: str, max_size: int) -> int:
-    size = 0
-    with open(dest_path, 'wb') as out_file:
-        while True:
-            chunk = await file.read(1024 * 1024)
-            if not chunk:
-                break
-            size += len(chunk)
-            if size > max_size:
-                raise HTTPException(status_code=400, detail=f"File too large. Maximum {max_size // (1024*1024)}MB for this file type.")
-            out_file.write(chunk)
-    return size
-
-
 async def run_document_analysis_bg(doc_id, case_id, case, content, filename, user_id):
     """Background task: runs document analysis after upload response is sent"""
     try:

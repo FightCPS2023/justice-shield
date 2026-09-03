@@ -1,0 +1,38 @@
+{
+  "summary": "Iteration 29 regression sweep of the 12 restored routers (case_data, calendar, legal, courtlistener, community, section1983, podcast, caselaw, ada, strategy, case_memory) + lint-fix imports + punisher engines. Wrote pytest suite /app/backend/tests/test_iter29_regression.py covering 23 targeted tests against the public REACT_APP_BACKEND_URL with real cookie/Bearer auth as the admin attorney account. All 23 backend tests PASS. Frontend smoke test with Playwright: login flow works, case detail page loads, tabs (Violations, Timeline, Calendar, Notepad, Law Library, Case Memory, Advocates) all render without 404/'Not Found' errors, and the four Weapons Arsenal routes (/lawsuit-architect, /integrity-db, /vault, /political-strike) render the full app shell. Only 2 benign 401s observed pre-login on /api/auth/me polling.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/documents", "issue": "Route is not defined (only POST /api/documents and GET /api/documents/{case_id} exist). Some UI code may attempt bare GET and get 405. Non-blocking; per-case GET works."},
+      {"endpoint": "Forum sidebar entry", "issue": "'Forum' tab was not visible in sidebar during Playwright walk-through (may be attorney-tier feature or gated); other tabs are reachable."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter29_regression.py",
+    "/app/test_reports/pytest/iter29.xml"
+  ],
+  "action_items": [
+    "Optional: expose GET /api/documents (list all across cases) if frontend relies on it; otherwise close as by-design.",
+    "Verify Forum nav entry visibility for attorney tier if it is expected to appear on the sidebar."
+  ],
+  "critical_code_review_comments": [
+    "documents_routes.py is 1800+ lines — should be split (test-samples/bundle, analysis-queue, upload, CRUD each deserve own module).",
+    "Visitation and Court-Hearing endpoints are defined in community_routes.py rather than case_data_routes.py; consider consolidating for discoverability.",
+    "Schema drift: models/schemas.py has VisitationCreate/CourtHearingCreate/CommunicationLogCreate that DO NOT match the actual endpoint parameter shape (routes use Body(...) with different field names: 'date' vs 'visit_date', 'contact_with' vs 'with_party'). Either the Pydantic models are stale (dead code) or the routes should be refactored to use them for consistency."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter29_regression.py (new)"
+  ],
+  "success_rate": {"backend": "100% (23/23)", "frontend": "100% smoke (login + all tested tabs + arsenal routes render)"},
+  "test_credentials": "cpsvhuntingjustice@gmail.com / cpssuxass (attorney tier). Cookie session_token + Bearer token both work.",
+  "seed_data_creation": "Test suite creates ephemeral records (violation, timeline event, evidence, communication, service, court filing, visitation, court hearing, calendar event, notepad entry, case memory, integrity-db profile, vault seal) tied to case d219e704-b704-4019-b9eb-128977b4aaa0. Created records are prefixed 'TEST' where allowed; violations/notepad/calendar/case-memory entries are deleted at end of each test. Others persist and will accumulate on repeat runs.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "The 12 previously-unregistered routers are all restored and responding. AI-heavy endpoints (ada, courtlistener deep-search, podcast generate) were verified to not throw NameError 500s (previously reported lint fixes for httpx/timedelta/get_case_with_ownership/json/STATES_INFO imports all hold). Punisher engines: integrity-db insert now returns a clean dict (no _id/ObjectId serialization error) and vault/seal accepts multipart file+key_b64 with deterministic CID. LLM budget was sufficient for all endpoints hit — no 402s observed. Documented schema drift in schemas.py for future cleanup.",
+  "rca of the issue": "N/A — no bugs found this iteration. All prior regression fixes verified working."
+}

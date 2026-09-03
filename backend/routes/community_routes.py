@@ -63,22 +63,6 @@ async def list_forum_posts(
 
 # ============== ADVOCATE DIRECTORY ==============
 
-@router.get("/api/advocates")
-async def get_advocates(state: Optional[str] = None):
-    """Get advocate directory"""
-    db = get_db()
-    query = {}
-    if state:
-        query["state"] = state.upper()
-    
-    advocates = []
-    async for a in db.advocate_directory.find(query):
-        a["id"] = a.pop("_id")
-        advocates.append(a)
-    
-    return {"advocates": advocates}
-
-
 # ============== LEGAL NOTEPAD ==============
 
 @router.post("/api/notepad")

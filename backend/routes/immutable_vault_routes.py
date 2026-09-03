@@ -113,7 +113,7 @@ async def seal_evidence(
     cert_hash = hashlib.sha256(str(cert_for_hash).encode("utf-8")).hexdigest()
     certificate["certificate_hash"] = cert_hash
 
-    await db.vault_certificates.insert_one(certificate)
+    await db.vault_certificates.insert_one(dict(certificate))
 
     return certificate
 

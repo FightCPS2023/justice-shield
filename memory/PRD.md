@@ -307,7 +307,20 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Frontend validated via auto_frontend_testing_agent
 - Note: Full pytest run timed out in this environment (context deadline exceeded)
 
+### Session 55: Full Reliability Sweep — Router Restoration + Lint Fixes - COMPLETE (2026-06)
+- CRITICAL: 12 routers (91 endpoints — case_data, calendar, legal, courtlistener, community, section1983, podcast, caselaw, ada, strategy, case_memory) had been accidentally dropped from routes/__init__.py in the Punisher-engines commit; all restored (24 routers, 183 paths)
+- Removed duplicate notepad_routes.py and duplicate /api/advocates in community_routes (admin_routes version is canonical)
+- Fixed NameError bugs: ada_routes (httpx, COURTLISTENER_API_KEY), calendar_routes (timedelta), caselaw (STATES_INFO, get_case_with_ownership), legal_routes (json, get_case_with_ownership), podcast (get_case_with_ownership)
+- Fixed ObjectId serialization risk in integrity_db / vault / political_strike (insert_one on dict copy)
+- Removed dead code: server_backup.py, save_upload_to_disk, stale frontend/public/assets Vite bundle; replaced wildcard import in models/__init__.py; bare excepts in tests
+- Verified: frontend→backend API path audit (161 calls, 0 missing); testing_agent iteration_29: 23/23 backend + frontend smoke 100%
+
 ## Remaining Tasks
+
+### P1 - Code Quality (from audit)
+- Frontend: ~71 missing hook deps, key={index} in mapped lists
+- Backend: schemas.py drift (VisitationCreate/CourtHearingCreate/CommunicationLogCreate unused by routes); documents_routes.py 1800+ lines should be split
+
 
 ### P0 - Background Check Reliability
 - LLM 502/budget failures can cause timeouts; top up Universal Key and re-test person lookup

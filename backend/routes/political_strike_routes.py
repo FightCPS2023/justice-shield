@@ -157,7 +157,7 @@ async def dispatch_dossier(payload: DispatchRequest, current_user: dict = Depend
             for c in contacts
         ]
     }
-    await db.dispatch_reports.insert_one(report)
+    await db.dispatch_reports.insert_one(dict(report))
     return report
 
 

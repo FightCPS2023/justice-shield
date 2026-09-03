@@ -245,7 +245,7 @@ class TestStreamingEdgeCases:
                     if data.get("session_id"):
                         session_id = data["session_id"]
                         break
-                except:
+                except Exception:
                     continue
         
         assert session_id is not None, "No session_id returned"

@@ -180,7 +180,7 @@ class TestDocumentUpload:
         for doc_id in self.uploaded_doc_ids:
             try:
                 self.session.delete(f"{BASE_URL}/api/documents/{doc_id}")
-            except:
+            except Exception:
                 pass
     
     def test_01_upload_pdf(self):
@@ -359,7 +359,7 @@ class TestNotepad:
         for note_id in self.created_notes:
             try:
                 self.session.delete(f"{BASE_URL}/api/notepad/{note_id}")
-            except:
+            except Exception:
                 pass
     
     def test_01_create_note(self):

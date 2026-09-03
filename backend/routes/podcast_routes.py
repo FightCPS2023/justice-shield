@@ -10,7 +10,7 @@ from database import get_db
 from auth import get_current_user
 from config import EMERGENT_LLM_KEY
 from utils.credits import (
-    require_tier, check_ai_credits, increment_ai_credits, save_ai_response_to_case
+    require_tier, check_ai_credits, increment_ai_credits, save_ai_response_to_case, get_case_with_ownership
 )
 
 router = APIRouter()

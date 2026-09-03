@@ -8,7 +8,8 @@ from fastapi import APIRouter, HTTPException, Depends, Body
 
 from database import get_db
 from auth import get_current_user
-from config import EMERGENT_LLM_KEY
+import httpx
+from config import EMERGENT_LLM_KEY, COURTLISTENER_API_KEY
 from utils.credits import require_tier, get_case_with_ownership, save_ai_response_to_case
 from ada_knowledge import (
     ADA_FEDERAL_LAW, CPS_ADA_REQUIREMENTS, ADA_CASE_LAW, FALSE_CLAIMS_ACT,

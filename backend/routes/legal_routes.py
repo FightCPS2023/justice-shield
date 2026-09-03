@@ -1,5 +1,6 @@
 """Legal library routes - statutes, rights guide, evidence checklist, incident types"""
 import uuid
+import json
 from datetime import datetime, timezone
 from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Depends, Body
@@ -7,6 +8,7 @@ from fastapi import APIRouter, HTTPException, Depends, Body
 from database import get_db
 from auth import get_current_user
 from config import EMERGENT_LLM_KEY
+from utils.credits import get_case_with_ownership
 from legal_knowledge import (
     SUPREME_COURT_CASES, CIRCUIT_COURT_CASES, ROOKER_FELDMAN,
     BLACKS_LAW_DEFINITIONS, CONSTITUTIONAL_RIGHTS, VIOLATION_ANALYSIS,
