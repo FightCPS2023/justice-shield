@@ -11,6 +11,8 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useAutosaveDraft } from '../../hooks/useAutosaveDraft';
+import { DraftStatus } from '../DraftStatus';
 
 function NotepadTab({ selectedCase }) {
   const { api } = useAuth();
@@ -26,6 +28,7 @@ function NotepadTab({ selectedCase }) {
     tags: ''
   };
   const [formData, setFormData] = useState(initialFormState);
+  const draft = useAutosaveDraft(`notepad:${selectedCase?.id || 'global'}`, formData, setFormData, initialFormState, () => setShowForm(true));
 
   const categories = [
     { value: 'general', label: 'General Notes', color: 'bg-gray-500' },
@@ -144,6 +147,7 @@ function NotepadTab({ selectedCase }) {
             <FileText className="w-8 h-8 text-purple-500" />
             Legal Notepad
           </h1>
+          <DraftStatus draft={draft} testId="notepad-draft-status" />
           <p className="text-gray-400">Save statutes, case law, and research notes for your cases</p>
         </div>
         <div className="flex gap-3">

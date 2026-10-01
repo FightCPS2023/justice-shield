@@ -11,6 +11,8 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useAutosaveDraft } from '../../hooks/useAutosaveDraft';
+import { DraftStatus } from '../DraftStatus';
 
 function ViolationsTab({ selectedCase }) {
   const { api } = useAuth();
@@ -25,6 +27,7 @@ function ViolationsTab({ selectedCase }) {
     statute_reference: ''
   };
   const [formData, setFormData] = useState(initialFormState);
+  const draft = useAutosaveDraft(`violations:${selectedCase?.id || 'global'}`, formData, setFormData, initialFormState, () => setShowAdd(true));
 
   const violationTypes = [
     '4th Amendment - Unreasonable Search',
@@ -112,6 +115,7 @@ function ViolationsTab({ selectedCase }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Violation Tracker</h1>
+          <DraftStatus draft={draft} testId="violations-draft-status" />
           <p className="text-gray-400">Case: {selectedCase.title}</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-punisher flex items-center gap-2">

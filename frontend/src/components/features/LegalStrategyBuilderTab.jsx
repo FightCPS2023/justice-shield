@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { CitationLog } from '../CitationLog';
+import { AiModeSelector } from '../AiModeSelector';
 
 function LegalStrategyBuilderTab({ selectedCase }) {
   const { api } = useAuth();
@@ -84,6 +85,7 @@ function LegalStrategyBuilderTab({ selectedCase }) {
             <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>
               Legal Strategy Builder
             </h1>
+            <div className="mt-2"><AiModeSelector /></div>
             <p className="text-gray-400">Build a comprehensive defense strategy for your case</p>
           </div>
         </div>

@@ -11,6 +11,8 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useAutosaveDraft } from '../../hooks/useAutosaveDraft';
+import { DraftStatus } from '../DraftStatus';
 
 function CriminalCaseTab({ selectedCase }) {
   const { api } = useAuth();
@@ -28,6 +30,7 @@ function CriminalCaseTab({ selectedCase }) {
     charges: []
   };
   const [formData, setFormData] = useState(initialFormState);
+  const draft = useAutosaveDraft(`criminal:${selectedCase?.id || 'global'}`, formData, setFormData, initialFormState, () => setShowAdd(true));
   const [chargeInput, setChargeInput] = useState({ charge: '', statute: '', severity: 'misdemeanor' });
 
   useEffect(() => {
@@ -97,6 +100,7 @@ function CriminalCaseTab({ selectedCase }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Criminal Case Link</h1>
+          <DraftStatus draft={draft} testId="criminal-draft-status" />
           <p className="text-gray-400">Track related criminal charges for {selectedCase.title}</p>
         </div>
         {!criminalCase && (

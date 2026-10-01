@@ -11,6 +11,7 @@ import {
   MapPin, Coins, BarChart3, User, ChevronRight, HelpCircle, Bot, RefreshCw,
   Save
 } from 'lucide-react';
+import { AiModeSelector } from '../AiModeSelector';
 
 function SmartDocTab({ selectedCase }) {
   const [prompt, setPrompt] = useState('');
@@ -122,6 +123,7 @@ function SmartDocTab({ selectedCase }) {
           <Zap className="w-8 h-8 text-amber-500" />
           Smart Document Generator
         </h1>
+        <div className="mt-2"><AiModeSelector /></div>
         <p className="text-slate-300 mt-1">
           Describe what you need in plain English — get a complete, court-ready legal document with citations
           {selectedCase && <span className="text-red-400 font-medium"> — Auto-linked to: {selectedCase.title}</span>}

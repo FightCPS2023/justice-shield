@@ -11,6 +11,8 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useAutosaveDraft } from '../../hooks/useAutosaveDraft';
+import { DraftStatus } from '../DraftStatus';
 
 function ForumTab() {
   const { api } = useAuth();
@@ -19,6 +21,7 @@ function ForumTab() {
   const [showAdd, setShowAdd] = useState(false);
   const initialFormState = { title: '', content: '', category: 'general' };
   const [formData, setFormData] = useState(initialFormState);
+  const draft = useAutosaveDraft(`forum:${'global'}`, formData, setFormData, initialFormState, () => setShowAdd(true));
 
   const categories = [
     { id: 'general', label: 'General Discussion' },
@@ -74,6 +77,7 @@ function ForumTab() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Community Forum</h1>
+          <DraftStatus draft={draft} testId="forum-draft-status" />
           <p className="text-gray-400">Connect with other parents fighting CPS</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-punisher">

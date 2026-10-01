@@ -20,6 +20,7 @@ from bson import ObjectId
 
 from database import init_db, close_db, get_db
 import llm_patch  # noqa: F401  (must precede route imports)
+from llm_patch import AI_MODE
 from routes import all_routers
 
 load_dotenv()
@@ -66,6 +67,13 @@ async def cors_middleware(request, call_next):
     return response
 
 app.add_middleware(GZipMiddleware, minimum_size=500)
+
+
+@app.middleware("http")
+async def ai_mode_middleware(request, call_next):
+    AI_MODE.set((request.headers.get("x-ai-mode") or "AUTO").upper())
+    return await call_next(request)
+
 
 
 # Include all route modules

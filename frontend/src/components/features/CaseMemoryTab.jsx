@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Brain, Plus, Trash2, Loader2, Tag } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { useAutosaveDraft } from '../../hooks/useAutosaveDraft';
+import { DraftStatus } from '../DraftStatus';
 
 function CaseMemoryTab({ selectedCase }) {
   const { api } = useAuth();
@@ -10,6 +12,7 @@ function CaseMemoryTab({ selectedCase }) {
   const [showAdd, setShowAdd] = useState(false);
   const initialFormState = { title: "", content: "", tags: "" };
   const [formData, setFormData] = useState(initialFormState);
+  const draft = useAutosaveDraft(`memory:${selectedCase?.id || 'global'}`, formData, setFormData, initialFormState, () => setShowAdd(true));
 
   useEffect(() => {
     if (selectedCase) {
@@ -93,6 +96,7 @@ function CaseMemoryTab({ selectedCase }) {
             <Brain className="w-6 h-6 text-purple-400" />
             Case Memory
           </h2>
+          <DraftStatus draft={draft} testId="memory-draft-status" />
           <p className="text-gray-400">This memory is used by AI tools to get smarter over time.</p>
         </div>
         <button

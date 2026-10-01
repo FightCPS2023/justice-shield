@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { CitationLog } from '../CitationLog';
+import { AiModeSelector } from '../AiModeSelector';
 
 function ArgumentGeneratorTab({ selectedCase }) {
   const { api } = useAuth();
@@ -58,6 +59,7 @@ function ArgumentGeneratorTab({ selectedCase }) {
         <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>
           Argument Generator
         </h1>
+        <div className="mt-2"><AiModeSelector /></div>
         <p className="text-gray-400">Generate court-ready legal arguments from your case data</p>
       </div>
 

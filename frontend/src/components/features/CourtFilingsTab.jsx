@@ -11,6 +11,8 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useAutosaveDraft } from '../../hooks/useAutosaveDraft';
+import { DraftStatus } from '../DraftStatus';
 
 function CourtFilingsTab({ selectedCase }) {
   const { api } = useAuth();
@@ -25,6 +27,7 @@ function CourtFilingsTab({ selectedCase }) {
     content: ''
   };
   const [formData, setFormData] = useState(initialFormState);
+  const draft = useAutosaveDraft(`filings:${selectedCase?.id || 'global'}`, formData, setFormData, initialFormState, () => setShowAdd(true));
 
   const filingTypes = [
     { id: 'motion', label: 'Motion' },
@@ -107,6 +110,7 @@ function CourtFilingsTab({ selectedCase }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Court Filings</h1>
+          <DraftStatus draft={draft} testId="filings-draft-status" />
           <p className="text-gray-400">Track all filings for {selectedCase.title}</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-punisher">

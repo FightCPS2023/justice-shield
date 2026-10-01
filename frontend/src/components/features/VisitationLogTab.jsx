@@ -11,6 +11,8 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useAutosaveDraft } from '../../hooks/useAutosaveDraft';
+import { DraftStatus } from '../DraftStatus';
 
 function VisitationLogTab({ selectedCase }) {
   const { api } = useAuth();
@@ -33,6 +35,7 @@ function VisitationLogTab({ selectedCase }) {
     notes: ''
   };
   const [formData, setFormData] = useState(initialFormState);
+  const draft = useAutosaveDraft(`visitation:${selectedCase?.id || 'global'}`, formData, setFormData, initialFormState, () => setShowAdd(true));
 
   const emotionalStates = [
     { id: 'happy', label: 'Happy', icon: '😊', color: 'text-green-400' },
@@ -102,6 +105,7 @@ function VisitationLogTab({ selectedCase }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Visitation Log</h1>
+          <DraftStatus draft={draft} testId="visitation-draft-status" />
           <p className="text-gray-400">Track visits with your children - {selectedCase.title}</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-punisher">

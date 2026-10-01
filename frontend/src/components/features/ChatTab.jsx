@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { API_URL } from '../../lib/api';
+import { api } from '../../lib/api';
 import { CitationLog } from '../CitationLog';
 import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
@@ -11,6 +11,7 @@ import {
   MapPin, Coins, BarChart3, User, ChevronRight, HelpCircle, Bot, RefreshCw,
   Save
 } from 'lucide-react';
+import { AiModeSelector } from '../AiModeSelector';
 
 function ChatTab({ selectedCase }) {
   const [messages, setMessages] = useState([]);
@@ -30,58 +31,13 @@ function ChatTab({ selectedCase }) {
     setStreamingContent('');
 
     try {
-      // Use streaming endpoint for real-time response
-      const response = await fetch(`${API_URL}/api/ai/chat/stream`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          message: userMessage,
-          session_id: sessionId,
-          case_id: selectedCase?.id
-        })
-      });
-
-      if (!response.ok) throw new Error('Stream failed');
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let fullContent = '';
-      let citationLog = null;
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const text = decoder.decode(value);
-        const lines = text.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.error) {
-                throw new Error(data.error);
-              }
-              if (data.chunk) {
-                fullContent += data.chunk;
-                setStreamingContent(fullContent);
-              }
-              if (data.done && data.session_id) {
-                setSessionId(data.session_id);
-              }
-              if (data.done && data.citation_log) citationLog = data.citation_log;
-            } catch (parseError) {
-              // Skip parse errors for incomplete chunks
-            }
-          }
-        }
-      }
-
-      // Add complete message to history
-      setMessages((prev) => [...prev, { role: 'assistant', content: fullContent, citationLog }]);
+      const data = await api.job('chat', {
+        message: userMessage,
+        session_id: sessionId,
+        case_id: selectedCase?.id
+      }, { onTick: (secs) => setStreamingContent(`Working the record… ${secs}s`) });
+      if (data.session_id) setSessionId(data.session_id);
+      setMessages((prev) => [...prev, { role: 'assistant', content: data.response || '', citationLog: data.citation_log || null }]);
       setStreamingContent('');
     } catch (error) {
       console.error('Chat error:', error);
@@ -98,6 +54,7 @@ function ChatTab({ selectedCase }) {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>AI Legal Assistant</h1>
+          <div className="mt-2"><AiModeSelector /></div>
           <p className="text-gray-400 text-sm">Powered by GPT-5.2 • Specialized in CPS Defense</p>
         </div>
         {selectedCase && (

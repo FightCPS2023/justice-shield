@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import CaseDetailModal from './CaseDetailModal';
+import { useAutosaveDraft } from '../../hooks/useAutosaveDraft';
+import { DraftStatus } from '../DraftStatus';
 
 function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
   const { api } = useAuth();
@@ -29,6 +31,7 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
     children_names: []
   };
   const [formData, setFormData] = useState(initialFormState);
+  const draft = useAutosaveDraft(`cases:${selectedCase?.id || 'global'}`, formData, setFormData, initialFormState, () => setShowCreate(true));
 
   const states = [
     'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
@@ -90,6 +93,7 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-semibold text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>Your Case Home</h1>
+          <DraftStatus draft={draft} testId="cases-draft-status" />
           <p className="text-slate-300 mt-2 text-lg">
             We’re here to help you protect your family — one step at a time.
           </p>

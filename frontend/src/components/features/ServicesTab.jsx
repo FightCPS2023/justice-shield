@@ -11,6 +11,8 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useAutosaveDraft } from '../../hooks/useAutosaveDraft';
+import { DraftStatus } from '../DraftStatus';
 
 function ServicesTab({ selectedCase }) {
   const { api } = useAuth();
@@ -26,6 +28,7 @@ function ServicesTab({ selectedCase }) {
     notes: ''
   };
   const [formData, setFormData] = useState(initialFormState);
+  const draft = useAutosaveDraft(`services:${selectedCase?.id || 'global'}`, formData, setFormData, initialFormState, () => setShowAdd(true));
 
   const serviceTypes = [
     'Parenting Classes', 'Drug Testing', 'Counseling', 'Therapy', 'Anger Management',
@@ -100,6 +103,7 @@ function ServicesTab({ selectedCase }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Case Plan Services</h1>
+          <DraftStatus draft={draft} testId="services-draft-status" />
           <p className="text-gray-400">Track required services for {selectedCase.title}</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-punisher">

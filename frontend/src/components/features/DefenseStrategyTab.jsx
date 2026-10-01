@@ -12,6 +12,9 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { CitationLog } from '../CitationLog';
+import { useAutosaveDraft } from '../../hooks/useAutosaveDraft';
+import { DraftStatus } from '../DraftStatus';
+import { AiModeSelector } from '../AiModeSelector';
 
 function DefenseStrategyTab({ selectedCase }) {
   const { api } = useAuth();
@@ -28,6 +31,7 @@ function DefenseStrategyTab({ selectedCase }) {
     case_law_support: []
   };
   const [formData, setFormData] = useState(initialFormState);
+  const draft = useAutosaveDraft(`strategy:${selectedCase?.id || 'global'}`, formData, setFormData, initialFormState, () => setShowAdd(true));
 
   useEffect(() => {
     if (selectedCase) loadStrategies();
@@ -102,6 +106,8 @@ function DefenseStrategyTab({ selectedCase }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Defense Strategy</h1>
+          <div className="mt-2"><AiModeSelector /></div>
+          <DraftStatus draft={draft} testId="strategy-draft-status" />
           <p className="text-gray-400">Build your defense for {selectedCase.title}</p>
         </div>
         <div className="flex gap-3">

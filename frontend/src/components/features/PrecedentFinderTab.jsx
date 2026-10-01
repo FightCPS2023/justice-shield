@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { CitationLog } from '../CitationLog';
+import { AiModeSelector } from '../AiModeSelector';
 
 function PrecedentFinderTab({ selectedCase }) {
   const { api } = useAuth();
@@ -56,6 +57,7 @@ function PrecedentFinderTab({ selectedCase }) {
         <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>
           Legal Precedent Finder
         </h1>
+        <div className="mt-2"><AiModeSelector /></div>
         <p className="text-gray-400">Find case law precedents for specific violations</p>
       </div>
 

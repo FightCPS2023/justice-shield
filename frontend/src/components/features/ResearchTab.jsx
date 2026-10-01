@@ -11,6 +11,7 @@ import {
   MapPin, Coins, BarChart3, User, ChevronRight, HelpCircle, Bot, RefreshCw,
   Save
 } from 'lucide-react';
+import { AiModeSelector } from '../AiModeSelector';
 
 function ResearchTab({ selectedCase }) {
   const [query, setQuery] = useState('');
@@ -135,6 +136,7 @@ function ResearchTab({ selectedCase }) {
           <Search className="w-8 h-8 text-red-500" />
           Smart Legal Research
         </h1>
+        <div className="mt-2"><AiModeSelector /></div>
         <p className="text-slate-300 mt-1">AI-powered research engine — ask any legal question in plain English</p>
       </div>
 

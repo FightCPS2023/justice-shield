@@ -11,6 +11,7 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { AiModeSelector } from '../AiModeSelector';
 
 function ExpertLegalAITab({ selectedCase }) {
   const { api } = useAuth();
@@ -89,6 +90,7 @@ function ExpertLegalAITab({ selectedCase }) {
           <Brain className="w-8 h-8 text-purple-500" />
           Expert Legal AI
         </h1>
+        <div className="mt-2"><AiModeSelector /></div>
         <p className="text-gray-400">The most knowledgeable CPS legal AI in existence - {selectedCase.title}</p>
       </div>
 

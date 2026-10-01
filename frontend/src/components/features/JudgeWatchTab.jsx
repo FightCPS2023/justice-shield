@@ -11,6 +11,8 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useAutosaveDraft } from '../../hooks/useAutosaveDraft';
+import { DraftStatus } from '../DraftStatus';
 
 function JudgeWatchTab({ selectedCase }) {
   const { api } = useAuth();
@@ -27,6 +29,7 @@ function JudgeWatchTab({ selectedCase }) {
     known_rulings: []
   };
   const [formData, setFormData] = useState(initialFormState);
+  const draft = useAutosaveDraft(`judge:${selectedCase?.id || 'global'}`, formData, setFormData, initialFormState, () => setShowAdd(true));
   const [rulingInput, setRulingInput] = useState('');
 
   useEffect(() => {
@@ -109,6 +112,7 @@ function JudgeWatchTab({ selectedCase }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Judge Watch</h1>
+          <DraftStatus draft={draft} testId="judge-draft-status" />
           <p className="text-gray-400">Research your judge for {selectedCase.title}</p>
         </div>
         {!judgeResearch && (

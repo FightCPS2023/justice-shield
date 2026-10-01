@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { CitationLog } from '../CitationLog';
+import { AiModeSelector } from '../AiModeSelector';
 
 function Section1983Tab({ selectedCase }) {
   const { api } = useAuth();
@@ -110,6 +111,7 @@ function Section1983Tab({ selectedCase }) {
               <Gavel className="w-8 h-8 text-red-500" />
               Section 1983 Civil Rights Lawsuit
             </h1>
+            <div className="mt-2"><AiModeSelector /></div>
             <p className="text-gray-300 mt-2" data-testid="section1983-header-description">
               42 U.S.C. § 1983 allows you to sue government officials who violate your constitutional rights.
               This is YOUR most powerful weapon against CPS overreach.

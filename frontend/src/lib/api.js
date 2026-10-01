@@ -9,8 +9,11 @@ const api = {
   
   async request(endpoint, options = {}, retryCount = 0) {
     const { timeoutMs, retryable = true, ...fetchOptions } = options;
+    let aiMode = 'AUTO';
+    try { aiMode = window.localStorage.getItem('punisher_ai_mode') || 'AUTO'; } catch { /* ignore */ }
     const headers = {
       'Content-Type': 'application/json',
+      'X-AI-Mode': aiMode,
       ...fetchOptions.headers,
     };
     

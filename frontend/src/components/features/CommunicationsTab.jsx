@@ -11,6 +11,8 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useAutosaveDraft } from '../../hooks/useAutosaveDraft';
+import { DraftStatus } from '../DraftStatus';
 
 function CommunicationsTab({ selectedCase }) {
   const { api } = useAuth();
@@ -25,6 +27,7 @@ function CommunicationsTab({ selectedCase }) {
     favorable: null
   };
   const [formData, setFormData] = useState(initialFormState);
+  const draft = useAutosaveDraft(`communications:${selectedCase?.id || 'global'}`, formData, setFormData, initialFormState, () => setShowAdd(true));
 
   const contactTypes = [
     { id: 'phone', label: 'Phone Call' },
@@ -96,6 +99,7 @@ function CommunicationsTab({ selectedCase }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Communication Log</h1>
+          <DraftStatus draft={draft} testId="communications-draft-status" />
           <p className="text-gray-400">Track all communications for {selectedCase.title}</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-punisher">

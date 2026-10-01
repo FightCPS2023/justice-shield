@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { CitationLog } from '../CitationLog';
+import { AiModeSelector } from '../AiModeSelector';
 
 function CaseLawAnalysisTab({ selectedCase }) {
   const { api } = useAuth();
@@ -68,6 +69,7 @@ function CaseLawAnalysisTab({ selectedCase }) {
           <BookOpen className="w-8 h-8 text-blue-500" />
           Deep Case Law Analysis
         </h1>
+        <div className="mt-2"><AiModeSelector /></div>
         <p className="text-gray-400">AI-powered analysis of relevant precedents for {selectedCase.title}</p>
       </div>
 

@@ -11,6 +11,7 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { AiModeSelector } from '../AiModeSelector';
 
 function EvidenceMapperTab({ selectedCase }) {
   const { api } = useAuth();
@@ -85,6 +86,7 @@ function EvidenceMapperTab({ selectedCase }) {
         <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>
           Evidence Argument Mapper
         </h1>
+        <div className="mt-2"><AiModeSelector /></div>
         <p className="text-gray-400">Map your evidence to legal precedents and arguments</p>
       </div>
 

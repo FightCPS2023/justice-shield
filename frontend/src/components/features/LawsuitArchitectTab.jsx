@@ -3,6 +3,7 @@ import { Gavel, FileText, Copy, Download, Plus, Trash2, ArrowRight, ArrowLeft } 
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { CitationLog } from '../CitationLog';
+import { AiModeSelector } from '../AiModeSelector';
 
 const defaultPlaintiff = { name: '', address: '', city: '', state: '', zip: '', phone: '', email: '' };
 const defaultDefendant = { name: '', badge: '', title: '', employer: '' };
@@ -126,6 +127,7 @@ function LawsuitArchitectTab({ selectedCase }) {
         <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
           <Gavel className="w-8 h-8 text-red-500" /> ⚔️ The Executioner — 1983 Lawsuit Architect
         </h1>
+        <div className="mt-2"><AiModeSelector /></div>
         <p className="text-gray-400">Forge court-ready federal §1983 complaints from documented violations.</p>
       </div>
 
