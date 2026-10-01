@@ -11,6 +11,7 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { CitationLog } from '../CitationLog';
 
 function LegalStrategyBuilderTab({ selectedCase }) {
   const { api } = useAuth();
@@ -49,7 +50,7 @@ function LegalStrategyBuilderTab({ selectedCase }) {
     setStrategy(null);
 
     try {
-      const response = await api.post('/api/strategy-builder/build', {
+      const response = await api.job('strategy-builder', {
         case_id: selectedCase.id,
         goal: config.goal,
         aggressive_level: config.aggressive_level
@@ -191,17 +192,20 @@ function LegalStrategyBuilderTab({ selectedCase }) {
               </span>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(strategy.strategy);
+                  navigator.clipboard.writeText(strategy.citation_log?.sanitized_text || strategy.strategy);
                   toast.success('Strategy copied to clipboard!');
                 }}
-                className="p-2 hover:bg-gray-700 rounded-lg"
+                disabled={!strategy.citation_log}
+                className="p-2 hover:bg-gray-700 rounded-lg disabled:opacity-40"
+                data-testid="strategy-copy-btn"
               >
                 <Copy className="w-4 h-4" />
               </button>
             </div>
           </div>
+          <div className="mb-4"><CitationLog log={strategy.citation_log} testId="strategy-citation-log" /></div>
           <div className="prose prose-invert max-w-none">
-            <div className="whitespace-pre-wrap text-gray-300">{strategy.strategy}</div>
+            <div className="whitespace-pre-wrap text-gray-300">{strategy.citation_log?.sanitized_text || strategy.strategy}</div>
           </div>
           <div className="mt-4 pt-4 border-t border-gray-700 flex gap-4 text-sm text-gray-500">
             <span>Violations analyzed: {strategy.case_context?.violations_count || 0}</span>

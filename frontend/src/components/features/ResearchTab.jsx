@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { API_URL } from '../../lib/api';
+import { api } from '../../lib/api';
+import { CitationLog, useCitationGate } from '../CitationLog';
 import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut, LogIn,
@@ -21,6 +22,8 @@ function ResearchTab({ selectedCase }) {
   const [streamingContent, setStreamingContent] = useState('');
   const [nextSteps, setNextSteps] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [citationLog, setCitationLog] = useState(null);
+  const gate = useCitationGate(citationLog);
 
   const handleCancel = () => {
     setQuery('');
@@ -29,6 +32,7 @@ function ResearchTab({ selectedCase }) {
     setStreamingContent('');
     setNextSteps([]);
     setErrorMessage('');
+    setCitationLog(null);
   };
 
   const handleBack = () => {
@@ -73,76 +77,29 @@ function ResearchTab({ selectedCase }) {
     setStreamingContent('');
     setNextSteps([]);
     setErrorMessage('');
+    setCitationLog(null);
     setSearchTime(null);
     const startTime = Date.now();
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000);
 
     try {
-      const response = await fetch(`${API_URL}/api/ai/smart-research/stream`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          query,
-          state: state || null,
-          research_type: researchType,
-          case_id: selectedCase?.id || null
-        }),
-        signal: controller.signal
-      });
+      const data = await api.job('smart-research', {
+        query,
+        state: state || null,
+        research_type: researchType,
+        case_id: selectedCase?.id || null
+      }, { onTick: (secs) => setStreamingContent(`Cite-Guard research engine working… ${secs}s elapsed. Long briefs can take 1–3 minutes.`) });
 
-      if (!response.ok) throw new Error('Research stream failed');
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let fullContent = '';
-      let collectedNextSteps = [];
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunkText = decoder.decode(value);
-        const lines = chunkText.split('\n');
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.error) throw new Error(data.error);
-              if (data.chunk) {
-                fullContent += data.chunk;
-                setStreamingContent(fullContent);
-              }
-              if (data.done) {
-                if (Array.isArray(data.next_steps)) {
-                  collectedNextSteps = data.next_steps;
-                }
-              }
-            } catch (parseError) {
-              // ignore chunk parse errors
-            }
-          }
-        }
-      }
-
-      if (!collectedNextSteps.length) {
-        collectedNextSteps = parseNextSteps(fullContent);
-      }
-
+      const fullContent = data.results || '';
       setResults(fullContent);
       setStreamingContent('');
-      setNextSteps(collectedNextSteps);
+      setNextSteps(Array.isArray(data.next_steps) && data.next_steps.length ? data.next_steps : parseNextSteps(fullContent));
+      setCitationLog(data.citation_log || { entries: [], counts: {}, total: 0, release_grade: false, headline: 'Citation log unavailable. Do not file until citations are confirmed.', sanitized_text: fullContent, verified_only_text: fullContent });
       setSearchTime(((Date.now() - startTime) / 1000).toFixed(1));
     } catch (error) {
-      const message = error.name === 'AbortError'
-        ? 'Research timed out. Please try again.'
-        : (error.message || 'Research failed');
+      const message = error.message || 'Research failed';
       toast.error(message);
       setErrorMessage(message);
     } finally {
-      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
@@ -300,16 +257,19 @@ function ResearchTab({ selectedCase }) {
               )}
             </div>
             <button
-              onClick={() => { navigator.clipboard.writeText(results); toast.success('Copied to clipboard'); }}
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-200 text-sm flex items-center gap-1.5"
+              onClick={() => { navigator.clipboard.writeText(gate.exportText(results)); toast.success(gate.verifiedOnly ? 'Copied (verified-only)' : 'Copied to clipboard'); }}
+              disabled={!gate.ready}
+              title={gate.blockedReason || ''}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-200 text-sm flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
               data-testid="copy-results-btn"
             >
               <Copy className="w-4 h-4" /> Copy
             </button>
           </div>
-          <div className="p-6">
+          <div className="p-6 space-y-4">
+            <CitationLog log={citationLog} pending={!citationLog} verifiedOnly={gate.verifiedOnly} onVerifiedOnlyChange={gate.setVerifiedOnly} testId="research-citation-log" />
             <div className="prose prose-invert max-w-none">
-              <pre className="whitespace-pre-wrap text-sm text-slate-300 leading-relaxed font-sans">{results}</pre>
+              <pre className="whitespace-pre-wrap text-sm text-slate-300 leading-relaxed font-sans">{citationLog ? citationLog.sanitized_text : results}</pre>
             </div>
           </div>
         </div>

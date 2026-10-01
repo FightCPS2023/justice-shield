@@ -1,8 +1,10 @@
+from dataclasses import asdict
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from auth import get_current_user
 from engines.porch_mode_engine import generate_response
 from utils.credits import save_ai_response_to_case
+from ai_mission import build_citation_log
 
 router = APIRouter()
 
@@ -41,4 +43,8 @@ async def analyze_porch_mode(payload: PorchModeRequest, current_user: dict = Dep
             }
         )
 
-    return response
+    cites = []
+    for d in response.detections:
+        cites.extend(d.legal_citations or [])
+    citation_log = await build_citation_log("\n".join(cites), check_courtlistener=True)
+    return {**asdict(response), "citation_log": citation_log}

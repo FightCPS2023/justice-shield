@@ -12,6 +12,7 @@ from auth import get_current_user
 from config import EMERGENT_LLM_KEY
 from .courtlistener_routes import STATES_INFO
 from .legal_routes import SECTION_1983_SYSTEM_PROMPT
+from ai_mission import citation_log_for
 from utils.credits import (
     get_case_with_ownership, require_tier, check_ai_credits,
     increment_ai_credits, save_ai_response_to_case
@@ -176,6 +177,7 @@ Make it AGGRESSIVE and POWERFUL - these officials violated constitutional rights
     return {
         "id": complaint_id,
         "complaint": response,
+        "citation_log": await citation_log_for(db, response, case_id, current_user["user_id"]),
         "violations_analyzed": len(violations),
         "timeline_events_analyzed": len(timeline),
         "defendants": defendants,

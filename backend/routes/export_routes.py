@@ -9,6 +9,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from database import get_db
+from ai_mission import citation_log_for, log_to_markdown
 from auth import get_current_user
 
 router = APIRouter()
@@ -45,6 +46,20 @@ class ExportPayload(BaseModel):
     template_text: Optional[str] = None
     editor_notes: Optional[str] = None
     include_analysis: Optional[bool] = True
+    verified_only: Optional[bool] = False
+
+
+async def _cite_guard_template(payload: "ExportPayload", case_id: str, user_id: str) -> Optional[str]:
+    """Court export gate: run Cite-Guard on the filing text; verified-only mode strips non-verified authorities."""
+    text = _get_template_content(payload.template_name, payload.template_text)
+    if not text:
+        return text
+    log = await citation_log_for(get_db(), text, case_id, user_id)
+    if payload.verified_only:
+        return log["verified_only_text"] + log_to_markdown(log)
+    if not log["release_grade"]:
+        raise HTTPException(status_code=422, detail=f"{log['headline']} {log['counts'].get('UNVERIFIED', 0)} unverified and {log['counts'].get('STRIKE', 0)} struck authorities. Enable Verified-only mode or confirm the citations first.")
+    return log["sanitized_text"] + log_to_markdown(log)
 
 
 def _get_template_content(template_name: Optional[str], template_text: Optional[str]) -> str:
@@ -358,7 +373,7 @@ async def export_case_documents_pdf(case_id: str, payload: ExportPayload, curren
     section_style = ParagraphStyle('DocSection', parent=styles['Heading2'], fontSize=12, spaceBefore=12, spaceAfter=6)
     body_style = ParagraphStyle('DocBody', parent=styles['Normal'], fontSize=10, leading=14)
 
-    template_content = _get_template_content(payload.template_name, payload.template_text)
+    template_content = await _cite_guard_template(payload, case_id, current_user["user_id"])
     editor_notes = _normalize_text(payload.editor_notes).strip()
     include_analysis = payload.include_analysis if payload.include_analysis is not None else True
 
@@ -384,7 +399,7 @@ async def export_case_documents_pdf(case_id: str, payload: ExportPayload, curren
         story.append(Paragraph(f"Document {idx}: {doc_item.get('title', doc_item.get('filename', 'Document'))}", section_style))
         story.append(Paragraph(f"Filename: {doc_item.get('filename', 'N/A')}", body_style))
         story.append(Paragraph(f"Uploaded: {doc_item.get('created_at', 'N/A')[:10] if doc_item.get('created_at') else 'N/A'}", body_style))
-        story.append(Paragraph(f"Status: {doc_item.get('analysis_status', 'pending').upper()}", body_style))
+        story.append(Paragraph(f"Status: {(doc_item.get('analysis_status') or 'pending').upper()}", body_style))
         story.append(Paragraph(f"Type: {doc_item.get('file_type', 'N/A')}", body_style))
         story.append(Spacer(1, 6))
 
@@ -421,7 +436,7 @@ async def export_case_documents_docx(case_id: str, payload: ExportPayload, curre
 
     from docx import Document
 
-    template_content = _get_template_content(payload.template_name, payload.template_text)
+    template_content = await _cite_guard_template(payload, case_id, current_user["user_id"])
     editor_notes = _normalize_text(payload.editor_notes).strip()
     include_analysis = payload.include_analysis if payload.include_analysis is not None else True
 
@@ -441,7 +456,7 @@ async def export_case_documents_docx(case_id: str, payload: ExportPayload, curre
         docx_file.add_heading(f"Document {idx}: {doc_item.get('title', doc_item.get('filename', 'Document'))}", level=2)
         docx_file.add_paragraph(f"Filename: {doc_item.get('filename', 'N/A')}")
         docx_file.add_paragraph(f"Uploaded: {doc_item.get('created_at', 'N/A')[:10] if doc_item.get('created_at') else 'N/A'}")
-        docx_file.add_paragraph(f"Status: {doc_item.get('analysis_status', 'pending').upper()}")
+        docx_file.add_paragraph(f"Status: {(doc_item.get('analysis_status') or 'pending').upper()}")
         docx_file.add_paragraph(f"Type: {doc_item.get('file_type', 'N/A')}")
         if include_analysis and doc_item.get("analysis"):
             analysis = doc_item.get("analysis")
@@ -483,7 +498,7 @@ async def export_case_preparation_kit_pdf(case_id: str, payload: ExportPayload, 
     section_style = ParagraphStyle('KitSection', parent=styles['Heading2'], fontSize=12, spaceBefore=12, spaceAfter=6)
     body_style = ParagraphStyle('KitBody', parent=styles['Normal'], fontSize=10, leading=14)
 
-    template_content = _get_template_content(payload.template_name, payload.template_text)
+    template_content = await _cite_guard_template(payload, case_id, current_user["user_id"])
     editor_notes = _normalize_text(payload.editor_notes).strip()
 
     story = []
@@ -546,7 +561,7 @@ async def export_case_preparation_kit_docx(case_id: str, payload: ExportPayload,
 
     from docx import Document
 
-    template_content = _get_template_content(payload.template_name, payload.template_text)
+    template_content = await _cite_guard_template(payload, case_id, current_user["user_id"])
     editor_notes = _normalize_text(payload.editor_notes).strip()
 
     docx_file = Document()

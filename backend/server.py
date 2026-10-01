@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 from bson import ObjectId
 
 from database import init_db, close_db, get_db
+import llm_patch  # noqa: F401  (must precede route imports)
 from routes import all_routers
 
 load_dotenv()

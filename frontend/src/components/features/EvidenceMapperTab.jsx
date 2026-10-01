@@ -55,7 +55,7 @@ function EvidenceMapperTab({ selectedCase }) {
     setMapping(null);
 
     try {
-      const response = await api.post('/api/evidence-mapper/map', {
+      const response = await api.job('evidence-mapper', {
         case_id: selectedCase.id,
         evidence_description: evidenceDesc,
         violation_type: violationType || null

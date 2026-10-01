@@ -75,21 +75,7 @@ ADA CROSS-REFERENCE REQUIREMENT:
 - When relevant, cite Title II/III issues and include remedies, strategies, and case notes.
 """
 
-ULTIMATE_CPS_IDENTITY = """
-You are the Ultimate CPS Defense AI — a hyper-specialized, relentless legal warrior engineered to protect families from CPS overreach across all U.S. jurisdictions. You operate within lawful, evidence-based strategy. You provide legal education, not legal advice.
-
-Core directives:
-- Confirm the user’s jurisdiction (state/county). If missing, ask for it.
-- Begin responses with: “I am the Ultimate CPS Defense AI. I fight for your family with the full force of constitutional and statutory law. Provide the details of your case and we begin.”
-- Identify constitutional violations, due-process failures, policy breaches, and statutory defenses.
-- Provide step-by-step motions, objections, discovery, appeals, and civil-rights pathways where applicable.
-- Cite relevant statutes, policy manuals, and case law when possible.
-- Never encourage illegal activity.
-"""
-
-ULTIMATE_CPS_STRUCTURED_GUIDANCE = """
-Identity directive (structured output): You are the Ultimate CPS Defense AI. Because output must be structured, include the opening statement inside the appropriate narrative/disclaimer field and ask for jurisdiction there if missing. Return only the required structured format.
-"""
+from ai_mission import PUNISHER_IDENTITY as ULTIMATE_CPS_IDENTITY, PUNISHER_STRUCTURED_IDENTITY as ULTIMATE_CPS_STRUCTURED_GUIDANCE, COLD_OPENER, citation_log_for
 
 REAL_ESTATE_COUNSEL_SYSTEM_PROMPT = """
 You are Revenant Realty Counsel (RRC) — a relentless, razor-sharp real estate law attorney and constitutional property-rights specialist. You are aggressive, uncompromising, and deeply strategic. You defend families against bureaucratic overreach, wrongful property actions, and any attempt to weaponize real estate law against parents in CPS or related proceedings.
@@ -124,11 +110,28 @@ Response Framework (ALWAYS follow this order):
 
 If jurisdiction is missing, explicitly ask for state/county and any property address details. Do NOT provide generic advice; tailor to facts provided. Provide legal education, not legal advice.
 """
+
+async def llm_with_keepalive(coro, timeout: int = 170, interval: int = 8):
+    """Await the LLM call (threaded via llm_patch) while yielding SSE keepalive events."""
+    task = asyncio.ensure_future(coro)
+    waited = 0
+    while True:
+        done, _ = await asyncio.wait({task}, timeout=interval)
+        if done:
+            yield ("result", task.result())
+            return
+        waited += interval
+        if waited >= timeout:
+            task.cancel()
+            raise asyncio.TimeoutError()
+        yield ("keepalive", f"data: {json.dumps({'chunk': '', 'done': False, 'keepalive': waited})}\n\n")
+
+
 def extract_next_steps(text: str, max_items: int = 8) -> List[str]:
     if not text:
         return []
     match = re.search(
-        r"(?:^|\n)(?:#+\s*)?(NEXT STEPS(?: & STRATEGY)?|Next Steps(?: & Strategy)?|Recommended Next Steps)[:\s]*\n",
+        r"(?:^|\n)(?:#+\s*)?(?:\d+[.)]\s*)?(?:\*\*)?(NEXT STEPS(?: & STRATEGY)?(?: \(NOT PART OF FILING\))?|Next Steps(?: & Strategy)?|Recommended Next Steps|NEXT 72 HOURS|72[- ]hour checklist|STEP 8[^\n]{0,30})(?:\*\*)?[:\s]*\n",
         text,
         re.IGNORECASE
     )
@@ -162,7 +165,7 @@ def build_person_lookup_fallback_report(
 ) -> Dict[str, Any]:
     jurisdiction_context = location_info.strip() if location_info else "Not provided"
     narrative_lines = [
-        "I am the Ultimate CPS Defense AI. I fight for your family with the full force of constitutional and statutory law. Provide the details of your case and we begin.",
+        COLD_OPENER,
         "- Summary: Only limited identifiers were provided. No verified public-record data was supplied in the request.",
         "- Identity: A full name is provided, but no date of birth, aliases, or unique identifiers for verification.",
         "- Contact: No confirmed addresses, phones, or emails were provided for corroboration.",
@@ -779,7 +782,8 @@ Be thorough, cite relevant statutes and case law when applicable, and always pri
             metadata={"context_type": message_data.context_type, "session_id": session_id}
         )
     
-    return {"response": response, "session_id": session_id}
+    citation_log = await citation_log_for(db, response, message_data.case_id, current_user["user_id"])
+    return {"response": response, "session_id": session_id, "citation_log": citation_log}
 
 
 # Help Bot endpoint - guides users through the app
@@ -884,7 +888,12 @@ IMPORTANT:
             
             # Use streaming if available, otherwise send chunks
             user_message = UserMessage(text=message_data.message)
-            response = await chat.send_message(user_message)
+            response = None
+            async for kind, value in llm_with_keepalive(chat.send_message(user_message)):
+                if kind == "keepalive":
+                    yield value
+                else:
+                    response = value
             full_response = response
             
             # Stream the response in chunks for better UX
@@ -894,7 +903,8 @@ IMPORTANT:
                 yield f"data: {json.dumps({'chunk': chunk, 'done': False})}\n\n"
                 await asyncio.sleep(0.02)  # Small delay for smooth streaming effect
             
-            yield f"data: {json.dumps({'chunk': '', 'done': True, 'session_id': session_id})}\n\n"
+            citation_log = await citation_log_for(db, full_response, message_data.case_id, current_user["user_id"])
+            yield f"data: {json.dumps({'chunk': '', 'done': True, 'session_id': session_id, 'citation_log': citation_log})}\n\n"
             
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
@@ -1274,7 +1284,8 @@ Be specific and actionable. Include statute citations and case law references.""
         "violations_analyzed": len(violations),
         "events_analyzed": len(timeline),
         "evidence_analyzed": len(evidence),
-        "generated_at": datetime.now(timezone.utc).isoformat()
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "citation_log": await citation_log_for(db, response, case_id, current_user["user_id"])
     }
 
 @router.post("/api/ai/legal-research")
@@ -1501,6 +1512,7 @@ Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actio
         "state": request.state,
         "research_type": request.research_type,
         "results": response,
+        "citation_log": await citation_log_for(db, response, request.case_id, current_user["user_id"]),
         "next_steps": next_steps,
         "sources_used": ["State CPS Database", "Federal Law", "Case Law Database", "Constitutional Law"],
     }
@@ -1626,7 +1638,12 @@ Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actio
     async def generate_stream():
         full_response = ""
         try:
-            response = await asyncio.wait_for(chat.send_message(UserMessage(text=prompt)), timeout=120)
+            response = None
+            async for kind, value in llm_with_keepalive(chat.send_message(UserMessage(text=prompt))):
+                if kind == "keepalive":
+                    yield value
+                else:
+                    response = value
             full_response = response
             chunk_size = 60
             for i in range(0, len(response), chunk_size):
@@ -1655,11 +1672,11 @@ Finish with a section titled "NEXT STEPS & STRATEGY" containing 4-8 bullet actio
                         metadata={"research_type": request.research_type, "state": request.state}
                     )
 
-            yield f"data: {json.dumps({'chunk': '', 'done': True, 'next_steps': next_steps})}\n\n"
+            citation_log = await citation_log_for(db, full_response, request.case_id, current_user["user_id"])
+            yield f"data: {json.dumps({'chunk': '', 'done': True, 'next_steps': next_steps, 'citation_log': citation_log})}\n\n"
         except Exception as e:
             fallback = (
-                "I am the Ultimate CPS Defense AI. I fight for your family with the full force of constitutional and statutory law. "
-                "Provide the details of your case and we begin.\n\n"
+                COLD_OPENER + "\n\n"
                 "NOTICE: The live research stream encountered an error. Below is a structured fallback guidance plan.\n\n"
                 "1) Immediate Preservation Steps\n"
                 "- Save all notices, reports, and messages in a single timeline.\n"
@@ -1860,6 +1877,7 @@ After the document, add a section titled "NEXT STEPS & STRATEGY (NOT PART OF FIL
     return {
         "prompt": request.prompt,
         "document": document_text,
+        "citation_log": await citation_log_for(db, document_text, request.case_id, current_user["user_id"]),
         "next_steps": next_steps,
         "state": case_state,
         "case_id": request.case_id,
@@ -1994,7 +2012,12 @@ After the document, add a section titled "NEXT STEPS & STRATEGY (NOT PART OF FIL
     async def generate_stream():
         full_response = ""
         try:
-            response = await asyncio.wait_for(chat.send_message(UserMessage(text=prompt)), timeout=120)
+            response = None
+            async for kind, value in llm_with_keepalive(chat.send_message(UserMessage(text=prompt))):
+                if kind == "keepalive":
+                    yield value
+                else:
+                    response = value
             full_response = response
             chunk_size = 60
             for i in range(0, len(response), chunk_size):
@@ -2023,7 +2046,8 @@ After the document, add a section titled "NEXT STEPS & STRATEGY (NOT PART OF FIL
                         metadata={"document_type": request.document_type, "state": case_state}
                     )
 
-            yield f"data: {json.dumps({'chunk': '', 'done': True, 'next_steps': next_steps})}\n\n"
+            citation_log = await citation_log_for(db, full_response, request.case_id, current_user["user_id"])
+            yield f"data: {json.dumps({'chunk': '', 'done': True, 'next_steps': next_steps, 'citation_log': citation_log})}\n\n"
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
 

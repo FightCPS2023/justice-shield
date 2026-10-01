@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { API_URL } from '../../lib/api';
+import { CitationLog } from '../CitationLog';
 import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut, LogIn,
@@ -48,6 +49,7 @@ function ChatTab({ selectedCase }) {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let fullContent = '';
+      let citationLog = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -70,6 +72,7 @@ function ChatTab({ selectedCase }) {
               if (data.done && data.session_id) {
                 setSessionId(data.session_id);
               }
+              if (data.done && data.citation_log) citationLog = data.citation_log;
             } catch (parseError) {
               // Skip parse errors for incomplete chunks
             }
@@ -78,7 +81,7 @@ function ChatTab({ selectedCase }) {
       }
 
       // Add complete message to history
-      setMessages((prev) => [...prev, { role: 'assistant', content: fullContent }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: fullContent, citationLog }]);
       setStreamingContent('');
     } catch (error) {
       console.error('Chat error:', error);
@@ -136,7 +139,10 @@ function ChatTab({ selectedCase }) {
                 ? 'bg-red-600/20 border border-red-600/30' 
                 : 'bg-gray-700/50 border border-gray-600'
             }`}>
-              <p className="whitespace-pre-wrap">{msg.content}</p>
+              <p className="whitespace-pre-wrap">{msg.citationLog?.sanitized_text || msg.content}</p>
+              {msg.role === 'assistant' && msg.citationLog && msg.citationLog.total > 0 && (
+                <div className="mt-3"><CitationLog log={msg.citationLog} testId={`chat-citation-log-${i}`} /></div>
+              )}
             </div>
           </div>
         ))}

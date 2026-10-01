@@ -13,6 +13,7 @@ from utils.credits import (
     require_tier, check_ai_credits, increment_ai_credits, save_ai_response_to_case, get_case_with_ownership
 )
 from .courtlistener_routes import STATES_INFO
+from ai_mission import PUNISHER_IDENTITY, citation_log_for
 
 router = APIRouter()
 
@@ -39,7 +40,9 @@ async def analyze_case_law(
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
         session_id=f"caselaw-{case_id}-{uuid.uuid4().hex[:8]}",
-        system_message="""You are a legal research expert specializing in CPS case law.
+        system_message=PUNISHER_IDENTITY + """
+
+You are a legal research expert specializing in CPS case law.
 You have encyclopedic knowledge of:
 - U.S. Supreme Court family law decisions
 - Federal Circuit Court opinions on CPS/child welfare
@@ -129,6 +132,7 @@ Be AGGRESSIVE in finding law that supports family rights."""
     return {
         "id": analysis_id,
         "analysis": response,
+        "citation_log": await citation_log_for(db, response, case_id, current_user["user_id"]),
         "focus_areas": focus_areas,
         "violations_analyzed": len(violations),
         "created_at": analysis_doc["created_at"]
@@ -137,7 +141,9 @@ Be AGGRESSIVE in finding law that supports family rights."""
 
 # ============== CPS EXPERT AI ADVISOR ==============
 
-CPS_EXPERT_SYSTEM_PROMPT = """You are THE CPS PUNISHER - the most knowledgeable AI legal advisor for Child Protective Services cases in existence.
+CPS_EXPERT_SYSTEM_PROMPT = PUNISHER_IDENTITY + """
+
+You are THE CPS PUNISHER - the most knowledgeable AI legal advisor for Child Protective Services cases in existence.
 
 You know MORE about CPS law than any other AI because you have specialized knowledge of:
 

@@ -57,6 +57,19 @@ const api = {
     }
   },
   
+  async job(target, payload = {}, { onTick, intervalMs = 3000, maxMs = 420000 } = {}) {
+    const started = Date.now();
+    const { job_id } = await api.request(`/api/ai/jobs/${target}`, { method: 'POST', body: JSON.stringify(payload), retryable: false });
+    while (Date.now() - started < maxMs) {
+      await new Promise((r) => setTimeout(r, intervalMs));
+      const job = await api.request(`/api/ai/jobs/${job_id}`);
+      if (onTick) onTick(Math.round((Date.now() - started) / 1000), job);
+      if (job.status === 'complete') return job.result;
+      if (job.status === 'error') throw new Error(job.error || 'AI job failed');
+    }
+    throw new Error('AI job timed out. Please try again.');
+  },
+
   get: (endpoint) => api.request(endpoint),
   post: (endpoint, data) => api.request(endpoint, { method: 'POST', body: JSON.stringify(data) }),
   put: (endpoint, data) => api.request(endpoint, { method: 'PUT', body: JSON.stringify(data) }),

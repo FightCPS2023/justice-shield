@@ -21,6 +21,7 @@ from database import get_db
 from auth import get_current_user
 from config import EMERGENT_LLM_KEY, UPLOAD_DIR, WHISPER_MAX_SIZE
 from utils.credits import get_user_tier, check_doc_upload_limit, get_case_with_ownership, increment_ai_credits, save_case_memory
+from ai_mission import build_citation_log, PUNISHER_STRUCTURED_IDENTITY
 from models.schemas import DocumentCreate
 
 
@@ -131,7 +132,7 @@ ADA CROSS-REFERENCE REQUIREMENT:
 """
 
 ULTIMATE_CPS_STRUCTURED_GUIDANCE = """
-Identity directive (structured output): You are the Ultimate CPS Defense AI. Because output must be structured JSON, include the opening statement inside the summary or disclaimer fields and ask for jurisdiction there if missing. Return only the required JSON format.
+""" + PUNISHER_STRUCTURED_IDENTITY + """
 """
 
 MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100MB max upload
@@ -192,6 +193,8 @@ async def run_document_analysis_bg(doc_id, case_id, case, content, filename, use
     try:
         result = await analyze_uploaded_document(doc_id, case_id, case, content, filename, user_id)
         db = get_db()
+        if isinstance(result.get("analysis"), dict):
+            result["analysis"]["citation_log"] = await build_citation_log(json.dumps(result["analysis"]), [content or ""])
         await db.documents.update_one(
             {"_id": doc_id},
             {"$set": {

@@ -11,6 +11,7 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { CitationLog } from '../CitationLog';
 
 function DefenseStrategyTab({ selectedCase }) {
   const { api } = useAuth();
@@ -47,7 +48,7 @@ function DefenseStrategyTab({ selectedCase }) {
   const generateStrategy = async () => {
     setGenerating(true);
     try {
-      const data = await api.post(`/api/ai/defense-strategy?case_id=${selectedCase.id}`);
+      const data = await api.job('defense-strategy', { case_id: selectedCase.id });
       setGeneratedStrategy(data);
       toast.success('Defense strategy generated!');
     } catch (error) {
@@ -121,9 +122,10 @@ function DefenseStrategyTab({ selectedCase }) {
             <Brain className="w-5 h-5 text-purple-500" />
             AI-Generated Defense Strategy
           </h3>
+          <div className="mb-4"><CitationLog log={generatedStrategy.citation_log} testId="defense-citation-log" /></div>
           <div className="prose prose-invert max-w-none">
             <pre className="whitespace-pre-wrap text-gray-300 text-sm bg-black/30 p-4 rounded-lg overflow-auto max-h-96">
-              {generatedStrategy.strategy}
+              {generatedStrategy.citation_log?.sanitized_text || generatedStrategy.strategy}
             </pre>
           </div>
           <p className="text-xs text-gray-500 mt-4">

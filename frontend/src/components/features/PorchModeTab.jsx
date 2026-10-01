@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Shield, AlertTriangle, Copy, Mic, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
+import { CitationLog } from '../CitationLog';
 
 function PorchModeTab({ selectedCase }) {
   const { api } = useAuth();
@@ -129,6 +130,8 @@ function PorchModeTab({ selectedCase }) {
           </p>
         </div>
       </div>
+
+      {result?.citation_log && <CitationLog log={result.citation_log} testId="porch-citation-log" />}
 
       {result?.detections && result.detections.length > 0 && (
         <div className="space-y-4">

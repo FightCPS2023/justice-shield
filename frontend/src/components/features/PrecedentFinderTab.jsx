@@ -11,6 +11,7 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { CitationLog } from '../CitationLog';
 
 function PrecedentFinderTab({ selectedCase }) {
   const { api } = useAuth();
@@ -25,14 +26,14 @@ function PrecedentFinderTab({ selectedCase }) {
     setPrecedents(null);
 
     try {
-      const requestPromise = api.post('/api/precedent-finder/search', {
+      const requestPromise = api.job('precedent-finder', {
         violation_type: violationType,
         state: state || null,
         include_federal: includeOptions.federal,
         include_state: includeOptions.state
       });
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timed out. Please try again.')), 30000)
+        setTimeout(() => reject(new Error('Request timed out. Please try again.')), 300000)
       );
 
       const response = await Promise.race([requestPromise, timeoutPromise]);
@@ -152,16 +153,19 @@ function PrecedentFinderTab({ selectedCase }) {
               </h3>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(precedents.precedent_analysis);
+                  navigator.clipboard.writeText(precedents.citation_log?.sanitized_text || precedents.precedent_analysis);
                   toast.success('Analysis copied to clipboard!');
                 }}
-                className="p-2 hover:bg-gray-700 rounded-lg"
+                disabled={!precedents.citation_log}
+                className="p-2 hover:bg-gray-700 rounded-lg disabled:opacity-40"
+                data-testid="precedent-copy-btn"
               >
                 <Copy className="w-4 h-4" />
               </button>
             </div>
+            <div className="mb-4"><CitationLog log={precedents.citation_log} testId="precedent-citation-log" /></div>
             <div className="prose prose-invert max-w-none">
-              <div className="whitespace-pre-wrap text-gray-300">{precedents.precedent_analysis}</div>
+              <div className="whitespace-pre-wrap text-gray-300">{precedents.citation_log?.sanitized_text || precedents.precedent_analysis}</div>
             </div>
           </div>
 

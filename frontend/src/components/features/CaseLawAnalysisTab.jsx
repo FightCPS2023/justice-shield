@@ -11,6 +11,7 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { CitationLog } from '../CitationLog';
 
 function CaseLawAnalysisTab({ selectedCase }) {
   const { api } = useAuth();
@@ -36,7 +37,7 @@ function CaseLawAnalysisTab({ selectedCase }) {
 
     setAnalyzing(true);
     try {
-      const data = await api.post('/api/case-law/analyze', {
+      const data = await api.job('case-law', {
         case_id: selectedCase.id,
         focus_areas: focusAreas,
         jurisdiction
@@ -139,14 +140,17 @@ function CaseLawAnalysisTab({ selectedCase }) {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold">Case Law Analysis</h3>
             <button
-              onClick={() => navigator.clipboard.writeText(analysis.analysis)}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center gap-2"
+              onClick={() => navigator.clipboard.writeText(analysis.citation_log?.sanitized_text || analysis.analysis)}
+              disabled={!analysis.citation_log}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center gap-2 disabled:opacity-40"
+              data-testid="caselaw-copy-btn"
             >
               <Copy className="w-4 h-4" /> Copy
             </button>
           </div>
+          <div className="mb-4"><CitationLog log={analysis.citation_log} testId="caselaw-citation-log" /></div>
           <pre className="whitespace-pre-wrap text-gray-300 text-sm bg-black/50 p-6 rounded-lg overflow-auto max-h-[800px]">
-            {analysis.analysis}
+            {analysis.citation_log?.sanitized_text || analysis.analysis}
           </pre>
           <p className="text-xs text-gray-500 mt-4">
             Analyzed: {analysis.violations_analyzed} violations | Focus: {analysis.focus_areas?.join(', ')}

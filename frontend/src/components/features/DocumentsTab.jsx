@@ -115,6 +115,7 @@ function DocumentsTab({ selectedCase }) {
   const [exportTemplateId, setExportTemplateId] = useState(exportTemplates[0].id);
   const [exportTemplateText, setExportTemplateText] = useState(exportTemplates[0].body);
   const [exportNotes, setExportNotes] = useState('');
+  const [exportVerifiedOnly, setExportVerifiedOnly] = useState(true);
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
@@ -232,7 +233,8 @@ function DocumentsTab({ selectedCase }) {
     const payload = {
       template_name: exportTemplateId,
       template_text: exportTemplateText,
-      editor_notes: exportNotes
+      editor_notes: exportNotes,
+      verified_only: exportVerifiedOnly
     };
 
     const apiBase = (API_URL || '').replace(/\/+$/, '');
@@ -684,6 +686,11 @@ function DocumentsTab({ selectedCase }) {
             />
           </div>
         </div>
+
+        <label className="flex items-center gap-2 mt-4 text-xs font-mono text-slate-200 border border-slate-600 bg-black px-3 py-2" data-testid="export-verified-only-toggle">
+          <input type="checkbox" checked={exportVerifiedOnly} onChange={(e) => setExportVerifiedOnly(e.target.checked)} />
+          CITE-GUARD VERIFIED-ONLY MODE — strips every unverified authority from the court export and appends the Citation Log. (Off = export blocked if analysis is not release-grade.)
+        </label>
 
         <div className="flex flex-wrap gap-3 mt-4">
           <button

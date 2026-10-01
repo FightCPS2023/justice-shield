@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { API_URL } from '../../lib/api';
+import { api } from '../../lib/api';
+import { CitationLog, useCitationGate } from '../CitationLog';
 import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut, LogIn,
@@ -20,6 +21,8 @@ function SmartDocTab({ selectedCase }) {
   const [streamingContent, setStreamingContent] = useState('');
   const [nextSteps, setNextSteps] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [citationLog, setCitationLog] = useState(null);
+  const gate = useCitationGate(citationLog);
 
   const parseNextSteps = (text) => {
     if (!text) return [];
@@ -68,92 +71,29 @@ function SmartDocTab({ selectedCase }) {
     setStreamingContent('');
     setNextSteps([]);
     setErrorMessage('');
+    setCitationLog(null);
     setGenTime(null);
     const startTime = Date.now();
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000);
-    const startRequest = async () => {
-      const response = await fetch(`${API_URL}/api/ai/smart-document/stream`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          prompt,
-          case_id: selectedCase?.id || null,
-          state: state || null
-        }),
-        signal: controller.signal
-      });
-      if (!response.ok) throw new Error('Document generation stream failed');
-      return response;
-    };
 
     try {
-      let response;
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        try {
-          response = await startRequest();
-          break;
-        } catch (err) {
-          if (attempt === 1) throw err;
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-        }
-      }
+      const data = await api.job('smart-document', {
+        prompt,
+        case_id: selectedCase?.id || null,
+        state: state || null
+      }, { onTick: (secs) => setStreamingContent(`Drafting under Document Perfection Mode… ${secs}s elapsed. Court-ready drafts can take 1–3 minutes.`) });
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let fullContent = '';
-      let collectedNextSteps = [];
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunkText = decoder.decode(value);
-        const lines = chunkText.split('\n');
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.error) throw new Error(data.error);
-              if (data.chunk) {
-                fullContent += data.chunk;
-                setStreamingContent(fullContent);
-              }
-              if (data.done) {
-                if (Array.isArray(data.next_steps)) {
-                  collectedNextSteps = data.next_steps;
-                }
-              }
-            } catch (parseError) {
-              // ignore chunk parse errors
-            }
-          }
-        }
-      }
-
-      const { documentText, steps } = splitDocument(fullContent);
-      const finalSteps = collectedNextSteps.length ? collectedNextSteps : steps;
-      setDocument(documentText);
-      setNextSteps(finalSteps);
+      const { documentText, steps } = splitDocument(data.document || '');
+      const finalText = documentText || data.document || '';
+      setDocument(finalText);
+      setNextSteps(Array.isArray(data.next_steps) && data.next_steps.length ? data.next_steps : steps);
+      setCitationLog(data.citation_log || { entries: [], counts: {}, total: 0, release_grade: false, headline: 'Citation log unavailable. Do not file until citations are confirmed.', sanitized_text: finalText, verified_only_text: finalText });
       setStreamingContent('');
       setGenTime(((Date.now() - startTime) / 1000).toFixed(1));
     } catch (error) {
-      let message = 'Document generation failed';
-      if (error.name === 'AbortError') {
-        message = 'Document generation timed out. Please try again or shorten the request.';
-      } else if ((error.message || '').includes('Failed to fetch') || (error.message || '').includes('NetworkError')) {
-        message = 'Server unreachable. Please try again in a few minutes.';
-      } else if ((error.message || '').includes('stream failed')) {
-        message = 'Connection dropped during document generation. Please retry.';
-      } else if (error.message) {
-        message = error.message;
-      }
+      const message = error.message || 'Document generation failed';
       toast.error(message);
       setErrorMessage(message);
     } finally {
-      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
@@ -286,15 +226,17 @@ function SmartDocTab({ selectedCase }) {
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => { navigator.clipboard.writeText(document); toast.success('Document copied'); }}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm flex items-center gap-1.5 text-slate-200"
+                onClick={() => { navigator.clipboard.writeText(gate.exportText(document)); toast.success(gate.verifiedOnly ? 'Copied (verified-only)' : 'Document copied'); }}
+                disabled={!gate.ready}
+                title={gate.blockedReason || ''}
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm flex items-center gap-1.5 text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="copy-doc-btn"
               >
                 <Copy className="w-4 h-4" /> Copy
               </button>
               <button
                 onClick={() => {
-                  const blob = new Blob([document], { type: 'text/plain' });
+                  const blob = new Blob([gate.exportText(document)], { type: 'text/plain' });
                   const url = URL.createObjectURL(blob);
                   const a = window.document.createElement('a');
                   a.href = url;
@@ -303,15 +245,18 @@ function SmartDocTab({ selectedCase }) {
                   URL.revokeObjectURL(url);
                   toast.success('Document downloaded');
                 }}
-                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 rounded-lg text-sm flex items-center gap-1.5"
+                disabled={!gate.ready}
+                title={gate.blockedReason || ''}
+                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 rounded-lg text-sm flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="download-doc-btn"
               >
                 <Download className="w-4 h-4" /> Download
               </button>
             </div>
           </div>
-          <div className="p-6">
-            <pre className="whitespace-pre-wrap text-sm text-slate-300 leading-relaxed font-sans">{document}</pre>
+          <div className="p-6 space-y-4">
+            <CitationLog log={citationLog} pending={!citationLog} verifiedOnly={gate.verifiedOnly} onVerifiedOnlyChange={gate.setVerifiedOnly} testId="smartdoc-citation-log" />
+            <pre className="whitespace-pre-wrap text-sm text-slate-300 leading-relaxed font-sans">{citationLog ? citationLog.sanitized_text : document}</pre>
           </div>
         </div>
       )}

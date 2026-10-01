@@ -11,6 +11,7 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { CitationLog } from '../CitationLog';
 
 function Section1983Tab({ selectedCase }) {
   const { api } = useAuth();
@@ -48,18 +49,13 @@ function Section1983Tab({ selectedCase }) {
     let didSucceed = false;
     let failureMessage = '';
     try {
-      const data = await api.request('/api/section-1983/generate', {
-        method: 'POST',
-        body: JSON.stringify({
-          case_id: selectedCase.id,
-          defendants: defendants.filter(d => d.trim()),
-          constitutional_violations: violations,
-          include_monell: includeMonell,
-          include_conspiracy: includeConspiracy,
-          relief_sought: ['Compensatory damages', 'Punitive damages', 'Declaratory relief', 'Injunctive relief', 'Attorney fees']
-        }),
-        timeoutMs: 45000,
-        retryable: false
+      const data = await api.job('section-1983', {
+        case_id: selectedCase.id,
+        defendants: defendants.filter(d => d.trim()),
+        constitutional_violations: violations,
+        include_monell: includeMonell,
+        include_conspiracy: includeConspiracy,
+        relief_sought: ['Compensatory damages', 'Punitive damages', 'Declaratory relief', 'Injunctive relief', 'Attorney fees']
       });
       if (!data?.complaint) {
         throw new Error(data?.detail || 'Complaint generation failed. Please retry.');
@@ -270,25 +266,37 @@ function Section1983Tab({ selectedCase }) {
             </h3>
             <div className="flex gap-2">
               <button
-                onClick={() => navigator.clipboard.writeText(complaint.complaint)}
+                onClick={() => navigator.clipboard.writeText(complaint.citation_log?.sanitized_text || complaint.complaint)}
+                disabled={!complaint.citation_log}
+                title={complaint.citation_log ? '' : 'Citation log pending'}
                 data-testid="section1983-copy-button"
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center gap-2"
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center gap-2 disabled:opacity-40"
               >
                 <Copy className="w-4 h-4" /> Copy
               </button>
               <button
+                onClick={() => {
+                  const blob = new Blob([complaint.citation_log?.sanitized_text || complaint.complaint], { type: 'text/plain' });
+                  const a = document.createElement('a');
+                  a.href = URL.createObjectURL(blob);
+                  a.download = 'section-1983-complaint.txt';
+                  a.click();
+                }}
+                disabled={!complaint.citation_log}
+                title={complaint.citation_log ? '' : 'Citation log pending'}
                 data-testid="section1983-download-button"
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg flex items-center gap-2"
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg flex items-center gap-2 disabled:opacity-40"
               >
                 <Download className="w-4 h-4" /> Download
               </button>
             </div>
           </div>
+          <div className="mb-4"><CitationLog log={complaint.citation_log} pending={!complaint.citation_log} testId="section1983-citation-log" /></div>
           <pre
             className="whitespace-pre-wrap text-gray-300 text-sm bg-black/50 p-6 rounded-lg overflow-auto max-h-[800px] font-mono"
             data-testid="section1983-complaint-text"
           >
-            {complaint.complaint}
+            {complaint.citation_log?.sanitized_text || complaint.complaint}
           </pre>
           <p className="text-xs text-gray-500 mt-4" data-testid="section1983-complaint-meta">
             Generated: {new Date(complaint.generated_at).toLocaleString()} | 

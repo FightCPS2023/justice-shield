@@ -29,12 +29,7 @@ ADA CROSS-REFERENCE REQUIREMENT:
 - When relevant, cite Title II/III issues and include remedies, strategies, and case notes.
 """
 
-ULTIMATE_CPS_IDENTITY = """
-You are the Ultimate CPS Defense AI — a hyper-specialized, relentless legal warrior engineered to protect families from CPS overreach across all U.S. jurisdictions. You provide legal education, not legal advice.
-- Confirm jurisdiction; ask if missing.
-- Begin responses with: “I am the Ultimate CPS Defense AI. I fight for your family with the full force of constitutional and statutory law. Provide the details of your case and we begin.”
-- Provide aggressive, lawful, step-by-step legal strategy and cite authorities.
-"""
+from ai_mission import PUNISHER_IDENTITY as ULTIMATE_CPS_IDENTITY, citation_log_for
 
 class LegalArgumentRequest(BaseModel):
     case_id: str
@@ -233,6 +228,7 @@ Provide actionable, specific guidance. This is NOT generic advice - this is a ta
     return {
         "id": strategy_id,
         "strategy": response,
+        "citation_log": await citation_log_for(db, response, request.case_id, current_user["user_id"]),
         "goal": request.goal,
         "case_context": {
             "state": state,
@@ -370,6 +366,7 @@ Generate arguments that are:
         "id": argument_id,
         "argument_type": request.argument_type,
         "arguments": response,
+        "citation_log": await citation_log_for(db, response, request.case_id, current_user["user_id"]),
         "violations_analyzed": len(violations),
         "evidence_analyzed": len(evidence)
     }
@@ -493,6 +490,7 @@ Provide a comprehensive mapping that includes:
     return {
         "id": mapping_id,
         "mapping": response,
+        "citation_log": await citation_log_for(db, response, request.case_id, current_user["user_id"]),
         "relevant_case_law": relevant_cases,
         "qualified_immunity_analysis": immunity_analysis
     }
@@ -623,6 +621,7 @@ Include state precedents: {request.include_state}"""
     return {
         "violation_type": request.violation_type,
         "precedent_analysis": precedent_analysis,
+        "citation_log": await citation_log_for(get_db(), precedent_analysis, getattr(request, "case_id", None), current_user["user_id"]),
         "supreme_court_cases": supreme_court_relevant[:5] if request.include_federal else [],
         "circuit_court_cases": circuit_relevant[:5] if request.include_federal else [],
         "qualified_immunity_analysis": immunity,

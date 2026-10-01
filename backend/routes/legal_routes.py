@@ -9,6 +9,7 @@ from database import get_db
 from auth import get_current_user
 from config import EMERGENT_LLM_KEY
 from utils.credits import get_case_with_ownership
+from ai_mission import PUNISHER_IDENTITY
 from legal_knowledge import (
     SUPREME_COURT_CASES, CIRCUIT_COURT_CASES, ROOKER_FELDMAN,
     BLACKS_LAW_DEFINITIONS, CONSTITUTIONAL_RIGHTS, VIOLATION_ANALYSIS,
@@ -563,7 +564,9 @@ async def get_case_evidence_checklist(case_id: str, current_user: dict = Depends
 
 # ============== SECTION 1983 CIVIL RIGHTS LAWSUIT GENERATOR ==============
 
-SECTION_1983_SYSTEM_PROMPT = """You are THE CPS PUNISHER's Section 1983 Civil Rights Lawsuit Expert.
+SECTION_1983_SYSTEM_PROMPT = PUNISHER_IDENTITY + """
+
+You are THE CPS PUNISHER's Section 1983 Civil Rights Lawsuit Expert.
 
 You are an expert in 42 U.S.C. § 1983 civil rights litigation against Child Protective Services, 
 caseworkers, supervisors, and government officials who violate constitutional rights.

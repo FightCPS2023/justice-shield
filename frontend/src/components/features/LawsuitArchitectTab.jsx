@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Gavel, FileText, Copy, Download, Plus, Trash2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
+import { CitationLog } from '../CitationLog';
 
 const defaultPlaintiff = { name: '', address: '', city: '', state: '', zip: '', phone: '', email: '' };
 const defaultDefendant = { name: '', badge: '', title: '', employer: '' };
@@ -16,6 +17,7 @@ function LawsuitArchitectTab({ selectedCase }) {
   const [loading, setLoading] = useState(false);
   const [complaints, setComplaints] = useState([]);
   const [generated, setGenerated] = useState(null);
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
 
   const [plaintiff, setPlaintiff] = useState(defaultPlaintiff);
   const [defendant, setDefendant] = useState(defaultDefendant);
@@ -88,15 +90,18 @@ function LawsuitArchitectTab({ selectedCase }) {
     }
   };
 
+  const gateReady = Boolean(generated?.citation_log);
+  const exportText = () => (verifiedOnly ? generated?.citation_log?.verified_only_text : generated?.citation_log?.sanitized_text) || generated?.generated_document || '';
+
   const handleCopy = () => {
     if (!generated?.generated_document) return;
-    navigator.clipboard.writeText(generated.generated_document);
-    toast.success('Copied');
+    navigator.clipboard.writeText(exportText());
+    toast.success(verifiedOnly ? 'Copied (verified-only)' : 'Copied');
   };
 
   const handleDownloadMarkdown = () => {
     if (!generated?.generated_document) return;
-    const blob = new Blob([generated.generated_document], { type: 'text/markdown;charset=utf-8;' });
+    const blob = new Blob([exportText()], { type: 'text/markdown;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = '1983-complaint.md';
@@ -105,6 +110,10 @@ function LawsuitArchitectTab({ selectedCase }) {
 
   const handleDownloadPdf = () => {
     if (!generated?.pdf_base64) return;
+    if (verifiedOnly || generated?.citation_log?.counts?.STRIKE) {
+      toast.error('PDF contains raw citations. Use Markdown download for the Cite-Guard sanitized / verified-only version.');
+      return;
+    }
     const link = document.createElement('a');
     link.href = `data:application/pdf;base64,${generated.pdf_base64}`;
     link.download = '1983-complaint.pdf';
@@ -226,11 +235,12 @@ function LawsuitArchitectTab({ selectedCase }) {
           <div className="bg-gray-900/70 border border-gray-700 rounded-xl p-4">
             <h3 className="font-semibold flex items-center gap-2"><FileText className="w-4 h-4" /> Generated Complaint</h3>
             <div className="flex flex-wrap gap-2 mt-3">
-              <button onClick={handleCopy} className="px-3 py-1 bg-gray-700 rounded text-xs flex items-center gap-1" data-testid="lawsuit-copy-btn"><Copy className="w-3 h-3" /> Copy</button>
-              <button onClick={handleDownloadMarkdown} className="px-3 py-1 bg-gray-700 rounded text-xs flex items-center gap-1" data-testid="lawsuit-download-md"><Download className="w-3 h-3" /> Download Markdown</button>
-              <button onClick={handleDownloadPdf} className="px-3 py-1 bg-red-600/40 rounded text-xs flex items-center gap-1" data-testid="lawsuit-download-pdf"><Download className="w-3 h-3" /> Download PDF</button>
+              <button onClick={handleCopy} disabled={!gateReady} title={gateReady ? '' : 'Citation log pending'} className="px-3 py-1 bg-gray-700 rounded text-xs flex items-center gap-1 disabled:opacity-40" data-testid="lawsuit-copy-btn"><Copy className="w-3 h-3" /> Copy</button>
+              <button onClick={handleDownloadMarkdown} disabled={!gateReady} title={gateReady ? '' : 'Citation log pending'} className="px-3 py-1 bg-gray-700 rounded text-xs flex items-center gap-1 disabled:opacity-40" data-testid="lawsuit-download-md"><Download className="w-3 h-3" /> Download Markdown</button>
+              <button onClick={handleDownloadPdf} disabled={!gateReady} title={gateReady ? '' : 'Citation log pending'} className="px-3 py-1 bg-red-600/40 rounded text-xs flex items-center gap-1 disabled:opacity-40" data-testid="lawsuit-download-pdf"><Download className="w-3 h-3" /> Download PDF</button>
             </div>
-            <pre className="whitespace-pre-wrap text-sm text-gray-200 mt-4" data-testid="lawsuit-output">{generated?.generated_document || 'Generate a complaint to view output.'}</pre>
+            {generated && <div className="mt-4"><CitationLog log={generated.citation_log} pending={!generated.citation_log} verifiedOnly={verifiedOnly} onVerifiedOnlyChange={setVerifiedOnly} testId="lawsuit-citation-log" /></div>}
+            <pre className="whitespace-pre-wrap text-sm text-gray-200 mt-4" data-testid="lawsuit-output">{generated?.citation_log?.sanitized_text || generated?.generated_document || 'Generate a complaint to view output.'}</pre>
           </div>
         </div>
       )}

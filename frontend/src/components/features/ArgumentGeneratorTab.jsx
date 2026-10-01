@@ -11,6 +11,7 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { CitationLog } from '../CitationLog';
 
 function ArgumentGeneratorTab({ selectedCase }) {
   const { api } = useAuth();
@@ -28,7 +29,7 @@ function ArgumentGeneratorTab({ selectedCase }) {
     setArguments(null);
 
     try {
-      const response = await api.post('/api/argument-generator/generate', {
+      const response = await api.job('argument-generator', {
         case_id: selectedCase.id,
         argument_type: argumentType
       });
@@ -124,16 +125,19 @@ function ArgumentGeneratorTab({ selectedCase }) {
             </h3>
             <button
               onClick={() => {
-                navigator.clipboard.writeText(arguments_.arguments);
+                navigator.clipboard.writeText(arguments_.citation_log?.sanitized_text || arguments_.arguments);
                 toast.success('Arguments copied to clipboard!');
               }}
-              className="p-2 hover:bg-gray-700 rounded-lg"
+              disabled={!arguments_.citation_log}
+              className="p-2 hover:bg-gray-700 rounded-lg disabled:opacity-40"
+              data-testid="argument-copy-btn"
             >
               <Copy className="w-4 h-4" />
             </button>
           </div>
+          <div className="mb-4"><CitationLog log={arguments_.citation_log} testId="argument-citation-log" /></div>
           <div className="prose prose-invert max-w-none">
-            <div className="whitespace-pre-wrap text-gray-300">{arguments_.arguments}</div>
+            <div className="whitespace-pre-wrap text-gray-300">{arguments_.citation_log?.sanitized_text || arguments_.arguments}</div>
           </div>
           <div className="mt-4 pt-4 border-t border-gray-700 flex gap-4 text-sm text-gray-500">
             <span>Violations used: {arguments_.violations_analyzed}</span>

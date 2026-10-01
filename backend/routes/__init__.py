@@ -22,6 +22,8 @@ from .lawsuit_architect_routes import router as lawsuit_architect_router
 from .integrity_db_routes import router as integrity_db_router
 from .immutable_vault_routes import router as immutable_vault_router
 from .political_strike_routes import router as political_strike_router
+from .citation_routes import router as citation_router
+from .ai_jobs_routes import router as ai_jobs_router
 
 all_routers = [
     auth_router,
@@ -48,4 +50,6 @@ all_routers = [
     integrity_db_router,
     immutable_vault_router,
     political_strike_router,
+    citation_router,
+    ai_jobs_router,
 ]

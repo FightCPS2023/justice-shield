@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import api, { API_URL } from '../../lib/api';
+import { CitationLog } from '../CitationLog';
 import {
   Shield, Scale, FileText, AlertTriangle, Users, BookOpen, Calendar,
   MessageSquare, Brain, Gavel, Search, ArrowRight, Menu, X, LogOut, LogIn,
@@ -87,6 +88,7 @@ function DocumentAnalysisView({ document, onReanalyze, analyzing, queueInfo, onR
 
   return (
     <div className="space-y-6" data-testid="document-analysis">
+      {data?.citation_log && <CitationLog log={data.citation_log} testId="docanalysis-citation-log" />}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
