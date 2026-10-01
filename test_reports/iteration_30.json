@@ -1,0 +1,39 @@
+{
+  "summary": "Iteration 30: Verified MISSION + Cite-Guard engine, server-side AI jobs system, Lawsuit Architect sections, Court export verified-only gate, and relevant regressions. Wrote /app/backend/tests/test_iter30_cite_guard_and_jobs.py (18 tests). Result: 17 PASS, 1 FAIL (porch-mode detection gap for the exact test phrase from the spec), 1 SKIP depending on upstream LLM. Frontend smoke test: login works, AI Tools / The Punishers / Research & Law / Admin Tools sidebar sections expand; nav-chat, nav-smartdoc, nav-research all render the correct tab pages with the expected inputs and template buttons. Conditional citation-log and result testids exist in source (ResearchTab.jsx, SmartDocTab.jsx, LawsuitArchitectTab.jsx, ChatTab.jsx, DocumentsTab.jsx) and render only post-generation — not pre-interaction, which is correct.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/porch-mode/analyze", "issue": "Dataclass serialization and citation_log work (no 500), BUT the engine's regex patterns do NOT flag the exact spec phrase 'Open the door now or we take the kids, we do not need a warrant'. The patterns look for 'we will/can take your children' / 'we'll have to take the kids' (contraction, future tense) and various 'warrant' phrasings but miss plain present-tense 'we take the kids' and 'we do not need a warrant'. Response returns flagged=false, detections=[]. Add present-tense/declarative variants to engines/porch_mode_engine.py COERCIVE_PATTERNS (e.g., r'we (?:will |can |\\'ll |)take (?:the|your) (?:kids|children)', r'(?:do not|don\\'t) need a warrant', r'no warrant (?:needed|required)')."},
+      {"endpoint": "POST /api/ai/jobs/section-1983", "issue": "Test skipped because the job completed with status='error' from an upstream LLM/schema issue; needs re-run under normal LLM budget. Non-blocking."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter30_cite_guard_and_jobs.py",
+    "/app/test_reports/pytest/iter30.xml"
+  ],
+  "action_items": [
+    "Add missing coercive-phrase patterns to /app/backend/engines/porch_mode_engine.py so the canonical demo phrase 'Open the door now or we take the kids, we do not need a warrant' is detected. Suggested patterns above."
+  ],
+  "critical_code_review_comments": [
+    "Cite-Guard engine (ai_mission.py) is well structured: regex extraction, name+reporter indexing against library, CourtListener fallback with reporter/name mismatch detection (strong STRIKE signal), sanitized_text + verified_only_text replacements, release_grade threshold at 30% — all working end-to-end as specified.",
+    "ai_jobs_routes.py uses a clean TARGETS map + background asyncio task; GET poll latency observed <1s while a 60-120s job ran — event loop is not blocked. Job id stored as mongo _id and returned as job_id (ObjectId not leaked).",
+    "export_routes.py — _cite_guard_template raises 422 with the Cite-Guard headline when verified_only=False and release_grade=False; verified_only=True path returns a 200 PDF/DOCX with [UNVERIFIED AUTHORITY REMOVED] markers. Works as designed.",
+    "lawsuit_architect_routes.py build_complaint_markdown emits all required sections (AUTHORITIES CITED, VERIFICATION, CERTIFICATE OF SERVICE, EXHIBIT LIST, LAYER B — CHANGE-LOG / RISK NOTES); citation_log attached in response and persisted on the record.",
+    "porch_mode_engine.py COERCIVE_PATTERNS is incomplete relative to the canonical spec example — see action item."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter30_cite_guard_and_jobs.py (new)"
+  ],
+  "success_rate": {"backend": "94% (17/18 — 1 porch-mode gap, 1 skipped)", "frontend": "100% smoke (sidebar + tab routing all work; citation-log/result nodes are conditional on completion and exist in source)"},
+  "test_credentials": "cpsvhuntingjustice@gmail.com / cpssuxass (attorney tier) — cookie session_token + Bearer token both work.",
+  "seed_data_creation": "Lawsuit Architect test persisted one complaint doc in db.complaints_1983 (plaintiff 'John Parent', defendant 'Jane Caseworker') tied to the admin user. Low-impact.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend Cite-Guard pipeline (POST /api/citations/log) returns VERIFIED for Troxel + the four core statutes/rules, EXISTS for Kovacic (CourtListener hit, no library holding), STRIKE for Bogus v. Nowhere (reporter/name mismatch on CourtListener), UNVERIFIED for Fictional v. Madeup. sanitized_text and verified_only_text replacement both work. Jobs API: smart-research and smart-document complete in ~60-120s and include MISSION opener + citation_log; polls stay fast. Lawsuit Architect returns all required sections and flags the fake citation. Export gate: 422 for non-verified text, 200 for verified_only=true. Known gap: porch_mode patterns do not match the demo spec phrase — see action item. All iteration-29 restored routes still OK (violations list, calendar upcoming, notepad list, /api/legal/supreme-court-cases).",
+  "rca of the issue": "porch_mode gap RCA — The engine covers future/conditional threats and 'warrantless entry' questions but has no present-tense 'we take the kids' or 'no warrant needed/required' pattern. Fix: add patterns to COERCIVE_PATTERNS in /app/backend/engines/porch_mode_engine.py (second bucket for child-removal threats and the warrantless-entry bucket). Reproduction: curl -X POST $URL/api/porch-mode/analyze -H 'Content-Type: application/json' -b cookies -d '{\"transcription\": \"Open the door now or we take the kids, we do not need a warrant\"}' → flagged=false, detections=[]."
+}

@@ -315,6 +315,15 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Removed dead code: server_backup.py, save_upload_to_disk, stale frontend/public/assets Vite bundle; replaced wildcard import in models/__init__.py; bare excepts in tests
 - Verified: frontend→backend API path audit (161 calls, 0 missing); testing_agent iteration_29: 23/23 backend + frontend smoke 100%
 
+### Session 56: MISSION Prompt + Cite-Guard + AI Jobs - COMPLETE (2026-06)
+- New `ai_mission.py`: user's MISSION directive (jurisdiction lock, FACT/LAW/STRATEGY tagging, 26-bucket violation taxonomy, 3+2 strategy tree, 72-hour checklist, cold opener "We are going on offense…") replaces the old "Ultimate CPS Defense AI" identity across Chat, Research, Smart Doc, Strategy Builder, Argument Generator, Evidence Mapper, Precedent Finder, Case Law, §1983, Document Analysis, Expert AI
+- Cite-Guard engine: extracts every case/statute/rule from AI output and tags VERIFIED (legal_knowledge library + uploaded case docs + core federal statutes) | EXISTS — HOLDING UNVERIFIED (CourtListener hit) | UNVERIFIED | STRIKE (reporter cite belongs to another case / no match). >30% bad → "Analysis is not release-grade. Do not file." STRIKE removed from body. API: POST /api/citations/log, GET /api/citations/library
+- Frontend `CitationLog` panel on all AI tools; copy/download gated until log exists; Verified-only mode for exports; Export Center `verified_only` (422 block when not release-grade)
+- Lawsuit Architect now emits Authorities Cited, Verification, Certificate of Service, Exhibit List, Layer B risk notes
+- Reliability: `llm_patch.py` runs LlmChat.send_message in a worker thread (previously froze the whole event loop per AI call); SSE keepalives; new job runner POST /api/ai/jobs/{target} + GET /api/ai/jobs/{id} (ingress caps responses at 60s) — Research/SmartDoc/§1983/strategy tools now poll
+- Porch Mode patterns broadened (present-tense threats, "don't need a warrant")
+- Tested: iteration_30 (17/18 backend → porch gap fixed after; frontend smoke 100%)
+
 ## Remaining Tasks
 
 ### P1 - Code Quality (from audit)

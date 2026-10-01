@@ -127,7 +127,7 @@ Make it AGGRESSIVE and POWERFUL - these officials violated constitutional rights
         try:
             response = await asyncio.wait_for(
                 chat.send_message(UserMessage(text=prompt)),
-                timeout=45
+                timeout=240
             )
             break
         except asyncio.TimeoutError:
