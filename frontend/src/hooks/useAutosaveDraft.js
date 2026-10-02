@@ -53,6 +53,8 @@ export const useAutosaveDraft = (key, formData, setFormData, initialFormState, o
   }, [formData, storageKey]);
 
   const clearDraft = () => {
+    clearTimeout(timer.current);
+    skipNext.current = true;
     setFormData(initialFormState);
     try {
       window.localStorage.removeItem(storageKey);

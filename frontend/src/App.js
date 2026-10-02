@@ -196,6 +196,11 @@ function Dashboard({ onNavigate }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [cases, setCases] = useState([]);
   const [selectedCase, setSelectedCase] = useState(null);
+  useEffect(() => {
+    try {
+      if (selectedCase?.id) window.localStorage.setItem('punisher_selected_case', selectedCase.id);
+    } catch { /* ignore */ }
+  }, [selectedCase]);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [prefetchedData, setPrefetchedData] = useState({});
@@ -224,7 +229,13 @@ function Dashboard({ onNavigate }) {
           api.get('/api/auth/tier-status').catch(() => null),
           api.get('/api/credits/balance').catch(() => null),
         ]);
-        setCases(casesData.cases || []);
+        const loadedCases = casesData.cases || [];
+        setCases(loadedCases);
+        try {
+          const rememberedId = window.localStorage.getItem('punisher_selected_case');
+          const remembered = loadedCases.find((c) => c.id === rememberedId);
+          if (remembered) setSelectedCase((prev) => prev || remembered);
+        } catch { /* ignore */ }
         setPrefetchedData({ tierStatus: tierData, creditBalance: creditsData });
       } catch (error) {
         console.error('Prefetch error:', error);

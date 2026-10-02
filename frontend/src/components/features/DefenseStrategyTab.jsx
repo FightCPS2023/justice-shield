@@ -107,7 +107,6 @@ function DefenseStrategyTab({ selectedCase }) {
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Defense Strategy</h1>
           <div className="mt-2"><AiModeSelector /></div>
-          <DraftStatus draft={draft} testId="strategy-draft-status" />
           <p className="text-gray-400">Build your defense for {selectedCase.title}</p>
         </div>
         <div className="flex gap-3">
@@ -147,6 +146,7 @@ function DefenseStrategyTab({ selectedCase }) {
           <div className="bg-gray-800 rounded-xl p-6 w-full max-w-lg">
             <h2 className="text-xl font-bold mb-4">Add Defense Strategy</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <DraftStatus draft={draft} testId="strategy-draft-status" />
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Strategy Title</label>
                 <input

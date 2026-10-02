@@ -77,7 +77,6 @@ function ForumTab() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Community Forum</h1>
-          <DraftStatus draft={draft} testId="forum-draft-status" />
           <p className="text-gray-400">Connect with other parents fighting CPS</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-punisher">
@@ -91,6 +90,7 @@ function ForumTab() {
           <div className="bg-gray-800 rounded-xl p-6 w-full max-w-lg">
             <h2 className="text-xl font-bold mb-4">Create Post</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <DraftStatus draft={draft} testId="forum-draft-status" />
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Category</label>
                 <select

@@ -103,7 +103,6 @@ function ServicesTab({ selectedCase }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Case Plan Services</h1>
-          <DraftStatus draft={draft} testId="services-draft-status" />
           <p className="text-gray-400">Track required services for {selectedCase.title}</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-punisher">
@@ -117,6 +116,7 @@ function ServicesTab({ selectedCase }) {
           <div className="bg-gray-800 rounded-xl p-6 w-full max-w-lg">
             <h2 className="text-xl font-bold mb-4">Add Service</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <DraftStatus draft={draft} testId="services-draft-status" />
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Service Type</label>
                 <select

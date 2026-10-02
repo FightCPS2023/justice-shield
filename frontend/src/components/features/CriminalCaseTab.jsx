@@ -100,7 +100,6 @@ function CriminalCaseTab({ selectedCase }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Criminal Case Link</h1>
-          <DraftStatus draft={draft} testId="criminal-draft-status" />
           <p className="text-gray-400">Track related criminal charges for {selectedCase.title}</p>
         </div>
         {!criminalCase && (
@@ -116,6 +115,7 @@ function CriminalCaseTab({ selectedCase }) {
           <div className="bg-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Link Criminal Case</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <DraftStatus draft={draft} testId="criminal-draft-status" />
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-gray-400 mb-1">Case Number</label>

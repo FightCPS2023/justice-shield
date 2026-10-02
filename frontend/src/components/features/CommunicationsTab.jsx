@@ -99,7 +99,6 @@ function CommunicationsTab({ selectedCase }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Communication Log</h1>
-          <DraftStatus draft={draft} testId="communications-draft-status" />
           <p className="text-gray-400">Track all communications for {selectedCase.title}</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-punisher">
@@ -113,6 +112,7 @@ function CommunicationsTab({ selectedCase }) {
           <div className="bg-gray-800 rounded-xl p-6 w-full max-w-lg">
             <h2 className="text-xl font-bold mb-4">Log Communication</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <DraftStatus draft={draft} testId="communications-draft-status" />
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-gray-400 mb-1">Type</label>

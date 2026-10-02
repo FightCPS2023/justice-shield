@@ -93,7 +93,6 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-semibold text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>Your Case Home</h1>
-          <DraftStatus draft={draft} testId="cases-draft-status" />
           <p className="text-slate-300 mt-2 text-lg">
             We’re here to help you protect your family — one step at a time.
           </p>
@@ -128,6 +127,7 @@ function CasesTab({ cases, setCases, selectedCase, setSelectedCase }) {
               </button>
             </div>
 
+            <div className="mt-4"><DraftStatus draft={draft} testId="cases-draft-status" /></div>
             <div className="mt-6" data-testid="case-wizard-progress">
               <div className="flex items-center justify-between text-sm text-slate-400">
                 <span>Step {wizardStep} of 3</span>

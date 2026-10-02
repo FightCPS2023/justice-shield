@@ -96,7 +96,6 @@ function CaseMemoryTab({ selectedCase }) {
             <Brain className="w-6 h-6 text-purple-400" />
             Case Memory
           </h2>
-          <DraftStatus draft={draft} testId="memory-draft-status" />
           <p className="text-gray-400">This memory is used by AI tools to get smarter over time.</p>
         </div>
         <button
@@ -111,6 +110,7 @@ function CaseMemoryTab({ selectedCase }) {
 
       {showAdd && (
         <form onSubmit={handleSubmit} className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-4" data-testid="case-memory-form">
+          <DraftStatus draft={draft} testId="memory-draft-status" />
           <div>
             <label className="block text-sm text-gray-400 mb-1">Title</label>
             <input

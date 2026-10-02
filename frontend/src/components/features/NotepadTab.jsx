@@ -147,7 +147,6 @@ function NotepadTab({ selectedCase }) {
             <FileText className="w-8 h-8 text-purple-500" />
             Legal Notepad
           </h1>
-          <DraftStatus draft={draft} testId="notepad-draft-status" />
           <p className="text-gray-400">Save statutes, case law, and research notes for your cases</p>
         </div>
         <div className="flex gap-3">
@@ -198,6 +197,7 @@ function NotepadTab({ selectedCase }) {
       {showForm && (
         <div className="bg-gray-800/50 border border-purple-600/50 rounded-xl p-6">
           <h3 className="text-lg font-bold mb-4">Create New Note</h3>
+          <DraftStatus draft={draft} testId="notepad-draft-status" />
           <div className="space-y-4">
             <input
               type="text"

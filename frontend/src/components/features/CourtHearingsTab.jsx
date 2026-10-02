@@ -106,7 +106,6 @@ function CourtHearingsTab({ selectedCase }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Court Hearings</h1>
-          <DraftStatus draft={draft} testId="hearings-draft-status" />
           <p className="text-gray-400">Upcoming hearings for {selectedCase.title}</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-punisher">
@@ -134,6 +133,7 @@ function CourtHearingsTab({ selectedCase }) {
           <div className="bg-gray-800 rounded-xl p-6 w-full max-w-lg">
             <h2 className="text-xl font-bold mb-4">Add Court Hearing</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <DraftStatus draft={draft} testId="hearings-draft-status" />
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Hearing Type</label>
                 <select value={formData.hearing_type} onChange={(e) => setFormData({...formData, hearing_type: e.target.value})}

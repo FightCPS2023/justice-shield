@@ -96,7 +96,6 @@ function TimelineTab({ selectedCase }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Oswald, sans-serif' }}>Case Timeline</h1>
-          <DraftStatus draft={draft} testId="timeline-draft-status" />
           <p className="text-gray-400">{selectedCase.title}</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-punisher flex items-center gap-2">
@@ -111,6 +110,7 @@ function TimelineTab({ selectedCase }) {
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 w-full max-w-lg">
             <h2 className="text-2xl font-bold mb-4">Add Timeline Event</h2>
             <form onSubmit={handleAdd} className="space-y-4">
+              <DraftStatus draft={draft} testId="timeline-draft-status" />
               <div>
                 <label className="block text-sm font-medium mb-2">Event Title*</label>
                 <input
