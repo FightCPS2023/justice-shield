@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Shield, Lock, Upload, CheckCircle2, AlertTriangle, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../lib/api';
 
 function ImmutableVaultTab() {
   const { api } = useAuth();
@@ -50,7 +51,7 @@ function ImmutableVaultTab() {
       Object.entries(gps).forEach(([k, v]) => {
         if (v) form.append(k, v);
       });
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/vault/seal`, {
+      const response = await fetch(`${API_URL}/api/vault/seal`, {
         method: 'POST',
         credentials: 'include',
         body: form

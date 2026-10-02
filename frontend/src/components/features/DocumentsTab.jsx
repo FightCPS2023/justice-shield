@@ -280,9 +280,7 @@ function DocumentsTab({ selectedCase }) {
     formData.append('doc_type', 'cps_document');
     formData.append('auto_analyze', 'true');
 
-    const uploadUrl = apiBase
-      ? (apiBase.endsWith('/api') ? `${apiBase}/documents/upload` : `${apiBase}/api/documents/upload`)
-      : '/api/documents/upload';
+    const uploadUrl = `${API_URL}/api/documents/upload`;
 
     const attemptUpload = async () => {
       const controller = new AbortController();

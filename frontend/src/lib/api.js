@@ -1,5 +1,17 @@
 // API URL from environment - Emergent sets this during deployment
-const API_URL = process.env.REACT_APP_BACKEND_URL || '';
+const resolveApiUrl = () => {
+  const configured = process.env.REACT_APP_BACKEND_URL || '';
+  try {
+    const current = window.location.origin;
+    const stripWww = (h) => h.replace(/^www\./, '');
+    const configuredHost = new URL(configured).hostname;
+    if (current !== configured && stripWww(configuredHost) === stripWww(window.location.hostname)) {
+      return current;
+    }
+  } catch { /* fall through */ }
+  return configured;
+};
+const API_URL = resolveApiUrl();
 
 // API Helper with mobile-friendly token handling
 const api = {

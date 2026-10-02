@@ -69,7 +69,7 @@ function PersonLookupTab({ selectedCase }) {
       formPayload.append('state', formData.state);
       formPayload.append('case_type', 'all');
       
-      const result = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai/court-records-search`, {
+      const result = await fetch(`${API_URL}/api/ai/court-records-search`, {
         method: 'POST',
         credentials: 'include',
         body: formPayload

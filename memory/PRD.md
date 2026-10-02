@@ -330,6 +330,11 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Selected case persisted across reload (`punisher_selected_case`); Chat moved to jobs API
 - Tested: iteration_31 (backend 5/5 mode injection), iteration_32 (frontend 18/18)
 
+### Session 58: Production login loop fix (www.thecpspunisher.com) - COMPLETE (2026-06)
+- Root cause: new `X-AI-Mode` request header was not in the custom CORS `Access-Control-Allow-Headers` list in server.py; production bundle calls apex `https://thecpspunisher.com` while users visit `www.` → cross-origin preflight failed → /api/auth/me rejected → login loop
+- Fixes: added X-AI-Mode to allowed headers; `lib/api.js` resolves API_URL to window.location.origin when it differs from REACT_APP_BACKEND_URL only by `www.` (same-origin, first-party cookies); removed all stray `process.env.REACT_APP_BACKEND_URL` uses (AuthContext, Notepad, CaseDetailModal, ImmutableVault, PersonLookup) in favor of API_URL
+- LESSON: any new custom request header MUST be added to server.py Allow-Headers (two places)
+
 ## Remaining Tasks
 
 ### P1 - Code Quality (from audit)

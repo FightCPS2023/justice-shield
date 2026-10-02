@@ -55,14 +55,14 @@ async def cors_middleware(request, call_next):
         response = Response(status_code=200)
         response.headers["Access-Control-Allow-Origin"] = origin if origin != "*" else "*"
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, X-Session-ID"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, X-Session-ID, X-AI-Mode"
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Max-Age"] = "86400"
         return response
     response = await call_next(request)
     response.headers["Access-Control-Allow-Origin"] = origin if origin != "*" else "*"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, X-Session-ID"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, X-Session-ID, X-AI-Mode"
     response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
 

@@ -103,7 +103,7 @@ function NotepadTab({ selectedCase }) {
 
   const exportToPdf = async (entryId) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/export/notepad/${entryId}/pdf`, {
+      const response = await fetch(`${API_URL}/api/export/notepad/${entryId}/pdf`, {
         credentials: 'include'
       });
       const blob = await response.blob();
@@ -120,7 +120,7 @@ function NotepadTab({ selectedCase }) {
 
   const exportAllToPdf = async () => {
     try {
-      let url = `${process.env.REACT_APP_BACKEND_URL}/api/export/notepad/all/pdf`;
+      let url = `${API_URL}/api/export/notepad/all/pdf`;
       if (viewMode === 'case' && selectedCase) {
         url += `?case_id=${selectedCase.id}`;
       }
