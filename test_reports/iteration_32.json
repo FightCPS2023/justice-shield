@@ -1,0 +1,33 @@
+{
+  "summary": "Iteration 32 (frontend-only retest of iteration-31 fixes). Verified: (a) DraftStatus indicator is now rendered INSIDE the <form> inside each modal and the 'discard' button is clickable across all 14 tabs — including the two previously-blocked tabs (Court Hearings, Visitation Log) — PASS. (b) useAutosaveDraft.clearDraft properly cancels the debounce and removes the localStorage key: in every tab the key starting 'punisher_draft:<key>:' is gone after Discard — PASS. (c) Selected case persisted in localStorage 'punisher_selected_case' survives reload and Violations renders the case without the 'No Case Selected' prompt — PASS. Timeline submit flow with a valid entry (title+desc+date) clears the indicator and removes the localStorage key — PASS. Cases wizard DraftStatus is inside the wizard modal above case-wizard-progress and discard works — PASS. AI mode selector regression: button-based selector (ai-mode-attorney etc.) stores 'ATTORNEY' in localStorage 'punisher_ai_mode' and the ATTORNEY pill is visibly highlighted after reload — PASS. 14/14 per-tab PASS; all additional checks PASS.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "DraftStatus inside tall modals (CourtHearings, Visitation)", "issues": ["If a user scrolls to the bottom of a long form the DraftStatus indicator (at the top of the <form>) scrolls out of view, so the Discard button is above the modal viewport. Clicking works programmatically (JS) and Playwright can scroll it into view, but a sticky-top anchor for DraftStatus inside the scroll container would improve UX. Not a functional bug."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "useAutosaveDraft.clearDraft correctly sets skipNext=true BEFORE calling setFormData(initial), so the subsequent effect run is skipped and the storage key is removed — verified end-to-end for all 14 tabs.",
+    "App.js persistence block (lines ~199-203 writing and ~234-238 restoring) correctly re-hydrates selectedCase after reload; punisher_selected_case survives full page reload for case id d219e704-b704-4019-b9eb-128977b4aaa0.",
+    "DraftStatus placement inside <form> above the first field eliminates the modal-overlay z-index issue reported in iteration 31. The ONLY residual observation is that in two long forms (Court Hearings, Visitation) the indicator sits above a scrollable area and can scroll out of the modal viewport; consider making it `sticky top-0` inside the form.",
+    "AI mode selector is implemented as button pills (data-testid ai-mode-auto/parent/advocate/attorney/investigator) rather than a <select>. Selection persists to localStorage 'punisher_ai_mode' and the selected pill is highlighted after reload — spec intent satisfied."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped per request)", "frontend": "100% (14/14 draft tabs + case persistence + timeline submit + cases wizard + AI mode = 18/18 scenarios)"},
+  "test_credentials": "cpsvhuntingjustice@gmail.com / cpssuxass; case id d219e704-b704-4019-b9eb-128977b4aaa0",
+  "seed_data_creation": "Timeline test created one event 'TEST_EVENT_TITLE' (desc TEST_EVENT_DESC, date 2025-06-01) on the Storage Upload Case. Attempted automated cleanup via DOM delete-button scan; delete icon not matched by generic trash selector so this one event may still be present in the case. Low-impact.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Per-tab draft testids verified visible with 'Draft auto-saved' text and functional discard: violations, timeline, evidence, communications, services, filings, hearings, visitation, criminal, judge, notepad, memory, forum, strategy. For Court Hearings and Visitation the Discard button can scroll out of viewport inside the modal — use JS click or scroll_into_view first. The 'Link Criminal Case' button opens the criminal draft form (not 'Add' — my first-pass regex missed it; use /link criminal case|edit/i). ai-mode-selector is a container of pill buttons with ids ai-mode-{auto|parent|advocate|attorney|investigator}, not a <select>; mode is persisted to localStorage key 'punisher_ai_mode' and the selected pill gets red/filled styling on reload.",
+  "per_tab_results": {
+    "violations": "PASS", "timeline": "PASS", "evidence": "PASS", "communications": "PASS",
+    "services": "PASS", "filings": "PASS", "hearings": "PASS", "visitation": "PASS",
+    "criminal": "PASS", "judge": "PASS", "notepad": "PASS", "memory": "PASS",
+    "forum": "PASS", "strategy": "PASS"
+  },
+  "rca of the issue": "No functional issues observed. Minor UX note: DraftStatus in long forms can scroll out of the modal viewport (not sticky). Suggested one-line fix: add className 'sticky top-0 z-10 bg-black -mt-2 pt-2' to the DraftStatus wrapper in /app/frontend/src/components/DraftStatus.jsx, or wrap it in a sticky container at the top of each <form>."
+}

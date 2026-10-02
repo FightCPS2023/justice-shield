@@ -324,10 +324,17 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Porch Mode patterns broadened (present-tense threats, "don't need a warrant")
 - Tested: iteration_30 (17/18 backend → porch gap fixed after; frontend smoke 100%)
 
+### Session 57: AI Mode Selector + Auto-Save Drafts - COMPLETE (2026-06)
+- Mode selector (AUTO / PARENT / ADVOCATE / ATTORNEY / INVESTIGATOR) on all 12 AI tools; stored in localStorage `punisher_ai_mode`, sent as `X-AI-Mode` header, injected as MODE LOCK into every LLM system prompt via llm_patch (PARENT overrides the 10-part format with plain-English 'What this means / Do this now / Say this / Ask me')
+- Auto-save drafts on all 15 data-entry forms (`useAutosaveDraft` hook, localStorage per case, 400ms debounce, restore + auto-open on return, discard, cleared on submit); indicator rendered inside each form/modal
+- Selected case persisted across reload (`punisher_selected_case`); Chat moved to jobs API
+- Tested: iteration_31 (backend 5/5 mode injection), iteration_32 (frontend 18/18)
+
 ## Remaining Tasks
 
 ### P1 - Code Quality (from audit)
 - Frontend: ~71 missing hook deps, key={index} in mapped lists
+- UX: sticky DraftStatus in tall modals (Hearings/Visitation) so discard stays visible when scrolled
 - Backend: schemas.py drift (VisitationCreate/CourtHearingCreate/CommunicationLogCreate unused by routes); documents_routes.py 1800+ lines should be split
 
 
