@@ -139,11 +139,11 @@ function AdminBoardTab() {
                 <p className="text-gray-400">Total Users</p>
               </div>
               <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 text-center">
-                <p className="text-4xl font-bold text-blue-400">{stats.total_cases}</p>
+                <p className="text-4xl font-bold text-zinc-300">{stats.total_cases}</p>
                 <p className="text-gray-400">Total Cases</p>
               </div>
               <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 text-center">
-                <p className="text-4xl font-bold text-purple-400">{stats.total_documents}</p>
+                <p className="text-4xl font-bold text-zinc-300">{stats.total_documents}</p>
                 <p className="text-gray-400">Documents</p>
               </div>
               <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 text-center">

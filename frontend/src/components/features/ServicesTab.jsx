@@ -38,7 +38,7 @@ function ServicesTab({ selectedCase }) {
 
   const statusTypes = [
     { id: 'not_started', label: 'Not Started', color: 'bg-gray-600/20 text-gray-400' },
-    { id: 'in_progress', label: 'In Progress', color: 'bg-blue-600/20 text-blue-400' },
+    { id: 'in_progress', label: 'In Progress', color: 'bg-zinc-700/40 text-zinc-300' },
     { id: 'completed', label: 'Completed', color: 'bg-green-600/20 text-green-400' },
     { id: 'failed', label: 'Failed/Non-Compliant', color: 'bg-red-600/20 text-red-400' }
   ];

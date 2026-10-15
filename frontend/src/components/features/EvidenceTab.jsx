@@ -203,7 +203,7 @@ function EvidenceTab({ selectedCase }) {
                   <span className={`px-2 py-1 rounded text-xs ${item.supports_defense ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'}`}>
                     {item.supports_defense ? 'SUPPORTS DEFENSE' : 'AGAINST'}
                   </span>
-                  <span className="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs">{item.evidence_type}</span>
+                  <span className="px-2 py-1 bg-zinc-700/40 text-zinc-300 rounded text-xs">{item.evidence_type}</span>
                 </div>
               </div>
               <h3 className="font-semibold text-lg">{item.title}</h3>

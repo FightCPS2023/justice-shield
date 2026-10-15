@@ -319,7 +319,7 @@ function AuthPage({ onNavigate }) {
               <p><strong>Information Collected:</strong> We collect user-provided data (e.g., CPS case details) and device information.</p>
               <p><strong>Use of Information:</strong> Data is used solely for app functionality and analysis; not shared with third parties without consent.</p>
               <p><strong>Security:</strong> We implement reasonable measures to protect data.</p>
-              <p><strong>User Rights:</strong> Users may request data access or deletion via <span className="text-purple-300">punisher@cpsbreakingnews.com</span>.</p>
+              <p><strong>User Rights:</strong> Users may request data access or deletion via <span className="text-zinc-300">punisher@cpsbreakingnews.com</span>.</p>
               <p><strong>Changes:</strong> We may update this policy; continued use constitutes acceptance.</p>
             </div>
           </div>

@@ -93,7 +93,7 @@ function HowToTab({ setActiveTab }) {
             </button>
             <button
               onClick={() => { setWizardActive(true); setWizardStep(0); }}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg"
+              className="px-4 py-2 bg-zinc-700 hover:bg-zinc-700 rounded-lg"
               data-testid="howto-start-wizard-btn"
             >
               Start Wizard
@@ -124,7 +124,7 @@ function HowToTab({ setActiveTab }) {
               {wizardStep < wizardSteps.length - 1 ? (
                 <button
                   onClick={() => setWizardStep(wizardStep + 1)}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg"
+                  className="px-4 py-2 bg-zinc-700 hover:bg-zinc-700 rounded-lg"
                   data-testid="howto-wizard-next"
                 >
                   Next

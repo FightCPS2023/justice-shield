@@ -81,9 +81,9 @@ function PodcastCreatorTab({ selectedCase }) {
 
   return (
     <div className="space-y-6 animate-fadeIn" data-testid="podcast-tab">
-      <div className="bg-gradient-to-r from-pink-900/50 to-purple-900/50 border border-pink-800/50 rounded-xl p-6">
+      <div className="bg-gradient-to-r from-zinc-800 to-zinc-900 border border-zinc-500 rounded-xl p-6">
         <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
-          <Mic className="w-8 h-8 text-pink-500" />
+          <Mic className="w-8 h-8 text-zinc-300" />
           Podcast Script Creator
         </h1>
         <p className="text-gray-300 mt-2">
@@ -115,7 +115,7 @@ function PodcastCreatorTab({ selectedCase }) {
                   onClick={() => setFormData({...formData, episode_type: type.id})}
                   className={`p-3 rounded-lg text-left border ${
                     formData.episode_type === type.id
-                      ? 'bg-pink-600/20 border-pink-500'
+                      ? 'bg-zinc-700/40 border-zinc-500'
                       : 'bg-gray-800 border-gray-700'
                   }`}
                 >
@@ -154,7 +154,7 @@ function PodcastCreatorTab({ selectedCase }) {
           <button
             onClick={generateScript}
             disabled={generating || !formData.topic.trim()}
-            className="w-full py-4 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 rounded-xl font-bold flex items-center justify-center gap-2"
+            className="w-full py-4 bg-gradient-to-r from-zinc-800 to-zinc-900 hover:from-zinc-800 hover:to-zinc-900 rounded-xl font-bold flex items-center justify-center gap-2"
           >
             {generating ? (
               <><Loader2 className="w-5 h-5 animate-spin" /> Generating Script...</>
@@ -170,7 +170,7 @@ function PodcastCreatorTab({ selectedCase }) {
             <h3 className="font-semibold mb-4">Suggested Topics</h3>
             {topics.categories.map((cat, i) => (
               <div key={i} className="mb-4">
-                <p className="text-sm font-medium text-pink-400 mb-2">{cat.name}</p>
+                <p className="text-sm font-medium text-zinc-300 mb-2">{cat.name}</p>
                 <div className="space-y-1">
                   {cat.topics.map((topic, j) => (
                     <button
@@ -190,10 +190,10 @@ function PodcastCreatorTab({ selectedCase }) {
 
       {/* Generated Script */}
       {script && (
-        <div className="bg-gradient-to-r from-pink-900/30 to-purple-900/30 border border-pink-800/50 rounded-xl p-6">
+        <div className="bg-gradient-to-r from-zinc-800 to-zinc-900 border border-zinc-500 rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold flex items-center gap-2">
-              <Radio className="w-6 h-6 text-pink-500" />
+              <Radio className="w-6 h-6 text-zinc-300" />
               {script.topic}
             </h3>
             <div className="flex gap-2">
@@ -201,7 +201,7 @@ function PodcastCreatorTab({ selectedCase }) {
               <span className="px-3 py-1 bg-gray-700 rounded text-sm">{script.word_count} words</span>
               <button
                 onClick={() => navigator.clipboard.writeText(script.script)}
-                className="px-4 py-1 bg-pink-600 hover:bg-pink-700 rounded flex items-center gap-1"
+                className="px-4 py-1 bg-zinc-700 hover:bg-zinc-700 rounded flex items-center gap-1"
               >
                 <Copy className="w-4 h-4" /> Copy
               </button>
@@ -220,7 +220,7 @@ function PodcastCreatorTab({ selectedCase }) {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {scripts.slice(0, 6).map(s => (
               <div key={s.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-                <Mic className="w-5 h-5 text-pink-500 mb-2" />
+                <Mic className="w-5 h-5 text-zinc-300 mb-2" />
                 <h4 className="font-medium text-sm line-clamp-2">{s.topic}</h4>
                 <div className="flex gap-2 mt-2 text-xs text-gray-500">
                   <span>{s.episode_type}</span>

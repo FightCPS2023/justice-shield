@@ -29,8 +29,8 @@ function CalendarTab() {
   const eventTypes = [
     { value: 'court_hearing', label: 'Court Hearing', color: 'bg-red-500' },
     { value: 'deadline', label: 'Filing Deadline', color: 'bg-orange-500' },
-    { value: 'meeting', label: 'Meeting', color: 'bg-blue-500' },
-    { value: 'reminder', label: 'Reminder', color: 'bg-purple-500' },
+    { value: 'meeting', label: 'Meeting', color: 'bg-zinc-300 text-black' },
+    { value: 'reminder', label: 'Reminder', color: 'bg-zinc-700' },
     { value: 'general', label: 'General', color: 'bg-gray-500' },
   ];
 

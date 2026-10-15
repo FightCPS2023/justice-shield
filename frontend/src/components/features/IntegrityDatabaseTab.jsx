@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Shield, AlertTriangle, Search, Plus, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
+import { VictoryCardPrompt } from '../VictoryCardPrompt';
 
 const violationTypes = [
   'Unlawful Home Entry (4th)',
@@ -170,6 +171,7 @@ function IntegrityDatabaseTab() {
         </div>
       </div>
 
+      {selectedProfile && (selectedProfile.violations || []).length > 0 && <VictoryCardPrompt triggerType="caseworker_flagged" triggerData={{ case_id: selectedCase?.id || null, caseworker_name: selectedProfile.name, redact_caseworker: true, agency: selectedProfile.agency || null, state: selectedProfile.region || null, violation_count: (selectedProfile.violations || []).length }} label="Caseworker flagged — share your victory?" testId="integrity-victory-prompt" />}
       {selectedProfile && (
         <div className="bg-gray-900/70 border border-gray-700 rounded-xl p-4 space-y-4" data-testid="integrity-db-detail">
           <div className="flex items-center justify-between">

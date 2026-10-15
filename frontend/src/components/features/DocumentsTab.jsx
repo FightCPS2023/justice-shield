@@ -52,7 +52,7 @@ function DocumentsTab({ selectedCase }) {
       return <Table className="w-8 h-8 text-teal-500" />;
     }
     if (category === 'audio' || ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.wma', '.aiff', '.aif'].includes(ext)) {
-      return <Volume2 className="w-8 h-8 text-purple-500" />;
+      return <Volume2 className="w-8 h-8 text-zinc-300" />;
     }
     if (category === 'video' || ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v', '.mpg', '.mpeg'].includes(ext)) {
       return <Play className="w-8 h-8 text-red-500" />;
@@ -61,9 +61,9 @@ function DocumentsTab({ selectedCase }) {
       return <Eye className="w-8 h-8 text-green-500" />;
     }
     if (category === 'presentation' || ['.ppt', '.pptx'].includes(ext)) {
-      return <FileText className="w-8 h-8 text-indigo-400" />;
+      return <FileText className="w-8 h-8 text-zinc-300" />;
     }
-    return <FileText className="w-8 h-8 text-blue-500" />;
+    return <FileText className="w-8 h-8 text-zinc-300" />;
   };
 
   const documentTypes = [
@@ -621,7 +621,7 @@ function DocumentsTab({ selectedCase }) {
   if (!selectedCase) {
     return (
       <div className="text-center py-12 animate-fadeIn" data-testid="documents-tab">
-        <FileText className="w-12 h-12 mx-auto text-blue-500 mb-4" />
+        <FileText className="w-12 h-12 mx-auto text-zinc-300 mb-4" />
         <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
         <p className="text-gray-400">Select a case to upload and analyze documents</p>
       </div>
@@ -766,7 +766,7 @@ function DocumentsTab({ selectedCase }) {
             <div className="grid md:grid-cols-4 gap-3 mb-4">
               <div className="bg-gray-900/60 rounded-lg p-3" data-testid="analysis-queue-queued-count">
                 <p className="text-xs text-gray-500">Queued</p>
-                <p className="text-xl font-semibold text-blue-400">{queuedCount}</p>
+                <p className="text-xl font-semibold text-zinc-300">{queuedCount}</p>
               </div>
               <div className="bg-gray-900/60 rounded-lg p-3" data-testid="analysis-queue-processing-count">
                 <p className="text-xs text-gray-500">Processing</p>
@@ -888,11 +888,11 @@ function DocumentsTab({ selectedCase }) {
                   <div key={idx} className={`flex items-center gap-3 p-3 rounded-lg ${
                     item.status === 'done' ? 'bg-green-900/20 border border-green-800/30' :
                     item.status === 'error' ? 'bg-red-900/20 border border-red-800/30' :
-                    item.status === 'uploading' ? 'bg-blue-900/20 border border-blue-800/30' :
+                    item.status === 'uploading' ? 'bg-zinc-900/60 border border-zinc-700' :
                     'bg-gray-900/50 border border-gray-800'
                   }`} data-testid={`queue-item-${idx}`}>
                     <div className="flex-shrink-0">
-                      {item.status === 'uploading' && <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />}
+                      {item.status === 'uploading' && <Loader2 className="w-5 h-5 text-zinc-300 animate-spin" />}
                       {item.status === 'done' && <CheckCircle2 className="w-5 h-5 text-green-400" />}
                       {item.status === 'error' && <AlertTriangle className="w-5 h-5 text-red-400" />}
                       {item.status === 'pending' && <Clock className="w-5 h-5 text-gray-500" />}
@@ -909,7 +909,7 @@ function DocumentsTab({ selectedCase }) {
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
                       item.status === 'done' ? 'bg-green-600/20 text-green-400' :
                       item.status === 'error' ? 'bg-red-600/20 text-red-400' :
-                      item.status === 'uploading' ? 'bg-blue-600/20 text-blue-400' :
+                      item.status === 'uploading' ? 'bg-zinc-700/40 text-zinc-300' :
                       'bg-gray-600/20 text-gray-400'
                     }`}>
                       {item.status === 'uploading' ? 'Analyzing' : item.status}
@@ -982,7 +982,7 @@ function DocumentsTab({ selectedCase }) {
                           </span>
                         )}
                         {doc.extraction_status === 'processing' && (
-                          <span className="px-2 py-1 bg-indigo-600/20 text-indigo-300 text-xs rounded" data-testid={`doc-status-extracting-${doc.id}`}>
+                          <span className="px-2 py-1 bg-zinc-700/40 text-zinc-300 text-xs rounded" data-testid={`doc-status-extracting-${doc.id}`}>
                             Extracting
                           </span>
                         )}
@@ -992,7 +992,7 @@ function DocumentsTab({ selectedCase }) {
                           </span>
                         )}
                         {doc.analysis_status === 'queued' && (
-                          <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded" data-testid={`doc-status-queued-${doc.id}`}>
+                          <span className="px-2 py-1 bg-zinc-700/40 text-zinc-300 text-xs rounded" data-testid={`doc-status-queued-${doc.id}`}>
                             Queued
                           </span>
                         )}
@@ -1110,7 +1110,7 @@ function DocumentsTab({ selectedCase }) {
                 data-testid={`generate-${doc.id}`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <FileText className="w-6 h-6 text-blue-500" />
+                  <FileText className="w-6 h-6 text-zinc-300" />
                   {generating && selectedDocType === doc.id && (
                     <Loader2 className="w-5 h-5 animate-spin text-red-500" />
                   )}

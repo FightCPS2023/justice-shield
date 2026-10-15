@@ -117,6 +117,47 @@ async def login(user_data: UserLogin):
 
     return response
 
+@router.post("/api/auth/refresh")
+async def refresh_session(request: Request):
+    """Re-issue the session cookie: valid JWT, JWT expired <7 days ago, or live Google session."""
+    from jose import jwt, JWTError
+    from config import SECRET_KEY, ALGORITHM
+    token = request.cookies.get("session_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    db = get_db()
+    user_id = None
+    google_session = False
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": False})
+        exp = payload.get("exp")
+        if exp and datetime.fromtimestamp(exp, tz=timezone.utc) < datetime.now(timezone.utc) - timedelta(days=7):
+            raise HTTPException(status_code=401, detail="Session too old. Please log in again.")
+        user_id = payload.get("user_id")
+    except JWTError:
+        session_doc = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+        if not session_doc:
+            raise HTTPException(status_code=401, detail="Invalid session")
+        expires_at = session_doc.get("expires_at")
+        if isinstance(expires_at, str):
+            expires_at = datetime.fromisoformat(expires_at)
+        if expires_at and expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if expires_at and expires_at < datetime.now(timezone.utc):
+            raise HTTPException(status_code=401, detail="Session expired")
+        await db.user_sessions.update_one({"session_token": token}, {"$set": {"expires_at": datetime.now(timezone.utc) + timedelta(days=7)}})
+        user_id = session_doc.get("user_id")
+        google_session = True
+    user = await db.users.find_one({"$or": [{"user_id": user_id}, {"_id": user_id}]}, {"_id": 0, "password_hash": 0})
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    new_token = token if google_session else create_access_token({"user_id": user_id, "email": user.get("email")})
+    response = JSONResponse(content={"refreshed": True, "user_id": user_id})
+    response.set_cookie(key="session_token", value=new_token, max_age=ACCESS_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+                        path="/", secure=True, httponly=True, samesite="none")
+    return response
+
+
 @router.get("/api/auth/me")
 async def get_me(current_user: dict = Depends(get_current_user)):
     """Get current user profile"""

@@ -24,6 +24,7 @@ from .immutable_vault_routes import router as immutable_vault_router
 from .political_strike_routes import router as political_strike_router
 from .citation_routes import router as citation_router
 from .ai_jobs_routes import router as ai_jobs_router
+from .victory_cards_routes import router as victory_cards_router
 
 all_routers = [
     auth_router,
@@ -52,4 +53,5 @@ all_routers = [
     political_strike_router,
     citation_router,
     ai_jobs_router,
+    victory_cards_router,
 ]

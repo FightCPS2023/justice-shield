@@ -60,8 +60,8 @@ function AICaseNotesTab({ selectedCase }) {
   };
 
   const featureLabels = {
-    chat: { label: 'AI Chat', icon: MessageSquare, color: 'text-purple-400' },
-    strategy: { label: 'Defense Strategy', icon: Shield, color: 'text-blue-400' },
+    chat: { label: 'AI Chat', icon: MessageSquare, color: 'text-zinc-300' },
+    strategy: { label: 'Defense Strategy', icon: Shield, color: 'text-zinc-300' },
     research: { label: 'Legal Research', icon: Search, color: 'text-green-400' },
     document: { label: 'Document Gen', icon: FileText, color: 'text-amber-400' },
     forensic: { label: 'Forensic Analysis', icon: Eye, color: 'text-red-400' },

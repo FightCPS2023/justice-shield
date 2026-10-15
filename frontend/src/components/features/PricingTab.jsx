@@ -23,7 +23,7 @@ function PricingTab() {
       id: 'essential',
       name: 'Essential',
       icon: Star,
-      color: 'from-blue-500 to-blue-700',
+      color: 'from-zinc-800 to-zinc-900',
       monthly: 19,
       annual: 190,
       description: 'For parents starting their CPS defense',
@@ -51,7 +51,7 @@ function PricingTab() {
       id: 'professional',
       name: 'Professional',
       icon: Crown,
-      color: 'from-purple-500 to-purple-700',
+      color: 'from-zinc-800 to-zinc-900',
       monthly: 99,
       annual: 990,
       popular: true,
@@ -188,11 +188,11 @@ function PricingTab() {
         {tiers.map((tier) => (
           <div
             key={tier.id}
-            className={`relative bg-gray-800/50 border rounded-xl p-6 ${tier.popular ? 'border-purple-500 border-2' : 'border-gray-700'}`}
+            className={`relative bg-gray-800/50 border rounded-xl p-6 ${tier.popular ? 'border-zinc-500 border-2' : 'border-gray-700'}`}
             data-testid={`pricing-tier-${tier.id}`}
           >
             {tier.popular && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-purple-600 rounded-full text-xs font-bold">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-zinc-700 rounded-full text-xs font-bold">
                 MOST POPULAR
               </div>
             )}
@@ -216,7 +216,7 @@ function PricingTab() {
                 user?.tier === tier.id
                   ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
                   : tier.popular
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white'
+                  ? 'bg-gradient-to-r from-zinc-800 to-zinc-900 hover:from-zinc-800 hover:to-zinc-900 text-white'
                   : 'bg-red-600 hover:bg-red-700 text-white'
               }`}
               data-testid={`pricing-subscribe-${tier.id}-btn`}

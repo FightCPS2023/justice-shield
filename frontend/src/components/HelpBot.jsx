@@ -112,7 +112,7 @@ RESPOND: Be helpful, concise, and supportive. Users are often stressed dealing w
         className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
           isOpen 
             ? 'bg-gray-700 rotate-90' 
-            : 'bg-gradient-to-r from-red-600 to-purple-600 hover:scale-110 animate-pulse'
+            : 'bg-gradient-to-r from-red-600 to-zinc-900 hover:scale-110 animate-pulse'
         }`}
         data-testid="help-bot-toggle"
       >
@@ -123,7 +123,7 @@ RESPOND: Be helpful, concise, and supportive. Users are often stressed dealing w
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fadeIn" style={{ height: '500px', maxHeight: 'calc(100vh - 150px)' }}>
           {/* Header */}
-          <div className="bg-gradient-to-r from-red-600 to-purple-600 p-4 flex items-center gap-3">
+          <div className="bg-gradient-to-r from-red-600 to-zinc-900 p-4 flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
               <Bot className="w-6 h-6" />
             </div>

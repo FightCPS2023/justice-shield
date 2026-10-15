@@ -53,9 +53,9 @@ function LegalKnowledgeBaseTab() {
 
   return (
     <div className="space-y-6 animate-fadeIn" data-testid="legaldb-tab">
-      <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 border border-blue-800/50 rounded-xl p-6">
+      <div className="bg-gradient-to-r from-zinc-900 to-zinc-900 border border-zinc-700 rounded-xl p-6">
         <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
-          <BookOpen className="w-8 h-8 text-blue-500" />
+          <BookOpen className="w-8 h-8 text-zinc-300" />
           Legal Knowledge Base
         </h1>
         <p className="text-gray-300 mt-2">
@@ -71,7 +71,7 @@ function LegalKnowledgeBaseTab() {
             onClick={() => setActiveSection(section.id)}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
               activeSection === section.id
-                ? 'bg-blue-600 text-white'
+                ? 'bg-zinc-300 text-black'
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
           >
@@ -87,11 +87,11 @@ function LegalKnowledgeBaseTab() {
           <h2 className="text-xl font-semibold">Landmark Supreme Court Cases ({data.supreme.count})</h2>
           {Object.entries(data.supreme.cases || {}).map(([key, caseInfo]) => (
             <div key={key} className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-              <h3 className="text-lg font-bold text-blue-400">{caseInfo.citation}</h3>
+              <h3 className="text-lg font-bold text-zinc-300">{caseInfo.citation}</h3>
               <p className="text-gray-300 mt-2"><strong>Holding:</strong> {caseInfo.holding}</p>
               <p className="text-gray-400 mt-2"><strong>Application:</strong> {caseInfo.application}</p>
               {caseInfo.key_quotes && (
-                <div className="mt-3 pl-4 border-l-2 border-blue-500">
+                <div className="mt-3 pl-4 border-l-2 border-zinc-400">
                   {caseInfo.key_quotes.map((quote, i) => (
                     <p key={i} className="text-sm text-gray-400 italic mb-2">"{quote}"</p>
                   ))}
@@ -100,7 +100,7 @@ function LegalKnowledgeBaseTab() {
               {caseInfo.use_for && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {caseInfo.use_for.map((use, i) => (
-                    <span key={i} className="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs">{use}</span>
+                    <span key={i} className="px-2 py-1 bg-zinc-700/40 text-zinc-300 rounded text-xs">{use}</span>
                   ))}
                 </div>
               )}
@@ -115,7 +115,7 @@ function LegalKnowledgeBaseTab() {
           {Object.entries(data.circuit.cases || {}).map(([key, caseInfo]) => (
             <div key={key} className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
               <div className="flex items-start justify-between">
-                <h3 className="text-lg font-bold text-purple-400">{caseInfo.citation}</h3>
+                <h3 className="text-lg font-bold text-zinc-300">{caseInfo.citation}</h3>
                 {caseInfo.section_1983 && (
                   <span className="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs">§1983 Case</span>
                 )}
@@ -124,7 +124,7 @@ function LegalKnowledgeBaseTab() {
               <p className="text-gray-300 mt-2"><strong>Holding:</strong> {caseInfo.holding}</p>
               <p className="text-gray-400 mt-2"><strong>Application:</strong> {caseInfo.application}</p>
               {caseInfo.key_quotes && (
-                <div className="mt-3 pl-4 border-l-2 border-purple-500">
+                <div className="mt-3 pl-4 border-l-2 border-zinc-500">
                   {caseInfo.key_quotes.map((quote, i) => (
                     <p key={i} className="text-sm text-gray-400 italic mb-2">"{quote}"</p>
                   ))}
@@ -133,7 +133,7 @@ function LegalKnowledgeBaseTab() {
               {caseInfo.use_for && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {caseInfo.use_for.map((use, i) => (
-                    <span key={i} className="px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs">{use}</span>
+                    <span key={i} className="px-2 py-1 bg-zinc-700/40 text-zinc-300 rounded text-xs">{use}</span>
                   ))}
                 </div>
               )}

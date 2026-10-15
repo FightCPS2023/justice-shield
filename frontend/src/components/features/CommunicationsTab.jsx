@@ -87,7 +87,7 @@ function CommunicationsTab({ selectedCase }) {
   if (!selectedCase) {
     return (
       <div className="text-center py-12" data-testid="communications-tab">
-        <MessageSquare className="w-12 h-12 mx-auto text-blue-500 mb-4" />
+        <MessageSquare className="w-12 h-12 mx-auto text-zinc-300 mb-4" />
         <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
         <p className="text-gray-400">Select a case to log communications</p>
       </div>
@@ -199,7 +199,7 @@ function CommunicationsTab({ selectedCase }) {
             }`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
-                  <span className="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs">{comm.contact_type}</span>
+                  <span className="px-2 py-1 bg-zinc-700/40 text-zinc-300 rounded text-xs">{comm.contact_type}</span>
                   <span className="text-gray-400">{comm.date}</span>
                 </div>
                 {comm.favorable !== null && (

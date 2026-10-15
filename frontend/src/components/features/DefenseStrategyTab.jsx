@@ -110,7 +110,7 @@ function DefenseStrategyTab({ selectedCase }) {
           <p className="text-gray-400">Build your defense for {selectedCase.title}</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={generateStrategy} disabled={generating} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg flex items-center gap-2">
+          <button onClick={generateStrategy} disabled={generating} className="px-4 py-2 bg-zinc-700 hover:bg-zinc-700 rounded-lg flex items-center gap-2">
             {generating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Brain className="w-5 h-5" />}
             AI Generate Strategy
           </button>
@@ -122,9 +122,9 @@ function DefenseStrategyTab({ selectedCase }) {
 
       {/* AI Generated Strategy */}
       {generatedStrategy && (
-        <div className="bg-gradient-to-r from-purple-900/30 to-gray-900 border border-purple-800/50 rounded-xl p-6">
+        <div className="bg-gradient-to-r from-zinc-800 to-gray-900 border border-zinc-500 rounded-xl p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Brain className="w-5 h-5 text-purple-500" />
+            <Brain className="w-5 h-5 text-zinc-300" />
             AI-Generated Defense Strategy
           </h3>
           <div className="mb-4"><CitationLog log={generatedStrategy.citation_log} testId="defense-citation-log" /></div>
@@ -207,7 +207,7 @@ function DefenseStrategyTab({ selectedCase }) {
         <div className="text-center py-12 bg-gray-800/30 rounded-xl">
           <Shield className="w-12 h-12 mx-auto text-gray-600 mb-4" />
           <p className="text-gray-400 mb-4">No defense strategies yet</p>
-          <button onClick={generateStrategy} disabled={generating} className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg">
+          <button onClick={generateStrategy} disabled={generating} className="px-6 py-3 bg-zinc-700 hover:bg-zinc-700 rounded-lg">
             {generating ? <Loader2 className="w-5 h-5 animate-spin inline mr-2" /> : <Brain className="w-5 h-5 inline mr-2" />}
             Generate AI Strategy
           </button>

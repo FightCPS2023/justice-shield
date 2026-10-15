@@ -68,7 +68,7 @@ function ChatTab({ selectedCase }) {
       <div className="flex-1 overflow-y-auto bg-gray-800/30 border border-gray-700 rounded-xl p-4 space-y-4 mb-4">
         {messages.length === 0 && (
           <div className="text-center py-12">
-            <Brain className="w-12 h-12 mx-auto text-purple-500 mb-4" />
+            <Brain className="w-12 h-12 mx-auto text-zinc-300 mb-4" />
             <h3 className="text-xl font-semibold mb-2">AI Legal Assistant</h3>
             <p className="text-gray-400 mb-4">Ask me anything about CPS cases, your rights, or defense strategies</p>
             <div className="grid gap-2 max-w-md mx-auto">
@@ -115,7 +115,7 @@ function ChatTab({ selectedCase }) {
         {loading && !streamingContent && (
           <div className="flex justify-start">
             <div className="bg-gray-700/50 border border-gray-600 p-4 rounded-xl flex items-center gap-2">
-              <Loader2 className="w-5 h-5 animate-spin text-purple-500" />
+              <Loader2 className="w-5 h-5 animate-spin text-zinc-300" />
               <span className="text-gray-400 text-sm">Thinking...</span>
             </div>
           </div>

@@ -44,7 +44,7 @@ function CourtFilingsTab({ selectedCase }) {
 
   const statusTypes = [
     { id: 'pending', label: 'Pending', color: 'bg-yellow-600/20 text-yellow-400' },
-    { id: 'filed', label: 'Filed', color: 'bg-blue-600/20 text-blue-400' },
+    { id: 'filed', label: 'Filed', color: 'bg-zinc-700/40 text-zinc-300' },
     { id: 'granted', label: 'Granted', color: 'bg-green-600/20 text-green-400' },
     { id: 'denied', label: 'Denied', color: 'bg-red-600/20 text-red-400' },
     { id: 'withdrawn', label: 'Withdrawn', color: 'bg-gray-600/20 text-gray-400' }
@@ -98,7 +98,7 @@ function CourtFilingsTab({ selectedCase }) {
   if (!selectedCase) {
     return (
       <div className="text-center py-12" data-testid="courtfilings-tab">
-        <Gavel className="w-12 h-12 mx-auto text-purple-500 mb-4" />
+        <Gavel className="w-12 h-12 mx-auto text-zinc-300 mb-4" />
         <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
         <p className="text-gray-400">Select a case to manage court filings</p>
       </div>
@@ -201,8 +201,8 @@ function CourtFilingsTab({ selectedCase }) {
               <div key={filing.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
-                    <Gavel className="w-5 h-5 text-purple-500" />
-                    <span className="px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs uppercase">{filing.filing_type}</span>
+                    <Gavel className="w-5 h-5 text-zinc-300" />
+                    <span className="px-2 py-1 bg-zinc-700/40 text-zinc-300 rounded text-xs uppercase">{filing.filing_type}</span>
                   </div>
                   <span className={`px-2 py-1 rounded text-xs ${statusInfo.color}`}>{statusInfo.label}</span>
                 </div>

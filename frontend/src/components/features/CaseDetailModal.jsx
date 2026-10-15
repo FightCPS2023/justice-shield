@@ -141,7 +141,7 @@ function CaseDetailModal({ caseData, onClose, api }) {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
                       <h3 className="font-semibold mb-3 flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-blue-400" />
+                        <FileText className="w-5 h-5 text-zinc-300" />
                         Case Information
                       </h3>
                       <div className="space-y-2 text-sm">
@@ -162,12 +162,12 @@ function CaseDetailModal({ caseData, onClose, api }) {
                           <p className="text-2xl font-bold text-red-500">{caseDetails?.violations?.length || 0}</p>
                           <p className="text-xs text-gray-400">Violations</p>
                         </div>
-                        <div className="text-center p-3 bg-blue-900/20 rounded-lg">
-                          <p className="text-2xl font-bold text-blue-500">{caseDetails?.documents?.length || 0}</p>
+                        <div className="text-center p-3 bg-zinc-900/60 rounded-lg">
+                          <p className="text-2xl font-bold text-zinc-300">{caseDetails?.documents?.length || 0}</p>
                           <p className="text-xs text-gray-400">Documents</p>
                         </div>
-                        <div className="text-center p-3 bg-purple-900/20 rounded-lg">
-                          <p className="text-2xl font-bold text-purple-500">{caseDetails?.evidence?.length || 0}</p>
+                        <div className="text-center p-3 bg-zinc-900 rounded-lg">
+                          <p className="text-2xl font-bold text-zinc-300">{caseDetails?.evidence?.length || 0}</p>
                           <p className="text-xs text-gray-400">Evidence</p>
                         </div>
                         <div className="text-center p-3 bg-green-900/20 rounded-lg">
@@ -215,7 +215,7 @@ function CaseDetailModal({ caseData, onClose, api }) {
                       <div key={i} className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <FileText className="w-8 h-8 text-blue-400" />
+                            <FileText className="w-8 h-8 text-zinc-300" />
                             <div>
                               <h4 className="font-semibold">{d.title || d.filename}</h4>
                               <p className="text-gray-400 text-xs">{d.doc_type} • {d.file_type}</p>
@@ -259,10 +259,10 @@ function CaseDetailModal({ caseData, onClose, api }) {
                     <p className="text-gray-400 text-center py-8">No evidence items logged yet.</p>
                   ) : (
                     caseDetails?.evidence?.map((e, i) => (
-                      <div key={i} className="bg-gray-800/50 border border-purple-900/30 rounded-lg p-4">
+                      <div key={i} className="bg-gray-800/50 border border-zinc-500 rounded-lg p-4">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h4 className="font-semibold text-purple-400">{e.title}</h4>
+                            <h4 className="font-semibold text-zinc-300">{e.title}</h4>
                             <p className="text-gray-400 text-xs mt-1">Type: {e.evidence_type} • Status: {e.status}</p>
                             <p className="text-gray-300 text-sm mt-2">{e.description}</p>
                           </div>

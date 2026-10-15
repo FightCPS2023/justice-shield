@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { CitationLog } from '../CitationLog';
 import { AiModeSelector } from '../AiModeSelector';
+import { VictoryCardPrompt } from '../VictoryCardPrompt';
 
 const defaultPlaintiff = { name: '', address: '', city: '', state: '', zip: '', phone: '', email: '' };
 const defaultDefendant = { name: '', badge: '', title: '', employer: '' };
@@ -241,6 +242,7 @@ function LawsuitArchitectTab({ selectedCase }) {
               <button onClick={handleDownloadMarkdown} disabled={!gateReady} title={gateReady ? '' : 'Citation log pending'} className="px-3 py-1 bg-gray-700 rounded text-xs flex items-center gap-1 disabled:opacity-40" data-testid="lawsuit-download-md"><Download className="w-3 h-3" /> Download Markdown</button>
               <button onClick={handleDownloadPdf} disabled={!gateReady} title={gateReady ? '' : 'Citation log pending'} className="px-3 py-1 bg-red-600/40 rounded text-xs flex items-center gap-1 disabled:opacity-40" data-testid="lawsuit-download-pdf"><Download className="w-3 h-3" /> Download PDF</button>
             </div>
+            {generated && <div className="mt-4"><VictoryCardPrompt triggerType="lawsuit_drafted" triggerData={{ case_id: selectedCase?.id || null, lawsuit_id: generated.complaint_id, agency: agency?.name || null, state: agency?.state || null, violation_count: violations?.length || null }} label="Federal complaint drafted — share your victory?" testId="lawsuit-victory-prompt" /></div>}
             {generated && <div className="mt-4"><CitationLog log={generated.citation_log} pending={!generated.citation_log} verifiedOnly={verifiedOnly} onVerifiedOnlyChange={setVerifiedOnly} testId="lawsuit-citation-log" /></div>}
             <pre className="whitespace-pre-wrap text-sm text-gray-200 mt-4" data-testid="lawsuit-output">{generated?.citation_log?.sanitized_text || generated?.generated_document || 'Generate a complaint to view output.'}</pre>
           </div>

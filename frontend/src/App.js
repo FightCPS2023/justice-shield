@@ -31,6 +31,7 @@ import LawsuitArchitectTab from './components/features/LawsuitArchitectTab';
 import IntegrityDatabaseTab from './components/features/IntegrityDatabaseTab';
 import ImmutableVaultTab from './components/features/ImmutableVaultTab';
 import PoliticalStrikeTab from './components/features/PoliticalStrikeTab';
+import VictoryCardsTab from './components/features/VictoryCardsTab';
 import AICaseNotesTab from './components/features/AICaseNotesTab';
 import CaseMemoryTab from './components/features/CaseMemoryTab';
 import SmartDocTab from './components/features/SmartDocTab';
@@ -194,6 +195,11 @@ function Dashboard({ onNavigate }) {
   const [showTermsGate, setShowTermsGate] = useState(false);
   const [termsGateChecked, setTermsGateChecked] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  useEffect(() => {
+    const onNav = (e) => { if (e.detail) setActiveTab(e.detail); };
+    window.addEventListener('punisher-navigate', onNav);
+    return () => window.removeEventListener('punisher-navigate', onNav);
+  }, []);
   const [cases, setCases] = useState([]);
   const [selectedCase, setSelectedCase] = useState(null);
   useEffect(() => {
@@ -338,6 +344,13 @@ function Dashboard({ onNavigate }) {
       ]
     },
     {
+      id: 'viral',
+      label: '📣 viral tools',
+      items: [
+        { id: 'victory-cards', icon: Megaphone, label: 'Victory Cards', minTier: 'free', highlight: true }
+      ]
+    },
+    {
       id: 'research',
       label: 'Research & Law',
       items: [
@@ -387,7 +400,7 @@ function Dashboard({ onNavigate }) {
               <p><strong>Disclaimer:</strong> The app provides analysis for informational purposes only, not legal advice.</p>
               <p><strong>Termination:</strong> Violation may result in account termination and legal action.</p>
               <p><strong>Governing Law:</strong> State of Maine.</p>
-              <p><strong>Privacy:</strong> Data is used solely for app functionality and analysis; users may request access or deletion via <span className="text-purple-300">punisher@cpsbreakingnews.com</span>.</p>
+              <p><strong>Privacy:</strong> Data is used solely for app functionality and analysis; users may request access or deletion via <span className="text-zinc-300">punisher@cpsbreakingnews.com</span>.</p>
             </div>
             <label className="flex items-start gap-2 text-sm text-slate-200 mt-6">
               <input
@@ -583,6 +596,7 @@ function Dashboard({ onNavigate }) {
           {activeTab === 'integrity-db' && <IntegrityDatabaseTab selectedCase={selectedCase} />}
           {activeTab === 'immutable-vault' && <ImmutableVaultTab selectedCase={selectedCase} />}
           {activeTab === 'political-strike' && <PoliticalStrikeTab selectedCase={selectedCase} />}
+          {activeTab === 'victory-cards' && <VictoryCardsTab selectedCase={selectedCase} />}
           {activeTab === 'analyzerlab' && isAdmin && (
             <AnalyzerTestLabTab
               selectedCase={selectedCase}

@@ -238,7 +238,7 @@ function JudgeWatchTab({ selectedCase }) {
           {judgeResearch.judicial_philosophy && (
             <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
               <h3 className="font-semibold mb-2 flex items-center gap-2">
-                <Brain className="w-5 h-5 text-purple-500" /> Judicial Philosophy
+                <Brain className="w-5 h-5 text-zinc-300" /> Judicial Philosophy
               </h3>
               <p className="text-gray-300">{judgeResearch.judicial_philosophy}</p>
             </div>
@@ -247,7 +247,7 @@ function JudgeWatchTab({ selectedCase }) {
           {judgeResearch.research_notes && (
             <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
               <h3 className="font-semibold mb-2 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-blue-500" /> Research Notes
+                <FileText className="w-5 h-5 text-zinc-300" /> Research Notes
               </h3>
               <p className="text-gray-300 whitespace-pre-wrap">{judgeResearch.research_notes}</p>
             </div>

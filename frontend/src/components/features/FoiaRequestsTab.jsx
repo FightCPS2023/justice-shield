@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { FileText, Download, Copy, Mail, MapPin, Send, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
+import { HistoryList } from '../HistoryList';
+import { VictoryCardPrompt } from '../VictoryCardPrompt';
 
 function FoiaRequestsTab({ selectedCase }) {
   const { api } = useAuth();
@@ -17,6 +19,25 @@ function FoiaRequestsTab({ selectedCase }) {
   const [packageData, setPackageData] = useState(null);
   const [recipientEmail, setRecipientEmail] = useState('');
   const [gmailConnected, setGmailConnected] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [historyTotal, setHistoryTotal] = useState(0);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const loadHistory = useCallback(async (offset = 0) => {
+    if (!selectedCase?.id) return;
+    setHistoryLoading(true);
+    try {
+      const data = await api.get(`/api/foia/requests?case_id=${selectedCase.id}&limit=10&offset=${offset}`);
+      setHistory((prev) => (offset === 0 ? data.requests : [...prev, ...data.requests]));
+      setHistoryTotal(data.total || 0);
+    } catch (err) {
+      // non-blocking
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [api, selectedCase?.id]);
+
+  useEffect(() => { loadHistory(0); }, [loadHistory]);
 
   useEffect(() => {
     const loadStates = async () => {
@@ -72,6 +93,7 @@ function FoiaRequestsTab({ selectedCase }) {
       setPackageData(data);
       setRecipientEmail(data.target_email || '');
       toast.success('FOIA request generated');
+      loadHistory(0);
     } catch (error) {
       toast.error(error.message || 'FOIA generation failed');
     } finally {
@@ -94,6 +116,7 @@ function FoiaRequestsTab({ selectedCase }) {
       };
       await api.post('/api/foia/send', payload);
       toast.success('FOIA request sent');
+      loadHistory(0);
     } catch (error) {
       toast.error(error.message || 'FOIA send failed');
     } finally {
@@ -209,6 +232,7 @@ function FoiaRequestsTab({ selectedCase }) {
         </button>
       </form>
 
+      {packageData && <VictoryCardPrompt triggerType="foia_filed" triggerData={{ case_id: selectedCase?.id || null, foia_id: packageData.request_id || null, agency: form.agency_name || null, state: form.state || null }} label="Records demand generated — share your victory?" testId="foia-victory-prompt" />}
       {packageData && (
         <div className="bg-gray-900/60 border border-gray-700 rounded-xl p-6 space-y-4" data-testid="foia-output">
           <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-300">
@@ -248,6 +272,33 @@ function FoiaRequestsTab({ selectedCase }) {
           </pre>
         </div>
       )}
+
+      <HistoryList
+        title="Request History"
+        items={history}
+        total={historyTotal}
+        loading={historyLoading}
+        emptyTitle="No requests yet"
+        emptyHint="Fill in the caseworker and agency above to generate your first records request."
+        ctaLabel="Generate first request"
+        onCta={() => document.querySelector('[data-testid="foia-user-name"]')?.focus()}
+        onLoadMore={() => loadHistory(history.length)}
+        testId="foia-request-history"
+        renderItem={(r) => (
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-xs font-mono text-zinc-400">{r.created_at ? new Date(r.created_at).toLocaleString() : '—'}</p>
+              <p className="text-sm text-zinc-100">{r.target_agency}{r.caseworker_name ? ` — ${r.caseworker_name}` : ''}</p>
+              <p className="text-xs text-zinc-500 font-mono">{r.state} · {r.request_type?.replace(/_/g, ' ')}</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <span className="px-2 py-0.5 border border-zinc-600 text-zinc-200">{(r.status || 'generated').toUpperCase()}</span>
+              <span className={`px-2 py-0.5 border ${r.delivery_status === 'sent' ? 'border-emerald-600 text-emerald-300' : 'border-zinc-500 text-zinc-400'}`}>{(r.delivery_status || 'not_sent').replace('_', ' ').toUpperCase()}</span>
+              <button type="button" onClick={() => setPackageData({ document_markdown: r.generated_document, target_email: r.recipient_email || '', statute: r.statute, target_address: '' })} className="px-2 py-0.5 border border-zinc-500 text-zinc-200 hover:bg-zinc-800" data-testid="foia-history-view">View</button>
+            </div>
+          </div>
+        )}
+      />
     </div>
   );
 }

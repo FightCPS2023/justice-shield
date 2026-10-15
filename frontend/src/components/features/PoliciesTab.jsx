@@ -29,7 +29,7 @@ function PoliciesTab() {
 
       <div className="bg-gray-900/60 border border-gray-700 rounded-xl p-6" data-testid="privacy-section">
         <div className="flex items-center gap-2 mb-4">
-          <ShieldCheck className="w-5 h-5 text-purple-400" />
+          <ShieldCheck className="w-5 h-5 text-zinc-300" />
           <h2 className="text-xl font-semibold">Privacy Policy</h2>
         </div>
         <p className="text-sm text-gray-400 mb-3">Effective Date: {effectiveDate}</p>
@@ -37,7 +37,7 @@ function PoliciesTab() {
           <p><strong>Information Collected:</strong> We collect user-provided data (e.g., CPS case details) and limited device information.</p>
           <p><strong>Use of Information:</strong> Data is used solely for app functionality and analysis; not shared with third parties without consent.</p>
           <p><strong>Security:</strong> We implement reasonable measures to protect data.</p>
-          <p><strong>User Rights:</strong> Users may request data access or deletion via <span className="text-purple-300">punisher@cpsbreakingnews.com</span>.</p>
+          <p><strong>User Rights:</strong> Users may request data access or deletion via <span className="text-zinc-300">punisher@cpsbreakingnews.com</span>.</p>
           <p><strong>Changes:</strong> We may update this policy; continued use constitutes acceptance.</p>
         </div>
       </div>

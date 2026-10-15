@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Megaphone, Shield, FileText, Send, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
+import { VictoryCardPrompt } from '../VictoryCardPrompt';
 
 function PoliticalStrikeTab() {
   const { api } = useAuth();
@@ -154,6 +155,7 @@ function PoliticalStrikeTab() {
         </button>
       </div>
 
+      {dispatchReport && <VictoryCardPrompt triggerType="dossier_dispatched" triggerData={{ case_id: selectedCase?.id || null, dossier_id: dispatchReport.dossier_id || null, agency: form.agency || null, violation_count: (form.violations || '').split('\n').filter(Boolean).length || null }} label="Dossier dispatched — share your victory?" testId="political-victory-prompt" />}
       {dispatchReport && (
         <div className="bg-gray-900/70 border border-gray-700 rounded-xl p-4" data-testid="political-dispatch-report">
           <h3 className="font-semibold flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> Dispatch Report</h3>

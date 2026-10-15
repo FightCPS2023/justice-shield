@@ -26,7 +26,7 @@ function DocumentAnalysisView({ document, onReanalyze, analyzing, queueInfo, onR
         <p className="text-gray-400 mb-4">This document hasn't been analyzed yet</p>
         {queueStatus && (
           <div className="mb-4 text-sm text-gray-300" data-testid="document-analysis-queue-status">
-            <p>Queue Status: <span className="text-blue-400">{queueStatus}</span></p>
+            <p>Queue Status: <span className="text-zinc-300">{queueStatus}</span></p>
             {queuePosition && (
               <p data-testid="document-analysis-queue-position">Position: {queuePosition}</p>
             )}
@@ -108,14 +108,14 @@ function DocumentAnalysisView({ document, onReanalyze, analyzing, queueInfo, onR
 
       {/* Summary */}
       {data.summary && (
-        <div className="bg-gradient-to-r from-blue-900/30 to-gray-900 border border-blue-800/50 rounded-xl p-6">
+        <div className="bg-gradient-to-r from-zinc-800 to-gray-900 border border-zinc-700 rounded-xl p-6">
           <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-blue-500" />
+            <FileText className="w-5 h-5 text-zinc-300" />
             Document Summary
           </h3>
           <p className="text-gray-300">{data.summary}</p>
           {data.document_type && (
-            <p className="text-sm text-blue-400 mt-2">Document Type: {data.document_type}</p>
+            <p className="text-sm text-zinc-300 mt-2">Document Type: {data.document_type}</p>
           )}
         </div>
       )}
@@ -194,13 +194,13 @@ function DocumentAnalysisView({ document, onReanalyze, analyzing, queueInfo, onR
       {data.timeline_events && data.timeline_events.length > 0 && (
         <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-purple-500" />
+            <Clock className="w-5 h-5 text-zinc-300" />
             Timeline Events Extracted ({data.timeline_events.length})
           </h3>
           <div className="space-y-3">
             {data.timeline_events.map((event, i) => (
-              <div key={i} className="flex items-start gap-4 border-l-2 border-purple-500/50 pl-4">
-                <div className="text-purple-400 font-mono text-sm whitespace-nowrap">
+              <div key={i} className="flex items-start gap-4 border-l-2 border-zinc-500 pl-4">
+                <div className="text-zinc-300 font-mono text-sm whitespace-nowrap">
                   {event.date || 'Unknown'}
                 </div>
                 <div>
@@ -219,14 +219,14 @@ function DocumentAnalysisView({ document, onReanalyze, analyzing, queueInfo, onR
       {data.named_individuals && data.named_individuals.length > 0 && (
         <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5 text-blue-500" />
+            <Users className="w-5 h-5 text-zinc-300" />
             Named Individuals
           </h3>
           <div className="grid md:grid-cols-2 gap-4">
             {data.named_individuals.map((person, i) => (
               <div key={i} className="bg-black/30 rounded-lg p-3">
                 <p className="font-semibold">{person.name}</p>
-                <p className="text-sm text-blue-400">{person.role}</p>
+                <p className="text-sm text-zinc-300">{person.role}</p>
                 {person.actions && <p className="text-sm text-gray-400 mt-1">{person.actions}</p>}
               </div>
             ))}
@@ -310,14 +310,14 @@ function DocumentAnalysisView({ document, onReanalyze, analyzing, queueInfo, onR
       {document.processing_log && document.processing_log.length > 0 && (
         <div className="bg-gray-900/60 border border-gray-700 rounded-xl p-6" data-testid="document-processing-log">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-blue-400" />
+            <Clock className="w-5 h-5 text-zinc-300" />
             Processing Log
           </h3>
           <ul className="space-y-2 text-sm text-gray-300 max-h-60 overflow-auto">
             {document.processing_log.slice(-10).map((entry, idx) => (
               <li key={idx} className="flex items-start gap-2" data-testid={`processing-log-item-${idx}`}>
                 <span className="text-gray-500">{new Date(entry.timestamp).toLocaleString()}</span>
-                <span className={`px-2 py-0.5 rounded text-xs ${entry.level === 'error' ? 'bg-red-600/30 text-red-200' : entry.level === 'warn' ? 'bg-yellow-600/30 text-yellow-200' : 'bg-blue-600/30 text-blue-200'}`}>
+                <span className={`px-2 py-0.5 rounded text-xs ${entry.level === 'error' ? 'bg-red-600/30 text-red-200' : entry.level === 'warn' ? 'bg-yellow-600/30 text-yellow-200' : 'bg-zinc-700/40 text-zinc-100'}`}>
                   {entry.level || 'info'}
                 </span>
                 <span>{entry.message}</span>

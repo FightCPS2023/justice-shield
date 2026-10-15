@@ -287,7 +287,7 @@ function CourtListenerTab({ selectedCase }) {
                   </button>
                   <button
                     onClick={() => saveToNotepad(result)}
-                    className="px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm flex items-center gap-1"
+                    className="px-3 py-2 bg-zinc-700 hover:bg-zinc-700 rounded-lg text-sm flex items-center gap-1"
                     data-testid={`save-case-${idx}`}
                   >
                     <Plus className="w-4 h-4" />

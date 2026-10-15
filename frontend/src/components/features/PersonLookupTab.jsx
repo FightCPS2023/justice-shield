@@ -118,7 +118,7 @@ function PersonLookupTab({ selectedCase }) {
       {/* Search Form */}
       <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
         <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <User className="w-5 h-5 text-blue-500" /> Person Information
+          <User className="w-5 h-5 text-zinc-300" /> Person Information
         </h2>
         
         <div className="grid md:grid-cols-2 gap-4 mb-4">
@@ -219,7 +219,7 @@ function PersonLookupTab({ selectedCase }) {
           <button
             onClick={handleCourtSearch}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center gap-2 transition-colors"
+            className="px-4 py-2 bg-zinc-300 text-black hover:bg-zinc-600 rounded-lg flex items-center gap-2 transition-colors"
             data-testid="personlookup-courtsearch-btn"
           >
             <Scale className="w-5 h-5" />

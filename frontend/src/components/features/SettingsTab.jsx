@@ -31,7 +31,7 @@ function SettingsTab() {
     loadData();
   }, []);
 
-  const tierColors = { free: 'text-gray-400', essential: 'text-blue-400', professional: 'text-purple-400', attorney: 'text-amber-400', enterprise: 'text-red-400' };
+  const tierColors = { free: 'text-gray-400', essential: 'text-zinc-300', professional: 'text-zinc-300', attorney: 'text-amber-400', enterprise: 'text-red-400' };
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto animate-fadeIn" data-testid="settings-tab">
@@ -65,7 +65,7 @@ function SettingsTab() {
       {/* Usage & Credits */}
       {tierStatus && (
         <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2"><BarChart3 className="w-5 h-5 text-blue-500" /> Usage This Month</h2>
+          <h2 className="text-xl font-semibold flex items-center gap-2"><BarChart3 className="w-5 h-5 text-zinc-300" /> Usage This Month</h2>
           <div className="grid sm:grid-cols-3 gap-4">
             <div className="bg-gray-900 rounded-lg p-4 text-center">
               <p className="text-sm text-gray-400 mb-1">AI Credits</p>

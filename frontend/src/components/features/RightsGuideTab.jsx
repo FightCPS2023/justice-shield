@@ -39,9 +39,9 @@ function RightsGuideTab() {
 
   return (
     <div className="space-y-6 animate-fadeIn" data-testid="rights-tab">
-      <div className="bg-gradient-to-r from-blue-900/50 to-gray-900 border border-blue-800/50 rounded-xl p-6">
+      <div className="bg-gradient-to-r from-zinc-900 to-gray-900 border border-zinc-700 rounded-xl p-6">
         <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
-          <Shield className="w-8 h-8 text-blue-500" />
+          <Shield className="w-8 h-8 text-zinc-300" />
           Know Your Rights
         </h1>
         <p className="text-gray-300 mt-2">
@@ -56,7 +56,7 @@ function RightsGuideTab() {
             <div key={i} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
               <h3 className="font-semibold text-yellow-400">{qr.question}</h3>
               <p className="text-gray-300 mt-2">{qr.answer}</p>
-              <p className="text-xs text-blue-400 mt-2">{qr.legal_basis}</p>
+              <p className="text-xs text-zinc-300 mt-2">{qr.legal_basis}</p>
             </div>
           ))}
         </div>
@@ -71,7 +71,7 @@ function RightsGuideTab() {
                 key={i}
                 onClick={() => setActiveCategory(i)}
                 className={`px-4 py-2 rounded-lg whitespace-nowrap flex items-center gap-2 ${
-                  activeCategory === i ? 'bg-blue-600' : 'bg-gray-800 hover:bg-gray-700'
+                  activeCategory === i ? 'bg-zinc-300 text-black' : 'bg-gray-800 hover:bg-gray-700'
                 }`}
               >
                 <Shield className="w-4 h-4" />
@@ -84,7 +84,7 @@ function RightsGuideTab() {
           <div className="space-y-4">
             {data.categories[activeCategory]?.rights.map((right, i) => (
               <div key={i} className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-                <h3 className="text-xl font-bold text-blue-400">{right.title}</h3>
+                <h3 className="text-xl font-bold text-zinc-300">{right.title}</h3>
                 <p className="text-gray-300 mt-2">{right.description}</p>
                 {right.details && (
                   <ul className="mt-4 space-y-2">
@@ -97,7 +97,7 @@ function RightsGuideTab() {
                   </ul>
                 )}
                 {right.key_case && (
-                  <p className="text-sm text-purple-400 mt-4">Key Case: {right.key_case}</p>
+                  <p className="text-sm text-zinc-300 mt-4">Key Case: {right.key_case}</p>
                 )}
               </div>
             ))}

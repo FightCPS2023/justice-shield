@@ -8,6 +8,7 @@ Routes split into separate modules for maintainability.
 """
 
 import os
+import asyncio
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
@@ -31,8 +32,10 @@ ENCODERS_BY_TYPE[ObjectId] = str
 async def lifespan(app: FastAPI):
     await init_db()
     try:
-        from routes.documents_routes import init_storage
+        from routes.documents_routes import init_storage, _ensure_analysis_worker, recover_stuck_extractions
         init_storage()
+        await _ensure_analysis_worker()
+        asyncio.create_task(recover_stuck_extractions())
     except Exception as e:
         print(f"[Startup] Storage init failed: {e}")
     yield

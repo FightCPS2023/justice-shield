@@ -55,7 +55,7 @@ function CaseLawAnalysisTab({ selectedCase }) {
   if (!selectedCase) {
     return (
       <div className="text-center py-12" data-testid="caselaw-tab">
-        <BookOpen className="w-16 h-16 mx-auto text-blue-500 mb-4" />
+        <BookOpen className="w-16 h-16 mx-auto text-zinc-300 mb-4" />
         <h3 className="text-2xl font-semibold mb-2">Deep Case Law Analysis</h3>
         <p className="text-gray-400">Select a case to find relevant precedents</p>
       </div>
@@ -66,7 +66,7 @@ function CaseLawAnalysisTab({ selectedCase }) {
     <div className="space-y-6 animate-fadeIn" data-testid="caselaw-tab">
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
-          <BookOpen className="w-8 h-8 text-blue-500" />
+          <BookOpen className="w-8 h-8 text-zinc-300" />
           Deep Case Law Analysis
         </h1>
         <div className="mt-2"><AiModeSelector /></div>
@@ -90,7 +90,7 @@ function CaseLawAnalysisTab({ selectedCase }) {
                 }}
                 className={`px-3 py-2 rounded-lg border ${
                   focusAreas.includes(opt.id)
-                    ? 'bg-blue-600 border-blue-500'
+                    ? 'bg-zinc-300 text-black border-zinc-400'
                     : 'bg-gray-800 border-gray-700'
                 }`}
               >
@@ -113,7 +113,7 @@ function CaseLawAnalysisTab({ selectedCase }) {
                 onClick={() => setJurisdiction(j.id)}
                 className={`px-4 py-2 rounded-lg border ${
                   jurisdiction === j.id
-                    ? 'bg-blue-600 border-blue-500'
+                    ? 'bg-zinc-300 text-black border-zinc-400'
                     : 'bg-gray-800 border-gray-700'
                 }`}
               >
@@ -126,7 +126,7 @@ function CaseLawAnalysisTab({ selectedCase }) {
         <button
           onClick={runAnalysis}
           disabled={analyzing || focusAreas.length === 0}
-          className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-xl font-bold flex items-center justify-center gap-2"
+          className="w-full py-4 bg-gradient-to-r from-zinc-800 to-cyan-600 hover:from-zinc-800 hover:to-cyan-700 rounded-xl font-bold flex items-center justify-center gap-2"
         >
           {analyzing ? (
             <><Loader2 className="w-5 h-5 animate-spin" /> Analyzing Case Law (60-90 seconds)...</>
@@ -138,7 +138,7 @@ function CaseLawAnalysisTab({ selectedCase }) {
 
       {/* Analysis Results */}
       {analysis && (
-        <div className="bg-gradient-to-r from-blue-900/30 to-gray-900 border border-blue-800/50 rounded-xl p-6">
+        <div className="bg-gradient-to-r from-zinc-800 to-gray-900 border border-zinc-700 rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold">Case Law Analysis</h3>
             <button

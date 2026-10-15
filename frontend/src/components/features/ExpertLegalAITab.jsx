@@ -87,7 +87,7 @@ function ExpertLegalAITab({ selectedCase }) {
     <div className="space-y-6 animate-fadeIn" data-testid="expert-tab">
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
-          <Brain className="w-8 h-8 text-purple-500" />
+          <Brain className="w-8 h-8 text-zinc-300" />
           Expert Legal AI
         </h1>
         <div className="mt-2"><AiModeSelector /></div>
@@ -106,8 +106,8 @@ function ExpertLegalAITab({ selectedCase }) {
                 onClick={() => setAnalysisType(type.id)}
                 className={`p-3 rounded-lg text-left transition-all ${
                   analysisType === type.id
-                    ? 'bg-purple-600 border-purple-500'
-                    : 'bg-gray-800 border-gray-700 hover:border-purple-600/50'
+                    ? 'bg-zinc-700 border-zinc-500'
+                    : 'bg-gray-800 border-gray-700 hover:border-zinc-500'
                 } border`}
               >
                 <p className="font-medium text-sm">{type.label}</p>
@@ -122,7 +122,7 @@ function ExpertLegalAITab({ selectedCase }) {
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="Ask any CPS legal question - I know more than any other legal AI..."
-            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 h-32 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 h-32 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-400"
             required
           />
         </div>
@@ -133,7 +133,7 @@ function ExpertLegalAITab({ selectedCase }) {
               key={i}
               type="button"
               onClick={() => setQuestion(q)}
-              className="px-3 py-1 bg-gray-800 border border-gray-700 rounded-full text-xs hover:border-purple-500 transition-colors"
+              className="px-3 py-1 bg-gray-800 border border-gray-700 rounded-full text-xs hover:border-zinc-500 transition-colors"
               data-testid={`expert-sample-question-${i}`}
             >
               {q.substring(0, 40)}...
@@ -161,7 +161,7 @@ function ExpertLegalAITab({ selectedCase }) {
           <button
             type="submit"
             disabled={loading || !question.trim()}
-            className="flex-1 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
+            className="flex-1 py-4 bg-gradient-to-r from-zinc-800 to-zinc-900 hover:from-zinc-800 hover:to-zinc-900 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
             data-testid="expert-submit-btn"
           >
             {loading ? (
@@ -175,10 +175,10 @@ function ExpertLegalAITab({ selectedCase }) {
 
       {/* Response */}
       {response && (
-        <div className="bg-gradient-to-r from-purple-900/30 to-gray-900 border border-purple-800/50 rounded-xl p-6">
+        <div className="bg-gradient-to-r from-zinc-800 to-gray-900 border border-zinc-500 rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Brain className="w-5 h-5 text-purple-500" />
+              <Brain className="w-5 h-5 text-zinc-300" />
               Expert Analysis
             </h3>
             <button

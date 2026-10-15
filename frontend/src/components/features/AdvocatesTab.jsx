@@ -129,7 +129,7 @@ function AdvocatesTab() {
           </select>
           <button
             onClick={() => setShowApplyForm(true)}
-            className="px-4 py-2 bg-gradient-to-r from-red-600 to-purple-600 rounded-lg font-medium hover:opacity-90 transition-opacity"
+            className="px-4 py-2 bg-gradient-to-r from-red-600 to-zinc-900 rounded-lg font-medium hover:opacity-90 transition-opacity"
             data-testid="become-advocate-btn"
           >
             Become an Advocate
@@ -323,7 +323,7 @@ function AdvocatesTab() {
                 <button
                   type="submit"
                   disabled={submitting || formData.specialties.length === 0}
-                  className="px-6 py-2 bg-gradient-to-r from-red-600 to-purple-600 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className="px-6 py-2 bg-gradient-to-r from-red-600 to-zinc-900 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                   data-testid="advocate-submit-btn"
                 >
                   {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit Application'}
@@ -344,7 +344,7 @@ function AdvocatesTab() {
                   {selectedAdvocate.photo_url ? (
                     <img src={selectedAdvocate.photo_url} alt={selectedAdvocate.name} className="w-16 h-16 rounded-full object-cover" />
                   ) : (
-                    <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-purple-600 rounded-full flex items-center justify-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-zinc-900 rounded-full flex items-center justify-center">
                       <Users className="w-8 h-8" />
                     </div>
                   )}
@@ -379,11 +379,11 @@ function AdvocatesTab() {
                 {selectedAdvocate.phone && (
                   <div>
                     <p className="text-sm text-gray-500 mb-1">Contact</p>
-                    <p className="text-blue-400">{selectedAdvocate.phone}</p>
+                    <p className="text-zinc-300">{selectedAdvocate.phone}</p>
                   </div>
                 )}
                 {selectedAdvocate.website && (
-                  <a href={selectedAdvocate.website} target="_blank" rel="noopener noreferrer" className="inline-block text-blue-400 hover:underline">
+                  <a href={selectedAdvocate.website} target="_blank" rel="noopener noreferrer" className="inline-block text-zinc-300 hover:underline">
                     Visit Website →
                   </a>
                 )}
@@ -408,7 +408,7 @@ function AdvocatesTab() {
           <p className="text-sm text-gray-500 mb-4">Check back soon as we grow our directory</p>
           <button
             onClick={() => setShowApplyForm(true)}
-            className="px-4 py-2 bg-gradient-to-r from-red-600 to-purple-600 rounded-lg font-medium hover:opacity-90"
+            className="px-4 py-2 bg-gradient-to-r from-red-600 to-zinc-900 rounded-lg font-medium hover:opacity-90"
           >
             Be the First - Apply Now
           </button>
@@ -425,7 +425,7 @@ function AdvocatesTab() {
                 {advocate.photo_url ? (
                   <img src={advocate.photo_url} alt={advocate.name} className="w-12 h-12 rounded-full object-cover" />
                 ) : (
-                  <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-purple-600 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-zinc-900 rounded-full flex items-center justify-center">
                     <Users className="w-6 h-6" />
                   </div>
                 )}

@@ -26,8 +26,8 @@ function OverviewTab({ cases, setActiveTab, prefetchedData = {} }) {
     }
   });
 
-  const tierColors = { free: 'text-gray-400', essential: 'text-blue-400', professional: 'text-purple-400', attorney: 'text-amber-400', enterprise: 'text-red-400' };
-  const tierBg = { free: 'bg-gray-600/20', essential: 'bg-blue-600/20', professional: 'bg-purple-600/20', attorney: 'bg-amber-600/20', enterprise: 'bg-red-600/20' };
+  const tierColors = { free: 'text-gray-400', essential: 'text-zinc-300', professional: 'text-zinc-300', attorney: 'text-amber-400', enterprise: 'text-red-400' };
+  const tierBg = { free: 'bg-gray-600/20', essential: 'bg-zinc-700/40', professional: 'bg-zinc-700/40', attorney: 'bg-amber-600/20', enterprise: 'bg-red-600/20' };
 
   useEffect(() => {
     if (!tierStatus || !creditBalance) {
@@ -144,8 +144,8 @@ function OverviewTab({ cases, setActiveTab, prefetchedData = {} }) {
 
   const quickActions = [
     { icon: Plus, label: 'New Case', action: () => setActiveTab('cases'), color: 'bg-red-600' },
-    { icon: MessageSquare, label: 'AI Chat', action: () => setActiveTab('chat'), color: 'bg-purple-600' },
-    { icon: Search, label: 'Research', action: () => setActiveTab('research'), color: 'bg-blue-600' },
+    { icon: MessageSquare, label: 'AI Chat', action: () => setActiveTab('chat'), color: 'bg-zinc-700' },
+    { icon: Search, label: 'Research', action: () => setActiveTab('research'), color: 'bg-zinc-300 text-black' },
     { icon: BookOpen, label: 'Law Library', action: () => setActiveTab('library'), color: 'bg-green-600' },
   ];
 
@@ -201,7 +201,7 @@ function OverviewTab({ cases, setActiveTab, prefetchedData = {} }) {
               {tourStep < tourSteps.length - 1 ? (
                 <button
                   onClick={() => setTourStep(tourStep + 1)}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg"
+                  className="px-4 py-2 bg-zinc-700 hover:bg-zinc-700 rounded-lg"
                   data-testid="overview-tour-next"
                 >
                   Next
@@ -228,7 +228,7 @@ function OverviewTab({ cases, setActiveTab, prefetchedData = {} }) {
           </div>
           <button
             onClick={() => { setTourActive(true); setTourStep(0); }}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg"
+            className="px-4 py-2 bg-zinc-700 hover:bg-zinc-700 rounded-lg"
             data-testid="start-walkthrough-btn"
           >
             Start Walkthrough
@@ -385,7 +385,7 @@ function OverviewTab({ cases, setActiveTab, prefetchedData = {} }) {
         </div>
         <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
           <h3 className="text-gray-400 text-sm mb-2">AI Sessions</h3>
-          <p className="text-4xl font-bold text-purple-500">{tierStatus ? (tierStatus.limits.ai_credits === -1 ? '∞' : `${tierStatus.usage.ai_credits_used}/${tierStatus.limits.ai_credits}`) : '...'}</p>
+          <p className="text-4xl font-bold text-zinc-300">{tierStatus ? (tierStatus.limits.ai_credits === -1 ? '∞' : `${tierStatus.usage.ai_credits_used}/${tierStatus.limits.ai_credits}`) : '...'}</p>
         </div>
         <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
           <h3 className="text-gray-400 text-sm mb-2">States Covered</h3>

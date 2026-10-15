@@ -194,13 +194,13 @@ function PrecedentFinderTab({ selectedCase }) {
           {precedents.circuit_court_cases?.length > 0 && (
             <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
               <h4 className="font-semibold mb-3 flex items-center gap-2">
-                <Scale className="w-4 h-4 text-blue-500" />
+                <Scale className="w-4 h-4 text-zinc-300" />
                 Relevant Circuit Court Cases
               </h4>
               <div className="space-y-2">
                 {precedents.circuit_court_cases.map((c, i) => (
                   <div key={i} className="p-3 bg-gray-700/50 rounded-lg">
-                    <p className="font-medium text-blue-400">{c.name}</p>
+                    <p className="font-medium text-zinc-300">{c.name}</p>
                     <p className="text-sm text-gray-400">{c.citation}</p>
                     <p className="text-sm mt-1">{c.holding}</p>
                   </div>

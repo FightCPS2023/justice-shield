@@ -81,7 +81,7 @@ function CaseMemoryTab({ selectedCase }) {
   if (!selectedCase) {
     return (
       <div className="text-center py-12" data-testid="case-memory-empty">
-        <Brain className="w-12 h-12 mx-auto text-purple-500 mb-4" />
+        <Brain className="w-12 h-12 mx-auto text-zinc-300 mb-4" />
         <h3 className="text-xl font-semibold mb-2">Select a Case</h3>
         <p className="text-gray-400">Choose a case to view and build memory.</p>
       </div>
@@ -93,14 +93,14 @@ function CaseMemoryTab({ selectedCase }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Brain className="w-6 h-6 text-purple-400" />
+            <Brain className="w-6 h-6 text-zinc-300" />
             Case Memory
           </h2>
           <p className="text-gray-400">This memory is used by AI tools to get smarter over time.</p>
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg flex items-center gap-2"
+          className="px-4 py-2 bg-zinc-700 hover:bg-zinc-700 rounded-lg flex items-center gap-2"
           data-testid="case-memory-add-btn"
         >
           <Plus className="w-4 h-4" />
@@ -143,7 +143,7 @@ function CaseMemoryTab({ selectedCase }) {
           <div className="flex flex-wrap gap-3">
             <button type="button" onClick={handleBack} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg" data-testid="case-memory-back-btn">Back</button>
             <button type="button" onClick={handleCancel} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg" data-testid="case-memory-cancel-btn">Cancel</button>
-            <button type="submit" className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg" data-testid="case-memory-save-btn">Save Memory</button>
+            <button type="submit" className="px-4 py-2 bg-zinc-700 hover:bg-zinc-700 rounded-lg" data-testid="case-memory-save-btn">Save Memory</button>
           </div>
         </form>
       )}
@@ -178,7 +178,7 @@ function CaseMemoryTab({ selectedCase }) {
                 {entry.tags && entry.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-3" data-testid={`case-memory-tags-${idx}`}>
                     {entry.tags.map((tag, tagIdx) => (
-                      <span key={tagIdx} className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-purple-600/20 text-purple-300 rounded-full">
+                      <span key={tagIdx} className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-zinc-700/40 text-zinc-300 rounded-full">
                         <Tag className="w-3 h-3" /> {tag}
                       </span>
                     ))}

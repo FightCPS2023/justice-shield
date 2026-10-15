@@ -166,7 +166,7 @@ function ADAComplianceTab({ selectedCase }) {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif' }}>
-            <Scale className="w-8 h-8 text-blue-500" />
+            <Scale className="w-8 h-8 text-zinc-300" />
             ADA Compliance Center
           </h1>
           <p className="text-gray-400">Comprehensive ADA accommodations, regulations, case law & compliance analysis</p>
@@ -175,7 +175,7 @@ function ADAComplianceTab({ selectedCase }) {
           <button
             onClick={analyzeCase}
             disabled={analyzing}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold flex items-center gap-2"
+            className="px-4 py-2 bg-zinc-300 text-black hover:bg-zinc-600 rounded-lg font-semibold flex items-center gap-2"
             data-testid="analyze-ada-btn"
           >
             {analyzing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Brain className="w-5 h-5" />}
@@ -192,8 +192,8 @@ function ADAComplianceTab({ selectedCase }) {
             onClick={() => setActiveSection(section.id)}
             className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${
               activeSection === section.id
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                ? 'bg-zinc-300 text-black'
+                : 'text-gray-400 hover:text-black hover:bg-gray-700'
             }`}
           >
             <section.icon className="w-4 h-4" />
@@ -204,20 +204,20 @@ function ADAComplianceTab({ selectedCase }) {
 
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+          <Loader2 className="w-8 h-8 animate-spin text-zinc-300" />
         </div>
       )}
 
       {/* Overview Section */}
       {activeSection === 'overview' && !loading && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-br from-blue-900/50 to-gray-900 border border-blue-700/50 rounded-xl p-6">
-            <Scale className="w-10 h-10 text-blue-500 mb-4" />
+          <div className="bg-gradient-to-br from-zinc-900 to-gray-900 border border-zinc-500 rounded-xl p-6">
+            <Scale className="w-10 h-10 text-zinc-300 mb-4" />
             <h3 className="text-lg font-bold mb-2">ADA Title II</h3>
             <p className="text-gray-400 text-sm">Public entities including CPS agencies must provide equal access and reasonable accommodations.</p>
           </div>
-          <div className="bg-gradient-to-br from-purple-900/50 to-gray-900 border border-purple-700/50 rounded-xl p-6">
-            <Shield className="w-10 h-10 text-purple-500 mb-4" />
+          <div className="bg-gradient-to-br from-zinc-800 to-gray-900 border border-zinc-500 rounded-xl p-6">
+            <Shield className="w-10 h-10 text-zinc-300 mb-4" />
             <h3 className="text-lg font-bold mb-2">Section 504</h3>
             <p className="text-gray-400 text-sm">All programs receiving federal funds (including CPS via Title IV-E) must not discriminate based on disability.</p>
           </div>
@@ -249,7 +249,7 @@ function ADAComplianceTab({ selectedCase }) {
         <div className="space-y-6">
           {Object.entries(federalLaw.federal_law || {}).map(([key, law]) => (
             <div key={key} className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-              <h3 className="text-xl font-bold text-blue-400 mb-2">{law.name}</h3>
+              <h3 className="text-xl font-bold text-zinc-300 mb-2">{law.name}</h3>
               <p className="text-sm text-gray-500 mb-4">{law.citation}</p>
               <p className="text-gray-300 mb-4">{law.description}</p>
               <h4 className="font-semibold mb-2">Key Provisions:</h4>
@@ -273,14 +273,14 @@ function ADAComplianceTab({ selectedCase }) {
       {activeSection === 'caselaw' && caseLaw && !loading && (
         <div className="space-y-6">
           <div>
-            <h3 className="text-xl font-bold text-purple-400 mb-4">Supreme Court Cases</h3>
+            <h3 className="text-xl font-bold text-zinc-300 mb-4">Supreme Court Cases</h3>
             <div className="space-y-4">
               {caseLaw.supreme_court?.map((c, i) => (
                 <div key={i} className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
                   <h4 className="font-bold text-white">{c.case}</h4>
                   <p className="text-sm text-gray-500">{c.citation}</p>
                   <p className="text-gray-300 mt-2"><strong>Holding:</strong> {c.holding}</p>
-                  <p className="text-blue-400 mt-2 text-sm"><strong>Relevance:</strong> {c.relevance}</p>
+                  <p className="text-zinc-300 mt-2 text-sm"><strong>Relevance:</strong> {c.relevance}</p>
                 </div>
               ))}
             </div>
@@ -311,7 +311,7 @@ function ADAComplianceTab({ selectedCase }) {
                 onClick={() => loadStateInfo(state)}
                 className={`p-3 rounded-lg text-sm font-semibold transition-all ${
                   selectedState === state
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-zinc-300 text-black'
                     : 'bg-gray-800 hover:bg-gray-700'
                 }`}
               >
@@ -322,7 +322,7 @@ function ADAComplianceTab({ selectedCase }) {
           
           {stateInfo && (
             <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-              <h3 className="text-2xl font-bold text-blue-400 mb-4">{stateInfo.state} ADA + CPS Law</h3>
+              <h3 className="text-2xl font-bold text-zinc-300 mb-4">{stateInfo.state} ADA + CPS Law</h3>
               
               {stateInfo.data ? (
                 <>
@@ -423,11 +423,11 @@ function ADAComplianceTab({ selectedCase }) {
       {activeSection === 'guardian' && civilGuardian && !loading && (
         <div className="space-y-6">
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-            <h3 className="text-xl font-bold text-purple-400 mb-4">GAL ADA Requirements</h3>
+            <h3 className="text-xl font-bold text-zinc-300 mb-4">GAL ADA Requirements</h3>
             <ul className="space-y-2">
               {civilGuardian.gal_requirements?.map((r, i) => (
                 <li key={i} className="flex items-start gap-2 text-gray-300">
-                  <CheckCircle2 className="w-4 h-4 text-purple-500 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-zinc-300 mt-0.5" />
                   {r}
                 </li>
               ))}
@@ -459,7 +459,7 @@ function ADAComplianceTab({ selectedCase }) {
             </div>
           ) : (
             <>
-              <div className="bg-blue-900/30 border border-blue-700/50 rounded-xl p-6">
+              <div className="bg-zinc-900/60 border border-zinc-500 rounded-xl p-6">
                 <h3 className="text-lg font-bold mb-2">Analyzing: {selectedCase.title}</h3>
                 <p className="text-gray-400">Click the button above to run AI-powered ADA compliance analysis on your case.</p>
               </div>
@@ -489,7 +489,7 @@ function ADAComplianceTab({ selectedCase }) {
                       <h3 className="text-xl font-bold mb-4">Disabilities Identified</h3>
                       <div className="flex flex-wrap gap-2">
                         {caseAnalysis.disabilities_identified.map((d, i) => (
-                          <span key={i} className="px-3 py-1 bg-blue-600/30 text-blue-300 rounded-full text-sm">{d}</span>
+                          <span key={i} className="px-3 py-1 bg-zinc-700/40 text-zinc-200 rounded-full text-sm">{d}</span>
                         ))}
                       </div>
                     </div>
@@ -521,8 +521,8 @@ function ADAComplianceTab({ selectedCase }) {
                   
                   {/* AI Analysis */}
                   {caseAnalysis.ai_analysis && (
-                    <div className="bg-gray-800/50 border border-purple-700/50 rounded-xl p-6">
-                      <h3 className="text-xl font-bold text-purple-400 mb-4">AI Legal Analysis</h3>
+                    <div className="bg-gray-800/50 border border-zinc-500 rounded-xl p-6">
+                      <h3 className="text-xl font-bold text-zinc-300 mb-4">AI Legal Analysis</h3>
                       <div className="prose prose-invert max-w-none">
                         <pre className="whitespace-pre-wrap text-sm text-gray-300">{caseAnalysis.ai_analysis}</pre>
                       </div>
@@ -557,7 +557,7 @@ function ADAComplianceTab({ selectedCase }) {
             </select>
             <button
               onClick={searchADA}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold"
+              className="px-6 py-3 bg-zinc-300 text-black hover:bg-zinc-600 rounded-lg font-semibold"
             >
               <Search className="w-5 h-5" />
             </button>
@@ -569,7 +569,7 @@ function ADAComplianceTab({ selectedCase }) {
               
               {searchResults.results.case_law?.length > 0 && (
                 <div>
-                  <h4 className="font-bold text-purple-400 mb-2">Case Law</h4>
+                  <h4 className="font-bold text-zinc-300 mb-2">Case Law</h4>
                   {searchResults.results.case_law.map((c, i) => (
                     <div key={i} className="bg-gray-800/50 p-4 rounded-lg mb-2">
                       <p className="font-semibold">{c.case?.case || c.case}</p>

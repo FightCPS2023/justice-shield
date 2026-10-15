@@ -143,7 +143,7 @@ function ForumTab() {
           {posts.map(post => (
             <div key={post.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
               <div className="flex items-center gap-3 mb-2">
-                <span className="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs">{post.category}</span>
+                <span className="px-2 py-1 bg-zinc-700/40 text-zinc-300 rounded text-xs">{post.category}</span>
                 <span className="text-gray-500 text-sm">{post.author_name}</span>
                 <span className="text-gray-600 text-xs">{new Date(post.created_at).toLocaleDateString()}</span>
               </div>

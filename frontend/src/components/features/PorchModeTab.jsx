@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Shield, AlertTriangle, Copy, Mic, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { CitationLog } from '../CitationLog';
+import { HistoryList } from '../HistoryList';
+import { VictoryCardPrompt } from '../VictoryCardPrompt';
 
 function PorchModeTab({ selectedCase }) {
   const { api } = useAuth();
@@ -12,6 +14,25 @@ function PorchModeTab({ selectedCase }) {
   const [incidentLocation, setIncidentLocation] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [sessions, setSessions] = useState([]);
+  const [sessionsTotal, setSessionsTotal] = useState(0);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+
+  const loadSessions = useCallback(async (offset = 0) => {
+    if (!selectedCase?.id) return;
+    setSessionsLoading(true);
+    try {
+      const data = await api.get(`/api/porch-mode/sessions?case_id=${selectedCase.id}&limit=10&offset=${offset}`);
+      setSessions((prev) => (offset === 0 ? data.sessions : [...prev, ...data.sessions]));
+      setSessionsTotal(data.total || 0);
+    } catch (err) {
+      // history is non-blocking
+    } finally {
+      setSessionsLoading(false);
+    }
+  }, [api, selectedCase?.id]);
+
+  useEffect(() => { loadSessions(0); }, [loadSessions]);
 
   const handleAnalyze = async () => {
     if (!transcription.trim()) {
@@ -30,6 +51,7 @@ function PorchModeTab({ selectedCase }) {
       const data = await api.post('/api/porch-mode/analyze', payload);
       setResult(data);
       toast.success('Porch Mode analysis complete');
+      loadSessions(0);
 
       if (selectedCase?.id) {
         try {
@@ -120,6 +142,8 @@ function PorchModeTab({ selectedCase }) {
           </button>
         </div>
 
+        <>
+        {flagged && <VictoryCardPrompt triggerType="violation_detected" triggerData={{ case_id: selectedCase?.id || null, violation_type: result.detections?.[0]?.matched_phrase || null, amendment: '4th', violation_count: result.detections?.length || null, agency: agency || null, state: selectedCase?.state || null }} label="Violation detected — share your victory?" testId="porch-victory-prompt" />}
         <div className={`border rounded-xl p-4 ${flagged ? 'border-red-600/70 bg-red-900/20' : 'border-emerald-600/70 bg-emerald-900/10'}`}>
           <h3 className="font-semibold flex items-center gap-2">
             {flagged ? <AlertTriangle className="w-4 h-4 text-red-400" /> : <Shield className="w-4 h-4 text-emerald-400" />}
@@ -129,6 +153,7 @@ function PorchModeTab({ selectedCase }) {
             {result?.summary || 'Run the analyzer to generate rebuttals and liability warnings.'}
           </p>
         </div>
+        </>
       </div>
 
       {result?.citation_log && <CitationLog log={result.citation_log} testId="porch-citation-log" />}
@@ -183,6 +208,32 @@ function PorchModeTab({ selectedCase }) {
           </pre>
         </div>
       )}
+
+      <HistoryList
+        title="Session History"
+        items={sessions}
+        total={sessionsTotal}
+        loading={sessionsLoading}
+        emptyTitle="No sessions yet"
+        emptyHint="Paste the caseworker's words above and run your first Porch Mode analysis."
+        ctaLabel="Start first analysis"
+        onCta={() => document.querySelector('[data-testid="porch-mode-transcription"]')?.focus()}
+        onLoadMore={() => loadSessions(sessions.length)}
+        testId="porch-session-history"
+        renderItem={(sItem) => (
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-xs font-mono text-zinc-400">{new Date(sItem.created_at).toLocaleString()}</p>
+              <p className="text-sm text-zinc-100 truncate max-w-xl">{sItem.transcript_snippet || sItem.summary}</p>
+              {sItem.detections?.length > 0 && <p className="text-xs text-zinc-400 mt-1">{sItem.detections.slice(0, 3).join(' · ')}</p>}
+            </div>
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <span className={`px-2 py-0.5 border ${sItem.status === 'flagged' ? 'border-red-500 text-red-300' : 'border-zinc-500 text-zinc-300'}`}>{sItem.status.toUpperCase()}</span>
+              <span className="px-2 py-0.5 border border-zinc-600 text-zinc-200">{sItem.violation_count} violation{sItem.violation_count === 1 ? '' : 's'}</span>
+            </div>
+          </div>
+        )}
+      />
     </div>
   );
 }

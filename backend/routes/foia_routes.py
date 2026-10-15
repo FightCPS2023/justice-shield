@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends, Request
+import uuid
+from fastapi import APIRouter, HTTPException, Depends, Request, Query
 from fastapi.responses import RedirectResponse, HTMLResponse
 from pydantic import BaseModel
 from datetime import datetime, timezone, timedelta
@@ -107,7 +108,61 @@ async def foia_generate(payload: FoiaRequest, current_user: dict = Depends(get_c
             metadata={"state": package.get("state"), "statute": package.get("statute")}
         )
 
-    return package
+    db = get_db()
+    request_id = str(uuid.uuid4())
+    record = {
+        "_id": request_id,
+        "request_id": request_id,
+        "user_id": current_user["user_id"],
+        "case_id": payload.case_id,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "status": "generated",
+        "target_agency": payload.agency_name,
+        "caseworker_name": payload.caseworker_name,
+        "state": package.get("state"),
+        "statute": package.get("statute"),
+        "request_type": "bond_oath_records",
+        "target_email": package.get("target_email"),
+        "target_address": package.get("target_address"),
+        "generated_document": package.get("document_markdown", ""),
+        "delivery_status": "not_sent",
+    }
+    await db.foia_requests.insert_one(dict(record))
+    record.pop("_id", None)
+    return {**package, "request_id": request_id, "request": record}
+
+
+@router.get('/api/foia/requests')
+async def list_foia_requests(
+    case_id: str | None = None,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    current_user: dict = Depends(get_current_user),
+):
+    db = get_db()
+    query = {"user_id": current_user['user_id']}
+    if case_id:
+        query["case_id"] = case_id
+    total = await db.foia_requests.count_documents(query)
+    cursor = db.foia_requests.find(query).sort([("created_at", -1), ("sent_at", -1)]).skip(offset).limit(limit)
+    items = []
+    async for doc in cursor:
+        rid = doc.get("request_id") or str(doc.get("_id"))
+        created = doc.get("created_at") or doc.get("sent_at")
+        items.append({
+            "request_id": rid,
+            "case_id": doc.get("case_id"),
+            "created_at": created.isoformat() if hasattr(created, "isoformat") else created,
+            "status": doc.get("status", "generated"),
+            "target_agency": doc.get("target_agency") or doc.get("agency_name"),
+            "caseworker_name": doc.get("caseworker_name"),
+            "state": doc.get("state"),
+            "request_type": doc.get("request_type", "bond_oath_records"),
+            "generated_document": doc.get("generated_document") or doc.get("document_markdown", ""),
+            "delivery_status": doc.get("delivery_status") or ("sent" if doc.get("status") == "sent" else "not_sent"),
+            "recipient_email": doc.get("recipient_email"),
+        })
+    return {"requests": items, "total": total, "limit": limit, "offset": offset}
 
 
 @router.post('/api/foia/send')
@@ -145,7 +200,13 @@ async def foia_send(payload: FoiaSendRequest, current_user: dict = Depends(get_c
         "sent_at": now,
         "message_id": message_id,
         "reminder_schedule": DEFAULT_REMINDER_SCHEDULE,
-        "status": "sent"
+        "status": "sent",
+        "request_id": str(uuid.uuid4()),
+        "created_at": now.isoformat(),
+        "target_agency": payload.agency_name,
+        "generated_document": body,
+        "delivery_status": "sent",
+        "request_type": "bond_oath_records",
     }
     result = await db.foia_requests.insert_one(foia_record)
 

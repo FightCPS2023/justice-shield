@@ -115,7 +115,7 @@ function IncidentAnalyzerTab({ selectedCase }) {
                     {selectedIncident.key_case && (
                       <div>
                         <span className="text-gray-400">Key Precedent:</span>
-                        <p className="text-blue-400">{selectedIncident.key_case}</p>
+                        <p className="text-zinc-300">{selectedIncident.key_case}</p>
                       </div>
                     )}
                     <div className="flex gap-4 pt-2">

@@ -40,7 +40,7 @@ function VisitationLogTab({ selectedCase }) {
   const emotionalStates = [
     { id: 'happy', label: 'Happy', icon: '😊', color: 'text-green-400' },
     { id: 'neutral', label: 'Neutral', icon: '😐', color: 'text-yellow-400' },
-    { id: 'sad', label: 'Sad', icon: '😢', color: 'text-blue-400' },
+    { id: 'sad', label: 'Sad', icon: '😢', color: 'text-zinc-300' },
     { id: 'distressed', label: 'Distressed', icon: '😰', color: 'text-red-400' }
   ];
 
@@ -93,7 +93,7 @@ function VisitationLogTab({ selectedCase }) {
   if (!selectedCase) {
     return (
       <div className="text-center py-12" data-testid="visitation-tab">
-        <Users className="w-12 h-12 mx-auto text-pink-500 mb-4" />
+        <Users className="w-12 h-12 mx-auto text-zinc-300 mb-4" />
         <h3 className="text-xl font-semibold mb-2">No Case Selected</h3>
         <p className="text-gray-400">Select a case to log visitations</p>
       </div>
@@ -115,7 +115,7 @@ function VisitationLogTab({ selectedCase }) {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 text-center">
-          <p className="text-3xl font-bold text-blue-400">{stats.total_visits || 0}</p>
+          <p className="text-3xl font-bold text-zinc-300">{stats.total_visits || 0}</p>
           <p className="text-sm text-gray-400">Total Visits</p>
         </div>
         <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 text-center">
@@ -193,7 +193,7 @@ function VisitationLogTab({ selectedCase }) {
                     <button key={state.id} type="button"
                       onClick={() => setFormData({...formData, child_emotional_state: state.id})}
                       className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 ${
-                        formData.child_emotional_state === state.id ? 'bg-gray-600 ring-2 ring-blue-500' : 'bg-gray-700'
+                        formData.child_emotional_state === state.id ? 'bg-gray-600 ring-2 ring-zinc-400' : 'bg-gray-700'
                       }`}>
                       <span className="text-xl">{state.icon}</span>
                       <span className="text-sm">{state.label}</span>
@@ -261,7 +261,7 @@ function VisitationLogTab({ selectedCase }) {
                 {visit.supervisor && <p className="text-sm text-gray-400">Supervisor: {visit.supervisor}</p>}
                 {visit.what_happened && <p className="text-gray-300 mt-2">{visit.what_happened}</p>}
                 {visit.child_quotes && (
-                  <p className="text-blue-400 mt-2 italic">"{visit.child_quotes}"</p>
+                  <p className="text-zinc-300 mt-2 italic">"{visit.child_quotes}"</p>
                 )}
                 {visit.supervisor_issues && (
                   <p className="text-red-400 mt-2">Issues: {visit.supervisor_issues}</p>

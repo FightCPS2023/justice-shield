@@ -331,31 +331,7 @@ async def _process_analysis_job(doc_id: str):
             return
 
     if doc.get("source") == "upload" and doc.get("extraction_status") != "complete":
-        await db.documents.update_one(
-            {"_id": doc_id},
-            {"$set": {"extraction_status": "processing", "extraction_error": None}}
-        )
-        await log_doc_event(doc_id, "Text extraction started")
-        extracted_text, extraction_error = await extract_text_from_file(
-            doc.get("file_path", ""),
-            doc.get("file_type", ""),
-            doc.get("filename", "document"),
-            doc.get("file_size", 0)
-        )
-        extraction_status = "complete" if not extraction_error else "error"
-        await db.documents.update_one(
-            {"_id": doc_id},
-            {"$set": {
-                "content": extracted_text,
-                "extraction_status": extraction_status,
-                "extraction_error": extraction_error
-            }}
-        )
-        await log_doc_event(
-            doc_id,
-            "Text extraction complete" if not extraction_error else f"Text extraction error: {extraction_error}",
-            "error" if extraction_error else "info"
-        )
+        extracted_text, extraction_error = await _run_text_extraction(doc_id, doc)
         content = extracted_text
         try:
             if doc.get("file_path") and os.path.exists(doc.get("file_path")):
@@ -438,6 +414,75 @@ async def _process_analysis_job(doc_id: str):
             {"doc_id": doc_id},
             {"$set": {"status": "error", "error": str(e), "completed_at": datetime.now(timezone.utc).isoformat()}}
         )
+
+
+async def _run_text_extraction(doc_id: str, doc: dict):
+    """Extract text for an uploaded doc (file already at doc['file_path']); persists status + content."""
+    db = get_db()
+    await db.documents.update_one({"_id": doc_id}, {"$set": {"extraction_status": "processing", "extraction_error": None}})
+    await log_doc_event(doc_id, "Text extraction started")
+    extracted_text, extraction_error = await extract_text_from_file(
+        doc.get("file_path", ""),
+        doc.get("file_type", ""),
+        doc.get("filename", "document"),
+        doc.get("file_size", 0)
+    )
+    extraction_status = "complete" if not extraction_error else "error"
+    await db.documents.update_one(
+        {"_id": doc_id},
+        {"$set": {"content": extracted_text, "extraction_status": extraction_status, "extraction_error": extraction_error}}
+    )
+    await log_doc_event(
+        doc_id,
+        "Text extraction complete" if not extraction_error else f"Text extraction error: {extraction_error}",
+        "error" if extraction_error else "info"
+    )
+    return extracted_text, extraction_error
+
+
+async def extract_only_bg(doc_id: str):
+    """Background task: fetch from object storage and extract text without AI analysis."""
+    db = get_db()
+    doc = await db.documents.find_one({"_id": doc_id})
+    if not doc or doc.get("extraction_status") == "complete":
+        return
+    temp_dir = None
+    try:
+        if doc.get("storage_path"):
+            stored_content, _ = get_object(doc["storage_path"])
+            temp_dir = tempfile.mkdtemp(prefix="cps_extract_")
+            safe_name = _safe_filename(doc.get("filename", "document"))
+            ext = doc.get("file_type") or os.path.splitext(safe_name)[1]
+            if ext and not safe_name.lower().endswith(ext):
+                safe_name = f"{safe_name}{ext}"
+            file_path = os.path.join(temp_dir, safe_name)
+            with open(file_path, "wb") as temp_file:
+                temp_file.write(stored_content)
+            doc["file_path"] = file_path
+        await _run_text_extraction(doc_id, doc)
+    except Exception as e:
+        await db.documents.update_one({"_id": doc_id}, {"$set": {"extraction_status": "error", "extraction_error": str(e)[:300]}})
+    finally:
+        if temp_dir:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+
+async def recover_stuck_extractions(limit: int = 200):
+    """Startup sweep: finish extraction for uploads left 'queued'/'processing' with no pending analysis job."""
+    db = get_db()
+    cursor = db.documents.find(
+        {"source": "upload", "extraction_status": {"$in": ["queued", "processing"]}, "storage_path": {"$ne": None}},
+        {"_id": 1}
+    ).sort("created_at", -1).limit(limit)
+    count = 0
+    async for d in cursor:
+        pending = await db.analysis_queue.find_one({"doc_id": d["_id"], "status": "queued"})
+        if pending:
+            continue
+        await extract_only_bg(d["_id"])
+        count += 1
+    if count:
+        print(f"[Startup] Recovered text extraction for {count} stuck document(s)")
 
 
 async def _analysis_queue_worker():
@@ -1230,6 +1275,9 @@ async def upload_document(
             }
     else:
         analysis_result = None
+
+    if file_ext not in ARCHIVE_EXTENSIONS and extraction_status != "complete" and not (auto_analyze and EMERGENT_LLM_KEY):
+        background_tasks.add_task(extract_only_bg, doc_id)
 
     doc["id"] = doc.pop("_id")
     if analysis_result and analysis_result.get("status"):

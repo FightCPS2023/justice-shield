@@ -64,8 +64,8 @@ function ArgumentGeneratorTab({ selectedCase }) {
       </div>
 
       {/* Case Info */}
-      <div className="bg-blue-900/20 border border-blue-600/30 rounded-xl p-4">
-        <p className="text-blue-400 text-sm">
+      <div className="bg-zinc-900/60 border border-zinc-500 rounded-xl p-4">
+        <p className="text-zinc-300 text-sm">
           <Scale className="w-4 h-4 inline mr-2" />
           <strong>Case:</strong> {selectedCase.title} ({selectedCase.state})
         </p>
@@ -122,7 +122,7 @@ function ArgumentGeneratorTab({ selectedCase }) {
         <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold flex items-center gap-2">
-              <Scale className="w-5 h-5 text-blue-500" />
+              <Scale className="w-5 h-5 text-zinc-300" />
               Generated Arguments
             </h3>
             <button

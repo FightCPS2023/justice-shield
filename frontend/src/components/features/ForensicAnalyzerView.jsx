@@ -47,8 +47,8 @@ function ForensicAnalyzerView({ selectedCase, documents, selectedDocument }) {
   };
 
   const sections = [
-    { id: 1, title: 'MOUs & Interagency Agreements', icon: FileText, color: 'text-blue-500' },
-    { id: 2, title: 'Stipulations & Contractual Terms', icon: Scale, color: 'text-purple-500' },
+    { id: 1, title: 'MOUs & Interagency Agreements', icon: FileText, color: 'text-zinc-300' },
+    { id: 2, title: 'Stipulations & Contractual Terms', icon: Scale, color: 'text-zinc-300' },
     { id: 3, title: 'Void Ab Initio Issues', icon: AlertTriangle, color: 'text-red-500' },
     { id: 4, title: 'Child Welfare / Trafficking Indicators', icon: Shield, color: 'text-amber-500' },
     { id: 5, title: 'Structural Legal Issues', icon: Gavel, color: 'text-orange-500' },

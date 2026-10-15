@@ -48,7 +48,14 @@ export function AuthProvider({ children }) {
 
   const checkAuth = async () => {
     try {
-      const userData = await api.get('/api/auth/me');
+      let userData;
+      try {
+        userData = await api.get('/api/auth/me');
+      } catch (firstErr) {
+        const refreshed = await fetch(`${API_URL}/api/auth/refresh`, { method: 'POST', credentials: 'include' }).then((r) => r.ok).catch(() => false);
+        if (!refreshed) throw firstErr;
+        userData = await api.get('/api/auth/me');
+      }
       setUser(userData);
     } catch (error) {
       setUser(null);
@@ -75,6 +82,12 @@ export function AuthProvider({ children }) {
       }
     }
   };
+
+  useEffect(() => {
+    const onExpired = () => setUser(null);
+    window.addEventListener('punisher-session-expired', onExpired);
+    return () => window.removeEventListener('punisher-session-expired', onExpired);
+  }, []);
 
   useEffect(() => {
     if (window.location.hash?.includes('session_id=')) {

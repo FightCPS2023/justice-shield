@@ -20,7 +20,7 @@ const api = {
   },
   
   async request(endpoint, options = {}, retryCount = 0) {
-    const { timeoutMs, retryable = true, ...fetchOptions } = options;
+    const { timeoutMs, retryable = true, _refreshed, ...fetchOptions } = options;
     let aiMode = 'AUTO';
     try { aiMode = window.localStorage.getItem('punisher_ai_mode') || 'AUTO'; } catch { /* ignore */ }
     const headers = {
@@ -43,6 +43,11 @@ const api = {
       clearTimeout(timeoutId);
       
       if (response.status === 401) {
+        if (!endpoint.startsWith('/api/auth/') && !options._refreshed) {
+          const refreshed = await fetch(`${API_URL}/api/auth/refresh`, { method: 'POST', credentials: 'include' }).then((r) => r.ok).catch(() => false);
+          if (refreshed) return api.request(endpoint, { ...options, _refreshed: true });
+        }
+        window.dispatchEvent(new CustomEvent('punisher-session-expired'));
         throw new Error('Session expired. Please log in again.');
       }
       

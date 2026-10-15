@@ -101,8 +101,8 @@ function LegalStrategyBuilderTab({ selectedCase }) {
       </div>
 
       {/* Case Info */}
-      <div className="bg-purple-900/20 border border-purple-600/30 rounded-xl p-4">
-        <p className="text-purple-400 text-sm">
+      <div className="bg-zinc-900 border border-zinc-500 rounded-xl p-4">
+        <p className="text-zinc-300 text-sm">
           <Shield className="w-4 h-4 inline mr-2" />
           <strong>Selected Case:</strong> {selectedCase.title} ({selectedCase.state})
         </p>
@@ -189,7 +189,7 @@ function LegalStrategyBuilderTab({ selectedCase }) {
               Your Legal Strategy
             </h3>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-purple-600/20 text-purple-400 rounded-full text-sm">
+              <span className="px-3 py-1 bg-zinc-700/40 text-zinc-300 rounded-full text-sm">
                 Goal: {config.goal.replace('_', ' ').toUpperCase()}
               </span>
               <button

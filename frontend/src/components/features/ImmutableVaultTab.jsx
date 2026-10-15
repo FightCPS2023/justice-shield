@@ -3,6 +3,7 @@ import { Shield, Lock, Upload, CheckCircle2, AlertTriangle, Key } from 'lucide-r
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL } from '../../lib/api';
+import { VictoryCardPrompt } from '../VictoryCardPrompt';
 
 function ImmutableVaultTab() {
   const { api } = useAuth();
@@ -123,6 +124,7 @@ function ImmutableVaultTab() {
         </div>
       </div>
 
+      {selectedCert && <VictoryCardPrompt triggerType="evidence_sealed" triggerData={{ case_id: selectedCase?.id || null, vault_id: selectedCert.vault_id || null }} label="Evidence sealed — share your victory?" testId="vault-victory-prompt" />}
       {selectedCert && (
         <div className="bg-gray-900/70 border border-gray-700 rounded-xl p-4" data-testid="vault-detail">
           <h3 className="font-semibold flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Certificate Detail</h3>

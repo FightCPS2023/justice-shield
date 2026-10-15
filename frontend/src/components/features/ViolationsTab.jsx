@@ -226,7 +226,7 @@ function ViolationsTab({ selectedCase }) {
               </div>
               <p className="text-gray-300 mb-2">{v.description}</p>
               {v.statute_reference && (
-                <p className="text-sm text-purple-400">📜 {v.statute_reference}</p>
+                <p className="text-sm text-zinc-300">📜 {v.statute_reference}</p>
               )}
               {v.date && (
                 <p className="text-sm text-gray-500 mt-2">Date: {v.date}</p>
