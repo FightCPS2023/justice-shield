@@ -335,6 +335,15 @@ Build a powerful legal application named "THE CPS PUNISHER" - an "unstoppable de
 - Fixes: added X-AI-Mode to allowed headers; `lib/api.js` resolves API_URL to window.location.origin when it differs from REACT_APP_BACKEND_URL only by `www.` (same-origin, first-party cookies); removed all stray `process.env.REACT_APP_BACKEND_URL` uses (AuthContext, Notepad, CaseDetailModal, ImmutableVault, PersonLookup) in favor of API_URL
 - LESSON: any new custom request header MUST be added to server.py Allow-Headers (two places)
 
+### Session 59: Battle-Ready Reinforcement & Viral Strike - COMPLETE (2026-06)
+- P0: GET /api/porch-mode/sessions + GET /api/foia/requests (pagination, case filter) with persistence on analyze/generate; Session/Request History sections with empty states on both pages
+- Auth: POST /api/auth/refresh (JWT grace 7d / Google session); api.js 401 → one silent refresh → retry → `punisher-session-expired` event handled in App.js (→ login, no loops)
+- Blue + purple purge: 60+ files, all Tailwind blue/purple/indigo/violet/fuchsia/pink and hex blues mapped to zinc/chrome; light chrome buttons use text-black
+- Document extraction fix: `extract_only_bg` runs for non-analyzed uploads; `recover_stuck_extractions` sweep on startup (30 stuck docs recovered); analysis worker started at boot
+- Victory Cards: routes/victory_cards_routes.py (generate/list/get/delete, PUT image, public JSON, OG HTML page /api/victory-cards/og/{token} with twitter/og meta, PNG image endpoint); VictoryCard renderer (1080² & 1080×1920, QR, chrome/dark/fire), VictoryCardsTab (download PNG via html-to-image, copy image, X/FB intents, link), public /victory/{token} SPA page, VictoryCardPrompt wired on Lawsuit Architect, Political Strike, Vault, Integrity DB, Porch Mode, FOIA; nav group "📣 viral tools"
+- Fixed: integrity-db risk-metrics tz crash; weapon tabs missing selectedCase prop; help button overlap; dossier title "NOTICE OF SYSTEMIC CORRUPTION"
+- Tested: iteration_33 (backend 15/15, frontend all flows) + manual verification of session expiry & OG publish
+
 ## Remaining Tasks
 
 ### P1 - Code Quality (from audit)

@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { API_URL } from '../../lib/api';
 import { VictoryCardPrompt } from '../VictoryCardPrompt';
 
-function ImmutableVaultTab() {
+function ImmutableVaultTab({ selectedCase }) {
   const { api } = useAuth();
   const [file, setFile] = useState(null);
   const [key, setKey] = useState('');

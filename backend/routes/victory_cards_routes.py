@@ -3,7 +3,11 @@ import uuid
 import secrets
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
-from fastapi import APIRouter, HTTPException, Depends, Request
+import base64
+import html
+from urllib.parse import urlparse
+from fastapi import APIRouter, HTTPException, Depends, Request, Query
+from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 
 from database import get_db
@@ -97,8 +101,16 @@ def build_card_copy(trigger_type: str, d: TriggerData) -> Dict[str, Any]:
 
 
 def _public_base(request: Request) -> str:
-    origin = request.headers.get("origin") or request.headers.get("referer") or str(request.base_url)
-    return origin.rstrip("/").split("/#")[0]
+    raw = request.headers.get("origin") or request.headers.get("referer")
+    if raw:
+        u = urlparse(raw)
+        if u.scheme and u.netloc:
+            return f"{u.scheme}://{u.netloc}"
+    fwd_host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    fwd_proto = request.headers.get("x-forwarded-proto") or request.url.scheme
+    if fwd_host:
+        return f"{fwd_proto}://{fwd_host.split(',')[0].strip()}"
+    return str(request.base_url).rstrip("/")
 
 
 @router.post("/api/victory-cards/generate")
@@ -125,7 +137,7 @@ async def generate_card(payload: GenerateCardRequest, request: Request, current_
         "card_style": payload.card_style,
         **copy,
         "share_token": share_token,
-        "share_url": f"{_public_base(request)}/victory/{share_token}",
+        "share_url": f"{_public_base(request)}/api/victory-cards/og/{share_token}",
         "share_image_data": None,
         "brand": {"wordmark": "JUSTICE SHIELD", "site": "thecpspunisher.com"},
     }
@@ -136,11 +148,49 @@ async def generate_card(payload: GenerateCardRequest, request: Request, current_
 
 
 @router.get("/api/victory-cards")
-async def list_cards(limit: int = 50, current_user: dict = Depends(get_current_user)):
+async def list_cards(limit: int = Query(50, ge=1, le=200), current_user: dict = Depends(get_current_user)):
     db = get_db()
-    cursor = db.victory_cards.find({"user_id": current_user["user_id"]}, {"_id": 0, "share_image_data": 0}).sort("created_at", -1).limit(min(limit, 200))
+    cursor = db.victory_cards.find({"user_id": current_user["user_id"]}, {"_id": 0, "share_image_data": 0}).sort("created_at", -1).limit(limit)
     cards: List[dict] = [c async for c in cursor]
     return {"cards": cards, "total": len(cards)}
+
+
+@router.get("/api/victory-cards/og/{share_token}", response_class=HTMLResponse)
+async def og_card_page(share_token: str, request: Request):
+    """Crawler-friendly share page: Open Graph / Twitter meta + redirect humans to the SPA view."""
+    db = get_db()
+    card = await db.victory_cards.find_one({"share_token": share_token}, {"_id": 0, "user_id": 0, "share_image_data": 0})
+    if not card:
+        raise HTTPException(status_code=404, detail="Card not found")
+    base = _public_base(request)
+    title = html.escape(card["headline"])
+    desc = html.escape(f"{card['subtext']} — {card['stats_line']} {' '.join(card.get('hashtags', []))}")
+    image = f"{base}/api/victory-cards/image/{share_token}.png"
+    target = f"{base}/victory/{share_token}"
+    return f"""<!doctype html><html><head><meta charset="utf-8">
+<title>{title} | Justice Shield</title>
+<meta name="description" content="{desc}">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Justice Shield — The CPS Punisher">
+<meta property="og:title" content="{title}"><meta property="og:description" content="{desc}">
+<meta property="og:url" content="{html.escape(target)}"><meta property="og:image" content="{html.escape(image)}">
+<meta property="og:image:width" content="1080"><meta property="og:image:height" content="1080">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{title}">
+<meta name="twitter:description" content="{desc}"><meta name="twitter:image" content="{html.escape(image)}">
+<meta http-equiv="refresh" content="0;url={html.escape(target)}">
+<style>body{{background:#000;color:#c0c0c0;font-family:monospace;padding:2rem}}a{{color:#fff}}</style></head>
+<body><p>{title}</p><p>{desc}</p><a href="{html.escape(target)}">View card</a></body></html>"""
+
+
+@router.get("/api/victory-cards/image/{share_token}.png")
+async def card_image(share_token: str):
+    db = get_db()
+    card = await db.victory_cards.find_one({"share_token": share_token}, {"_id": 0, "share_image_data": 1})
+    if not card or not card.get("share_image_data"):
+        raise HTTPException(status_code=404, detail="Image not rendered yet — open the card and download/share once to publish its image")
+    data = card["share_image_data"]
+    if "," in data:
+        data = data.split(",", 1)[1]
+    return Response(content=base64.b64decode(data), media_type="image/png", headers={"Cache-Control": "public, max-age=3600"})
 
 
 @router.get("/api/victory-cards/public/{share_token}")

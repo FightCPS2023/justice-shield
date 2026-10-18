@@ -1,0 +1,57 @@
+{
+  "summary": "Iteration 33 (Battle-ready reinforcement & Viral Strike). Backend: new pytest suite of 15 tests covering porch-mode session history, FOIA history and pagination, auth refresh, Victory Cards CRUD for all 6 triggers plus the public/404/400 cases, a smoke test of all six weapons, and doc-upload extraction. 15/15 pass after T1 fixed a 500 in integrity-db risk-metrics. Frontend (Playwright, 1920x1080): Porch Mode history and victory prompt, FOIA history and prompt, Victory Cards tab (generate, canvas brand/hashtags/QR, PNG download, copy image, X/FB popups, copy link, story/square toggle, delete), and the public /victory/<token> page logged out all work. The Lawsuit, Integrity, Vault and Political victory prompts work only after T1 fixed a crash that blanked the whole app. The Chrome-on-Black DOM scan found 0 blue/purple offenders on Overview, Porch, FOIA and Victory Cards. Session expiry is still broken: clearing cookies does not take the user to the login page.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "GET /api/integrity-db/profiles/{id}/risk-metrics", "issue": "FIXED BY T1: returned 500 'can't subtract offset-naive and offset-aware datetimes' when incident_date was a date-only string like '2025-01-01', which is exactly what the UI date input sends. Fix: naive datetimes are now coerced to UTC in integrity_db_routes.py.", "priority": "HIGH"}
+    ],
+    "minor": [
+      {"endpoint": "POST /api/political-strike/generate-dossier", "issue": "The document has no 'Notice of Systemic Corruption' title, though the victory card subtext uses that phrase. It has SECTION I–VI and shows '[AGENCY]' when no agency is given."},
+      {"endpoint": "POST /api/victory-cards/generate", "issue": "_public_base() falls back to the raw Referer header, which can carry a path or query (e.g. https://host/?x=1). The share_url would then be malformed. Parse the scheme and host only."},
+      {"endpoint": "GET /api/victory-cards", "issue": "limit is not validated with Query(ge=1, le=200), so a negative limit is passed straight through."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "IntegrityDatabaseTab / ImmutableVaultTab / PoliticalStrikeTab", "issue": "FIXED BY T1: these components were declared as `function X()` without destructuring `{ selectedCase }`, but their VictoryCardPrompt references selectedCase. The result was 'ReferenceError: selectedCase is not defined', which crashed the whole app ('APP FAILED TO LOAD') when selecting an integrity profile that has violations, selecting a vault cert, or after a political dispatch. All 4 weapon prompts verified after the fix.", "selector": "[data-testid=integrity-victory-prompt],[data-testid=vault-victory-prompt],[data-testid=political-victory-prompt]", "priority": "CRITICAL"}
+    ],
+    "integration_issues": [
+      {"flow": "Session expiry", "issue": "NOT FIXED. After context.clear_cookies() and a tab switch, api.js correctly calls /api/auth/refresh (8 calls, one per failing request, no reload loop) and dispatches 'punisher-session-expired'. But the only listener is in context/AuthContext.jsx AuthProvider, and that provider is never mounted: index.js renders <App/>, and App.js manages its own user/currentView state. The user stays on the dashboard with misleading empty states ('0 total', 'No requests yet') and is never sent to login. Fix: in App.js add useEffect(() => { const h = () => { setUser(null); setCurrentView('auth'); }; window.addEventListener('punisher-session-expired', h); return () => window.removeEventListener('punisher-session-expired', h); }, []). Consider debouncing the toast.", "affected_selectors": ["[data-testid=auth-submit-btn]", "[data-testid=email-input]"]}
+    ],
+    "design_issues": [
+      {"screen": "Global", "issues": ["The floating 'NEED IMMEDIATE HELP' button's label is overlapped and clipped by its red icon square (shows 'NEED IMMEDIATE HE')."]},
+      {"screen": "Sidebar", "issues": ["The '📣 viral tools' group is collapsed by default, so nav-victory-cards is not in the DOM and the new headline feature is hard to discover. Expand it by default."]},
+      {"screen": "Porch Mode", "issues": ["The victory prompt panel sits in a tall right column with a large empty area. Headline, description and button are cramped at the top with the button far below; it looks unbalanced next to the input card."]},
+      {"screen": "Political Strike", "issues": ["The selected contact card has a light-gray background with faded gray subtext, so contrast is low.", "The Dispatch Report is shown as raw JSON, including user_id."]},
+      {"screen": "Victory Cards", "issues": ["victory-delete removes the card immediately with no confirmation."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_iter33_viral_strike.py", "/app/test_reports/pytest/iter33.xml"],
+  "action_items": [
+    "HIGH: Handle 'punisher-session-expired' in App.js (setUser(null) + setCurrentView('auth')). The AuthProvider listener is dead code because AuthProvider is never mounted.",
+    "Review T1's fixes: selectedCase prop destructuring in IntegrityDatabaseTab, ImmutableVaultTab and PoliticalStrikeTab; tz-aware datetime coercion in integrity_db_routes.get_risk_metrics.",
+    "Parse only the origin from Referer in victory_cards_routes._public_base.",
+    "Add a 'Notice of Systemic Corruption' title to the political dossier, or align the card copy with the dossier.",
+    "Viral reach: /victory/<token> is a client-rendered SPA with no og:title/og:image/twitter:card meta, so X/Facebook link previews show the generic app title instead of the card. Consider a backend-rendered /api/victory-cards/og/<token> HTML page with meta tags, or serving the saved share_image_data as an image URL.",
+    "Expand the 'viral tools' sidebar group by default; fix the clipping on the help button."
+  ],
+  "critical_code_review_comments": [
+    "The app has two auth state systems: App.js has its own state and context/AuthContext.jsx has AuthProvider with checkAuth and the expiry listener. Tabs import useAuth from context/AuthContext, but the provider value comes from App.js. Consolidate them to avoid more dead logic.",
+    "App.js is 687 lines and close to the 700-line threshold. Extract the Dashboard and the nav config.",
+    "Tabs rendered with a selectedCase prop must destructure it; add eslint no-undef to CI to catch ReferenceErrors like this one.",
+    "The public victory endpoint returns share_image_data (up to 2.5MB base64) in the JSON. Consider excluding it, or serving it as a separate image route."
+  ],
+  "updated_files": [
+    "/app/backend/routes/integrity_db_routes.py",
+    "/app/frontend/src/components/features/IntegrityDatabaseTab.jsx",
+    "/app/frontend/src/components/features/ImmutableVaultTab.jsx",
+    "/app/frontend/src/components/features/PoliticalStrikeTab.jsx",
+    "/app/backend/tests/test_iter33_viral_strike.py"
+  ],
+  "success_rate": {"backend": "100% (15/15) after T1 fix; 13/15 before fix", "frontend": "~92%: all requested flows pass after T1 fix except session-expiry redirect"},
+  "test_credentials": "admin cpsvhuntingjustice@gmail.com / cpssuxass (from /app/memory/test_credentials.md) - works",
+  "seed_data_creation": "TEST_ FOIA requests, profiles and victory cards were created and cleaned up via the API and mongosh. One porch-generated violation_detected card and a few porch sessions, vault certs and complaints/dossiers remain under the admin user.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Login via page.request.post('/api/auth/login') and set localStorage punisher_selected_case=d219e704-b704-4019-b9eb-128977b4aaa0, then reload. Navigate via window.dispatchEvent(new CustomEvent('punisher-navigate',{detail:id})); nav-victory-cards is hidden while 'viral tools' is collapsed. Next steps: retest session expiry (clear_cookies, then expect the auth page) and run tests/test_iter33_viral_strike.py as regression.",
+  "rca of the issue": "1) Weapon tabs crash: the components lacked the `{ selectedCase }` param, and the new VictoryCardPrompt used selectedCase, causing a ReferenceError at render; the ErrorBoundary then shows 'App failed to load'. Repro: Integrity DB, select a profile with ≥1 violation. Fixed. 2) Risk metrics 500: datetime.fromisoformat('2025-01-01') is naive while now() is aware, so subtraction raises TypeError. Fixed. 3) Expiry not redirecting: api.js dispatches the event, but its listener lives only in the unmounted AuthProvider. Repro: log in, clear cookies, switch tabs; the dashboard stays with empty data. Mitigation: add the listener in App.js."
+}

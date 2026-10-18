@@ -36,7 +36,8 @@ def _render_dossier(payload: DossierRequest) -> str:
     violations_block = "\n".join([f"{idx+1}. {v}" for idx, v in enumerate(payload.violations)]) or "1. [No violations provided]"
     vault_block = "\n".join([f"- {ref}" for ref in payload.vault_refs]) or "- None"
 
-    return f"""JUSTICE SHIELD — POLITICAL STRIKE ENGINE
+    return f"""NOTICE OF SYSTEMIC CORRUPTION
+JUSTICE SHIELD — POLITICAL STRIKE ENGINE
 CLASSIFICATION: URGENT — CONSTITUTIONAL RIGHTS EMERGENCY
 
 SECTION I: SUBJECT

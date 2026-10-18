@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { VictoryCardPrompt } from '../VictoryCardPrompt';
 
-function PoliticalStrikeTab() {
+function PoliticalStrikeTab({ selectedCase }) {
   const { api } = useAuth();
   const [state, setState] = useState('TX');
   const [role, setRole] = useState('');

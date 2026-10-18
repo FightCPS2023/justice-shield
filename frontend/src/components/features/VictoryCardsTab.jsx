@@ -109,6 +109,21 @@ function VictoryCardsTab({ selectedCase }) {
 
   const previewScale = format === 'story' ? 0.28 : 0.45;
 
+  useEffect(() => {
+    if (!selected || selected.share_image_data || format !== 'square' || !canvasRef.current) return undefined;
+    const t = setTimeout(async () => {
+      try {
+        const dataUrl = await toPng(canvasRef.current, { pixelRatio: 1, cacheBust: true, style: { transform: 'scale(1)' } });
+        await api.put(`/api/victory-cards/${selected.card_id}/image`, { share_image_data: dataUrl });
+        setCards((prev) => prev.map((c) => (c.card_id === selected.card_id ? { ...c, share_image_data: 'published' } : c)));
+        setSelected((prev) => (prev && prev.card_id === selected.card_id ? { ...prev, share_image_data: 'published' } : prev));
+      } catch (e) {
+        // preview publish is best-effort
+      }
+    }, 900);
+    return () => clearTimeout(t);
+  }, [selected, format]);
+
   return (
     <div className="space-y-6 animate-fadeIn" data-testid="victory-cards-tab">
       <div>

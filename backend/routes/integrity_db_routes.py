@@ -193,6 +193,8 @@ async def get_risk_metrics(profile_id: str, current_user: dict = Depends(get_cur
             dt = datetime.fromisoformat(v.get("incident_date"))
         except Exception:
             dt = None
+        if dt and dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
         if dt and (now - dt).days <= 365:
             recency += 1
     recency_score = (recency / total) if total else 0

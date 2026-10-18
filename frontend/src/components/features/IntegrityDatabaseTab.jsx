@@ -22,7 +22,7 @@ const violationTypes = [
   'Other'
 ];
 
-function IntegrityDatabaseTab() {
+function IntegrityDatabaseTab({ selectedCase }) {
   const { api } = useAuth();
   const [profiles, setProfiles] = useState([]);
   const [query, setQuery] = useState('');

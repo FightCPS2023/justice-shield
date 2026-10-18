@@ -5,11 +5,3 @@ __pycache__
 dist
 build
 *.log
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*

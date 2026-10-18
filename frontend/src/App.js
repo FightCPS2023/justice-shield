@@ -7,7 +7,7 @@ import {
   CreditCard, Zap, Mic, HelpCircle, ChevronDown, Building2, FlaskConical, Megaphone
 } from 'lucide-react';
 
-import api from './lib/api';
+import api, { API_URL } from './lib/api';
 import AuthContext, { useAuth } from './context/AuthContext';
 
 // Import all page/tab components
@@ -101,9 +101,26 @@ function App() {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    const onExpired = () => {
+      setUser(null);
+      setCurrentView('auth');
+      toast.error('Session expired. Please sign in again.', { id: 'session-expired' });
+    };
+    window.addEventListener('punisher-session-expired', onExpired);
+    return () => window.removeEventListener('punisher-session-expired', onExpired);
+  }, []);
+
   const checkAuth = async () => {
     try {
-      const userData = await api.get('/api/auth/me');
+      let userData;
+      try {
+        userData = await api.get('/api/auth/me');
+      } catch (firstErr) {
+        const refreshed = await fetch(`${API_URL}/api/auth/refresh`, { method: 'POST', credentials: 'include' }).then((r) => r.ok).catch(() => false);
+        if (!refreshed) throw firstErr;
+        userData = await api.get('/api/auth/me');
+      }
       setUser(userData);
       setCurrentView('dashboard');
     } catch (error) {
@@ -218,6 +235,7 @@ function Dashboard({ onNavigate }) {
     research: true,
     punishers: true,
     community: true,
+    viral: true,
     'admin-tools': true
   });
   const [helpPanelOpen, setHelpPanelOpen] = useState(false);
@@ -619,7 +637,7 @@ function Dashboard({ onNavigate }) {
         </div>
       </main>
 
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3" data-testid="immediate-help-container">
+      <div className="fixed bottom-6 right-24 z-40 flex flex-col items-end gap-3" data-testid="immediate-help-container">
         {helpPanelOpen && (
           <div className="bg-slate-900 border border-slate-700 rounded-2xl p-5 w-80 shadow-[0_20px_50px_rgba(0,0,0,0.45)]" data-testid="immediate-help-panel">
             <div className="flex items-start justify-between gap-3">
